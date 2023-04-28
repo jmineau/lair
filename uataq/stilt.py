@@ -156,9 +156,20 @@ class Footprints:
         return self._sub(self.foots, subset)
 
     def get_receptors_locs(self):
-        assert len(self.files) > 1
+        assert len(self.files) >= 1
 
+        def drop_time(sim_id):
+            del sim_id['time']
+            return sim_id
 
+        # Get sim_locs of all the files without time - list of dicts
+        sim_locs = [drop_time(Footprints.get_sim_id(file))
+                    for file in self.files]
+
+        # remove duplicate locs
+        sim_locs = [dict(t) for t in {tuple(loc.items()) for loc in sim_locs}]
+
+        return sim_locs
 
     @cached_property
     def area(self):
