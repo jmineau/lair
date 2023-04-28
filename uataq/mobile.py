@@ -16,8 +16,8 @@ import pandas as pd
 import geopandas as gpd
 from dataclasses import dataclass
 
-from helper.grid import dms2dd
-from helper.time import UTC2MTN
+from utils.grid import dms2dd
+from utils.time import UTC2MTN
 
 
 class Bus:
@@ -107,6 +107,8 @@ class TRAX:
     vehicle: str
     months: list
     species: list
+
+    # TODO add process and read to pipeline
 
     # def process(self):
     #     # Process TRAX calibrated data as transects
