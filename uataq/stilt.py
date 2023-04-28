@@ -127,8 +127,8 @@ class Footprints:
                 ds = self._sub(ds, subset)
 
             ds = ds.sum(dim='time')  # temporal sum
-            ds = ds.expand_dims({'sim_id':  # simulation time to concat on
-                                 [Footprints.get_sim_id(filename)]})
+            ds = ds.expand_dims({'sim_time':  # simulation time to concat on
+                                 [Footprints.get_sim_id(filename)['time']]})
 
             return ds
 
@@ -138,8 +138,8 @@ class Footprints:
 
         processed_foots = [_preprocess(xr.open_dataset(file, engine=engine))
                            for file in self.files]
-        foots = xr.concat(processed_foots, dim='sim_id').foot
-        foots = foots.sortby('sim_id')
+        foots = xr.concat(processed_foots, dim='sim_time').foot
+        foots = foots.sortby('sim_time')
 
         return foots
 
@@ -155,7 +155,10 @@ class Footprints:
     def sub(self, subset):
         return self._sub(self.foots, subset)
 
-    # def get_receptors_locs(self):
+    def get_receptors_locs(self):
+        assert len(self.files) > 1
+
+
 
     @cached_property
     def area(self):
@@ -190,7 +193,13 @@ class Footprints:
 
     @staticmethod
     def get_sim_id(file):
-        return dt.datetime.strptime(os.path.basename(file)[:12], TIME_FORMAT)
+        time, lati, long, zagl, _ = file.split('_')
+
+        sim_id = {'time': dt.datetime.strptime(time, TIME_FORMAT),
+                  'lati': lati,
+                  'long': long,
+                  'zagl': zagl}
+        return sim_id
 
     @staticmethod
     def plot(foot, ax=None, crs=None, label_deci=1, tiler=None, tiler_zoom=9,
