@@ -13,9 +13,7 @@ import os
 import datetime as dt
 from functools import cached_property
 
-import sys
-sys.path.insert(1, '/uufs/chpc.utah.edu/common/home/u6036966/wkspace/scripts')
-
+# TODO this needs to be a parameter
 STILT_projects_dir = ('/uufs/chpc.utah.edu/common/home'
                       '/lin-group11/jkm/STILT')
 
@@ -161,7 +159,7 @@ class Footprints:
 
     @cached_property
     def area(self):
-        from helper.GIS.grid import area_DataArray
+        from helper.grid import area_DataArray
 
         return area_DataArray(self.foots)
 
@@ -204,11 +202,8 @@ class Footprints:
         import matplotlib.pyplot as plt
         import numpy as np
 
-        import sys
-        sys.path.insert(1, '/uufs/chpc.utah.edu/common/home/'
-                           'u6036966/wkspace/scripts')
         from helper.plotter import log10formatter
-        from helper.GIS.grid import add_latlon_ticks
+        from helper.grid import add_latlon_ticks
 
         if tiler is not None:
             crs = tiler.crs

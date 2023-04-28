@@ -13,9 +13,6 @@ import os
 import pandas as pd
 from shapely.geometry import Polygon
 
-# TODO this will eventually be dropped as it will all be one package
-import sys
-sys.path.insert(1, '/uufs/chpc.utah.edu/common/home/u6036966/wkspace/scripts')
 
 # TODO
 #   Need to keep data in one location
@@ -115,7 +112,7 @@ class SaltLakeValley:
                         Inventory, census, background_alpha,
                         state_borders, county_borders,
                         latlon_ticks, more_lon_ticks, more_lat_ticks):
-        from helper.GIS.grid import bbox2extent, add_latlon_ticks
+        from helper.grid import bbox2extent, add_latlon_ticks
 
         # Matplotlib axes
         if not ax:  # if an ax is not given
@@ -437,7 +434,7 @@ class SaltLakeValley:
 
     @collect_feature
     def add_extent_map(self):
-        from helper.GIS.grid import add_extent_map
+        from helper.grid import add_extent_map
 
         fig = self.ax.get_figure()
 
