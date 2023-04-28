@@ -17,8 +17,8 @@ from dataclasses import dataclass
 from . import pipeline as pipe
 
 
-from helper.clock import UTC2MTN
-from helper.clock import seasons as SEASONS
+from utils.clock import UTC2MTN
+from utils.clock import seasons as SEASONS
 
 # Directories
 UATAQ_DIR = '/uufs/chpc.utah.edu/common/home/u6036966/wkspace/data/uataq'

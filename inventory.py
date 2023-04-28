@@ -90,7 +90,7 @@ class Inventory:
         return weighted
 
     def get_cell_area(self, inventory):
-        from helper.grid import area_DataArray
+        from utils.grid import area_DataArray
 
         area = area_DataArray(inventory)
 
@@ -150,7 +150,7 @@ class EDGAR(Inventory):
         self.integrated = self.integrate()
 
     def post_process(self, ds):
-        from helper.grid import wrap_lons
+        from utils.grid import wrap_lons
 
         # Edgar coordinates are the cell center of each grid-cell
         # Convert lon from 0~360 -> -180~180

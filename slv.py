@@ -112,7 +112,7 @@ class SaltLakeValley:
                         Inventory, census, background_alpha,
                         state_borders, county_borders,
                         latlon_ticks, more_lon_ticks, more_lat_ticks):
-        from helper.grid import bbox2extent, add_latlon_ticks
+        from utils.grid import bbox2extent, add_latlon_ticks
 
         # Matplotlib axes
         if not ax:  # if an ax is not given
@@ -282,7 +282,7 @@ class SaltLakeValley:
 
     @collect_feature
     def add_TRAX(self, lines):
-        from helper.records import read_kml
+        from utils.records import read_kml
         tracks_dir = os.path.join(wkspace, 'mobile/trax/transect/tracks')
 
         line_dict = {'r': {'lw': 4,
@@ -387,7 +387,7 @@ class SaltLakeValley:
     def add_legend(self, legend_kws, legend_mapper):
         import matplotlib.collections as mcol
         from matplotlib.lines import Line2D
-        from helper.plotter import HandlerDashedLines
+        from utils.plotter import HandlerDashedLines
 
         def TRAX_legend():
             line = [[(0, 0)]]
@@ -434,7 +434,7 @@ class SaltLakeValley:
 
     @collect_feature
     def add_extent_map(self):
-        from helper.grid import add_extent_map
+        from utils.grid import add_extent_map
 
         fig = self.ax.get_figure()
 
