@@ -84,7 +84,7 @@ class Footprints:
         self.files = None
 
         if cache:
-            from helper.records import Cacher
+            from utils.records import Cacher
             if cache is True:
                 cache = os.path.join(footprint_dir, 'footprints_cache.pkl')
             self.cache = cache
@@ -159,7 +159,7 @@ class Footprints:
 
     @cached_property
     def area(self):
-        from helper.grid import area_DataArray
+        from utils.grid import area_DataArray
 
         return area_DataArray(self.foots)
 
@@ -202,8 +202,8 @@ class Footprints:
         import matplotlib.pyplot as plt
         import numpy as np
 
-        from helper.plotter import log10formatter
-        from helper.grid import add_latlon_ticks
+        from utils.plotter import log10formatter
+        from utils.grid import add_latlon_ticks
 
         if tiler is not None:
             crs = tiler.crs
