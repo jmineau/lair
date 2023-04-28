@@ -16,8 +16,7 @@ from matplotlib import pyplot as plt
 from dataclasses import dataclass
 from . import pipeline as pipe
 
-import sys
-sys.path.insert(1, '/uufs/chpc.utah.edu/common/home/u6036966/wkspace/scripts')
+
 from helper.clock import UTC2MTN
 from helper.clock import seasons as SEASONS
 
@@ -240,51 +239,51 @@ def timeseries(data, title, species=['CH4'], excess=True):
 
 
 
-def diurnal(data_allhours):
-    df = data_allhours
+# def diurnal(data_allhours):
+#     df = data_allhours
 
-    df = UTC2MTN(df)
-    df.index.rename('Time_MST', inplace=True)
+#     df = UTC2MTN(df)
+#     df.index.rename('Time_MST', inplace=True)
 
-    df['season'] = df.index.month.map(seasons)
+#     df['season'] = df.index.month.map(seasons)
 
-    df_diurnal = df.groupby([df.index.hour, df.season]).mean(numeric_only=True)
+#     df_diurnal = df.groupby([df.index.hour, df.season]).mean(numeric_only=True)
 
-    for site in sites:
-        rel = sns.relplot(data=df_diurnal[site].reset_index(level=[1]),
-                          col='season', x='Time_MST', y='excess', kind='line',
-                          col_wrap=2)
+#     for site in sites:
+#         rel = sns.relplot(data=df_diurnal[site].reset_index(level=[1]),
+#                           col='season', x='Time_MST', y='excess', kind='line',
+#                           col_wrap=2)
 
-        rel.fig.suptitle(site)
+#         rel.fig.suptitle(site)
 
-        plt.show()
+#         plt.show()
 
 
-def diurnal_years(data_allhours):
-    df = data_allhours.copy()
+# def diurnal_years(data_allhours):
+#     df = data_allhours.copy()
 
-    df = UTC2MST(df)
-    df.index.rename('Time_MST', inplace=True)
+#     df = UTC2MST(df)
+#     df.index.rename('Time_MST', inplace=True)
 
-    df['season'] = df.index.month.map(SEASONS)
-    df['year'] = df.index.year
-    df['hour'] = df.index.hour
+#     df['season'] = df.index.month.map(SEASONS)
+#     df['year'] = df.index.year
+#     df['hour'] = df.index.hour
 
-    # df_diurnal = df.groupby([df.index.hour, df.year, df.season]).mean(numeric_only=True)
-    # counts = df.groupby([df.index.hour, df.year, df.season]).count()
+#     # df_diurnal = df.groupby([df.index.hour, df.year, df.season]).mean(numeric_only=True)
+#     # counts = df.groupby([df.index.hour, df.year, df.season]).count()
 
-    # data = df_diurnal.reset_index(level=[1, 2])
+#     # data = df_diurnal.reset_index(level=[1, 2])
 
-    rel = sns.relplot(data=df, col='season', x='hour', y='CH4_ex',
-                      hue='year', kind='line', col_wrap=2, errorbar='se',
-                      palette=sns.color_palette("hls", 5))
+#     rel = sns.relplot(data=df, col='season', x='hour', y='CH4_ex',
+#                       hue='year', kind='line', col_wrap=2, errorbar='se',
+#                       palette=sns.color_palette("hls", 5))
 
-    rel.set(xlabel='Hour [MST]',
-            ylabel='CH4$_{4ex}$ [ppm]')
+#     rel.set(xlabel='Hour [MST]',
+#             ylabel='CH4$_{4ex}$ [ppm]')
 
-    plt.show()
+#     plt.show()
 
-    return df
+#     return df
 
 
 # def seasonal_trends(data, plot_col, figsize=None):

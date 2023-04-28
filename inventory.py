@@ -11,8 +11,6 @@ Module for working with Emission Inventories
 import os
 import rioxarray as rxr
 
-import sys
-sys.path.insert(1, '/uufs/chpc.utah.edu/common/home/u6036966/wkspace/scripts')
 
 INVENTORY_DIR = ('/uufs/chpc.utah.edu/common/home/u6036966'
                  '/wkspace/data/EmissionInventories')
@@ -92,7 +90,7 @@ class Inventory:
         return weighted
 
     def get_cell_area(self, inventory):
-        from helper.GIS.grid import area_DataArray
+        from helper.grid import area_DataArray
 
         area = area_DataArray(inventory)
 
@@ -152,7 +150,7 @@ class EDGAR(Inventory):
         self.integrated = self.integrate()
 
     def post_process(self, ds):
-        from helper.GIS.grid import wrap_lons
+        from helper.grid import wrap_lons
 
         # Edgar coordinates are the cell center of each grid-cell
         # Convert lon from 0~360 -> -180~180
