@@ -31,7 +31,7 @@ class Receptors:
         '''
         import pandas as pd
 
-        lati, long, zagl = Receptors.get_location(site)
+        lati, long, zagl = Receptors.get_site_location(site)
 
         times.name = 'run_time'
 
@@ -62,7 +62,7 @@ class Receptors:
         return None
 
     @staticmethod
-    def get_location(site):
+    def get_site_location(site):
         from . import uucon
         site_config = uucon.site_config.loc[site]
 
