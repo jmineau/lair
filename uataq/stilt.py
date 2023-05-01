@@ -75,8 +75,8 @@ class Receptors:
 
 class Footprints:
 
-    def __init__(self, footprint_dir, subset=False, cache=False,
-                 engine='rasterio', reload_cache=False):
+    def __init__(self, footprint_dir, subset=False, engine='rasterio',
+                 cache=False, reload_cache=False):
 
         assert os.path.exists(footprint_dir)  # make sure footprint dir exists
 
