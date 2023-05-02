@@ -21,17 +21,20 @@ TIME_FORMAT = '%Y%m%d%H%M'
 
 
 class Receptors:
-    def __init__(self, site, times):
+    def __init__(self, loc, times):
 
-        self.data = self.generate(site, times)
+        self.data = self.generate(loc, times)
 
-    def generate(self, site, times):
+    def generate(self, loc, times):
         '''
-        Generate receptor dataframe when given a site id and list of datetimes
+        Generate receptor dataframe when given a location and list of datetimes
         '''
         import pandas as pd
 
-        lati, long, zagl = Receptors.get_site_location(site)
+        if isinstance(loc, str):
+            lati, long, zagl = Receptors.get_site_location(loc)
+        else:
+            lati, long, zagl = loc
 
         times.name = 'run_time'
 
@@ -71,6 +74,11 @@ class Receptors:
         zagl = site_config.zagl.astype(float)
 
         return lati, long, zagl
+
+    @staticmethod
+    def nearest_mesowest(loc):
+        # TODO
+        pass
 
 
 class Footprints:
