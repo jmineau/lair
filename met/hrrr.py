@@ -148,6 +148,7 @@ class Winds:
     times: [dt.datetime]
 
     def __post_init__(self):
+        # Connect to AWS servers
         fs = s3fs.S3FileSystem(anon=True)
         s3 = boto3.resource(service_name='s3', region_name='us-west-1',
                             config=Config(signature_version=UNSIGNED))
@@ -156,12 +157,12 @@ class Winds:
         chunk_index_url = "s3://hrrrzarr/grid/HRRR_chunk_index.zarr"
         self.chunk_index = xr.open_zarr(s3fs.S3Map(chunk_index_url, s3=fs))
 
-        # Nearest Point
+        # Nearest Point to chunk_id
         self.nearest_point = get_nearest_point(self.lon, self.lat,
                                                self.chunk_index)
         self.chunk_id = self.nearest_point.chunk_id.values
 
-        # Create zarr ids
+        # Generate zarr ids
         variables = [('UGRD', '10m_above_ground'),
                      ('VGRD', '10m_above_ground'),
                      ('WIND_max_fcst', '10m_above_ground')]
