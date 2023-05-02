@@ -166,7 +166,7 @@ class Winds:
                      ('VGRD', '10m_above_ground'),
                      ('WIND_max_fcst', '10m_above_ground')]
         self.zarr_ids = generate_zarr_ids(times=self.times,
-                                          level_type='surface',
+                                          level_type='sfc',
                                           variables=variables,
                                           model_type='anl')
 
