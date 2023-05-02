@@ -30,7 +30,7 @@ DATA_DIR = os.path.join(wkspace, 'data')
 #   create tilers to select from
 
 
-class SaltLakeValley:
+class SaltLake:
     def __init__(self, bounds=(-112.25, 40.4, -111.62, 40.95),
                  ax=None, crs=None, figsize=(6, 6),
                  tiler=None, tiler_zoom=9,
