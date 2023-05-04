@@ -125,6 +125,31 @@ def get_value(s3, zarr_id, chunk_id, nearest_point):
         return chunk_data[nearest_point.in_chunk_y.values, nearest_point.in_chunk_x.values]
 
 
+def rotate_winds(u, v, lon):
+    # based on https://rapidrefresh.noaa.gov/faq/HRRR.faq.html
+    # modified from https://gist.github.com/fischcheng/411d0bafe7762e6b5d7b1233b625a2bb
+
+    # Parameters
+    rotcon_p = 0.622515
+    lon_xx_p = -97.5
+    # lat_tan_p  =  25.0 (np.sin(lat_tan_p/180*np.pi)) to get rotcon_p
+
+    # Calc right grid_angle
+    angle2 = rotcon_p * (lon - lon_xx_p) * 0.017453  # convert to radian
+    sinx2 = np.sin(angle2)
+    cosx2 = np.cos(angle2)
+
+    # Wind rotation
+    u_out = cosx2 * u + sinx2 * v
+    v_out = -sinx2 * u + cosx2 * v
+
+    return u_out, v_out
+
+
+def uv_to_direction(u, v):
+    return (270 - np.rad2deg(np.arctan2(v, u))) % 360
+
+
 @dataclasses.dataclass
 class ZarrId:
     run_hour: dt.datetime
@@ -178,5 +203,12 @@ class Winds:
                                             self.nearest_point)
                                   for zarr_id in ids]
 
-        # Create dataframe
-        self.data = pd.DataFrame(var_data, index=self.times)
+        u_earth, v_earth = rotate_winds(var_data['UGRD'], var_data['VGRD'],
+                                        self.lon)
+
+        angle = uv_to_direction(u_earth, v_earth)
+
+        self.data = pd.DataFrame({'u': u_earth,
+                                  'v': v_earth,
+                                  'ws': var_data['WIND_max_fcst'],
+                                  'wd': angle}, index=self.times)
