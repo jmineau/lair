@@ -8,21 +8,29 @@ Created on Wed Jan 25 09:40:10 2023
 Module of uataq pipeline functions for LGR UGGA instrument
 """
 
-from .. import uucon
-from .. import pipeline as pipe
 import os
+import pandas as pd
 import re
 import subprocess
-import pandas as pd
 
+from config import DATA_DIR, data_config
+from .. import errors
+
+SITES = ('csp', 'fru', 'hdp', 'hpl', 'roo', 'wbb', 'trx01')
 
 # %% RAW
 
-def get_raw_files(site):
+def get_raw_dir(site):
     # raw_dir = f'~/wkspace/pipeline/local/data/{site}/lgr_ugga/raw'
     # raw_dir = ('/uufs/chpc.utah.edu/common/home/u6036966/wkspace/pipeline/'
     #            f'local/data/{site}/lgr_ugga/raw')
-    raw_dir = os.path.join(uucon.UATAQ_DIR, 'data', site, 'lgr_ugga', 'raw')
+    raw_dir = os.path.join(DATA_DIR, site, 'lgr_ugga', 'raw')
+
+    return raw_dir
+
+
+def get_raw_files(site):
+    raw_dir = get_raw_files(site)
 
     pattern = re.compile(r'f....\.txt$')
 
@@ -50,15 +58,15 @@ def adapt_cols(file):
     r2py_types = {'c': str,
                   'd': float}
 
-    col_names = uucon.data_config.lgr_ugga.raw['col_names'].copy()
-    col_types = uucon.data_config.lgr_ugga.raw['col_types']
+    col_names = data_config.lgr_ugga.raw['col_names'].copy()
+    col_types = data_config.lgr_ugga.raw['col_types']
     col_types = {name: r2py_types[t] for name, t
                  in zip(col_names, col_types)}
 
     ndelim = count_delim(file)
 
     if ndelim == 0:
-        raise pipe.ParsingError('No deliminators in header!')
+        raise errors.ParsingError('No deliminators in header!')
     elif ndelim == 23:
         # col_names config has 23 columns, temporarily add fill column
         col_names.insert(22, 'fillvalue')
@@ -93,19 +101,19 @@ def check_footer(file):
 def update_cols(df):
     ncols = len(df.columns)
     if (ncols < 23) | (ncols > 24):
-        raise pipe.ParsingError('Too few or too many columns!')
+        raise errors.ParsingError('Too few or too many columns!')
     elif ncols == 24:
         # Now that the data has been read in with 24 columns,
         #  drop the valve (fill) column
         df.drop(columns=df.columns[22], inplace=True)
 
     # Reassign orignal column names (not sure this is nessecary)
-    df.columns = uucon.data_config.lgr_ugga.raw['col_names'].copy()
+    df.columns = data_config.lgr_ugga.raw['col_names'].copy()
 
     return df
 
 
-def RAW(site):
+def RAW(site, verbose=True, return_bad_files=False):
     def parse(file):
         # Adapt columns due to differences in UGGA format
         col_names, col_types = adapt_cols(file)
@@ -132,12 +140,14 @@ def RAW(site):
 
     # Parse dataframes
     for file in files:
-        print(f'Loading {os.sep.join(file.split(os.sep)[-2:])}')
+        if verbose:
+            print(f'Loading {os.sep.join(file.split(os.sep)[-2:])}')
         try:
             df = parse(file)
             dfs.append(df)
-        except pipe.ParsingError as e:
-            print(f'    {e}')
+        except errors.ParsingError as e:
+            if verbose:
+                print(f'    {e}')
             bad_files.append((file, str(e)))
             continue
 
@@ -152,20 +162,27 @@ def RAW(site):
     data.dropna(subset='Time_UTC', inplace=True)
     data.sort_values('Time_UTC', inplace=True)
 
-    return data, bad_files
+    if return_bad_files:
+        return data, bad_files
+
+    return data
 
 
 # %% PROCESSED
 
 def read_processed(site, lvl):
-    data_path = os.path.join(uucon.UATAQ_DIR, 'data', site, 'lgr_ugga', lvl)
+    data_path = os.path.join(DATA_DIR, site, 'lgr_ugga', lvl)
 
     files = [os.path.join(data_path, file) for file in os.listdir(data_path)]
 
-    df = pd.concat([pd.read_csv(file, parse_dates=['Time_UTC'])
-                    for file in files]).set_index('Time_UTC').sort_index()
+    data = pd.concat([pd.read_csv(file, parse_dates=['Time_UTC'])
+                     for file in files]).set_index('Time_UTC').sort_index()
 
-    return df
+    return data
+
+
+def valid_filter(data):
+    return data[data.QAQC_Flag >= 0]
 
 
 def QAQC(site):
