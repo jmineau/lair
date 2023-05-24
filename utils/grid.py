@@ -30,7 +30,7 @@ def wrap_lons(lons):
     return (lons.round(2) + 180) % 360 - 180
 
 
-def add_lat_ticks(ax, ylims, more_ticks=0):
+def add_lat_ticks(ax, ylims, labelsize=None, more_ticks=0):
     import cartopy.crs as ccrs
     from cartopy.mpl.ticker import LatitudeFormatter, LatitudeLocator
 
@@ -44,8 +44,11 @@ def add_lat_ticks(ax, ylims, more_ticks=0):
     ax.yaxis.tick_left()
     ax.yaxis.set_major_formatter(LatitudeFormatter())
 
+    if labelsize is not None:
+        ax.tick_params(axis='y', labelsize=labelsize)
 
-def add_lon_ticks(ax, xlims, rotation=0, more_ticks=0):
+
+def add_lon_ticks(ax, xlims, rotation=0, labelsize=None, more_ticks=0):
     import cartopy.crs as ccrs
     from cartopy.mpl.ticker import LongitudeFormatter, LongitudeLocator
 
@@ -59,18 +62,22 @@ def add_lon_ticks(ax, xlims, rotation=0, more_ticks=0):
     ax.xaxis.tick_bottom()
     ax.xaxis.set_major_formatter(LongitudeFormatter())
 
-    if rotation:
+    if rotation != 0:
         ax.set_xticklabels(ax.get_xticklabels(), rotation=rotation,
                            ha='right', rotation_mode='anchor')
 
+    if labelsize is not None:
+        ax.tick_params(axis='x', labelsize=labelsize)
 
-def add_latlon_ticks(ax, extent, x_rotation=0,
+
+def add_latlon_ticks(ax, extent, x_rotation=0, labelsize=None,
                      more_lon_ticks=0, more_lat_ticks=0):
     xlims, ylims = extent[:2], extent[2:]
 
-    add_lat_ticks(ax, ylims, more_ticks=more_lat_ticks)
+    add_lat_ticks(ax, ylims, labelsize=labelsize, more_ticks=more_lat_ticks)
 
-    add_lon_ticks(ax, xlims, rotation=x_rotation, more_ticks=more_lon_ticks)
+    add_lon_ticks(ax, xlims, rotation=x_rotation, labelsize=labelsize,
+                  more_ticks=more_lon_ticks)
 
 
 def area_grid(lat, lon):
