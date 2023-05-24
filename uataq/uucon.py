@@ -10,24 +10,13 @@ Module to read and process all levels of UUCON LGR UGGA CO2 & CH4 data
 
 import datetime as dt
 import numpy as np
-import os
 import pandas as pd
 from matplotlib import pyplot as plt
 from dataclasses import dataclass
+
 from . import pipeline as pipe
-
-
-from utils.clock import UTC2MTN
+from config import site_config
 from utils.clock import seasons as SEASONS
-
-# Directories
-UATAQ_DIR = '/uufs/chpc.utah.edu/common/home/u6036966/wkspace/data/uataq'
-CONFIG_DIR = os.path.join(UATAQ_DIR, 'config')
-
-# UATAQ pipeline config
-site_config = pd.read_csv(os.path.join(CONFIG_DIR, 'site_config.csv'),
-                          sep=', ', engine='python', index_col='stid')
-data_config = pd.read_json(os.path.join(CONFIG_DIR, 'data_config.json'))
 
 LGR_sites = ['csp', 'fru', 'hdp', 'hpl', 'roo', 'wbb']
 
@@ -93,7 +82,7 @@ class Site():
                      'qaqc': pipe.lgr_ugga.QAQC,
                      'calibrated': pipe.lgr_ugga.CALIBRATED}
 
-        data = lvl_funcs[lvl](self.ID)
+        data = lvl_funcs[lvl](self.ID.lower())
 
         return data
 
@@ -238,8 +227,10 @@ def timeseries(data, title, species=['CH4'], excess=True):
     plt.show()
 
 
-def seasonal_trends(data, plot_col, figsize=None, table_loc='upper right',
-                    table_colWidth=0.15):
+def seasonal_trends(data, plot_col, figsize=None,
+                    table=True, table_loc='upper right',
+                    table_colWidth=0.15, trend_lines=True, data_points=True,
+                    drop_seasons_from_trend={}):
     from scipy.stats import linregress
 
     df = data.resample('QS-DEC').mean(numeric_only=True)
@@ -257,21 +248,31 @@ def seasonal_trends(data, plot_col, figsize=None, table_loc='upper right',
         season_df.reset_index(inplace=True)  # remove year from index
         season_df.rename(columns={'Time_UTC': 'Year'}, inplace=True)
 
-        x = season_df.Year.astype(int)
-        y = season_df[plot_col]
+        # Calculate trends
+        trend_df = season_df.copy(deep=True)
+        if season in drop_seasons_from_trend:
+            # Specify specific {season:[years]} to drop when calculating trends
+            drop_years = drop_seasons_from_trend[season]
+            trend_df = trend_df[~trend_df.Year.isin(drop_years)]
 
+        x = trend_df.Year.astype(int)
+        y = trend_df[plot_col]
         slope, intercept, r_value, p_value, std_err = linregress(x, y)
 
-        season_df.plot(x='Year', y=plot_col, ax=ax, marker='s', c=color,
-                       legend=False, zorder=0)
-
-        ax.plot(x, intercept + slope * x, color, linestyle='--', lw=4,
-                zorder=1)
+        if data_points:
+            season_df.plot(x='Year', y=plot_col, ax=ax, marker='s', c=color,
+                           legend=False, zorder=0)
+        if trend_lines:
+            ax.plot(x, intercept + slope * x, color, linestyle='--', lw=4,
+                    zorder=1)
 
         cell_text.append([round(slope, 3), round(p_value, 4)])
 
-    table = plt.table(np.array(cell_text).T, rowLabels=['Slope', 'P-Value'],
-                      colLabels=seasons, colColours=colors, loc=table_loc,
-                      colWidths=[table_colWidth]*4, cellLoc='center')
+    if table:
+        table = plt.table(np.array(cell_text).T, rowLabels=['Slope', 'P-Value'],
+                          colLabels=seasons, colColours=colors, loc=table_loc,
+                          colWidths=[table_colWidth]*4, cellLoc='center')
+    else:
+        table = None
 
     return ax, table
