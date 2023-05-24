@@ -70,7 +70,7 @@ class NerdMobile:
             df.TIMESTAMP = df.TIMESTAMP.apply(fix_timestamp)
             df = df.set_index('TIMESTAMP')  # Set TIMESTAMP as inde
 
-            df['Local_Time'] = UTC2MTN(df.index)
+            df['MTN_Time'] = UTC2MTN(df.index)
 
             # Create GeoDataFrame
             gdf = gpd.GeoDataFrame(df, crs='EPSG:4326',
@@ -107,6 +107,7 @@ class TRAX:
     vehicle: str
     months: list
     species: list
+    inlet_lag: 9
 
     # TODO add process and read to pipeline
 
