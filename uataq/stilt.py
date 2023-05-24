@@ -15,9 +15,47 @@ from functools import cached_property
 
 # TODO this needs to be a parameter
 STILT_projects_dir = ('/uufs/chpc.utah.edu/common/home'
-                      '/lin-group11/jkm/STILT')
+                      '/lin-group15/jkm/STILT')
 
 TIME_FORMAT = '%Y%m%d%H%M'
+
+
+def fix_sim_links(old_out_dir, new_out_dir):
+    '''
+    Fix sim symlinks if stilt wd was changed
+
+    Parameters
+    ----------
+    old_out_dir : TYPE
+        old out directory where symlinks currently point to and shouldnt.
+    new_out_dir : TYPE
+        new out directory where symlinks should point to.
+
+    Returns
+    -------
+    None.
+
+    '''
+
+    for subdir in ['footprints', 'particles']:
+        for file in os.listdir(os.path.join(new_out_dir, subdir)):
+            filepath = os.path.join(new_out_dir, subdir, file)
+
+            # Check if file is link
+            if os.path.islink(filepath):
+                old_link = os.readlink(filepath)
+
+                # Check if old_link is to file in old_out_dir
+                if old_link.startswith(old_out_dir):
+                    # Get sim_id of simulation
+                    sim_id = os.path.basename(os.path.dirname(old_link))
+
+                    # Remove old_link
+                    os.remove(filepath)
+
+                    # Create new link to new_out_dir
+                    new_link = os.path.join(new_out_dir, 'by-id', sim_id, file)
+                    os.symlink(new_link, filepath)
 
 
 class Receptors:
@@ -95,9 +133,9 @@ class Footprints:
             from utils.records import Cacher
             if cache is True:
                 cache = os.path.join(footprint_dir, 'footprints_cache.pkl')
-            self.cache = cache
             self.read = Cacher(self.read, cache, reload=reload_cache,
                                verbose=True)
+        self.cache = cache
 
         self.foots = self.read(footprint_dir, subset, engine)
         self.weighted = self.apply_weights()
@@ -113,8 +151,8 @@ class Footprints:
         def round_to_1(x):
             return round(x, -int(floor(log10(abs(x)))))
 
-        start = str(self.foots.sim_id.values[0])[:10]
-        end = str(self.foots.sim_id.values[-1])[:10]
+        start = str(self.foots.sim_time.values[0])[:10]
+        end = str(self.foots.sim_time.values[-1])[:10]
         time_range = f'{start} ~ {end}'
 
         resolution = round_to_1(self.foots.rio.resolution()[0])
@@ -166,13 +204,16 @@ class Footprints:
     def get_receptors_locs(self):
         assert len(self.files) >= 1
 
-        def drop_time(sim_id):
-            del sim_id['time']
-            return sim_id
+        sim_ids = [Footprints.get_sim_id(file) for file in self.files]
 
         # Get sim_locs of all the files without time - list of dicts
-        sim_locs = [drop_time(Footprints.get_sim_id(file))
-                    for file in self.files]
+        sim_locs = [{'lati': sim_id['lati'],
+                     }
+                    for var in ['lati', 'long', 'zagl']
+                    for sim_id in sim_ids]
+
+        sim_locs = [{k: v for k, v in ID.items() if k != 'time'}
+                    for ID in sim_ids]
 
         # remove duplicate locs
         sim_locs = [dict(t) for t in {tuple(loc.items()) for loc in sim_locs}]
@@ -212,7 +253,7 @@ class Footprints:
 
     @staticmethod
     def get_sim_id(file):
-        time, lati, long, zagl, _ = file.split('_')
+        time, lati, long, zagl, _ = os.path.basename(file).split('_')
 
         sim_id = {'time': dt.datetime.strptime(time, TIME_FORMAT),
                   'lati': lati,
@@ -222,7 +263,7 @@ class Footprints:
 
     @staticmethod
     def plot(foot, ax=None, crs=None, label_deci=1, tiler=None, tiler_zoom=9,
-             bounds=None, x_buff=0.1, y_buff=0.1,
+             bounds=None, x_buff=0.1, y_buff=0.1, labelsize=None,
              more_lon_ticks=0, more_lat_ticks=0):
         import cartopy.crs as ccrs
         from functools import partial
@@ -258,7 +299,7 @@ class Footprints:
                                          'pad': 0.03, 'label': label,
                                          'format': FFmt(log10formatter_part)})
 
-        add_latlon_ticks(ax, extent, x_rotation=30,
+        add_latlon_ticks(ax, extent, x_rotation=30, labelsize=labelsize,
                          more_lon_ticks=more_lon_ticks,
                          more_lat_ticks=more_lat_ticks)
 
@@ -281,7 +322,7 @@ class STILT:
             self.init_project(self.stilt_wd, project_dir)
 
     def __repr__(self):
-        return f'STILT(project="{self.project}"'
+        return f'STILT(project="{self.project}")'
 
     def init_project(self, stilt_wd, project_dir):
         # Change working directory to STILT_projects
@@ -293,8 +334,8 @@ class STILT:
         # Create sym-link in project_dir to stilt_wd
         os.symlink(stilt_wd, os.path.join(project_dir, 'STILT'))
 
-    def generate_receptors(self, site, times):
-        self.receptors = Receptors(site, times)
+    def generate_receptors(self, loc, times):
+        self.receptors = Receptors(loc, times)
 
         return self.receptors
 
@@ -317,6 +358,9 @@ class STILT:
                    cache=False, reload_cache=False):
         if footprint_dir is None:
             footprint_dir = self.footprint_dir
+        else:
+            self.footprint_dir = footprint_dir
+
         self.footprints = Footprints(footprint_dir, subset, engine,
                                      cache, reload_cache)
         self.foots = self.footprints.foots
