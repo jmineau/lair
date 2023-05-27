@@ -16,21 +16,18 @@ import subprocess
 from config import DATA_DIR, data_config
 from .. import errors
 
-SITES = ('csp', 'fru', 'hdp', 'hpl', 'roo', 'wbb', 'trx01')
 
 # %% RAW
 
 def get_raw_dir(site):
-    # raw_dir = f'~/wkspace/pipeline/local/data/{site}/lgr_ugga/raw'
-    # raw_dir = ('/uufs/chpc.utah.edu/common/home/u6036966/wkspace/pipeline/'
-    #            f'local/data/{site}/lgr_ugga/raw')
+
     raw_dir = os.path.join(DATA_DIR, site, 'lgr_ugga', 'raw')
 
     return raw_dir
 
 
 def get_raw_files(site):
-    raw_dir = get_raw_files(site)
+    raw_dir = get_raw_dir(site)
 
     pattern = re.compile(r'f....\.txt$')
 
@@ -113,7 +110,7 @@ def update_cols(df):
     return df
 
 
-def RAW(site, verbose=True, return_bad_files=False):
+def read_raw(site, verbose=True, return_bad_files=False):
     def parse(file):
         # Adapt columns due to differences in UGGA format
         col_names, col_types = adapt_cols(file)
@@ -170,7 +167,9 @@ def RAW(site, verbose=True, return_bad_files=False):
 
 # %% PROCESSED
 
-def read_processed(site, lvl):
+def read_processed(site, lvl, verbose=False):
+    if verbose:
+        print(f'Reading {lvl} observations collected by LGR UGGA')
     data_path = os.path.join(DATA_DIR, site, 'lgr_ugga', lvl)
 
     files = [os.path.join(data_path, file) for file in os.listdir(data_path)]
@@ -185,9 +184,25 @@ def valid_filter(data):
     return data[data.QAQC_Flag >= 0]
 
 
-def QAQC(site):
+def read_qaqc(site):
     return read_processed(site, 'qaqc')
 
 
-def CALIBRATED(site):
-    return read_processed(site, 'calibrated')
+def read_calibrated(site, qc=True):
+    data = read_processed(site, 'calibrated')
+    print(qc)
+    if qc:
+        data = valid_filter(data)
+
+    return data
+
+
+# %% dispatch
+
+def read_obs(site, specie, lvl, time_range, **kwargs):
+    if lvl == 'raw':
+        return read_raw(site, **kwargs)
+    elif lvl == 'qaqc':
+        return read_qaqc(site)
+    elif lvl == 'calibrated':
+        return read_calibrated(site, **kwargs)

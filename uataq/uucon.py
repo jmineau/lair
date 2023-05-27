@@ -9,16 +9,16 @@ Module to read and process all levels of UUCON LGR UGGA CO2 & CH4 data
 """
 
 import datetime as dt
+from functools import partial
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from dataclasses import dataclass
 
-from . import pipeline as pipe
+from . import core
 from config import site_config
 from utils.clock import seasons as SEASONS
 
-LGR_sites = ['csp', 'fru', 'hdp', 'hpl', 'roo', 'wbb']
 
 SPECIES = ('CO2', 'CH4')
 
@@ -42,21 +42,18 @@ def generate_background(background_ID='hdp'):
 
 
 @dataclass
-class Site():
-    ID: str
-    lvl: str = 'calibrated'
+class Site(core.Site):
     species: tuple[str] = SPECIES
+    lvl: str = 'calibrated'
     excess_method: str = None
+    qc_calibrated_data: bool = True
 
-    instrument = 'lgr_ugga'
-
-    afternoon = np.arange(18, 23)  # UTC
+    afternoon = np.arange(18, 23)
 
     def __post_init__(self):
-        if not isinstance(self.species, tuple):
-            self.species = tuple([self.species])
+        super().__post_init__()
 
-        self.data = self.read(self.lvl)
+        self.data = self._read(qc=self.qc_calibrated_data)
 
         self.simple = self.simplify(self.data, self.lvl)
 
@@ -77,20 +74,7 @@ class Site():
             # Average afternoons
             self.well_mixed = self.get_well_mixed(self.hourly)
 
-    def read(self, lvl):
-        lvl_funcs = {'raw': pipe.lgr_ugga.RAW,
-                     'qaqc': pipe.lgr_ugga.QAQC,
-                     'calibrated': pipe.lgr_ugga.CALIBRATED}
-
-        data = lvl_funcs[lvl](self.ID.lower())
-
-        return data
-
     def simplify(self, data, lvl):
-
-        if lvl == 'calibrated':
-            # Apply QAQC Filter
-            data = data[data.QAQC_Flag >= 0]  # Doesn't work for LICORs
 
         simple_cols = []
         for specie in self.species:
