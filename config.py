@@ -8,6 +8,7 @@ Created on Fri Apr 28 16:47:29 2023
 Config file for lair package
 """
 
+import json
 from os import path
 import pandas as pd
 
@@ -27,12 +28,14 @@ CONFIG_DIR = path.join(PIPELINE_DIR, 'config')
 # MOBILE
 MOBILE_DIR = path.join(HOME, 'lin-group7', 'mobile')
 HOREL_TRAX_DIR = path.join(HOME, 'horel-group', 'uutrax')
+TRAX_PILOT_DIR = path.join(HOME, 'horel-group', 'uutrax_pilot')
 
 # LAIR GROUP
 GROUP_DIR = path.join(HOME, 'lin-group11', 'group_data')
 
 INVENTORY_DIR = path.join(GROUP_DIR, 'inventories')
 MET_DIR = path.join(GROUP_DIR, 'NOAA-ARL_formatted_metfields')
+SPATIAL_DIR = path.join(GROUP_DIR, 'spatial')
 
 
 ########
@@ -43,5 +46,8 @@ MET_DIR = path.join(GROUP_DIR, 'NOAA-ARL_formatted_metfields')
 site_config = pd.read_csv(path.join(CONFIG_DIR, 'site_config.csv'),
                           sep=', ', engine='python', index_col='stid')
 data_config = pd.read_json(path.join(CONFIG_DIR, 'data_config.json'))
+
+with open('instrument_config.json') as f:
+    instrument_config = json.load(f)
 
 # TODO data for valley.py needs to be kept somewhere
