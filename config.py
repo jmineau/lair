@@ -50,4 +50,8 @@ data_config = pd.read_json(path.join(CONFIG_DIR, 'data_config.json'))
 with open('instrument_config.json') as f:
     instrument_config = json.load(f)
 
+r2py_types = {'c': str,
+              'd': float,
+              'T': str}
+
 # TODO data for valley.py needs to be kept somewhere
