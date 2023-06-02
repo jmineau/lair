@@ -7,10 +7,9 @@ Created on Sun Jan  8 22:32:43 2023
 """
 
 import datetime as dt
-import pandas as pd
 import pytz
 
-seasons = {1: 'DJF', 2: 'DJF', 3: 'MAM', 4: 'MAM', 5: 'MAM', 6: 'JJA',
+SEASONS = {1: 'DJF', 2: 'DJF', 3: 'MAM', 4: 'MAM', 5: 'MAM', 6: 'JJA',
            7: 'JJA', 8: 'JJA', 9: 'SON', 10: 'SON', 11: 'SON', 12: 'DJF'}
 
 
