@@ -1,0 +1,319 @@
+{
+  "asb": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2001-02-08",
+        "removal_date": "2015-08-06"
+      }
+    ]
+  },
+  "csp": {
+    "ch4": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2015-11-17"
+      }
+    ],
+    "co2": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2015-11-17"
+      }
+    ]
+  },
+  "dbk": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2004-01-22",
+        "removal_date": "2022-05-13"
+      },
+      {
+        "instrument": "licor_7000",
+        "installation_date": "2022-05-16"
+      }
+    ],
+    "pm25": [
+      {
+        "instrument": "metone_es642",
+        "installation_date": "2017-07-19"
+      }
+    ]
+  },
+  "fru": {
+    "ch4": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2015-03-19"
+      }
+    ],
+    "co2": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2015-03-19"
+      }
+    ]
+  },
+  "hdp": {
+    "ch4": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2016-07-20"
+      }
+    ],
+    "co2": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2016-07-20"
+      }
+    ]
+  },
+  "heb": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2015-07-28"
+      }
+    ]
+  },
+  "hpl": {
+    "ch4": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2015-01-28"
+      }
+    ],
+    "co2": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2015-01-28"
+      }
+    ]
+  },
+  "imc": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2016-09-25",
+        "removal_date": "2020-09-15"
+      }
+    ]
+  },
+  "lgn": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2015-07-27",
+        "removal_date": "2020-03-15"
+      }
+    ]
+  },
+  "lg2": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2019-10-26",
+        "removal_date": "2022-05-11"
+      }
+    ]
+  },
+  "msa": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2013-08-07",
+        "removal_date": "2016-07-26"
+      }
+    ]
+  },
+  "mur": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2005-01-07",
+        "removal_date": "2013-08-02"
+      }
+    ]
+  },
+  "roo": {
+    "ch4": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2015-03-23",
+        "removal_date": "2019-07-16"
+      }
+    ],
+    "co2": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2015-03-23",
+        "removal_date": "2019-07-16"
+      }
+    ]
+  },
+  "rpk": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2009-02-24"
+      }
+    ]
+  },
+  "sug": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2005-01-11",
+        "removal_date": "2022-02-11"
+      },
+      {
+        "instrument": "licor_7000",
+        "installation_date": "2022-06-13"
+      }
+    ],
+    "pm25": [
+      {
+        "instrument": "metone_es642",
+        "installation_date": "2017-06-29",
+        "removal_date": "2020-04-23"
+      }
+    ]
+  },
+  "sun": {
+    "co2": [
+      {
+        "instrument": "licor_6262",
+        "installation_date": "2015-08-11",
+        "removal_date": "2019-11-07"
+      }
+    ]
+  },
+  "trx01": {
+    "ch4": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2014-12-09"
+      }
+    ],
+    "co2": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2014-12-09"
+      }
+    ],
+    "o3": [
+      {
+        "instrument": "2b",
+        "installation_date": "2015-05-13"
+      }
+    ],
+    "pm25": [
+      {
+        "instrument": "esampler",
+        "installation_date": "2014-11-05"
+      }
+    ]
+  },
+  "trx02": {
+    "no2": [
+      {
+        "instrument": "teledyne_t500u",
+        "installation_date": "2020-12-22"
+      }
+    ],
+    "o3": [
+      {
+        "instrument": "2b",
+        "installation_date": "2016-06-15"
+      }
+    ],
+    "pm25": [
+      {
+        "instrument": "esampler",
+        "installation_date": "2016-02-04"
+      }
+    ]
+  },
+  "trx03": {
+    "o3": [
+      {
+        "instrument": "2b",
+        "installation_date": "2019-11-04"
+      }
+    ],
+    "pm25": [
+      {
+        "instrument": "esampler",
+        "installation_date": "2019-11-04"
+      }
+    ]
+  },
+  "wbb": {
+    "bc": [
+      {
+        "instrument": "magee_ae33",
+        "installation_date": "2020-07-29"
+      }
+    ],
+    "ch4": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2013-10-09"
+      }
+    ],
+    "co": [
+      {
+        "instrument": "teledyne_t300",
+        "installation_date": "2017-05-03"
+      }
+    ],
+    "co2": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2013-10-09"
+      }
+    ],
+    "no": [
+      {
+        "instrument": "teledyne_t200",
+        "installation_date": "2017-01-19"
+      }
+    ],
+    "no2": [
+      {
+        "instrument": "teledyne_t200",
+        "installation_date": "2017-01-19"
+      },
+      {
+        "instrument": "teledyne_t500u",
+        "installation_date": "2020-07-29",
+        "removal_date": "2023-01-25"
+      }
+    ],
+        "no": [
+          {
+            "instrument": "teledyne_t200",
+            "installation_date": "2017-01-19"
+          }
+        ],
+    "o3": [
+      {
+        "instrument": "teledyne_t400",
+        "installation_date": "2016-08-29"
+      }
+    ],
+    "pm25": [
+      {
+        "instrument": "metone_es642",
+        "installation_date": "2017-03-07",
+        "removal_date": "2022-06-07"
+      },
+      {
+        "instrument": "teom_1400ab",
+        "installation_date": "2016-09-22",
+        "removal_date": "2017-03-01"
+      }
+    ]
+  }
+}
