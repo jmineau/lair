@@ -13,7 +13,7 @@ import pandas as pd
 import re
 import subprocess
 
-from config import DATA_DIR, data_config
+from config import DATA_DIR, data_config, r2py_types
 from .. import errors
 
 
@@ -51,9 +51,6 @@ def adapt_cols(file):
     # Adapt column names depending on LGR software version.
     #  2013-2014 version has 23 columns
     #  2014+ version has 24 columns (MIU split into valve and description)
-
-    r2py_types = {'c': str,
-                  'd': float}
 
     col_names = data_config.lgr_ugga.raw['col_names'].copy()
     col_types = data_config.lgr_ugga.raw['col_types']
@@ -199,7 +196,8 @@ def read_calibrated(site, qc=True):
 
 # %% dispatch
 
-def read_obs(site, specie, lvl, time_range, **kwargs):
+def read_obs(site, species=['co2', 'ch4'], lvl='calibrated',
+             time_range=[None, None], **kwargs):
     if lvl == 'raw':
         return read_raw(site, **kwargs)
     elif lvl == 'qaqc':
