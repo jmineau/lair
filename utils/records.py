@@ -27,6 +27,27 @@ def read_kml(kml_path):
     return k
 
 
+def filter_files(files_dates, file_date_format, time_range=None):
+    import os
+    import pandas as pd
+
+    from uataq.pipeline.preprocess import process_time_range
+
+    start_time, end_time = process_time_range(time_range)
+
+    filtered_files = []
+
+    files, dates = zip(*files_dates)
+    dates = pd.to_datetime(dates, format=file_date_format)
+    df = pd.DataFrame(data={'file': files}, index=dates).sort_index()
+
+    df = df[df.file.apply(os.path.exists)]  # drop files that don't exist
+
+    filtered_files = df.loc[start_time: end_time, 'file'].tolist()
+
+    return filtered_files
+
+
 class Cacher:
     """
     A class that caches function results to a file for future use.
@@ -72,6 +93,8 @@ class Cacher:
             positions.
         """
         if self.reload:
+            # TODO causes previous caches to become unreadable
+            #   need to delete previous cache or append to index_file
             # Force func to be executed by setting cache_index to empty
             if self.verbose:
                 print(f'Forcing {self.func.__name__} to execute')
