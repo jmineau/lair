@@ -69,13 +69,13 @@ def preprocessor(func):
         if 'species' in bound_args.arguments:
             species = bound_args.arguments['species']
             if isinstance(species, str):
-                species = [species.lower()]
+                species = [species.upper()]
             elif isinstance(species, list):
-                species = [s.lower() for s in species]
+                species = [s.upper() for s in species]
             bound_args.arguments['species'] = species
         elif 'specie' in bound_args.arguments:
             specie = bound_args.arguments['specie']
-            bound_args.arguments['specie'] = specie.lower()
+            bound_args.arguments['specie'] = specie.upper()
 
         if 'lvl' in bound_args.arguments:
             lvl = bound_args.arguments['lvl'].lower()
