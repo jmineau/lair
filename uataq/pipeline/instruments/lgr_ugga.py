@@ -15,30 +15,37 @@ import subprocess
 
 from config import DATA_DIR, data_config, r2py_types
 from .. import errors
+from ..preprocess import preprocessor
+from utils.records import filter_files
 
 
-# %% RAW
-
-def get_raw_dir(site):
-
-    raw_dir = os.path.join(DATA_DIR, site, 'lgr_ugga', 'raw')
-
-    return raw_dir
+INSTRUMENT = 'lgr_ugga'
+data_config = data_config[INSTRUMENT]
 
 
-def get_raw_files(site):
-    raw_dir = get_raw_dir(site)
+@preprocessor
+def get_files(site, lvl, time_range=None):
+    data_dir = os.path.join(DATA_DIR, site, INSTRUMENT, lvl)
 
-    pattern = re.compile(r'f....\.txt$')
+    if lvl == 'raw':
+        pattern = re.compile(r'f....\.txt$')
 
-    raw_files = []
-    for root, dirs, files in os.walk(raw_dir):
-        raw_files.extend([os.path.join(root, file) for file in files
-                          if pattern.search(file)])
+        raw_files = []
+        for root, dirs, files in os.walk(data_dir):
+            raw_files.extend([os.path.join(root, file) for file in files
+                              if pattern.search(file)])
 
-    raw_files.sort(key=lambda file: os.path.getmtime(file))
+        raw_files.sort(key=lambda file: os.path.getmtime(file))
 
-    return raw_files
+        # raw lgr files are too complicated for filter_files function
+
+        return raw_files
+
+    files = [(os.path.join(data_dir, file), file[:7])
+             for file in os.listdir(data_dir)
+             if file.endswith('dat')]
+
+    return sorted(filter_files(files, '%Y_%m', time_range))
 
 
 def count_delim(file, delim=','):
@@ -52,8 +59,8 @@ def adapt_cols(file):
     #  2013-2014 version has 23 columns
     #  2014+ version has 24 columns (MIU split into valve and description)
 
-    col_names = data_config.lgr_ugga.raw['col_names'].copy()
-    col_types = data_config.lgr_ugga.raw['col_types']
+    col_names = data_config.raw['col_names'].copy()
+    col_types = data_config.raw['col_types']
     col_types = {name: r2py_types[t] for name, t
                  in zip(col_names, col_types)}
 
@@ -102,9 +109,14 @@ def update_cols(df):
         df.drop(columns=df.columns[22], inplace=True)
 
     # Reassign orignal column names (not sure this is nessecary)
-    df.columns = data_config.lgr_ugga.raw['col_names'].copy()
+    df.columns = data_config.raw['col_names'].copy()
 
     return df
+
+
+def drop_specie_col(df, other_specie):
+
+    return df[[col for col in df.columns if other_specie not in col.upper()]]
 
 
 def read_raw(site, verbose=True, return_bad_files=False):
@@ -122,12 +134,12 @@ def read_raw(site, verbose=True, return_bad_files=False):
                          engine='python')
 
         # Update columns now that data has been read in
-        df = update_cols(df).assign(filename=file)
+        df = update_cols(df)
 
         return df
 
     # Get files
-    files = get_raw_files(site)
+    files = get_files(site, lvl='raw')
 
     dfs = []
     bad_files = []
@@ -145,62 +157,51 @@ def read_raw(site, verbose=True, return_bad_files=False):
             bad_files.append((file, str(e)))
             continue
 
-    data = pd.concat(dfs)  # Merge dataframes
+    df = pd.concat(dfs)  # Merge dataframes
 
     # Format Time_UTC column
-    data.Time_UTC = pd.to_datetime(data.Time_UTC.str.strip(),
-                                   format='%m/%d/%Y %H:%M:%S.%f',
-                                   errors='coerce')
+    df.Time_UTC = pd.to_datetime(df.Time_UTC.str.strip(),
+                                 format='%m/%d/%Y %H:%M:%S.%f',
+                                 errors='coerce')
 
     # Drop rows with invalid time and sort on time
-    data.dropna(subset='Time_UTC', inplace=True)
-    data.sort_values('Time_UTC', inplace=True)
+    df.dropna(subset='Time_UTC', inplace=True)
+    df.sort_values('Time_UTC', inplace=True)
 
     if return_bad_files:
-        return data, bad_files
+        return df, bad_files
 
-    return data
+    return df
 
 
-# %% PROCESSED
+@preprocessor
+def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
+             time_range=None, verbose=False):
 
-def read_processed(site, lvl, verbose=False):
+    assert all(s in ['CO2', 'CH4'] for s in species)
+
     if verbose:
         print(f'Reading {lvl} observations collected by LGR UGGA')
-    data_path = os.path.join(DATA_DIR, site, 'lgr_ugga', lvl)
 
-    files = [os.path.join(data_path, file) for file in os.listdir(data_path)]
-
-    data = pd.concat([pd.read_csv(file, parse_dates=['Time_UTC'])
-                     for file in files]).set_index('Time_UTC').sort_index()
-
-    return data
-
-
-def valid_filter(data):
-    return data[data.QAQC_Flag >= 0]
-
-
-def read_qaqc(site):
-    return read_processed(site, 'qaqc')
-
-
-def read_calibrated(site, qc=True):
-    data = read_processed(site, 'calibrated')
-    print(qc)
-    if qc:
-        data = valid_filter(data)
-
-    return data
-
-
-# %% dispatch
-
-def read_obs(site, species=['co2', 'ch4'], lvl='calibrated',
-             time_range=[None, None], **kwargs):
     if lvl == 'raw':
-        return read_raw(site, **kwargs)
-    elif lvl == 'qaqc':
-        return read_qaqc(site)
-    elif lvl == 'calibrated':
-        return read_calibrated(site, **kwargs)
+        df = read_raw(site, verbose=verbose)
+
+    else:
+
+        files = get_files(site, lvl, time_range)
+
+        df = pd.concat([pd.read_csv(file, parse_dates=['Time_UTC'])
+                        for file in files])
+
+        # Set time as index
+        df = df.set_index('Time_UTC').sort_index()
+
+    # Filter to time_range
+    df = df.loc[time_range[0]: time_range[1]]
+
+    if len(species) == 1:
+        other_specie = 'CH4' if species[0] == 'CO2' else 'CO2'
+
+        df = drop_specie_col(df, other_specie)
+
+    return df
