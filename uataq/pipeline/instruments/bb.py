@@ -17,7 +17,7 @@ from pandas.errors import ParserError
 
 from config import DATA_DIR, HOREL_TRAX_DIR, TRAX_PILOT_DIR
 from ..preprocess import preprocessor
-from utils.records import filter_files
+from utils.records import DataFile, filter_files
 
 
 INSTRUMENT = '2b'
@@ -31,6 +31,9 @@ COL_MAPPER = {
 
 @preprocessor
 def get_files(site, lvl='raw', time_range=None, use_lin_group=False):
+
+    files = []
+
     if use_lin_group:
 
         data_dir = os.path.join(DATA_DIR, site, '2bo3', lvl)
@@ -46,24 +49,29 @@ def get_files(site, lvl='raw', time_range=None, use_lin_group=False):
             datetime_format = '%Y_%m'
             date_slicer = slice(7)
 
-        files_dates = [(os.path.join(data_dir, file), file[date_slicer])
-                       for file in os.listdir(data_dir)
-                       if file.endswith('dat')]
+        for file in os.listdir(data_dir):
+            if file.endswith('dat'):
+                file_path = os.path.join(data_dir, file)
+                date = pd.to_datetime(file[date_slicer],
+                                      format=datetime_format)
+
+                files.append(DataFile(file_path, date))
 
     else:
         datetime_format = '%Y_%m'
         date_slicer = slice(6, 13)
 
-        files_dates = []
         for parent_dir in [TRAX_PILOT_DIR, HOREL_TRAX_DIR]:
             dir_path = os.path.join(parent_dir, '2b')
             for file in os.listdir(dir_path):
                 if file.startswith(site.upper()):
                     file_path = os.path.join(dir_path, file)
-                    date = file[date_slicer]
-                    files_dates.append((file_path, date))
+                    date = pd.to_datetime(file[date_slicer],
+                                          format=datetime_format)
 
-    return sorted(filter_files(files_dates, datetime_format, time_range))
+                    files.append(DataFile(file_path, date))
+
+    return filter_files(files, time_range)
 
 
 @preprocessor

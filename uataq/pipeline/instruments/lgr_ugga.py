@@ -16,7 +16,7 @@ import subprocess
 from config import DATA_DIR, data_config, r2py_types
 from .. import errors
 from ..preprocess import preprocessor
-from utils.records import filter_files
+from utils.records import DataFile, filter_files
 
 
 INSTRUMENT = 'lgr_ugga'
@@ -25,9 +25,12 @@ data_config = data_config[INSTRUMENT]
 
 @preprocessor
 def get_files(site, lvl, time_range=None):
+
     data_dir = os.path.join(DATA_DIR, site, INSTRUMENT, lvl)
 
     if lvl == 'raw':
+        # raw lgr files are too complicated for filter_files function
+
         pattern = re.compile(r'f....\.txt$')
 
         raw_files = []
@@ -37,15 +40,18 @@ def get_files(site, lvl, time_range=None):
 
         raw_files.sort(key=lambda file: os.path.getmtime(file))
 
-        # raw lgr files are too complicated for filter_files function
-
         return raw_files
 
-    files = [(os.path.join(data_dir, file), file[:7])
-             for file in os.listdir(data_dir)
-             if file.endswith('dat')]
+    files = []
 
-    return sorted(filter_files(files, '%Y_%m', time_range))
+    for file in os.listdir(data_dir):
+        if file.endswith('dat'):
+            file_path = os.path.join(data_dir, file)
+            date = pd.to_datetime(file[:7], format='%Y_%m')
+
+            files.append(DataFile(file_path, date))
+
+    return filter_files(files, time_range)
 
 
 def count_delim(file, delim=','):

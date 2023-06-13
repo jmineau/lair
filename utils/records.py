@@ -8,6 +8,10 @@ Created on Fri Jan 27 15:35:03 2023
 Module for working with files and directories
 """
 
+from collections import namedtuple
+
+DataFile = namedtuple('DataFile', ['path', 'date'])
+
 
 def unzip(zf, dir_path=None):
     '''Unzip file into dir_path if given'''
@@ -27,25 +31,43 @@ def read_kml(kml_path):
     return k
 
 
-def filter_files(files_dates, file_date_format, time_range=None):
-    import os
+def filter_files(files, time_range=None):
     import pandas as pd
 
+    from utils.records import DataFile
     from uataq.pipeline.preprocess import process_time_range
 
     start_time, end_time = process_time_range(time_range)
 
     filtered_files = []
 
-    files, dates = zip(*files_dates)
-    dates = pd.to_datetime(dates, format=file_date_format)
-    df = pd.DataFrame(data={'file': files}, index=dates).sort_index()
+    df = pd.DataFrame(files, columns=DataFile._fields)
+    df = df.set_index('date').sort_index()
 
-    df = df[df.file.apply(os.path.exists)]  # drop files that don't exist
-
-    filtered_files = df.loc[start_time: end_time, 'file'].tolist()
+    filtered_files = df.loc[start_time: end_time, 'path'].tolist()
 
     return filtered_files
+
+
+# def filter_files(files_dates, file_date_format, time_range=None):
+#     import os
+#     import pandas as pd
+
+#     from uataq.pipeline.preprocess import process_time_range
+
+#     start_time, end_time = process_time_range(time_range)
+
+#     filtered_files = []
+
+#     files, dates = zip(*files_dates)
+#     dates = pd.to_datetime(dates, format=file_date_format)
+#     df = pd.DataFrame(data={'file': files}, index=dates).sort_index()
+
+#     df = df[df.file.apply(os.path.exists)]  # drop files that don't exist
+
+#     filtered_files = df.loc[start_time: end_time, 'file'].tolist()
+
+#     return filtered_files
 
 
 class Cacher:
