@@ -10,13 +10,20 @@ from config import instrument_config
 from .errors import InstrumentNotFoundError
 from . import instruments
 from . import merger
-from .preprocess import preprocessor, process_time_range
+from .preprocess import preprocessor
+
+
+SPECIE_MAPPER = {
+    'PM25': 'PM_25',
+    'PM2.5': 'PM_25'}
 
 
 @preprocessor
 def select_instruments(site, specie, time_range=None):
-    start_time, end_time = process_time_range(time_range)
+    start_time, end_time = time_range
     selection = []
+
+    specie = SPECIE_MAPPER.get(specie, specie)
 
     try:
         instruments = instrument_config[site][specie]
@@ -42,7 +49,7 @@ def dispatcher(func):
     Decorator for multiple dispatch based on instrument
     """
 
-    # Dictionary to store registered dispatch arguments and their corresponding functions
+    # Store registered dispatch arguments and their corresponding functions
     registry = {}
 
     def register(instrument, func=None):
@@ -75,12 +82,24 @@ def dispatcher(func):
             instrument_data = {}
 
             for instrument in instruments:
-                # TODO how to handle lgr_ugga for co2 & ch4
+
                 try:
                     instrument_func = registry[instrument]
                 except KeyError as e:
                     raise NotImplementedError('read_obs function '
                                               f'not implemented for {e}')
+
+                other_specie = None
+
+                # Handle special case for "lgr_ugga" instrument
+                if instrument == 'lgr_ugga':
+                    other_specie = 'CH4' if specie == 'CO2' else 'CO2'
+
+                    if all(s in species for s in ['CO2', 'CH4']):
+                        # Both "co2" and "ch4" are present
+                        #   call lgr.read_obs once
+                        species.remove(other_specie)
+                        specie, other_specie = ('CO2', 'CH4'), None
 
                 data = instrument_func(site, specie, lvl=lvl,
                                        time_range=time_range, **kwargs)
@@ -90,7 +109,7 @@ def dispatcher(func):
             if len(instruments) == 1:
                 data = instrument_data[instrument]
             elif len(instruments) > 1:
-                data = merger.merge(instrument_data)
+                data = merger.merge(instrument_data)  # TODO
 
             specie_data[specie] = data
 
@@ -118,11 +137,11 @@ def read_obs(site, species, lvl, time_range, **kwargs):
 
 read_obs.register('2b', instruments.bb.read_obs)
 # read_obs.register('esampler', instruments.metone.read_obs)
-# read_obs.register('gps', instruments.gps.read_obs)
+read_obs.register('gps', instruments.gps.read_obs)
 # read_obs.register('lgr_no2', instruments.lgr_no2.read_obs)
 read_obs.register('lgr_ugga', instruments.lgr_ugga.read_obs)
-# read_obs.register('licor_6262', instruments.licor_6262.read_obs)
-# read_obs.register('licor_7000', instruments.licor_7000.read_obs)
+read_obs.register('licor_6262', instruments.licor_6262.read_obs)
+read_obs.register('licor_7000', instruments.licor_7000.read_obs)
 # read_obs.register('magee_ae33', instruments.magee.read_obs)
 # read_obs.register('metone', instruments.metone.read_obs)
 # read_obs.register('metone_es642', instruments.metone.read_obs)
