@@ -13,7 +13,7 @@ import pandas as pd
 
 from config import DATA_DIR, data_config, r2py_types
 from ..preprocess import preprocessor
-from utils.records import filter_files
+from utils.records import DataFile, filter_files
 
 
 INSTRUMENT = 'licor_7000'
@@ -24,10 +24,16 @@ data_config = data_config[INSTRUMENT]
 def get_files(site, lvl, time_range=None):
     data_dir = os.path.join(DATA_DIR, site, INSTRUMENT, lvl)
 
-    files = [(os.path.join(data_dir, file), file[:7])
-             for file in os.listdir(data_dir) if file.endswith('dat')]
+    files = []
 
-    return sorted(filter_files(files, '%Y_%m', time_range))
+    for file in os.listdir(data_dir):
+        if file.endswith('dat'):
+            file_path = os.path.join(data_dir, file)
+            date = pd.to_datetime(file[:7], format='%Y_%m')
+
+            files.append(DataFile(file_path, date))
+
+    return filter_files(files, time_range)
 
 
 @preprocessor
