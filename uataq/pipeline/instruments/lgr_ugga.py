@@ -8,6 +8,7 @@ Created on Wed Jan 25 09:40:10 2023
 Module of uataq pipeline functions for LGR UGGA instrument
 """
 
+from functools import partial
 import os
 import pandas as pd
 import re
@@ -22,13 +23,15 @@ from utils.records import DataFile, filter_files
 INSTRUMENT = 'lgr_ugga'
 data_config = data_config[INSTRUMENT]
 
+PI_SITES = ('trx01', 'landfill')
+
 
 @preprocessor
 def get_files(site, lvl, time_range=None):
 
     data_dir = os.path.join(DATA_DIR, site, INSTRUMENT, lvl)
 
-    if lvl == 'raw':
+    if lvl == 'raw' and site not in PI_SITES:
         # raw lgr files are too complicated for filter_files function
 
         pattern = re.compile(r'f....\.txt$')
@@ -44,10 +47,13 @@ def get_files(site, lvl, time_range=None):
 
     files = []
 
+    date_slicer = slice(4, 14) if site in PI_SITES else slice(7)
+    datetime_format = '%Y_%m_%d' if site in PI_SITES else '%Y_%m'
+
     for file in os.listdir(data_dir):
         if file.endswith('dat'):
             file_path = os.path.join(data_dir, file)
-            date = pd.to_datetime(file[:7], format='%Y_%m')
+            date = pd.to_datetime(file[date_slicer], format=datetime_format)
 
             files.append(DataFile(file_path, date))
 
@@ -181,6 +187,46 @@ def read_raw(site, verbose=True, return_bad_files=False):
 
 
 @preprocessor
+def read_pi_data(site, time_range=None, MIU=False):
+
+    files = get_files(site, 'raw', time_range)
+
+    names = ["Time_UTC", "ID", "Time_UTC_LGR", "CH4_ppm", "CH4_ppm_sd",
+             "H2O_ppm", "H2O_ppm_sd", "CO2_ppm", "CO2_ppm_sd", "CH4d_ppm",
+             "CH4d_ppm_sd", "CO2d_ppm", "CO2d_ppm_sd", "GasP_torr",
+             "GasP_torr_sd", "GasT_C", "GasT_C_sd", "AmbT_C", "AmbT_C_sd",
+             "RD0_us", "RD0_us_sd", "RD1_us", "RD1_us_sd", "Fit_Flag",
+             "MIU_Valve", "MIU_Desc"]
+
+    # Parse files
+    dfs = []
+    for file in files:
+        df = pd.read_csv(file, names=names, dtype=str,
+                         on_bad_lines='skip', skipinitialspace=True)
+
+        dfs.append(df)
+
+    df = pd.concat(dfs)
+
+    # Format datetime, set pi time as index, and filter
+    df['Time_UTC'] = pd.to_datetime(df.Time_UTC.str.strip(), 'coerce',
+                                    format='ISO8601')
+    df['Time_UTC_LGR'] = pd.to_datetime(df.Time_UTC_LGR.str.strip(), 'coerce',
+                                        format='%d/%m/%Y %H:%M:%S.%f')
+    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
+
+    # Convert numeric cols to float
+    str_cols = ['Time_UTC', 'Time_UTC_LGR', 'MIU_Desc']
+    if MIU:
+        str_cols.append('ID')
+    for col in df.columns:
+        if col not in str_cols:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    return df
+
+
+@preprocessor
 def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
              time_range=None, verbose=False):
 
@@ -189,11 +235,15 @@ def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
     if verbose:
         print(f'Reading {lvl} observations collected by LGR UGGA')
 
+    # Raw files require special parsing
     if lvl == 'raw':
-        df = read_raw(site, verbose=verbose)
+        if site in PI_SITES:
+            df = read_pi_data(site, time_range)
+        else:
+            df = read_raw(site, verbose=verbose)
 
     else:
-
+        # Parse files
         files = get_files(site, lvl, time_range)
 
         df = pd.concat([pd.read_csv(file, parse_dates=['Time_UTC'])
@@ -205,6 +255,7 @@ def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
     # Filter to time_range
     df = df.loc[time_range[0]: time_range[1]]
 
+    # Drop the other specie if only one is specified
     if len(species) == 1:
         other_specie = 'CH4' if species[0] == 'CO2' else 'CO2'
 
