@@ -48,12 +48,12 @@ def get_files(site, lvl, time_range=None):
     files = []
 
     date_slicer = slice(4, 14) if site in PI_SITES else slice(7)
-    datetime_format = '%Y_%m_%d' if site in PI_SITES else '%Y_%m'
+    date_format = '%Y_%m_%d' if site in PI_SITES else '%Y_%m'
 
     for file in os.listdir(data_dir):
         if file.endswith('dat'):
             file_path = os.path.join(data_dir, file)
-            date = pd.to_datetime(file[date_slicer], format=datetime_format)
+            date = pd.to_datetime(file[date_slicer], format=date_format)
 
             files.append(DataFile(file_path, date))
 
@@ -171,14 +171,11 @@ def read_raw(site, verbose=True, return_bad_files=False):
 
     df = pd.concat(dfs)  # Merge dataframes
 
-    # Format Time_UTC column
+    # Format time and set as index
     df.Time_UTC = pd.to_datetime(df.Time_UTC.str.strip(),
                                  format='%m/%d/%Y %H:%M:%S.%f',
                                  errors='coerce')
-
-    # Drop rows with invalid time and sort on time
-    df.dropna(subset='Time_UTC', inplace=True)
-    df.sort_values('Time_UTC', inplace=True)
+    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
 
     if return_bad_files:
         return df, bad_files
@@ -186,7 +183,6 @@ def read_raw(site, verbose=True, return_bad_files=False):
     return df
 
 
-@preprocessor
 def read_pi_data(site, time_range=None, MIU=False):
 
     files = get_files(site, 'raw', time_range)
@@ -228,7 +224,7 @@ def read_pi_data(site, time_range=None, MIU=False):
 
 @preprocessor
 def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
-             time_range=None, verbose=False):
+             time_range=None, verbose=False, **kwargs):
 
     assert all(s in ['CO2', 'CH4'] for s in species)
 
@@ -238,7 +234,7 @@ def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
     # Raw files require special parsing
     if lvl == 'raw':
         if site in PI_SITES:
-            df = read_pi_data(site, time_range)
+            df = read_pi_data(site, time_range, **kwargs)
         else:
             df = read_raw(site, verbose=verbose)
 
