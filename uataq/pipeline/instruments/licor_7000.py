@@ -58,7 +58,9 @@ def read_obs(site, specie='CO2', lvl='calibrated', time_range=None):
     df = pd.concat(dfs)
 
     # Set time as index and filter to time_range
-    df = df.set_index(time_col).sort_index()
+    df[time_col] = pd.to_datetime(df[time_col], errors='coerce',
+                                  format='ISO8601')
+    df = df.dropna(subset=time_col).set_index(time_col).sort_index()
     df = df.loc[time_range[0]: time_range[1]]
 
     return df
