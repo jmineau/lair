@@ -34,7 +34,6 @@ def read_kml(kml_path):
 def filter_files(files, time_range=None):
     import pandas as pd
 
-    from utils.records import DataFile
     from uataq.pipeline.preprocess import process_time_range
 
     start_time, end_time = process_time_range(time_range)
