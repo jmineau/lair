@@ -8,7 +8,56 @@ Created on Tue May 23 11:42:44 2023
 Module of uataq pipeline functions for teledyne t500u instrument
 """
 
-SITES = ('wbb', 'trx02')
+import os
+import pandas as pd
 
-def RAW(site):
-    pass
+from config import DATA_DIR
+from ..preprocess import preprocessor
+from utils.records import DataFile, filter_files
+
+INSTRUMENT = 'teledyne_t500u'
+
+NAMES = ['time', 'phase_t_c', 'bench_phase_s', 'meas_l_mm', 'aref_l_mm',
+         'samp_pres_inhga', 'samp_temp_c', 'bench_t_c', 'box_t_c', 'no2_slope',
+         'no2_offset_mv', 'no2_ppb', 'no2_std_ppb', 'mf_t_c', 'test_mv']
+
+
+@preprocessor
+def get_files(site, lvl='raw', time_range=None):
+    # There are only raw files for t500u's
+    data_dir = os.path.join(DATA_DIR, site, INSTRUMENT, lvl)
+
+    files = []
+
+    for file in os.listdir(data_dir):
+        if file.endswith('csv'):
+            file_path = os.path.join(data_dir, file)
+            date = pd.to_datetime(file[:10], format='%Y-%m-%d')
+
+            files.append(DataFile(file_path, date))
+
+    return filter_files(files, time_range)
+
+
+@preprocessor
+def read_obs(site, specie='NO2', lvl='raw', time_range=None):
+    assert specie == 'NO2'
+
+    files = get_files(site, lvl, time_range)
+
+    dfs = []
+    for file in files:
+        df = pd.read_csv(file, names=NAMES, header=0,
+                         on_bad_lines='skip', na_values=['XXXX'])
+
+        dfs.append(df)
+
+    df = pd.concat(dfs)
+
+    # Set time as index and filter to time_range
+    df.rename(columns={'time': 'Time_UTC'}, inplace=True)
+    df['Time_UTC'] = pd.to_datetime(df.Time_UTC, errors='coerce')
+    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
+    df = df.loc[time_range[0]: time_range[1]]
+
+    return df
