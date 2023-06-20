@@ -136,15 +136,15 @@ def read_obs(site, species, lvl, time_range, **kwargs):
 # Register instrument reading functions
 
 read_obs.register('2b', instruments.bb.read_obs)
-# read_obs.register('esampler', instruments.metone.read_obs)
+read_obs.register('esampler', instruments.metone.read_obs)
 read_obs.register('gps', instruments.gps.read_obs)
 # read_obs.register('lgr_no2', instruments.lgr_no2.read_obs)
 read_obs.register('lgr_ugga', instruments.lgr_ugga.read_obs)
 read_obs.register('licor_6262', instruments.licor_6262.read_obs)
 read_obs.register('licor_7000', instruments.licor_7000.read_obs)
 # read_obs.register('magee_ae33', instruments.magee.read_obs)
-# read_obs.register('metone', instruments.metone.read_obs)
-# read_obs.register('metone_es642', instruments.metone.read_obs)
+read_obs.register('metone', instruments.metone.read_obs)
+read_obs.register('metone_es642', instruments.metone.read_obs)
 # read_obs.register('teledyne_t200', instruments.teledyne_t200.read_obs)
 # read_obs.register('teledyne_t300', instruments.teledyne_t300.read_obs)
 # read_obs.register('teledyne_t400', instruments.teledyne_t400.read_obs)

@@ -17,23 +17,32 @@ from .preprocess import preprocessor
 from utils.records import DataFile, filter_files
 
 COL_MAPPER = {
-    # CR1000
     'EPOCHTIME': 'Time_UTC',
+
+    # CR1000
     'GELV': 'Altitude_m',
     'GLAT': 'Lati_deg',
     'GLON': 'Long_deg',
     'GTIM': 'GPS_Time_UTC',
     'NSAT': 'NSat',
-    'TICC': 'Logger_T_C',
+    'TICC': 'Panel_T_C',
     'TRNR': 'Train_RH',
     'TRNT': 'Train_T_C',
-    'VOLT': 'Logger_voltage',
+    'VOLT': 'Battery_Voltage_V',
 
     # 2B
     'FL2B': 'Flow_ccmin',
     'OZNE': 'O3_ppb',
     'PS2B': 'Cavity_P_hPa',
-    'TC2B': 'Cavity_T_C'
+    'TC2B': 'Cavity_T_C',
+
+    # ESAMPLER
+    'ERRR': 'Status',
+    'FLOW': 'Flow_Lmin',
+    'INRH': 'Cavity_RH_pct',
+    'ITMP': 'Ambient_T_C',
+    'PM25': 'PM2.5_ugm3',
+    'PRES': 'Ambient_P_hPa'
 }
 
 
