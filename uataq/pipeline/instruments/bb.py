@@ -84,7 +84,7 @@ def read_obs(site, specie='O3', lvl='raw', time_range=None,
             df['Time_UTC'] = pd.to_datetime(df.Time_UTC, errors='coerce',
                                             format='ISO8601')
             df.dropna(subset='Time_UTC', inplace=True)
-            df = df.set_index('Time_UTC').sort_index()
+            df = df.set_index('Time_UTC')
 
             if lvl == 'raw':
                 df['Time_MTN_2B'] = pd.to_datetime(df.Date_MTN + df.Time_MTN,
@@ -106,7 +106,7 @@ def read_obs(site, specie='O3', lvl='raw', time_range=None,
 
         dfs.append(df)
 
-    df = pd.concat(dfs)
+    df = pd.concat(dfs).sort_index()
 
     # Filter to time_range
     df = df.loc[time_range[0]: time_range[1]]
