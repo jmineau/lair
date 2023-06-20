@@ -58,7 +58,7 @@ def process_time_range(time_range):
 def preprocessor(func):
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def _preprocess(*args, **kwargs):
         bound_args = inspect.signature(func).bind(*args, **kwargs)
         bound_args.apply_defaults()
 
@@ -90,4 +90,4 @@ def preprocessor(func):
         # Call the original function with preprocessed arguments
         return func(*bound_args.args, **bound_args.kwargs)
 
-    return wrapper
+    return _preprocess
