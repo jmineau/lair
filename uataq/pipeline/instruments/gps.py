@@ -150,7 +150,7 @@ def read_raw(site, time_range=None, NMEA='GPGGA'):
 
         dfs.append(df)
 
-    df = pd.concat(dfs)
+    df = pd.concat(dfs).sort_index()
 
     return df
 
@@ -186,6 +186,8 @@ def read_obs(site, specie='GPS', lvl='raw', time_range=None,
 
                 dfs.append(df)
 
-            df = pd.concat(dfs)
+            df = pd.concat(dfs).sort_index()
+
+    df = df.loc[time_range[0]: time_range[1]]
 
     return df

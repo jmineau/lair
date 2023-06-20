@@ -22,6 +22,6 @@ get_files = partial(horel.get_files, instrument='cr1000')
 def read_obs(site, specie='GPS', time_range=None):
     files = get_files(site, time_range=time_range)
 
-    df = pd.concat([horel.read_file(file) for file in files])
+    df = pd.concat([horel.read_file(file) for file in files]).sort_index()
 
     return df
