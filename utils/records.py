@@ -51,7 +51,7 @@ def filter_files(files, time_range=None):
     return filtered_files
 
 
-def parallelize_file_parser(file_parser, num_processes=None):
+def parallelize_file_parser(file_parser, num_processes=1):
     from functools import partial
     import multiprocessing
 
@@ -63,8 +63,8 @@ def parallelize_file_parser(file_parser, num_processes=None):
             return dfs
 
         # Create a multiprocessing Pool
-        processes = num_processes if num_processes \
-            else multiprocessing.cpu_count()
+        processes = multiprocessing.cpu_count() if num_processes == 'max' \
+            else num_processes
 
         pool = multiprocessing.Pool(processes=processes)
 
