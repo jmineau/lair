@@ -132,25 +132,29 @@ def drop_specie_col(df, other_specie):
 
 
 def _parse_raw(file, verbose):
-    # Adapt columns due to differences in UGGA format
-    col_names, col_types = adapt_cols(file)
+    if verbose:
+        print(f'Loading {os.sep.join(file.split(os.sep)[-2:])}')
 
-    # Check for incomplete final row (probably power issue)
-    footer = check_footer(file)
-
-    # Read file assigning cols and dtypes
     try:
+        # Adapt columns due to differences in UGGA format
+        col_names, col_types = adapt_cols(file)
+
+        # Check for incomplete final row (probably power issue)
+        footer = check_footer(file)
+
+        # Read file assigning cols and dtypes
         df = pd.read_csv(file, header=1, names=col_names, dtype=col_types,
                          on_bad_lines='skip', na_values=['TO', ''],
                          skipinitialspace=True, skipfooter=footer,
                          engine='python')
+
+        # Update columns now that data has been read in
+        df = update_cols(df)
+
     except errors.ParsingError as e:
         if verbose:
             print(f'    {e}')
         return None
-
-    # Update columns now that data has been read in
-    df = update_cols(df)
 
     # Format time
     df.Time_UTC = pd.to_datetime(df.Time_UTC.str.strip(),
