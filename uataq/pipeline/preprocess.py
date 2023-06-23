@@ -89,8 +89,8 @@ def preprocessor(func):
 
         if 'num_processes' in bound_args.arguments:
             num_processes = bound_args.arguments['num_processes']
-            assert num_processes is None or (isinstance(num_processes, int)
-                                             and num_processes > 0)
+            assert num_processes == 'max' or (isinstance(num_processes, int)
+                                              and num_processes > 0)
 
         # Call the original function with preprocessed arguments
         return func(*bound_args.args, **bound_args.kwargs)
