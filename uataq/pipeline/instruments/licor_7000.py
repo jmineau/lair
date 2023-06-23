@@ -13,7 +13,7 @@ import pandas as pd
 
 from config import DATA_DIR, data_config, r2py_types
 from ..preprocess import preprocessor
-from utils.records import DataFile, filter_files
+from utils.records import DataFile, filter_files, parallelize_file_parser
 
 
 INSTRUMENT = 'licor_7000'
@@ -36,31 +36,33 @@ def get_files(site, lvl, time_range=None):
     return filter_files(files, time_range)
 
 
-@preprocessor
-def read_obs(site, specie='CO2', lvl='calibrated', time_range=None):
-    assert specie == 'CO2'
-
+def _parse(file, lvl):
     names = data_config[lvl]['col_names']
     types_R = data_config[lvl]['col_types']
     types = {name: r2py_types[t] for name, t in zip(names, types_R)}
 
-    time_col = next((col for col in names if 'TIME' in col.upper()), None)
+    df = pd.read_csv(file, names=names, dtype=types, header=0,
+                     on_bad_lines='skip', na_values=['NAN'])
+
+    # Format time col
+    df.rename(columns={'TIMESTAMP': 'Time_UTC'}, inplace=True)
+    df['Time_UTC'] = pd.to_datetime(df.Time_UTC, errors='coerce',
+                                    format='ISO8601')
+
+    return df
+
+
+@preprocessor
+def read_obs(site, specie='CO2', lvl='calibrated', time_range=None,
+             num_processes=1):
+    assert specie == 'CO2'
 
     files = get_files(site, lvl, time_range)
 
-    dfs = []
-    for file in files:
-        df = pd.read_csv(file, names=names, dtype=types, header=0,
-                         on_bad_lines='skip', na_values=['NAN'])
+    read_files = parallelize_file_parser(_parse, num_processes=num_processes)
+    df = pd.concat(read_files(files, lvl=lvl))
 
-        dfs.append(df)
-
-    df = pd.concat(dfs)
-
-    # Set time as index and filter to time_range
-    df[time_col] = pd.to_datetime(df[time_col], errors='coerce',
-                                  format='ISO8601')
-    df = df.dropna(subset=time_col).set_index(time_col).sort_index()
+    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
     df = df.loc[time_range[0]: time_range[1]]
 
     return df

@@ -45,28 +45,39 @@ def filter_files(files, time_range=None):
 
     filtered_files = df.loc[start_time: end_time, 'path'].tolist()
 
+    if len(filtered_files) == 0:
+        raise ValueError('No data within given time_range')
+
     return filtered_files
 
 
-# def filter_files(files_dates, file_date_format, time_range=None):
-#     import os
-#     import pandas as pd
+def parallelize_file_parser(file_parser, num_processes=None):
+    from functools import partial
+    import multiprocessing
 
-#     from uataq.pipeline.preprocess import process_time_range
+    def parallelizer(files, **kwargs):
 
-#     start_time, end_time = process_time_range(time_range)
+        if num_processes == 1:
+            # Don't start multiprocessing pool
+            dfs = [file_parser(file, **kwargs) for file in files]
+            return dfs
 
-#     filtered_files = []
+        # Create a multiprocessing Pool
+        processes = num_processes if num_processes \
+            else multiprocessing.cpu_count()
 
-#     files, dates = zip(*files_dates)
-#     dates = pd.to_datetime(dates, format=file_date_format)
-#     df = pd.DataFrame(data={'file': files}, index=dates).sort_index()
+        pool = multiprocessing.Pool(processes=processes)
 
-#     df = df[df.file.apply(os.path.exists)]  # drop files that don't exist
+        # Apply the decorated function in parallel to the list of files
+        dfs = pool.map(partial(file_parser, **kwargs), files)
 
-#     filtered_files = df.loc[start_time: end_time, 'file'].tolist()
+        # Close the pool to free resources
+        pool.close()
+        pool.join()
 
-#     return filtered_files
+        return dfs
+
+    return parallelizer
 
 
 class Cacher:

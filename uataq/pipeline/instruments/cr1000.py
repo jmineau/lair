@@ -13,15 +13,23 @@ import pandas as pd
 
 from .. import horel
 from ..preprocess import preprocessor
+from utils.records import parallelize_file_parser
 
 
 get_files = partial(horel.get_files, instrument='cr1000')
 
+_parse = horel._parse
+
 
 @preprocessor
-def read_obs(site, specie='GPS', time_range=None):
+def read_obs(site, specie='GPS', time_range=None, num_processes=1):
     files = get_files(site, time_range=time_range)
 
-    df = pd.concat([horel.read_file(file) for file in files]).sort_index()
+    read_files = parallelize_file_parser(_parse, num_processes=num_processes)
+
+    df = pd.concat(read_files(files))
+
+    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
+    df = df.loc[time_range[0]: time_range[1]]
 
     return df

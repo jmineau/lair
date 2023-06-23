@@ -62,15 +62,14 @@ def get_files(site, instrument, time_range=None):
     return filter_files(files, time_range)
 
 
-def read_file(file):
+def _parse(file):
     df = pd.read_hdf(file, key='obsdata/observations')
 
     # Rename horel-group columns according to COL_MAPPER
     df.rename(columns=COL_MAPPER, inplace=True)
 
-    # Format time and set as index
+    # Format time
     df['Time_UTC'] = pd.to_datetime(df.Time_UTC, unit='s')
-    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
 
     # Convert horel-group NoData to np.nan
     df.replace(-9999, np.nan, inplace=True)

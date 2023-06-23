@@ -87,6 +87,11 @@ def preprocessor(func):
             time_range = bound_args.arguments['time_range']
             bound_args.arguments['time_range'] = process_time_range(time_range)
 
+        if 'num_processes' in bound_args.arguments:
+            num_processes = bound_args.arguments['num_processes']
+            assert num_processes is None or (isinstance(num_processes, int)
+                                             and num_processes > 0)
+
         # Call the original function with preprocessed arguments
         return func(*bound_args.args, **bound_args.kwargs)
 
