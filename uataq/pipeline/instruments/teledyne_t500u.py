@@ -13,7 +13,7 @@ import pandas as pd
 
 from config import DATA_DIR
 from ..preprocess import preprocessor
-from utils.records import DataFile, filter_files
+from utils.records import DataFile, filter_files, parallelize_file_parser
 
 INSTRUMENT = 'teledyne_t500u'
 
@@ -39,24 +39,28 @@ def get_files(site, lvl='raw', time_range=None):
     return filter_files(files, time_range)
 
 
+def _parse(file):
+
+    df = pd.read_csv(file, names=NAMES, header=0,
+                     on_bad_lines='skip', na_values=['XXXX'])
+
+    # Format time
+    df.rename(columns={'time': 'Time_UTC'}, inplace=True)
+    df['Time_UTC'] = pd.to_datetime(df.Time_UTC, errors='coerce')
+
+    return df
+
+
 @preprocessor
-def read_obs(site, specie='NO2', lvl='raw', time_range=None):
+def read_obs(site, specie='NO2', lvl='raw', time_range=None, num_processes=1):
     assert specie == 'NO2'
 
     files = get_files(site, lvl, time_range)
 
-    dfs = []
-    for file in files:
-        df = pd.read_csv(file, names=NAMES, header=0,
-                         on_bad_lines='skip', na_values=['XXXX'])
-
-        dfs.append(df)
-
-    df = pd.concat(dfs)
+    read_files = parallelize_file_parser(_parse, num_processes=num_processes)
+    df = pd.concat(read_files(files))
 
     # Set time as index and filter to time_range
-    df.rename(columns={'time': 'Time_UTC'}, inplace=True)
-    df['Time_UTC'] = pd.to_datetime(df.Time_UTC, errors='coerce')
     df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
     df = df.loc[time_range[0]: time_range[1]]
 

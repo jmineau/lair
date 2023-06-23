@@ -17,7 +17,7 @@ from pandas.errors import ParserError
 from config import DATA_DIR
 from .. import horel
 from ..preprocess import preprocessor
-from utils.records import DataFile, filter_files
+from utils.records import DataFile, filter_files, parallelize_file_parser
 
 
 INSTRUMENT = '2b'
@@ -55,13 +55,7 @@ def get_files(site, lvl='raw', time_range=None, use_lin_group=False):
     return horel.get_files(site, INSTRUMENT, time_range)
 
 
-@preprocessor
-def read_obs(site, specie='O3', lvl='raw', time_range=None,
-             use_lin_group=False):
-    assert specie == 'O3'
-
-    files = get_files(site, lvl=lvl, time_range=time_range,
-                      use_lin_group=use_lin_group)
+def _parse(file, lvl, use_lin_group):
 
     names = ['Time_UTC', 'O3_ppb', 'Cavity_T_C', 'Cavity_P_hPa', 'Flow_ccmin']
     if lvl == 'raw':
@@ -69,46 +63,51 @@ def read_obs(site, specie='O3', lvl='raw', time_range=None,
     else:
         names.append('QAQC_Flag')
 
-    dfs = []
-    for file in files:
-        if use_lin_group:
-            # Read files from lin-group9
-            try:
-                df = pd.read_csv(file, on_bad_lines='skip', names=names,
-                                 dtype=str)
+    if use_lin_group:
+        # Read files from lin-group9
+        try:
+            df = pd.read_csv(file, on_bad_lines='skip', names=names,
+                             dtype=str)
 
-            except (ParserError, UnicodeDecodeError):
-                continue
+        except (ParserError, UnicodeDecodeError):
+            return None
 
-            # Format time and set as index
-            df['Time_UTC'] = pd.to_datetime(df.Time_UTC, errors='coerce',
-                                            format='ISO8601')
-            df.dropna(subset='Time_UTC', inplace=True)
-            df = df.set_index('Time_UTC')
+        # Format time
+        df['Time_UTC'] = pd.to_datetime(df.Time_UTC, errors='coerce',
+                                        format='ISO8601')
 
-            if lvl == 'raw':
-                df['Time_MTN_2B'] = pd.to_datetime(df.Date_MTN + df.Time_MTN,
-                                                   errors='coerce',
-                                                   format='%d/%m/%y%H:%M:%S')
-                df.drop(columns=['Date_MTN', 'Time_MTN'], inplace=True)
-                names = names[:-2]
+        if lvl == 'raw':
+            df['Time_MTN_2B'] = pd.to_datetime(df.Date_MTN + df.Time_MTN,
+                                               errors='coerce',
+                                               format='%d/%m/%y%H:%M:%S')
+            df.drop(columns=['Date_MTN', 'Time_MTN'], inplace=True)
+            names = names[:-2]
 
-            for col in names[1:]:
-                df[col] = pd.to_numeric(df[col], errors='coerce')
+        for col in names[2:]:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
 
-        else:
-            # Read files from horel-group
-            df = horel.read_file(file)
+    else:
+        # Read files from horel-group
+        df = horel._parse(file)
 
-            if lvl != 'raw':
-                # Create QAQC_Flag column
-                df['QAQC_Flag'] = 0
+        if lvl != 'raw':
+            # Create QAQC_Flag column
+            df['QAQC_Flag'] = 0
 
-        dfs.append(df)
 
-    df = pd.concat(dfs).sort_index()
+@preprocessor
+def read_obs(site, specie='O3', lvl='raw', time_range=None,
+             use_lin_group=False, num_processes=1):
+    assert specie == 'O3'
 
-    # Filter to time_range
+    files = get_files(site, lvl=lvl, time_range=time_range,
+                      use_lin_group=use_lin_group)
+
+    read_files = parallelize_file_parser(_parse, num_processes=num_processes)
+    df = pd.concat(read_files(files, lvl=lvl, use_lin_group=use_lin_group))
+
+    # Set time as index and filter to time_range
+    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
     df = df.loc[time_range[0]: time_range[1]]
 
     if lvl != 'raw':

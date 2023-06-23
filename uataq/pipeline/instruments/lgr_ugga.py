@@ -17,7 +17,7 @@ import subprocess
 from config import DATA_DIR, data_config, r2py_types
 from .. import errors
 from ..preprocess import preprocessor
-from utils.records import DataFile, filter_files
+from utils.records import DataFile, filter_files, parallelize_file_parser
 
 
 INSTRUMENT = 'lgr_ugga'
@@ -131,62 +131,36 @@ def drop_specie_col(df, other_specie):
     return df[[col for col in df.columns if other_specie not in col.upper()]]
 
 
-def read_raw(site, verbose=True, return_bad_files=False):
-    def parse(file):
-        # Adapt columns due to differences in UGGA format
-        col_names, col_types = adapt_cols(file)
+def _parse_raw(file, verbose):
+    # Adapt columns due to differences in UGGA format
+    col_names, col_types = adapt_cols(file)
 
-        # Check for incomplete final row (probably power issue)
-        footer = check_footer(file)
+    # Check for incomplete final row (probably power issue)
+    footer = check_footer(file)
 
-        # Read file assigning cols and dtypes
+    # Read file assigning cols and dtypes
+    try:
         df = pd.read_csv(file, header=1, names=col_names, dtype=col_types,
                          on_bad_lines='skip', na_values=['TO', ''],
                          skipinitialspace=True, skipfooter=footer,
                          engine='python')
-
-        # Update columns now that data has been read in
-        df = update_cols(df)
-
-        return df
-
-    # Get files
-    files = get_files(site, lvl='raw')
-
-    dfs = []
-    bad_files = []
-
-    # Parse dataframes
-    for file in files:
+    except errors.ParsingError as e:
         if verbose:
-            print(f'Loading {os.sep.join(file.split(os.sep)[-2:])}')
-        try:
-            df = parse(file)
-            dfs.append(df)
-        except errors.ParsingError as e:
-            if verbose:
-                print(f'    {e}')
-            bad_files.append((file, str(e)))
-            continue
+            print(f'    {e}')
+        return None
 
-    df = pd.concat(dfs)  # Merge dataframes
+    # Update columns now that data has been read in
+    df = update_cols(df)
 
-    # Format time and set as index
+    # Format time
     df.Time_UTC = pd.to_datetime(df.Time_UTC.str.strip(),
                                  format='%m/%d/%Y %H:%M:%S.%f',
                                  errors='coerce')
-    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
-
-    if return_bad_files:
-        return df, bad_files
 
     return df
 
 
-def read_pi_data(site, time_range=None, MIU=False):
-
-    files = get_files(site, 'raw', time_range)
-
+def _parse_pi_data(file, MIU):
     names = ["Time_UTC", "ID", "Time_UTC_LGR", "CH4_ppm", "CH4_ppm_sd",
              "H2O_ppm", "H2O_ppm_sd", "CO2_ppm", "CO2_ppm_sd", "CH4d_ppm",
              "CH4d_ppm_sd", "CO2d_ppm", "CO2d_ppm_sd", "GasP_torr",
@@ -194,22 +168,15 @@ def read_pi_data(site, time_range=None, MIU=False):
              "RD0_us", "RD0_us_sd", "RD1_us", "RD1_us_sd", "Fit_Flag",
              "MIU_Valve", "MIU_Desc"]
 
-    # Parse files
-    dfs = []
-    for file in files:
-        df = pd.read_csv(file, names=names, dtype=str,
-                         on_bad_lines='skip', skipinitialspace=True)
-
-        dfs.append(df)
-
-    df = pd.concat(dfs)
+    df = pd.read_csv(file, names=names, dtype=str,
+                     on_bad_lines='skip', skipinitialspace=True)
 
     # Format datetime, set pi time as index, and filter
     df['Time_UTC'] = pd.to_datetime(df.Time_UTC.str.strip(), 'coerce',
                                     format='ISO8601')
-    df['Time_UTC_LGR'] = pd.to_datetime(df.Time_UTC_LGR.str.strip(), 'coerce',
+    df['Time_UTC_LGR'] = pd.to_datetime(df.Time_UTC_LGR.str.strip(),
+                                        errors='coerce',
                                         format='%d/%m/%Y %H:%M:%S.%f')
-    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
 
     # Convert numeric cols to float
     str_cols = ['Time_UTC', 'Time_UTC_LGR', 'MIU_Desc']
@@ -222,9 +189,14 @@ def read_pi_data(site, time_range=None, MIU=False):
     return df
 
 
+def _parse(file):
+    df = pd.read_csv(file, parse_dates=['Time_UTC'])
+    return df
+
+
 @preprocessor
 def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
-             time_range=None, verbose=False, **kwargs):
+             time_range=None, num_processes=1, verbose=False, MIU=True):
 
     assert all(s in ['CO2', 'CH4'] for s in species)
 
@@ -233,22 +205,32 @@ def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
 
     # Raw files require special parsing
     if lvl == 'raw':
+
+        files = get_files(site, lvl='raw', time_range=time_range)
+
         if site in PI_SITES:
-            df = read_pi_data(site, time_range, **kwargs)
+            if site.startswith('trx'):
+                MIU = False
+
+            read_files = parallelize_file_parser(_parse_pi_data,
+                                                 num_processes=num_processes)
+            df = pd.concat(read_files(files, MIU=MIU))
+
         else:
-            df = read_raw(site, verbose=verbose)
+            read_files = parallelize_file_parser(_parse_raw,
+                                                 num_processes=num_processes)
+            df = pd.concat(read_files(files, verbose=verbose))
 
     else:
         # Parse files
         files = get_files(site, lvl, time_range)
 
-        df = pd.concat([pd.read_csv(file, parse_dates=['Time_UTC'])
-                        for file in files])
+        read_files = parallelize_file_parser(_parse,
+                                             num_processes=num_processes)
+        df = pd.concat(read_files(files))
 
-        # Set time as index
-        df = df.set_index('Time_UTC').sort_index()
-
-    # Filter to time_range
+    # Set time as index and filter to time range
+    df = df.dropna(subset='Time_UTC').set_index('Time_UTC').sort_index()
     df = df.loc[time_range[0]: time_range[1]]
 
     # Drop the other specie if only one is specified
