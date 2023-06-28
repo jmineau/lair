@@ -10,7 +10,7 @@ Module for working with files and directories
 
 from collections import namedtuple
 
-DataFile = namedtuple('DataFile', ['path', 'date'])
+DataFile = namedtuple('DataFile', ['path', 'period'])
 
 
 def unzip(zf, dir_path=None):
@@ -38,20 +38,19 @@ def filter_files(files, time_range=None):
 
     start_time, end_time = process_time_range(time_range)
 
-    filtered_files = []
-
     df = pd.DataFrame(files, columns=DataFile._fields)
-    df = df.set_index('date').sort_index()
+    df = df.set_index('period').sort_index()
 
     filtered_files = df.loc[start_time: end_time, 'path'].tolist()
 
     if len(filtered_files) == 0:
-        raise ValueError('No data within given time_range')
+        raise ValueError('No data within given time_range: '
+                         f'{start_time} ~ {end_time}')
 
     return filtered_files
 
 
-def parallelize_file_parser(file_parser, num_processes=1):
+def parallelize_file_parser(file_parser, num_processes=1, verbose=False):
     from functools import partial
     import multiprocessing
 
@@ -59,6 +58,8 @@ def parallelize_file_parser(file_parser, num_processes=1):
 
         if num_processes == 1:
             # Don't start multiprocessing pool
+            if verbose:
+                print('Reading files sequentially...')
             dfs = [file_parser(file, **kwargs) for file in files]
             return dfs
 
@@ -66,6 +67,8 @@ def parallelize_file_parser(file_parser, num_processes=1):
         processes = multiprocessing.cpu_count() if num_processes == 'max' \
             else num_processes
 
+        if verbose:
+            print(f'Reading files in parallel with {processes} processes...')
         pool = multiprocessing.Pool(processes=processes)
 
         # Apply the decorated function in parallel to the list of files

@@ -28,9 +28,11 @@ def get_files(site='wbb', lvl='raw', time_range=None):
     for file in os.listdir(data_dir):
         if file.endswith('csv'):
             file_path = os.path.join(data_dir, file)
-            date = pd.to_datetime(file[:10], format='%Y-%m-%d')
 
-            files.append(DataFile(file_path, date))
+            date_str = file[:10].replace('_', '-')
+            period = pd.Period(date_str, freq='D')
+
+            files.append(DataFile(file_path, period))
 
     return filter_files(files, time_range)
 

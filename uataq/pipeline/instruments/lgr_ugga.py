@@ -8,7 +8,6 @@ Created on Wed Jan 25 09:40:10 2023
 Module of uataq pipeline functions for LGR UGGA instrument
 """
 
-from functools import partial
 import os
 import pandas as pd
 import re
@@ -31,31 +30,41 @@ def get_files(site, lvl, time_range=None):
 
     data_dir = os.path.join(DATA_DIR, site, INSTRUMENT, lvl)
 
-    if lvl == 'raw' and site not in PI_SITES:
-        # raw lgr files are too complicated for filter_files function
+    if lvl == 'raw':
 
-        pattern = re.compile(r'f....\.txt$')
+        if site not in PI_SITES:
+            # raw lgr files are too complicated for filter_files function
 
-        raw_files = []
-        for root, dirs, files in os.walk(data_dir):
-            raw_files.extend([os.path.join(root, file) for file in files
-                              if pattern.search(file)])
+            pattern = re.compile(r'f....\.txt$')
 
-        raw_files.sort(key=lambda file: os.path.getmtime(file))
+            raw_files = []
+            for root, dirs, files in os.walk(data_dir):
+                raw_files.extend([os.path.join(root, file) for file in files
+                                  if pattern.search(file)])
 
-        return raw_files
+            raw_files.sort(key=lambda file: os.path.getmtime(file))
+
+            return raw_files
+
+        # Formats for raw pi sites
+        date_slicer = slice(4, 14)
+        file_freq = 'D'
+
+    else:
+        # Format for all QAQC & Calibrated sites
+        date_slicer = slice(7)
+        file_freq = 'M'
 
     files = []
-
-    date_slicer = slice(4, 14) if site in PI_SITES else slice(7)
-    date_format = '%Y_%m_%d' if site in PI_SITES else '%Y_%m'
 
     for file in os.listdir(data_dir):
         if file.endswith('dat'):
             file_path = os.path.join(data_dir, file)
-            date = pd.to_datetime(file[date_slicer], format=date_format)
 
-            files.append(DataFile(file_path, date))
+            date_str = file[date_slicer].replace('_', '-')
+            period = pd.Period(date_str, freq=file_freq)
+
+            files.append(DataFile(file_path, period))
 
     return filter_files(files, time_range)
 
@@ -207,30 +216,30 @@ def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
     if verbose:
         print(f'Reading {lvl} observations collected by LGR UGGA')
 
+    files = get_files(site, lvl, time_range)
+
     # Raw files require special parsing
     if lvl == 'raw':
-
-        files = get_files(site, lvl='raw', time_range=time_range)
 
         if site in PI_SITES:
             if site.startswith('trx'):
                 MIU = False
 
             read_files = parallelize_file_parser(_parse_pi_data,
-                                                 num_processes=num_processes)
+                                                 num_processes=num_processes,
+                                                 verbose=verbose)
             df = pd.concat(read_files(files, MIU=MIU))
 
         else:
             read_files = parallelize_file_parser(_parse_raw,
-                                                 num_processes=num_processes)
+                                                 num_processes=num_processes,
+                                                 verbose=verbose)
             df = pd.concat(read_files(files, verbose=verbose))
 
     else:
-        # Parse files
-        files = get_files(site, lvl, time_range)
-
         read_files = parallelize_file_parser(_parse,
-                                             num_processes=num_processes)
+                                             num_processes=num_processes,
+                                             verbose=verbose)
         df = pd.concat(read_files(files))
 
     # Set time as index and filter to time range
