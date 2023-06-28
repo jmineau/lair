@@ -55,9 +55,11 @@ def get_files(site, instrument, time_range=None):
         for file in os.listdir(data_dir):
             if file.startswith(site.upper()):
                 file_path = os.path.join(data_dir, file)
-                date = pd.to_datetime(file[6: 13], format='%Y_%m')
 
-                files.append(DataFile(file_path, date))
+                date_str = file[6: 13].replace('_', '-')
+                period = pd.Period(date_str, freq='M')
+
+                files.append(DataFile(file_path, period))
 
     return filter_files(files, time_range)
 

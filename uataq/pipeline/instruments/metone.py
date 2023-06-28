@@ -27,20 +27,22 @@ def get_files(site, lvl, time_range=None, use_lin_group=False):
         if site == 'trx02':
             instrument = 'metone'  # there is also a met dir
             date_slicer = slice(10)
-            date_format = '%Y_%m_%d'
+            file_freq = 'D'
         else:
             instrument = INSTRUMENT
             date_slicer = slice(7)
-            date_format = '%Y_%m'
+            file_freq = 'M'
 
         data_dir = os.path.join(DATA_DIR, site, instrument, lvl)
 
         for file in os.listdir(data_dir):
             if file.endswith('dat'):
                 file_path = os.path.join(data_dir, file)
-                date = pd.to_datetime(file[date_slicer], format=date_format)
 
-                files.append(DataFile(file_path, date))
+                date_str = file[date_slicer].replace('_', '-')
+                period = pd.Period(date_str, freq=file_freq)
+
+                files.append(DataFile(file_path, period))
 
         return filter_files(files, time_range)
 

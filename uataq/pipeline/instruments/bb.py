@@ -33,22 +33,24 @@ def get_files(site, lvl='raw', time_range=None, use_lin_group=False):
         data_dir = os.path.join(DATA_DIR, site, '2bo3', lvl)
 
         if lvl == 'raw':
-            date_format = '%Y_%m_%d'
+            file_freq = 'D'
 
             if site == 'trx01':
                 date_slicer = slice(3, 13)
             elif site == 'trx02':
                 date_slicer = slice(10)
         else:
-            date_format = '%Y_%m'
+            file_freq = 'M'
             date_slicer = slice(7)
 
         for file in os.listdir(data_dir):
             if file.endswith('dat'):
                 file_path = os.path.join(data_dir, file)
-                date = pd.to_datetime(file[date_slicer], format=date_format)
 
-                files.append(DataFile(file_path, date))
+                date_str = file[date_slicer].replace('_', '-')
+                period = pd.Period(date_str, freq=file_freq)
+
+                files.append(DataFile(file_path, period))
 
         return filter_files(files, time_range)
 
