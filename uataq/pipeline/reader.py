@@ -67,7 +67,8 @@ def dispatcher(func):
         registry[instrument] = func
         return func
 
-    def decorated(site, species, lvl='raw', time_range=None, **kwargs):
+    def decorated(site, species, lvl='raw', time_range=None, num_processes=1,
+                  **kwargs):
         """
         Decorated function that performs the dispatch and calls the appropriate implementation.
         """
@@ -102,7 +103,9 @@ def dispatcher(func):
                         specie, other_specie = ('CO2', 'CH4'), None
 
                 data = instrument_func(site, specie, lvl=lvl,
-                                       time_range=time_range, **kwargs)
+                                       time_range=time_range,
+                                       num_processes=num_processes,
+                                       **kwargs)
 
                 instrument_data[instrument] = data
 
@@ -126,7 +129,7 @@ def dispatcher(func):
 
 @preprocessor
 @dispatcher
-def read_obs(site, species, lvl, time_range, **kwargs):
+def read_obs(site, species, lvl, time_range, num_processes, **kwargs):
     """
     Function for reading observations to be decorated by dispatcher.
     """
