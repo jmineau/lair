@@ -13,7 +13,7 @@ import pandas as pd
 import re
 import subprocess
 
-from config import DATA_DIR, data_config, r2py_types
+from config import DATA_DIR, data_config, r2py_types, vprint
 from .. import errors
 from ..preprocess import preprocessor
 from utils.records import DataFile, filter_files, parallelize_file_parser
@@ -22,7 +22,7 @@ from utils.records import DataFile, filter_files, parallelize_file_parser
 INSTRUMENT = 'lgr_ugga'
 data_config = data_config[INSTRUMENT]
 
-PI_SITES = ('trx01', 'landfill')
+PI_SITES = ('trx01', 'ldf')
 
 
 @preprocessor
@@ -135,14 +135,14 @@ def update_cols(df):
     return df
 
 
-def drop_specie_col(df, other_specie):
-
-    return df[[col for col in df.columns if other_specie not in col.upper()]]
+def drop_specie_col(df, drop_specie):
+    vprint(f'Dropping {drop_specie} from dataframe')
+    return df[[col for col in df.columns if drop_specie not in col.upper()]]
 
 
 def _parse_raw(file, verbose):
-    if verbose:
-        print(f'Loading {os.sep.join(file.split(os.sep)[-2:])}')
+
+    vprint(f'Parsing {os.path.relpath(file, DATA_DIR)}')
 
     try:
         # Adapt columns due to differences in UGGA format
@@ -161,8 +161,7 @@ def _parse_raw(file, verbose):
         df = update_cols(df)
 
     except errors.ParsingError as e:
-        if verbose:
-            print(f'    {e}')
+        vprint(f'    {e}')
         return None
 
     # Format time
@@ -174,6 +173,9 @@ def _parse_raw(file, verbose):
 
 
 def _parse_pi_data(file, MIU):
+
+    vprint(f'Parsing {os.path.relpath(file, DATA_DIR)}')
+
     names = ["Time_UTC", "ID", "Time_UTC_LGR", "CH4_ppm", "CH4_ppm_sd",
              "H2O_ppm", "H2O_ppm_sd", "CO2_ppm", "CO2_ppm_sd", "CH4d_ppm",
              "CH4d_ppm_sd", "CO2d_ppm", "CO2d_ppm_sd", "GasP_torr",
@@ -203,6 +205,9 @@ def _parse_pi_data(file, MIU):
 
 
 def _parse(file):
+
+    vprint(f'Parsing {os.path.relpath(file, DATA_DIR)}')
+
     df = pd.read_csv(file, parse_dates=['Time_UTC'])
     return df
 
@@ -213,8 +218,7 @@ def read_obs(site, species=('CO2', 'CH4'), lvl='calibrated',
 
     assert all(s in ['CO2', 'CH4'] for s in species)
 
-    if verbose:
-        print(f'Reading {lvl} observations collected by LGR UGGA')
+    vprint(f'Reading {lvl} observations collected by LGR UGGA at {site}')
 
     files = get_files(site, lvl, time_range)
 
