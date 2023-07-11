@@ -12,7 +12,7 @@ import os
 import pandas as pd
 import numpy as np
 
-from config import HOREL_TRAX_DIR, TRAX_PILOT_DIR
+from config import HOREL_DIR, HOREL_TRAX_DIR, TRAX_PILOT_DIR, vprint
 from .preprocess import preprocessor
 from utils.records import DataFile, filter_files
 
@@ -65,6 +65,9 @@ def get_files(site, instrument, time_range=None):
 
 
 def _parse(file):
+
+    vprint(f'Parsing {os.path.relpath(file, HOREL_DIR)}')
+
     df = pd.read_hdf(file, key='obsdata/observations')
 
     # Rename horel-group columns according to COL_MAPPER

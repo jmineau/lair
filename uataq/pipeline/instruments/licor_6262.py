@@ -11,7 +11,7 @@ Module of uataq pipeline functions for licor 6262 instrument
 import os
 import pandas as pd
 
-from config import DATA_DIR, data_config, r2py_types
+from config import DATA_DIR, data_config, r2py_types, vprint
 from ..preprocess import preprocessor
 from utils.records import DataFile, filter_files, parallelize_file_parser
 
@@ -39,6 +39,9 @@ def get_files(site, lvl, time_range=None):
 
 
 def _parse(file, lvl):
+
+    vprint(f'Parsing {os.path.relpath(file, DATA_DIR)}')
+
     names = data_config[lvl]['col_names']
     types_R = data_config[lvl]['col_types']
     types = {name: r2py_types[t] for name, t in zip(names, types_R)}
@@ -58,6 +61,8 @@ def _parse(file, lvl):
 def read_obs(site, specie='CO2', lvl='calibrated', time_range=None,
              num_processes=1):
     assert specie == 'CO2'
+
+    vprint(f'Reading {lvl} observations collected by LICOR 6262 at {site}')
 
     files = get_files(site, lvl, time_range)
 

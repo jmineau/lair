@@ -11,7 +11,7 @@ Module of uataq pipeline functions for teledyne t500u instrument
 import os
 import pandas as pd
 
-from config import DATA_DIR
+from config import DATA_DIR, vprint
 from ..preprocess import preprocessor
 from utils.records import DataFile, filter_files, parallelize_file_parser
 
@@ -43,6 +43,8 @@ def get_files(site, lvl='raw', time_range=None):
 
 def _parse(file):
 
+    vprint(f'Parsing {os.path.relpath(file, DATA_DIR)}')
+
     df = pd.read_csv(file, names=NAMES, header=0,
                      on_bad_lines='skip', na_values=['XXXX'])
 
@@ -56,6 +58,8 @@ def _parse(file):
 @preprocessor
 def read_obs(site, specie='NO2', lvl='raw', time_range=None, num_processes=1):
     assert specie == 'NO2'
+
+    vprint(f'Reading {lvl} observations collected by Teledyne T500u at {site}')
 
     files = get_files(site, lvl, time_range)
 

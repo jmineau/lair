@@ -11,6 +11,7 @@ Module of uataq pipeline functions for Horel-group's cr1000
 from functools import partial
 import pandas as pd
 
+from config import vprint
 from .. import horel
 from ..preprocess import preprocessor
 from utils.records import parallelize_file_parser
@@ -23,6 +24,9 @@ _parse = horel._parse
 
 @preprocessor
 def read_obs(site, specie='GPS', time_range=None, num_processes=1):
+
+    vprint(f'Reading observations collected by CR1000 at {site}')
+
     files = get_files(site, time_range=time_range)
 
     read_files = parallelize_file_parser(_parse, num_processes=num_processes)

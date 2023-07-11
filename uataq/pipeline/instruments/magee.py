@@ -11,7 +11,7 @@ Module of uataq pipeline functions for magee ae33 instrument
 import os
 import pandas as pd
 
-from config import DATA_DIR
+from config import DATA_DIR, vprint
 from ..preprocess import preprocessor
 from utils.records import DataFile, filter_files, parallelize_file_parser
 
@@ -38,6 +38,9 @@ def get_files(site='wbb', lvl='raw', time_range=None):
 
 
 def _parse(file):
+
+    vprint(f'Parsing {os.path.relpath(file, DATA_DIR)}')
+
     df = pd.read_csv(file, skipinitialspace=True, on_bad_lines='skip')
 
     # Format time
@@ -51,6 +54,8 @@ def _parse(file):
 def read_obs(site='wbb', specie='BC', lvl='raw', time_range=None,
              num_processes=1):
     assert specie == 'BC'
+
+    vprint(f'Reading {lvl} observations collected by magee ae33 at {site}')
 
     files = get_files(site, lvl, time_range)
 

@@ -14,7 +14,7 @@ import os
 import pandas as pd
 from pandas.errors import ParserError
 
-from config import DATA_DIR
+from config import DATA_DIR, vprint
 from .. import horel
 from ..preprocess import preprocessor
 from utils.records import DataFile, filter_files, parallelize_file_parser
@@ -67,6 +67,9 @@ def _parse(file, lvl, use_lin_group):
 
     if use_lin_group:
         # Read files from lin-group9
+
+        vprint(f'Parsing {os.path.relpath(file, DATA_DIR)}')
+
         try:
             df = pd.read_csv(file, on_bad_lines='skip', names=names,
                              dtype=str)
@@ -101,6 +104,8 @@ def _parse(file, lvl, use_lin_group):
 def read_obs(site, specie='O3', lvl='raw', time_range=None,
              use_lin_group=False, num_processes=1):
     assert specie == 'O3'
+
+    vprint(f'Reading {lvl} observations collected by 2B at {site}')
 
     files = get_files(site, lvl=lvl, time_range=time_range,
                       use_lin_group=use_lin_group)

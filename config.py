@@ -27,8 +27,9 @@ CONFIG_DIR = path.join(PIPELINE_DIR, 'config')
 
 # MOBILE
 MOBILE_DIR = path.join(HOME, 'lin-group7', 'mobile')
-HOREL_TRAX_DIR = path.join(HOME, 'horel-group', 'uutrax')
-TRAX_PILOT_DIR = path.join(HOME, 'horel-group', 'uutrax_pilot')
+HOREL_DIR = path.join(HOME, 'horel-group')
+HOREL_TRAX_DIR = path.join(HOREL_DIR, 'uutrax')
+TRAX_PILOT_DIR = path.join(HOREL_DIR, 'uutrax_pilot')
 
 # LAIR GROUP
 GROUP_DIR = path.join(HOME, 'lin-group11', 'group_data')
@@ -36,6 +37,8 @@ GROUP_DIR = path.join(HOME, 'lin-group11', 'group_data')
 INVENTORY_DIR = path.join(GROUP_DIR, 'inventories')
 MET_DIR = path.join(GROUP_DIR, 'NOAA-ARL_formatted_metfields')
 SPATIAL_DIR = path.join(GROUP_DIR, 'spatial')
+
+LAIR_DIR = path.dirname(__file__)
 
 
 ########
@@ -47,7 +50,7 @@ site_config = pd.read_csv(path.join(CONFIG_DIR, 'site_config.csv'),
                           sep=', ', engine='python', index_col='stid')
 data_config = pd.read_json(path.join(CONFIG_DIR, 'data_config.json'))
 
-with open('instrument_config.json') as f:
+with open(path.join(LAIR_DIR, 'instrument_config.json')) as f:
     instrument_config = json.load(f)
 
 r2py_types = {'c': str,
@@ -55,3 +58,21 @@ r2py_types = {'c': str,
               'T': str}
 
 # TODO data for valley.py needs to be kept somewhere
+
+
+###################
+# Verbose Printer #
+###################
+
+class _Printer:
+    global verbose
+    verbose = False
+
+    @staticmethod
+    def vprint(*args, **kwargs):
+        if verbose:
+            print(*args, **kwargs)
+
+
+_printer = _Printer()
+vprint = _printer.vprint

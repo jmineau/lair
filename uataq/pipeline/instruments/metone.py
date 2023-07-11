@@ -11,7 +11,7 @@ Module of uataq pipeline functions for metone esampler instrument
 import os
 import pandas as pd
 
-from config import DATA_DIR, data_config
+from config import DATA_DIR, data_config, vprint
 from .. import horel
 from ..preprocess import preprocessor
 from utils.records import DataFile, filter_files, parallelize_file_parser
@@ -52,6 +52,9 @@ def get_files(site, lvl, time_range=None, use_lin_group=False):
 def _parse(file, site, lvl, use_lin_group):
     if use_lin_group:
         # Read from lin-group
+
+        vprint(f'Parsing {os.path.relpath(file, DATA_DIR)}')
+
         if site == 'trx02' or (site == 'wbb' and lvl == 'raw'):
 
             # Read pi data
@@ -85,6 +88,8 @@ def _parse(file, site, lvl, use_lin_group):
 @preprocessor
 def read_obs(site, specie='PM_25', lvl='raw', time_range=None,
              use_lin_group=False, num_processes=1):
+
+    vprint(f'Reading {lvl} observations collected by Metone ES642 at {site}')
 
     if site in ['dbk', 'sug', 'wbb']:
         use_lin_group = True
