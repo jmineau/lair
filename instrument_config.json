@@ -100,6 +100,20 @@
       }
     ]
   },
+  "ldf": {
+    "CH4": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2023-06-26"
+      }
+    ],
+    "CO2": [
+      {
+        "instrument": "lgr_ugga",
+        "installation_date": "2023-06-26"
+      }
+    ]
+  },
   "lgn": {
     "CO2": [
       {
