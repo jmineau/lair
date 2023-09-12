@@ -25,12 +25,6 @@ DATA_DIR = path.join(MEASUREMENTS_DIR, 'data')
 PIPELINE_DIR = path.join(MEASUREMENTS_DIR, 'pipeline')
 CONFIG_DIR = path.join(PIPELINE_DIR, 'config')
 
-# MOBILE
-MOBILE_DIR = path.join(HOME, 'lin-group7', 'mobile')
-HOREL_DIR = path.join(HOME, 'horel-group')
-HOREL_TRAX_DIR = path.join(HOREL_DIR, 'uutrax')
-TRAX_PILOT_DIR = path.join(HOREL_DIR, 'uutrax_pilot')
-
 # LAIR GROUP
 GROUP_DIR = path.join(HOME, 'lin-group11', 'group_data')
 
@@ -38,7 +32,18 @@ INVENTORY_DIR = path.join(GROUP_DIR, 'inventories')
 MET_DIR = path.join(GROUP_DIR, 'NOAA-ARL_formatted_metfields')
 SPATIAL_DIR = path.join(GROUP_DIR, 'spatial')
 
+# Horel Group
+HOREL_DIR = path.join(HOME, 'horel-group')
+MESOWEST_DIR = path.join(HOREL_DIR, 'oper/mesowest')
+
+# MOBILE
+MOBILE_DIR = path.join(HOME, 'lin-group7', 'mobile')
+HOREL_TRAX_DIR = path.join(HOREL_DIR, 'uutrax')
+TRAX_PILOT_DIR = path.join(HOREL_DIR, 'uutrax_pilot')
+
 LAIR_DIR = path.dirname(__file__)
+
+
 
 
 ########
