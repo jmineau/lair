@@ -11,10 +11,10 @@ Module of uataq pipeline functions for metone esampler instrument
 import os
 import pandas as pd
 
-from config import DATA_DIR, data_config, vprint
-from .. import horel
-from ..preprocess import preprocessor
-from utils.records import DataFile, filter_files, parallelize_file_parser
+from lair.config import DATA_DIR, data_config, vprint
+from lair.uataq.pipeline import horel
+from lair.uataq.pipeline.preprocess import preprocessor
+from lair.utils.records import DataFile, filter_files, parallelize_file_parser
 
 INSTRUMENT = 'metone_es642'
 data_config = data_config[INSTRUMENT]

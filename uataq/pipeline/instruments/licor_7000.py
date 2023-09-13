@@ -11,9 +11,9 @@ Module of uataq pipeline functions for licor 7000 instrument
 import os
 import pandas as pd
 
-from config import DATA_DIR, data_config, r2py_types, vprint
-from ..preprocess import preprocessor
-from utils.records import DataFile, filter_files, parallelize_file_parser
+from lair.config import DATA_DIR, data_config, r2py_types, vprint
+from lair.uataq.pipeline.preprocess import preprocessor
+from lair.utils.records import DataFile, filter_files, parallelize_file_parser
 
 
 INSTRUMENT = 'licor_7000'
