@@ -13,10 +13,10 @@ import pandas as pd
 import re
 import subprocess
 
-from config import DATA_DIR, data_config, r2py_types, vprint
-from .. import errors
-from ..preprocess import preprocessor
-from utils.records import DataFile, filter_files, parallelize_file_parser
+from lair.config import DATA_DIR, data_config, r2py_types, vprint
+from lair.uataq.pipeline import errors
+from lair.uataq.pipeline.preprocess import preprocessor
+from lair.utils.records import DataFile, filter_files, parallelize_file_parser
 
 
 INSTRUMENT = 'lgr_ugga'

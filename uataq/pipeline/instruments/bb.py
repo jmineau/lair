@@ -14,10 +14,10 @@ import os
 import pandas as pd
 from pandas.errors import ParserError
 
-from config import DATA_DIR, vprint
-from .. import horel
-from ..preprocess import preprocessor
-from utils.records import DataFile, filter_files, parallelize_file_parser
+from lair.config import DATA_DIR, vprint
+from lair.uataq.pipeline import horel
+from lair.uataq.pipeline.preprocess import preprocessor
+from lair.utils.records import DataFile, filter_files, parallelize_file_parser
 
 
 INSTRUMENT = '2b'

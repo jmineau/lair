@@ -11,10 +11,10 @@ Module of uataq pipeline functions for Horel-group's cr1000
 from functools import partial
 import pandas as pd
 
-from config import vprint
+from ....config import vprint
 from .. import horel
 from ..preprocess import preprocessor
-from utils.records import parallelize_file_parser
+from ....utils.records import parallelize_file_parser
 
 
 get_files = partial(horel.get_files, instrument='cr1000')

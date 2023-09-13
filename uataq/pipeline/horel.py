@@ -10,11 +10,12 @@ Module of functions for handing horel-group operations
 
 import os
 import pandas as pd
+import tables as pytbls
 import numpy as np
 
-from config import HOREL_DIR, HOREL_TRAX_DIR, TRAX_PILOT_DIR, vprint
-from .preprocess import preprocessor
-from utils.records import DataFile, filter_files
+from lair.config import HOREL_DIR, HOREL_TRAX_DIR, TRAX_PILOT_DIR, vprint
+from lair.uataq.pipeline.preprocess import preprocessor
+from lair.utils.records import DataFile, filter_files
 
 COL_MAPPER = {
     'EPOCHTIME': 'Time_UTC',
@@ -80,3 +81,9 @@ def _parse(file):
     df.replace(-9999, np.nan, inplace=True)
 
     return df
+
+
+def _parse_h5(file, key='obsdata/observations'):
+    with pytbls.open_file(file, mode='r') as f:
+        table = f.root[key]
+        data = table.read()
