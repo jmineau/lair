@@ -10,6 +10,7 @@ The `Instrument` class provides a common interface for all instrument classes
 """
 
 from abc import ABCMeta
+from geographiclib.geodesic import Geodesic
 import json
 import pandas as pd
 from typing import Literal, Iterator
@@ -17,6 +18,10 @@ from typing import Literal, Iterator
 from lair.config import vprint
 from lair.uataq import errors, filesystem
 from lair.utils.clock import TimeRange
+from lair.utils.grid import bearing, haversine
+
+geod = Geodesic.WGS84
+inverse_geodesic = np.vectorize(geod.Inverse)
 
 # TODO
 # TRX01 aeth & no2 from horel-group
@@ -395,6 +400,60 @@ class GPS(Instrument):
             data['Speed_kt'] = data.Speed_kt * 0.514444
             data.rename(columns={'Speed_kt': 'Speed_m_s'}, inplace=True)
 
+        ### Calculate speed and direction if not present ###
+        speed_col = 'Speed_m_s'
+        direction_col = 'Course_deg'
+
+        if speed_col not in data.columns:
+            data[speed_col] = np.nan
+            data[direction_col] = np.nan
+
+        is_missing = data[speed_col].isna() & data[direction_col].isna()
+        is_missing = [True] * len(data)
+
+        if any(is_missing):
+            # Calculate speed and direction when missing 
+            #   and time difference is less than 5 seconds
+            deltat = data.index.to_series().diff().dt.total_seconds()
+            to_calc = is_missing & (deltat < 5)
+
+            if 'QAQC_Flag' in data.columns:
+                # Check that consecutive points are valid
+                valid = ((data.QAQC_Flag >= 0)
+                         & (data.QAQC_Flag.shift() >= 0))
+                to_calc = to_calc & valid
+
+            vprint(f'Calculating speed and direction for {sum(to_calc)} GPS points...')
+
+            lat = data.Latitude_deg
+            lon = data.Longitude_deg
+            lat_shift = data.Latitude_deg.shift()
+            lon_shift = data.Longitude_deg.shift()
+
+            data['distance_gps'] = data.Speed_m_s * deltat
+
+            # Calculate speed
+            distance = haversine(lat_shift[to_calc], lon_shift[to_calc],
+                                 lat[to_calc], lon[to_calc]) * 1000  # m
+            data.loc[to_calc, speed_col] = distance / deltat[to_calc]
+
+            
+            data.loc[to_calc, 'distance_haversine'] = distance
+            results = inverse_geodesic(lat_shift[to_calc], lon_shift[to_calc],
+                                       lat[to_calc], lon[to_calc])
+            geodesic_df = pd.DataFrame.from_records(results)
+            print(geodesic_df['s12'].values)
+            data.loc[to_calc, 'distance_vincenty'] = geodesic_df['s12'].values
+
+            # Calculate direction when moving
+            moving = data[speed_col] > 0
+            to_calc = to_calc & moving
+
+            direction = bearing(lat_shift[to_calc], lon_shift[to_calc],
+                                lat[to_calc], lon[to_calc])
+            data.loc[to_calc, 'bearing'] = direction
+
+            vprint('done.')
         return data
 
 
