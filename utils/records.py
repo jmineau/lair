@@ -1,16 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Fri Jan 27 15:35:03 2023
+lair.utils.records
+~~~~~~~~~~~~~~~~~~
 
-@author: James Mineau (James.Mineau@utah.edu)
-
-Module for working with files and directories
+Utilities for working with files and directories.
 """
 
-from collections import namedtuple
+from typing import Callable, Literal
 
-DataFile = namedtuple('DataFile', ['path', 'period'])
+from lair.config import vprint
 
 
 def unzip(zf, dir_path=None):
@@ -21,66 +18,187 @@ def unzip(zf, dir_path=None):
         zip_ref.extractall(dir_path)
 
 
-def read_kml(kml_path):
+def list_files(path: str = '.', pattern: str = None, ignore_case: bool = False, all_files: bool = False,
+               full_names: bool = False, recursive: bool = False) -> list[str]:
+    """
+    Returns a list of files in the specified directory that match the specified pattern.
+
+    Args:
+        path (str): The directory to search for files. Defaults to the current directory.
+        pattern (str): The glob-style pattern to match against file names. Defaults to None, which matches all files.
+        ignore_case (bool): Whether to ignore case when matching file names. Defaults to False.
+        all_files (bool): Whether to include hidden files (files that start with a dot). Defaults to False.
+        full_names (bool): Whether to return the full path of each file. Defaults to False.
+        recursive (bool): Whether to search for files recursively in subdirectories. Defaults to False.
+
+    Returns:
+        List[str]: A list of file names or full paths that match the specified pattern.
+    """
+    import fnmatch
+    import os
+    
+    result = []
+    if recursive:
+        walk = os.walk(path)
+    else:
+        walk = [(path, None, os.listdir(path))]
+        
+    if ignore_case and pattern is not None:
+        pattern = pattern.lower()
+
+    for root, _, files in walk:
+        for file in files:
+            if all_files or not file.startswith('.'):
+                fn = file.lower() if ignore_case else file
+                if pattern is None or fnmatch.fnmatch(fn, pattern):
+                    if full_names:
+                        result.append(os.path.abspath(os.path.join(root, file)))
+                    else:
+                        result.append(file)
+    return result
+
+
+def read_kml(path):
     '''Read kml file from path'''
     from fastkml import kml
 
-    with open(kml_path, 'rt') as KML:
+    with open(path, 'rt') as KML:
         k = kml.KML()
         k.from_string(KML.read().encode('utf-8'))
     return k
 
 
-def filter_files(files, time_range=None):
-    import pandas as pd
+def download_ftp_files(host, paths, download_dir,
+                       username='anonymous', password=''):
+    import ftplib
+    import os
 
-    from uataq.pipeline.preprocess import process_time_range
+    if username == 'anonymous' and password == '':
+        password = 'anonymous@'
 
-    start_time, end_time = process_time_range(time_range)
+    ftp = ftplib.FTP(host)
+    ftp.login(username, password)
 
-    df = pd.DataFrame(files, columns=DataFile._fields)
-    df = df.set_index('period').sort_index()
+    if isinstance(paths, str):
+        paths = [paths]  # Convert a single path to a list
 
-    filtered_files = df.loc[start_time: end_time, 'path'].tolist()
+    for path in paths:
+        # Start in root for every path
+        ftp.cwd('/')
 
-    if len(filtered_files) == 0:
-        raise ValueError('No data within given time_range: '
-                         f'{start_time} ~ {end_time}')
+        path = '/' + path.strip('/')  # path should start from root on ftp
+        initial_path = path
 
-    return filtered_files
+        # Redefine download func for each path to pass inital_path
+        def download(path):
+            try:
+                # Try changing to the specified path
+                ftp.cwd(path)
+
+            except ftplib.error_perm as e:
+                assert 'Failed to change directory' in str(e)
+
+                # If it's not a directory, download the file
+                if path == initial_path:
+                    filename = os.path.basename(path)
+                else:
+                    initial_parent = os.path.dirname(initial_path)
+                    filename = os.path.relpath(path, initial_parent)
+
+                local_filename = os.path.join(download_dir, filename)
+                os.makedirs(os.path.dirname(local_filename), exist_ok=True)
+
+                with open(local_filename, 'wb') as local_file:
+                    print(f'Downloading {path}')
+                    ftp.retrbinary(f'RETR {path}', local_file.write)
+
+                return 'f'
+
+            else:
+                files = ftp.nlst()  # Get a list of files in that directory
+
+                for file in files:
+
+                    # Download file/dir
+                    f_d = download('/'.join([path, file]))
+
+                    if f_d == 'd':
+                        # restart in path to be able to traverse multiple dirs
+                        ftp.cwd(path)
+
+                return 'd'
+
+        download(path)
+
+    ftp.quit()
+    return True
 
 
-def parallelize_file_parser(file_parser, num_processes=1, verbose=False):
-    from functools import partial
+def parallelize_file_parser(file_parser: Callable,
+                            num_processes: int | Literal['max'] = 1):
+    """
+    Parallelizes a file parser function to read multiple files in parallel.
+    
+    Args:
+        file_parser (function): The function to be parallelized. Must be picklable.
+        num_processes (int): The number of processes to use for parallelization. Defaults to 1.
+
+    Returns:
+        function: A parallelized version of the file parser function.
+    """
+
     import multiprocessing
+    from functools import partial
 
-    def parallelizer(files, **kwargs):
+    def parallelized_parser(files: list, **kwargs):
+        """
+        Parses multiple files in parallel using the file parser function.
 
-        if num_processes == 1:
-            # Don't start multiprocessing pool
-            if verbose:
-                print('Reading files sequentially...')
-            dfs = [file_parser(file, **kwargs) for file in files]
-            return dfs
+        Args:
+            files (list): A list of file to be parsed. Format is determined by the file parser function.
+            **kwargs: Additional keyword arguments to be passed to the file parser function.
+
+        Returns:
+            list: A list of datasets parsed from the input files.
+        """
+
+        # Determine the number of processes to use
+        cpu_count = multiprocessing.cpu_count()
+        if num_processes == 'max':
+            processes = cpu_count
+        elif num_processes > cpu_count:
+            vprint(f'Warning: {num_processes} processes requested, '
+                    f'but there are only {cpu_count} CPU(s) available.')
+            processes = cpu_count
+        else:
+            processes = num_processes
+
+        if processes > len(files):
+            vprint(f'Info: {num_processes} processes requested, '
+                   f'but there are only {len(files)} file(s) to parse.')
+            processes = len(files) 
+
+        # If only one process is requested, read files sequentially
+        if processes == 1:
+            vprint('Parsing files sequentially...')
+            datasets = [file_parser(file, **kwargs) for file in files]
+            return datasets
+
+        vprint(f'Parsing files in parallel with {processes} processes...')
 
         # Create a multiprocessing Pool
-        processes = multiprocessing.cpu_count() if num_processes == 'max' \
-            else num_processes
-
-        if verbose:
-            print(f'Reading files in parallel with {processes} processes...')
         pool = multiprocessing.Pool(processes=processes)
 
-        # Apply the decorated function in parallel to the list of files
-        dfs = pool.map(partial(file_parser, **kwargs), files)
+        # Use the pool to parse the files in parallel
+        datasets = pool.map(partial(file_parser, **kwargs), files)
 
         # Close the pool to free resources
         pool.close()
         pool.join()
 
-        return dfs
+        return datasets
 
-    return parallelizer
+    return parallelized_parser
 
 
 class Cacher:

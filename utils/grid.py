@@ -1,15 +1,22 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Sun Jan  8 22:53:55 2023
+lair.utils.grid
+~~~~~~~~~~~~~~~
 
-@author: James Mineau
+This module provides utility functions for working with spatial grid data.
 """
+
+import cartopy.crs as ccrs
+from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
+                                LongitudeFormatter, LongitudeLocator)
+import numpy as np
 
 
 def dms2dd(d=0.0, m=0.0, s=0.0):  # degree-minute-second to decimal degree
-    dd = float(d) + float(m) / 60 + float(s) / 3600
-    return dd
+    try:
+        dd = float(d) + float(m) / 60 + float(s) / 3600
+        return dd
+    except ValueError:
+        return np.nan
 
 
 def bbox2extent(bbox):
@@ -31,9 +38,6 @@ def wrap_lons(lons):
 
 
 def add_lat_ticks(ax, ylims, labelsize=None, more_ticks=0):
-    import cartopy.crs as ccrs
-    from cartopy.mpl.ticker import LatitudeFormatter, LatitudeLocator
-
     fig = ax.figure
     bins = (fig.get_size_inches()[1] * fig.dpi / 100).astype(int) + 1
 
@@ -49,9 +53,6 @@ def add_lat_ticks(ax, ylims, labelsize=None, more_ticks=0):
 
 
 def add_lon_ticks(ax, xlims, rotation=0, labelsize=None, more_ticks=0):
-    import cartopy.crs as ccrs
-    from cartopy.mpl.ticker import LongitudeFormatter, LongitudeLocator
-
     fig = ax.figure
     bins = (fig.get_size_inches()[0] * fig.dpi / 100).astype(int) + 1
 
@@ -176,7 +177,6 @@ def earth_radius(lat):
     WGS84:
         https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
     '''
-    import numpy as np
 
     # define oblate spheroid from WGS84
     a = 6378137
@@ -198,10 +198,47 @@ def earth_radius(lat):
     return r
 
 
+def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
+    # http://www.movable-type.co.uk/scripts/latlong.html
+
+    if deg:
+        lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = np.sin((dlat) / 2)**2 + np.cos(lat1) \
+        * np.cos(lat2) * np.sin((dlon) / 2)**2
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+    d = R * c
+    return d
+
+
+def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
+    # http://www.movable-type.co.uk/scripts/latlong.html
+
+    if deg:
+        lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
+
+    dlon = lon2 - lon1
+    y = np.sin(dlon) * np.cos(lat2)
+    x = np.cos(lat1) * np.sin(lat2) \
+        - np.sin(lat1) * np.cos(lat2) * np.cos(dlon)
+
+    # Inital bearing in degrees
+    brng = (np.rad2deg(np.arctan2(y, x))
+            + 360) % 360  # in [0,360)
+
+    if final:
+        # Final bearing in degrees
+        brng = (brng + 180) % 360
+
+    return brng
+
+
 def add_extent_map(fig, main_extent, main_extent_crs,
                    extent_map_rect, extent_map_extent, extent_map_proj,
                    color, linewidth, zorder=None):
-    import cartopy.crs as ccrs
     import cartopy.feature as cfeature
     from shapely.geometry import box
 
