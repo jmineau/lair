@@ -1,23 +1,105 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Sun Feb 26 14:27:35 2023
-
-@author: James Mineau (James.Mineau@utah.edu)
+lair.uataq.stilt
+~~~~~~~~~~~~~~~~
 
 Module for preparing data for STILT runs & processing STILT output
 """
 
-
-import os
 import datetime as dt
 from functools import cached_property
+import numpy as np
+import os
+import pandas as pd
+import subprocess
+import xarray as xr
 
-# TODO this needs to be a parameter
-STILT_projects_dir = ('/uufs/chpc.utah.edu/common/home'
-                      '/lin-group15/jkm/STILT')
+from lair.config import STILT_DIR
+from lair.uataq import site_config
+from lair.utils.grid import add_latlon_ticks
+from lair.utils.plotter import log10formatter
+from lair.utils.records import Cacher
+
+# TODO I think the classes should be just Footprint and Receptor?
+#   and then STILT is a wrapper around those two classes?
+
+
 
 TIME_FORMAT = '%Y%m%d%H%M'
+
+
+def init_project(project, repo='https://github.com/jmineau/stilt', branch='main'):
+    '''
+    Initialize STILT project
+    
+    Python implementation of Rscript -e "uataq::stilt_init('project')"
+
+    Parameters
+    ----------
+    project : str
+        Name/path of STILT project.
+    repo : str, optional
+        URL of STILT project repo. The default is jmineau/stilt.
+    branch : str, optional
+        Branch of STILT project repo. The default is main.
+    '''
+    
+    # Extract project name and working directory
+    project_name = os.path.basename(project)
+    wd = os.path.dirname(project)
+    if wd == '':
+        wd = os.getcwd()
+        
+    if os.path.exists(project):
+        raise FileExistsError(f'{project} already exists')
+
+    # Clone git repository
+    cmd = f'git clone -b {branch} --single-branch --depth=1 {repo} {project}'
+    subprocess.check_call(cmd, shell=True)
+
+    # Run setup executable
+    os.chdir(project)
+    os.chmod('setup', 0o755)
+    subprocess.check_call('./setup')
+
+    # Render run_stilt.r template with project name and working directory
+    with open('r/run_stilt.r') as f:
+        run_stilt = f.read()
+    run_stilt = run_stilt.replace('{{project}}', project_name)
+    run_stilt = run_stilt.replace('{{wd}}', wd)
+    with open('r/run_stilt.r', 'w') as f:
+        f.write(run_stilt)
+    os.chdir(wd)
+    
+
+def extract_simulation_id(simulation):
+    '''
+    Extract simulation id from simulation name
+
+    Parameters
+    ----------
+    simulation : str
+        Name of simulation.
+
+    Returns
+    -------
+    sim_id : dict
+        Dictionary with keys: time, lati, long, zagl.
+
+    '''
+    
+    simulation = os.path.basename(simulation)
+
+    if simulation.count('_') > 3:
+        simulation = '_'.join(simulation.split('_')[:4])
+
+    # Extract simulation id
+    run_time, long, lati, zagl = simulation.split('_')
+    sim_id = {'run_time': run_time,
+              'long': float(long),
+              'lati': float(lati),
+              'zagl': float(zagl)}
+
+    return sim_id
 
 
 def fix_sim_links(old_out_dir, new_out_dir):
@@ -26,9 +108,9 @@ def fix_sim_links(old_out_dir, new_out_dir):
 
     Parameters
     ----------
-    old_out_dir : TYPE
+    old_out_dir : str
         old out directory where symlinks currently point to and shouldnt.
-    new_out_dir : TYPE
+    new_out_dir : str
         new out directory where symlinks should point to.
 
     Returns
@@ -59,37 +141,35 @@ def fix_sim_links(old_out_dir, new_out_dir):
 
 
 class Receptors:
+    # TODO what about multilocation receptors such as TRAX?
     def __init__(self, loc, times):
 
         self.data = self.generate(loc, times)
 
-    def generate(self, loc, times):
+    def generate(self, loc, times: pd.Series):
         '''
         Generate receptor dataframe when given a location and list of datetimes
         '''
-        import pandas as pd
 
+        # Supply loc as SID or (lati, long, zagl)
         if isinstance(loc, str):
             lati, long, zagl = Receptors.get_site_location(loc)
         else:
             lati, long, zagl = loc
 
-        times.name = 'run_time'
+        N = len(times)  # number of receptors
 
-        N = len(times)
-
-        receptors = pd.DataFrame({'long': [long] * N,
+        receptors = pd.DataFrame({'run_time': times,
+                                  'long': [long] * N,
                                   'lati': [lati] * N,
-                                  'zagl': [zagl] * N},
-                                 index=times)
+                                  'zagl': [zagl] * N})
 
-        return receptors
+        return receptors.sort_values('run_time')
 
     def update(self, receptors):
         '''
         Update data with more receptors from a different Receptors instance
         '''
-        import pandas as pd
 
         assert type(receptors) == Receptors
 
@@ -98,14 +178,14 @@ class Receptors:
         return None
 
     def save(self, out_path):
-        self.data.to_csv(out_path)
+        self.data.set_index('run_time').to_csv(out_path)
 
         return None
 
     @staticmethod
     def get_site_location(site):
-        from . import uucon
-        site_config = uucon.site_config.loc[site]
+        # FIXME what about mobile sites
+        site_config = site_config.loc[site]
 
         lati = site_config.lati.astype(float)
         long = site_config.long.astype(float)
@@ -130,7 +210,6 @@ class Footprints:
         self.files = None
 
         if cache:
-            from utils.records import Cacher
             if cache is True:
                 cache = os.path.join(footprint_dir, 'footprints_cache.pkl')
             self.read = Cacher(self.read, cache, reload=reload_cache,
@@ -151,8 +230,8 @@ class Footprints:
         def round_to_1(x):
             return round(x, -int(floor(log10(abs(x)))))
 
-        start = str(self.foots.sim_time.values[0])[:10]
-        end = str(self.foots.sim_time.values[-1])[:10]
+        start = str(self.foots.run_time.values[0])[:10]
+        end = str(self.foots.run_time.values[-1])[:10]
         time_range = f'{start} ~ {end}'
 
         resolution = round_to_1(self.foots.rio.resolution()[0])
@@ -164,17 +243,19 @@ class Footprints:
                 f'dir="{self.footprint_dir}", cache="{self.cache}")')
 
     def read(self, footprint_dir, subset, engine):
-        import xarray as xr
 
         def _preprocess(ds):
             filename = ds.encoding['source']
+            sim_id = extract_simulation_id(filename)
+            run_time = dt.datetime.strptime(sim_id['run_time'], TIME_FORMAT)
 
             if subset:
                 ds = self._sub(ds, subset)
 
             ds = ds.sum(dim='time')  # temporal sum
-            ds = ds.expand_dims({'sim_time':  # simulation time to concat on
-                                 [Footprints.get_sim_id(filename)['time']]})
+            
+            # Create run_time dimension to concat footprints
+            ds = ds.expand_dims({'run_time': [run_time]})
 
             return ds
 
@@ -184,8 +265,8 @@ class Footprints:
 
         processed_foots = [_preprocess(xr.open_dataset(file, engine=engine))
                            for file in self.files]
-        foots = xr.concat(processed_foots, dim='sim_time').foot
-        foots = foots.sortby('sim_time')
+        foots = xr.concat(processed_foots, dim='run_time').foot
+        foots = foots.sortby('run_time')
 
         return foots
 
@@ -204,8 +285,9 @@ class Footprints:
     def get_receptors_locs(self):
         assert len(self.files) >= 1
 
-        sim_ids = [Footprints.get_sim_id(file) for file in self.files]
+        sim_ids = [extract_simulation_id(file) for file in self.files]
 
+        # TODO I feel like this could be down better
         # Get sim_locs of all the files without time - list of dicts
         sim_locs = [{'lati': sim_id['lati'],
                      }
@@ -222,13 +304,12 @@ class Footprints:
 
     @cached_property
     def area(self):
-        from utils.grid import area_DataArray
+        from lair.utils.grid import area_DataArray
 
         return area_DataArray(self.foots)
 
     def apply_weights(self):
-        import numpy as np
-
+        
         weights = np.cos(np.deg2rad(self.foots[self.foots.rio.y_dim]))
         weighted = self.foots.weighted(weights)
         return weighted
@@ -252,16 +333,6 @@ class Footprints:
         return sorted(footprint_files)
 
     @staticmethod
-    def get_sim_id(file):
-        time, lati, long, zagl, _ = os.path.basename(file).split('_')
-
-        sim_id = {'time': dt.datetime.strptime(time, TIME_FORMAT),
-                  'lati': lati,
-                  'long': long,
-                  'zagl': zagl}
-        return sim_id
-
-    @staticmethod
     def plot(foot, ax=None, crs=None, label_deci=1, tiler=None, tiler_zoom=9,
              bounds=None, x_buff=0.1, y_buff=0.1, labelsize=None,
              more_lon_ticks=0, more_lat_ticks=0):
@@ -269,10 +340,6 @@ class Footprints:
         from functools import partial
         from matplotlib.ticker import FuncFormatter as FFmt
         import matplotlib.pyplot as plt
-        import numpy as np
-
-        from utils.plotter import log10formatter
-        from utils.grid import add_latlon_ticks
 
         if tiler is not None:
             crs = tiler.crs
@@ -311,58 +378,113 @@ class Footprints:
 
 
 class STILT:
-    def __init__(self, project, project_dir=None):
+    def __init__(self, project, directory=None, symlink_dir=None):
         self.project = project
-        self.project_dir = project_dir
-        self.stilt_wd = os.path.join(STILT_projects_dir, self.project)  # FIXME
-        self.footprint_dir = os.path.join(self.stilt_wd, 'out/footprints')
+        directory = directory or STILT_DIR or os.getcwd()
+        self.stilt_wd = os.path.join(directory, self.project)
 
-        if (not os.path.exists(self.stilt_wd)) & (project_dir is not None):
+        if not os.path.exists(self.stilt_wd):
             print('Initializing STILT project...')
-            self.init_project(self.stilt_wd, project_dir)
+            init_project(self.stilt_wd)
+            
+            if symlink_dir is not None:
+                os.symlink(self.stilt_wd, os.path.join(symlink_dir, 'STILT'))
 
     def __repr__(self):
         return f'STILT(project="{self.project}")'
-
-    def init_project(self, stilt_wd, project_dir):
-        # Change working directory to STILT_projects
-        os.chdir(STILT_projects_dir)
-
-        # Initialize STILT project
-        os.system(f"Rscript -e \"uataq::stilt_init(\"{self.project}\")\"")
-
-        # Create sym-link in project_dir to stilt_wd
-        os.symlink(stilt_wd, os.path.join(project_dir, 'STILT'))
 
     def generate_receptors(self, loc, times):
         self.receptors = Receptors(loc, times)
 
         return self.receptors
+    
+    def catalog_output(self, output_wd=None):
+        'Catalog STILT output'
+        
+        
+    def get_sims(self, id_dir=None):
+        # id_dir is relative to stilt_wd/out
+        id_dir = os.path.join(self.stilt_wd, 'out', id_dir or 'by-id')
+        
+        sims = [extract_simulation_id(sim) for sim in os.listdir(id_dir)]
+        
+        # Convert to dataframe
+        sims = pd.DataFrame(sims)
+        # sims['run_time'] = sims['run_time'].astype(str)
+        # for column in ['lati', 'long', 'zagl']:
+        #     sims[column] = sims[column].astype(float)
+        sims['run_time'] = pd.to_datetime(sims['run_time'], format=TIME_FORMAT)
+        sims.sort_values('run_time', inplace=True)
+        return sims
 
-    def check_sims(self, site, times):
-        # Check whether all time steps were simulated
+    def get_missing_sims(self, receptors: pd.DataFrame, id_dir=None):
+        '''Get missing simulations from STILT output directory'''
 
-        footprint_files = Footprints.get_files(self.footprint_dir)
+        # Get existing simulations
+        existing_sims = self.get_sims(id_dir)
 
-        missed_sims = []
-        for sim_time in times:
-            sim_str = dt.datetime.strftime(sim_time, TIME_FORMAT)
+        # Merge the dataframes and add an indicator column
+        merged = receptors.merge(existing_sims, how='outer', indicator=True)
 
-            if not any(os.path.basename(file).startswith(sim_str)
-                       for file in footprint_files):
-                missed_sims.append(sim_time)
+        # Get the rows that are in receptors but not in existing_sims
+        missing_sims = merged[merged['_merge'] == 'left_only']
 
-        return missed_sims
+        return missing_sims
+    
+    def read_footprints(self, footprint_dir=None, subset=False, engine='rasterio',
+                        cache=False, reload_cache=False):
+        
+        footprint_dir = os.path.join(self.stilt_wd, 'out', footprint_dir or 'footprints')
+        
+        footprints = Footprints(footprint_dir, subset, engine, cache, reload_cache)
+        
+        return footprints
 
-    def read_foots(self, footprint_dir=None, subset=False, engine='rasterio',
+    def get_foots(self, footprint_dir=None, subset=False, engine='rasterio',
                    cache=False, reload_cache=False):
-        if footprint_dir is None:
-            footprint_dir = self.footprint_dir
-        else:
-            self.footprint_dir = footprint_dir
+        
+        footprints = self.read_footprints(footprint_dir, subset, engine,
+                                          cache, reload_cache)
 
-        self.footprints = Footprints(footprint_dir, subset, engine,
-                                     cache, reload_cache)
-        self.foots = self.footprints.foots
+        return footprints.foots
 
-        return self.foots
+
+def Lin2021(dCH4, footprints, weight=False, filter_sims=False):
+    '''Following this logic, we estimate the Basin-averaged CH4 emissions
+    Φ by dividing the CH4 enhancement measured at HPL by the total
+    footprint integrating over all gridcells i within the Uinta Basin
+    (defined as between 39.9N to 40.5N and 110.6W to 109W), where Φ at
+    daily timescales was determined by dividing the ∆CH4 averaged over the
+    afternoon (13:00–16:00 MST) by the total footprint averaged over the
+    same hours'''
+
+    if weight:
+        # AREA WEIGHTED
+
+        # Multiply by cell area, divide by total area, sum
+        # f_weighted = (STILT.footprints.foots * STILT.footprints.area)\
+        #     / STILT.footprints.area.sum()
+        # f_sum = f_weighted.sum(dim=['x', 'y'])
+
+        # Simple cosine weighting
+        f_sum = footprints.weighted.sum(dim=['x', 'y'])
+
+    else:
+        # NOT AREA WEIGHTED
+        f_sum = footprints.foots.sum(dim=['x', 'y'])
+
+    f_sum_daily = f_sum.resample(run_time='1D').mean().to_pandas()
+
+    if filter_sims:
+        # Filter simulations when footprint is too weak
+        f_thres = f_sum_daily.quantile(0.1)  # 10% quantile
+        f_sum_daily[f_sum_daily < f_thres] = np.nan
+
+        # Filter simulations when transport errors are large
+        dir_thres = 45  # deg
+        ws_thres = 1  # m s-1
+
+    emis = (dCH4 / f_sum_daily).to_frame('CH4_emis')
+    emis.index.name = 'Time_UTC'
+
+    return emis

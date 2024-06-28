@@ -1,0 +1,731 @@
+{
+    "ASB": {
+        "name": "Aline Wilmot Skaggs",
+        "is_active": false,
+        "latitude": 40.763226,
+        "longitude": -111.849278,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2001-02-08",
+                "removal_date": "2015-08-05"
+            }
+        }
+    },
+    "BUS01": {
+        "name": "BUS 18153",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2021-09-28"
+            },
+            "2b_405": {
+                "installation_date": "2021-09-28",
+                "removal_date": "2022-05-09"
+            },
+            "cr1000": {
+                "installation_date": "2021-09-28"
+            },
+            "gps": {
+                "installation_date": "2021-09-28"
+            },
+            "metone_es642": {
+                "installation_date": "2021-09-28"
+            }
+        }
+    },
+    "BUS02": {
+        "name": "BUS 18151",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2022-02-04"
+            },
+            "2b_405": {
+                "installation_date": "2022-02-15",
+                "removal_date": "2023-05-17"
+            },
+            "cr1000": {
+                "installation_date": "2022-02-04"
+            },
+            "gps": {
+                "installation_date": "2022-02-04"
+            },
+            "metone_es642": {
+                "installation_date": "2022-02-04"
+            }
+        }
+    },
+    "BUS03": {
+        "name": "BUS 18152",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2022-02-05"
+            },
+            "2b_405": {
+                "installation_date": "2023-01-20"
+            },
+            "cr1000": {
+                "installation_date": "2022-02-05"
+            },
+            "gps": {
+                "installation_date": "2022-02-05"
+            },
+            "metone_es642": {
+                "installation_date": "2022-02-05"
+            }
+        }
+    },
+    "BUS04": {
+        "name": "BUS 23101",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2023-05-02"
+            },
+            "cr1000": {
+                "installation_date": "2023-05-02"
+            },
+            "gps": {
+                "installation_date": "2023-05-02"
+            },
+            "metone_es405": {
+                "installation_date": "2023-05-02"
+            }
+        }
+    },
+    "BUS05": {
+        "name": "BUS 23103",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2023-07-12"
+            },
+            "cr1000": {
+                "installation_date": "2023-07-12"
+            },
+            "gps": {
+                "installation_date": "2023-07-12"
+            },
+            "metone_es405": {
+                "installation_date": "2023-07-12"
+            }
+        }
+    },
+    "BUS06": {
+        "name": "BUS 23102",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2023-09-14"
+            },
+            "cr1000": {
+                "installation_date": "2023-09-14"
+            },
+            "gps": {
+                "installation_date": "2023-09-14"
+            },
+            "metone_es405": {
+                "installation_date": "2023-09-14"
+            }
+        }
+    },
+    "BUS07": {
+        "name": "BUS 23105",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2023-09-20"
+            },
+            "cr1000": {
+                "installation_date": "2023-09-20"
+            },
+            "gps": {
+                "installation_date": "2023-09-20"
+            },
+            "metone_es405": {
+                "installation_date": "2023-12-08"
+            }
+        }
+    },
+    "BUS08": {
+        "name": "BUS 23104",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2024-01-17"
+            },
+            "cr1000": {
+                "installation_date": "2024-01-17"
+            },
+            "gps": {
+                "installation_date": "2024-01-17"
+            },
+            "metone_es405": {
+                "installation_date": "2024-01-17"
+            }
+        }
+    },
+    "BUS09": {
+        "name": "BUS 23120",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2024-01-19"
+            },
+            "cr1000": {
+                "installation_date": "2024-01-19"
+            },
+            "gps": {
+                "installation_date": "2024-01-19"
+            },
+            "metone_es405": {
+                "installation_date": "2024-01-19"
+            }
+        }
+    },
+    "BUS10": {
+        "name": "BUS 23107",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2024-03-18"
+            },
+            "cr1000": {
+                "installation_date": "2024-03-18"
+            },
+            "gps": {
+                "installation_date": "2024-03-18"
+            },
+            "metone_es405": {
+                "installation_date": "2024-03-18"
+            }
+        }
+    },
+    "BUS11": {
+        "name": "BUS 23108",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2024-03-01"
+            },
+            "cr1000": {
+                "installation_date": "2024-03-01"
+            },
+            "gps": {
+                "installation_date": "2024-03-01"
+            },
+            "metone_es405": {
+                "installation_date": "2024-03-01"
+            }
+        }
+    },
+    "BUS12": {
+        "name": "BUS 23106",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2024-03-22"
+            },
+            "cr1000": {
+                "installation_date": "2024-03-22"
+            },
+            "gps": {
+                "installation_date": "2024-03-22"
+            },
+            "metone_es405": {
+                "installation_date": "2024-03-22"
+            }
+        }
+    },
+    "BUS13": {
+        "name": "BUS 23109",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2024-04-01"
+            },
+            "cr1000": {
+                "installation_date": "2024-04-01"
+            },
+            "gps": {
+                "installation_date": "2024-04-01"
+            },
+            "metone_es405": {
+                "installation_date": "2024-04-01"
+            }
+        }
+    },
+    "CSP": {
+        "name": "Castle Peak",
+        "latitude": 40.0509,
+        "longitude": -110.0194,
+        "zagl": 4,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "lgr_ugga": {
+                "installation_date": "2015-11-17"
+            }
+        }
+    },
+    "DBK": {
+        "name": "Daybreak",
+        "latitude": 40.538497,
+        "longitude": -112.069528,
+        "zagl": 5,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2004-01-22",
+                "removal_date": "2022-05-13"
+            },
+            "licor_7000": {
+                "installation_date": "2022-05-16"
+            },
+            "metone_es642": {
+                "installation_date": "2017-07-19"
+            }
+        }
+    },
+    "FRU": {
+        "name": "Fruitland",
+        "latitude": 40.20873,
+        "longitude": -110.8403,
+        "zagl": 4,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "lgr_ugga": {
+                "installation_date": "2015-03-19"
+            }
+        }
+    },
+    "HDP": {
+        "name": "Hidden Peak",
+        "latitude": 40.560644,
+        "longitude": -111.645278,
+        "zagl": 15,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "lgr_ugga": {
+                "installation_date": "2016-07-20"
+            }
+        }
+    },
+    "HEB": {
+        "name": "Heber",
+        "latitude": 40.506808,
+        "longitude": -111.403636,
+        "zagl": 7,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2015-07-28"
+            }
+        }
+    },
+    "HPL": {
+        "name": "Horsepool",
+        "latitude": 40.143711,
+        "longitude": -109.4672,
+        "zagl": 4,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "lgr_ugga": {
+                "installation_date": "2015-01-28"
+            }
+        }
+    },
+    "IMC": {
+        "name": "Intermountain Medical",
+        "is_active": false,
+        "latitude": 40.660395,
+        "longitude": -111.89075,
+        "zagl": 35,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2016-09-25",
+                "removal_date": "2020-09-15"
+            }
+        }
+    },
+    "LDF": {
+        "name": "SLV Landfill",
+        "is_active": false,
+        "latitude": 40.748783,
+        "longitude": -112.033941,
+        "zagl": 2,
+        "loggers": {
+            "lin": "air-trend"
+        },
+        "instruments": {
+            "lgr_ugga": {
+                "installation_date": "2023-06-26",
+                "removal_date": "2023-09-28"
+            }
+        }
+    },
+    "LGN": {
+        "name": "Logan",
+        "is_active": false,
+        "latitude": 41.761353,
+        "longitude": -111.822739,
+        "zagl": 5,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2015-07-27",
+                "removal_date": "2020-03-15"
+            }
+        }
+    },
+    "LG2": {
+        "name": "Logan",
+        "is_active": false,
+        "latitude": 41.758105,
+        "longitude": -111.813234,
+        "zagl": 5,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2019-10-26",
+                "removal_date": "2022-05-11"
+            }
+        }
+    },
+    "MSA": {
+        "name": "Murray Satellite",
+        "is_active": false,
+        "latitude": 40.763226,
+        "longitude": -111.849278,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2013-08-07",
+                "removal_date": "2016-07-26"
+            }
+        }
+    },
+    "MUR": {
+        "name": "Murray",
+        "is_active": false,
+        "latitude": 40.763226,
+        "longitude": -111.849278,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2005-01-07",
+                "removal_date": "2013-08-02"
+            }
+        }
+    },
+    "ROO": {
+        "name": "Roosevelt",
+        "is_active": false,
+        "latitude": 40.294169,
+        "longitude": -110.009,
+        "zagl": 4,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "lgr_ugga": {
+                "installation_date": "2015-03-23",
+                "removal_date": "2019-07-16"
+            }
+        }
+    },
+    "RPK": {
+        "name": "Rose Park",
+        "latitude": 40.794386,
+        "longitude": -111.931925,
+        "zagl": 7,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2009-02-24",
+                "removal_date": "2023-09-07"
+            },
+            "licor_7000": {
+                "installation_date": "2023-09-07"
+            }
+        }
+    },
+    "SUG": {
+        "name": "Sugarhouse",
+        "latitude": 40.739906,
+        "longitude": -111.857831,
+        "zagl": 10,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2005-01-11",
+                "removal_date": "2022-02-11"
+            },
+            "licor_7000": {
+                "installation_date": "2022-06-13"
+            },
+            "metone_es642": {
+                "installation_date": "2017-06-29",
+                "removal_date": "2020-04-23"
+            }
+        }
+    },
+    "SUN": {
+        "name": "Suncrest",
+        "is_active": false,
+        "latitude": 40.480978,
+        "longitude": -111.837047,
+        "zagl": 5,
+        "loggers": {
+            "lin": "campbellsci"
+        },
+        "instruments": {
+            "licor_6262": {
+                "installation_date": "2015-08-11",
+                "removal_date": "2019-11-07"
+            }
+        }
+    },
+    "TRX01": {
+        "name": "TRAX 1136",
+        "is_mobile": true,
+        "instruments": {
+            "2b_205": {
+                "loggers": {
+                    "horel": "campbellsci",
+                    "lin": "air-trend"
+                },
+                "installation_date": "2015-05-13"
+            },
+            "cr1000": {
+                "loggers": {
+                    "horel": "campbellsci"
+                },
+                "installation_date": "2014-11-11"
+            },
+            "gps": {
+                "loggers": {
+                    "horel": "campbellsci",
+                    "lin": "air-trend"
+                },
+                "installation_date": "2014-11-11"
+            },
+            "metone_es642": {
+                "loggers": {
+                    "horel": "campbellsci"
+                },
+                "installation_date": "2014-11-05"
+            },
+            "lgr_ugga": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2014-12-09",
+                "MIU": false
+            },
+            "lgr_ugga_manual_cal": {
+                "model": "lgr_ugga",
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2023-11-18",
+                "MIU": false,
+                "notes": "Removed calibration tank and manually calibrated with lgr software periodically."
+            }
+        }
+    },
+    "TRX02": {
+        "name": "TRAX 1104",
+        "is_mobile": true,
+        "instruments": {
+            "2b_205": {
+                "loggers": {
+                    "horel": "campbellsci",
+                    "lin": "air-trend"
+                },
+                "installation_date": "2016-06-15"
+            },
+            "cr1000": {
+                "loggers": {
+                    "horel": "campbellsci"
+                },
+                "installation_date": "2016-02-04"
+            },
+            "gps": {
+                "loggers": {
+                    "horel": "campbellsci",
+                    "lin": "air-trend"
+                },
+                "installation_date": "2016-02-04"
+            },
+            "lgr_no2": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2016-06-27"
+            },
+            "metone_es642": {
+                "loggers": {
+                    "horel": "campbellsci",
+                    "lin": "air-trend"
+                },
+                "installation_date": "2016-02-04"
+            },
+            "teledyne_t500u": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2020-12-22"
+            }
+        }
+    },
+    "TRX03": {
+        "name": "TRAX 1034",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2019-11-04"
+            },
+            "cr1000": {
+                "installation_date": "2019-11-04"
+            },
+            "gps": {
+                "installation_date": "2019-11-04"
+            },
+            "metone_es642": {
+                "installation_date": "2019-11-04"
+            }
+        }
+    },
+    "WBB": {
+        "name": "William Browning",
+        "latitude": 40.766189,
+        "longitude": -111.847672,
+        "zagl": 35,
+        "instruments": {
+            "lgr_ugga": {
+                "loggers": {
+                    "lin": "lgr_ugga"
+                },
+                "installation_date": "2013-10-09"
+            },
+            "magee_ae33": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2020-07-29"
+            },
+            "metone_es642": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2017-03-07",
+                "removal_date": "2022-06-07"
+            },
+            "teledyne_t200": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2017-01-19"
+            },
+            "teledyne_t300": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2017-05-03"
+            },
+            "teledyne_t400": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2016-08-29"
+            },
+            "teledyne_t500u": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2020-07-29",
+                "removal_date": "2023-01-25"
+            },
+            "teom_1400ab": {
+                "loggers": {
+                    "lin": "air-trend"
+                },
+                "installation_date": "2016-09-22",
+                "removal_date": "2017-03-01"
+            }
+        }
+    }
+}

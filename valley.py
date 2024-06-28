@@ -29,9 +29,12 @@ DATA_DIR = os.path.join(wkspace, 'data')
 # TODO
 #   create tilers to select from
 
+BOUNDS = (-112.25, 40.4, 
+          -111.62, 40.95)
+
 
 class SaltLake:
-    def __init__(self, bounds=(-112.25, 40.4, -111.62, 40.95),
+    def __init__(self, bounds=BOUNDS,
                  ax=None, crs=None, figsize=(6, 6),
                  tiler=None, tiler_zoom=9,
                  Inventory=False,  Inventory_cmap=None,
