@@ -370,6 +370,8 @@ class BB_205(Instrument, SensorMixin):
     model = '2b_205'
     pollutants = ('O3',)
 
+    columns = ['O3_ppb', 'Internal_T_C', 'Internal_P_hPa', 'Flow_mLpm']
+
 
 class BB_405(Instrument, SensorMixin):
     model = '2b_405'
@@ -382,6 +384,9 @@ class CR1000(Instrument):
 
 class GPS(Instrument):
     model = 'gps'
+
+    columns = ['Latitude_deg', 'Longitude_deg', 'Altitude_msl', 'Speed_m_s',
+               'Course_deg', 'N_Sat', 'Fix_Quality', 'Status']
 
     def read_data(self, group: str, lvl: str, 
                   time_range: TimeRange | TimeRange._input_types = [None, None],
@@ -402,15 +407,30 @@ class LGR_NO2(Instrument, SensorMixin):
     model = 'lgr_no2'
     pollutants = ('NO2',)
 
+    columns = ['NO2_ppb', 'NO2_ppb_se', 'Internal_P_torr', 'Internal_T_C',
+               'LED_T_V', 'Instrument_T_C', 'Tau_s', 'BG_Subtracted_Tau_s',
+               'Tau_SE_s', 'Loss_ppm_cm-1', 'BG_Subtracted_Loss_ppm_cm-1',
+               'Loss_SE_ppm_cm-1', 'Num_Good_Fits', 'Fit_Amplitude_V',
+               'Fit_Amplitude_SE_V', 'Fit_Offset_V', 'Fit_Offset_SE_V', 'ID']
+
 
 class LGR_UGGA(Instrument, SensorMixin):
     model = 'lgr_ugga'
     pollutants = ('CO2', 'CH4')
 
+    columns = ['CH4_ppm', 'CH4_ppm_sd', 'H2O_ppm', 'H2O_ppm_sd', 'CO2_ppm',
+               'CO2_ppm_sd', 'CH4d_ppm', 'CH4d_ppm_sd', 'CO2d_ppm',
+               'CO2d_ppm_sd', 'Internal_P_torr', 'Internal_P_torr_sd', 'Internal_T_C',
+               'Cavity_T_C_sd', 'Ambient_T_C', 'Ambient_T_C_sd', 'RD0_us',
+               'RD0_us_sd', 'RD1_us', 'RD1_us_sd', 'Fit_Flag', 'ID']
+
 
 class Licor_6262(Instrument, SensorMixin):
     model = 'licor_6262'
     pollutants = ('CO2',)
+
+    columns = ['Ambient_T_C', 'Instrument_T_C', 'Internal_P_kPa', 'Flow_mLpm',
+               'Internal_T_C', 'CO2_analog_ppm', 'CO2_ppm', 'H20_ppth']
 
 
 class Licor_7000(Licor_6262):
