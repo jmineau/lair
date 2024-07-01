@@ -5,13 +5,17 @@ lair.met.soundings
 Module for working with upper air sounding data.
 """
 
+try:
+    from siphon.simplewebservice.wyoming import WyomingUpperAir
+except ImportError:
+    print('siphon not installed. Please install siphon to use the soundings module.')
+
 from collections import deque
 import datetime as dt
 import numpy as np
 import os
 import pandas as pd
 import requests
-from siphon.simplewebservice.wyoming import WyomingUpperAir
 from time import sleep
 import xarray as xr
 

@@ -4,6 +4,9 @@
 
 # maybe rename to background?
 
+import pandas as pd
+
+
 def generate_baseline(data, window=dt.timedelta(hours=24), q=0.1):
     # data must have a datetime index
     baseline = (data.rolling(window=window, center=True).quantile(q)

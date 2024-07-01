@@ -5,6 +5,8 @@ lair.air.carbontracker
 Module for reading CarbonTracker data.
 """
 
+import xarray as xr
+
 def read_carbontracker(path, parallel=True):
     def preprocess(ds):
         time_components = ds['time_components'].values
