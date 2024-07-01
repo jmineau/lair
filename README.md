@@ -19,7 +19,6 @@ git clone https://github.com/jmineau/lair.git
 cd lair
 pip install -e .
 ```
-> To install via `conda`, use the [environment.yml](environment.yml) file: `conda env create -f environment.yml`
 
 ## Optional Dependencies
 
