@@ -38,7 +38,7 @@ The `Site` object is the primary interface for accessing data from a UATAQ site.
 sites = lab.sites          # list of sites
 wbb = lab.get_site('wbb')  # site object
 ```
-> For convience, `uataq.laboratory.get_site` is aliased as `uataq.get_site`
+> For convenience, `uataq.laboratory.get_site` is aliased as `uataq.get_site`
 
 The `Site` object contains the following information as attributes:
  - SID : The site identifier.
@@ -52,7 +52,7 @@ There are two primary methods for reading data from a site:
 1. [Reading Instrument Data](#reading-instrument-data) - Data for each instrument at a site is read individually and stored in a dictionary with the instrument name as the key.
 2. [Getting Observations](#getting-observations) - Finalized observations from all instruments at a site are aggregated into a single dataframe.
 
-> `Site.read_data` and `Site.get_obs` have been wrapped in `uataq.get_data` and `uataq.get_obs` respectively for convience with an added `SID` parameter.
+> `Site.read_data` and `Site.get_obs` have been wrapped in `uataq.read_data` and `uataq.get_obs` respectively for convenience with an added `SID` parameter.
 
 ## Reading Instrument Data
 
