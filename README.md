@@ -78,6 +78,10 @@ The `uataq` subpackage contains classes and functions for working with data from
 
  - [Documentation](docs/uataq.md)
 
+### `lair.units`
+
+The `units` module contains various unit conversion functions & factors used throughout the `lair` package.
+
 ### `lair.utils`
 
 The `utils` module contains various utility functions used throughout the `lair` package.
