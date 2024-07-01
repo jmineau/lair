@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Mon May  1 14:16:30 2023
-
-@author: James Mineau (James.Mineau@utah.edu)
+lair.air.hrrr
+~~~~~~~~~~~~~
 
 Module to download HRRR winds at a point
 
@@ -11,19 +8,29 @@ Documentation:
     https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.html
 """
 
-import boto3
-from botocore import UNSIGNED
-from botocore.config import Config
+# Optional dependencies
+try:
+    import boto3
+    from botocore import UNSIGNED
+    from botocore.config import Config
+except ImportError:
+    print("boto3 not installed. Please install boto3 to use the hrrr module.")
+try:
+    import s3fs
+except ImportError:
+    print("s3fs not installed. Please install s3fs to use the hrrr module.")
+try:
+    import numcodecs as ncd
+    import zarr
+except ImportError:
+    print("zarr not installed. Please install zarr to use the hrrr module.")
+
 import cartopy.crs as ccrs
 import dataclasses
 import datetime as dt
-import numcodecs as ncd
 import numpy as np
 import pandas as pd
-import s3fs
 import xarray as xr
-import zarr
-
 
 PROJECTION = ccrs.LambertConformal(central_longitude=262.5,
                                    central_latitude=38.5,
