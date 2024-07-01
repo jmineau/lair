@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lair"
+description = "Python package for land-air interactions research, including reading UATAQ data."
+authors = [
+    {name = "James Mineau", email = "James.Mineau@utah.edu"},
+]
+readme = "README.md"
+keywords = ["land-air interactions", "research", "uataq", "pollution", "atmospheric science"]
+requires-python = ">=3.10"
+dependencies = [
+  "cartopy",
+  "fastkml",
+  "geopandas",
+  "matplotlib",
+  "numpy<2",  # numpy 2.0 breaks pytables
+  "pandas",
+  "pyproj",
+  "rioxarray",
+  "scipy",
+  "shapely",
+  "tables",
+  "xarray",
+]
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Atmospheric Science"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+met = [
+  "boto3",
+  "metpy",
+  "s3fs",
+  "siphon",
+  "synopticpy",
+  "zarr",
+  ]
+
+[project.urls]
+Repository = "https://github.com/jmineau/lair.git"
+Issues = "https://github.com/jmineau/lair/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "lair.VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["lair*"]

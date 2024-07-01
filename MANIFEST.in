@@ -1,0 +1,3 @@
+include LICENSE README.md
+graft docs
+graft lair

@@ -1,0 +1,7 @@
+name: lair
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip
+    - git+https://github.com/jmineau/lair.git

@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Wed Aug 30 11:28:14 2023
+lair.air.air
+~~~~~~~~~~~~
 
-@author: James Mineau (James.Mineau@utah.edu)
+Module of miscellaneous functions for air quality data.
 """
 
 import datetime as dt
