@@ -10,7 +10,7 @@ from lair import uataq
 lab = uataq.laboratory
 ```
 
-The laboratory object is a singleton instance of the `Laboratory` class which is initialized with the [UATAQ configuration file](../uataq/config.json). The configuration file is a JSON file which specifies UATAQ site characteristics including name, location, status, research groups collecting data, and installed instruments.
+The laboratory object is a singleton instance of the `Laboratory` class which is initialized with the [UATAQ configuration file](/lair/uataq/config.json). The configuration file is a JSON file which specifies UATAQ site characteristics including name, location, status, research groups collecting data, and installed instruments.
 
 > Changes to UATAQ site infrastructure, including instrument installation/removal, must be reflected in the configuration file for the lab to be able to properly access the data.
 
@@ -28,7 +28,7 @@ Each research group has its own module in `uataq.filesystem.groupspaces` where g
 
 All `GroupSpace` objects are stored in the `uataq.filesystem.groups` dictionary with the group name as the key. Groups can also be accessed through `uataq.filesystem.get_group`.
 
-> The default research group can be changed at runtime via `uataq.filesystem.DEFAULT_GROUP` or <i>permanently</i> (until the next update) changed in the [filesystem subpackage](../uataq/filesystem/__init__.py).
+> The default research group can be changed at runtime via `uataq.filesystem.DEFAULT_GROUP` or <i>permanently</i> (until the next update) changed in the [filesystem subpackage](/lair/uataq/filesystem/__init__.py).
 
 ## Research Sites
 
@@ -152,7 +152,7 @@ I chose `UATAQ` as the name for the package because it is the most encompassing 
 
 Designing a user-friendly package is a challenge because the data is collected by multiple research groups, each with their own naming conventions and data formats. The package must be able to handle all of these different formats and provide a consistent interface for the user.
 
-I have defined a set of [standardized column names](../uataq/columns.md) that each groupspace module must define a `column_mapping` dictionary that maps the group's column names to the standardized names when using the `GroupSpace.standardize_data` method.
+I have defined a set of [standardized column names](/lair/uataq/columns.md) that each groupspace module must define a `column_mapping` dictionary that maps the group's column names to the standardized names when using the `GroupSpace.standardize_data` method.
 
 ## Input Parameters
 
