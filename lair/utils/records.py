@@ -68,8 +68,10 @@ def read_kml(path):
     return k
 
 
-def download_ftp_files(host, paths, download_dir,
-                       username='anonymous', password=''):
+def ftp_download(host, paths, download_dir,
+                 username='anonymous', password='',
+                 prefix=None,
+                 pattern=None):
     import ftplib
     import os
 
@@ -86,10 +88,9 @@ def download_ftp_files(host, paths, download_dir,
         # Start in root for every path
         ftp.cwd('/')
 
-        path = '/' + path.strip('/')  # path should start from root on ftp
-        initial_path = path
+        PATH = '/' + path.strip('/')  # path should start from root on ftp
 
-        # Redefine download func for each path to pass inital_path
+        # Redefine download func for each path to pass PATH
         def download(path):
             try:
                 # Try changing to the specified path
@@ -97,38 +98,50 @@ def download_ftp_files(host, paths, download_dir,
 
             except ftplib.error_perm as e:
                 assert 'Failed to change directory' in str(e)
-
                 # If it's not a directory, download the file
-                if path == initial_path:
-                    filename = os.path.basename(path)
+
+                if pattern is not None and pattern not in path:
+                    # Exit if pattern is not in path
+                    vprint(f'Skipping {path} - pattern does not match')
+                    return None
+
+                # Get common path to append to download_dir
+                if prefix is not None:
+                    if prefix == '':
+                        # Recreate the entire structure
+                        common = path.strip('/')  # Remove leading '/'
+                    else:
+                        # Get the relative strucuture from prefix
+                        common = os.path.relpath(path, prefix)
                 else:
-                    initial_parent = os.path.dirname(initial_path)
-                    filename = os.path.relpath(path, initial_parent)
+                    # Drop each PATH directory into the download_dir
+                    common = os.path.relpath(path, os.path.dirname(PATH))
 
-                local_filename = os.path.join(download_dir, filename)
-                os.makedirs(os.path.dirname(local_filename), exist_ok=True)
+                # Create the local directory structure
+                local = os.path.join(download_dir, common)
+                os.makedirs(os.path.dirname(local), exist_ok=True)
 
-                with open(local_filename, 'wb') as local_file:
+                # Download the file
+                with open(local, 'wb') as local_file:
                     print(f'Downloading {path}')
                     ftp.retrbinary(f'RETR {path}', local_file.write)
 
                 return 'f'
 
-            else:
+            else:  # path is a directory
                 files = ftp.nlst()  # Get a list of files in that directory
 
                 for file in files:
-
-                    # Download file/dir
+                    # recursively download files
                     f_d = download('/'.join([path, file]))
 
-                    if f_d == 'd':
-                        # restart in path to be able to traverse multiple dirs
+                    if f_d == 'd':  # file is a directory
+                        # download changed to a subdirectory
+                        # restart in the above directory to be able to traverse multiple dirs
                         ftp.cwd(path)
-
                 return 'd'
 
-        download(path)
+        download(PATH)
 
     ftp.quit()
     return True
