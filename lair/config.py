@@ -1,15 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Fri Apr 28 16:47:29 2023
+lair.config
+~~~~~~~~~~~~
 
-@author: James Mineau (James.Mineau@utah.edu)
-
-Config file for lair package
+Config module for lair package
 """
 
 import os
 import pandas as pd
+import re
 
 
 ###############
@@ -35,6 +33,35 @@ STILT_DIR = os.getenv('STILT_DIR')
 
 # LAIR
 LAIR_DIR = os.path.dirname(__file__)
+
+# Cache
+class _CacheDir:
+    global CACHE_DIR
+    CACHE_DIR = "/uufs/chpc.utah.edu/common/home/lin-group23/jkm/lair_cache"
+
+    @property
+    def directory(self):
+        return CACHE_DIR
+    
+    @directory.getter
+    def directory(self):
+        if CACHE_DIR is None:
+            cache_dir = input("Enter the path to your lair cache directory: ")
+            # Read the content of the file
+            with open(__file__, 'r') as file:
+                content = file.read()
+
+            # Use regex to find and replace CACHE_DIR = ""
+            content = re.sub(r'CACHE_DIR\s*=\s*None', f'CACHE_DIR = "{cache_dir}"', content)
+
+            # Write the modified content back to the file
+            with open(__file__, 'w') as file:
+                file.write(content)
+
+            return cache_dir
+        else:
+            return CACHE_DIR
+CACHE_DIR = _CacheDir().directory
 
 
 ##########

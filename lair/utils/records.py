@@ -5,6 +5,7 @@ lair.utils.records
 Utilities for working with files and directories.
 """
 
+import os
 from typing import Callable, Literal
 
 from lair.config import vprint
@@ -35,8 +36,7 @@ def list_files(path: str = '.', pattern: str = None, ignore_case: bool = False, 
         List[str]: A list of file names or full paths that match the specified pattern.
     """
     import fnmatch
-    import os
-    
+
     result = []
     if recursive:
         walk = os.walk(path)
@@ -73,7 +73,6 @@ def ftp_download(host, paths, download_dir,
                  prefix=None,
                  pattern=None):
     import ftplib
-    import os
 
     if username == 'anonymous' and password == '':
         password = 'anonymous@'
@@ -245,6 +244,12 @@ class Cacher:
         self.cache_file = cache_file
         self.reload = reload
 
+        # Make sure the directory exists for the cache file
+        if not os.path.exists(os.path.dirname(cache_file)):
+            os.makedirs(os.path.dirname(cache_file))
+
+        head, tail = os.path.split(cache_file)
+        self.index_file = f'{head}/.{tail}.index'
         self.cache_index = self.load_cache_index()
 
     def load_cache_index(self):
@@ -265,7 +270,7 @@ class Cacher:
             return {}
 
         try:
-            with open(self.cache_file + '.index', 'rb') as f:
+            with open(self.index_file, 'rb') as f:
                 cache_index = self.pkl.load(f)
         except FileNotFoundError:
             cache_index = {}
@@ -276,7 +281,7 @@ class Cacher:
         """
         Saves the cache index to a file.
         """
-        with open(self.cache_file + '.index', 'wb') as f:
+        with open(self.index_file, 'wb') as f:
             self.pkl.dump(self.cache_index, f,
                           protocol=self.pkl.HIGHEST_PROTOCOL)
 
@@ -300,7 +305,7 @@ class Cacher:
 
         if key in self.cache_index:
             # Load the result from the cache_file using its index
-            vprint(f"Returning cached result for {args} {kwargs}")
+            vprint(f"Returning cached result for {self.func.__name__} with args: {args} {kwargs}")
 
             with open(self.cache_file, 'rb') as f:
                 f.seek(self.cache_index[key])  # go to index in cache_file
