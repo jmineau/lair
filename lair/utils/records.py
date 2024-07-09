@@ -7,7 +7,7 @@ Utilities for working with files and directories.
 
 from typing import Callable, Literal
 
-from lair.config import vprint
+from lair.config import verbose, vprint
 
 
 def unzip(zf, dir_path=None):
@@ -228,7 +228,7 @@ class Cacher:
 
     import pickle as pkl
 
-    def __init__(self, func, cache_file, verbose=False, reload=False):
+    def __init__(self, func, cache_file, verbose=verbose, reload=False):
         """
         Initializes a Cacher object.
 
@@ -282,7 +282,7 @@ class Cacher:
             self.pkl.dump(self.cache_index, f,
                           protocol=self.pkl.HIGHEST_PROTOCOL)
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         """
         Returns the cached result if available, otherwise calls the function
         and caches the result for future use.
@@ -298,12 +298,12 @@ class Cacher:
             The result of the function call.
         """
 
-        key = self.pkl.dumps(args)  # serialize func args
+        key = self.pkl.dumps((args, kwargs))  # serialize func args
 
         if key in self.cache_index:
             # Load the result from the cache_file using its index
             if self.verbose:
-                print(f"Returning cached result for {args}")
+                print(f"Returning cached result for {args} {kwargs}")
 
             with open(self.cache_file, 'rb') as f:
                 f.seek(self.cache_index[key])  # go to index in cache_file
@@ -311,7 +311,7 @@ class Cacher:
 
         else:
             # Call the function and update the cache
-            result = self.func(*args)
+            result = self.func(*args, **kwargs)
 
             with open(self.cache_file, 'ab') as f:
                 f.seek(0, 2)  # go to the end of the pickle file
@@ -323,7 +323,7 @@ class Cacher:
             self.cache_index[key] = pos
 
             if self.verbose:
-                print(f"Added {args} to cache")
+                print(f"Added {args} {kwargs} to cache")
 
             self.save_cache_index()  # update cache_index
         return result
