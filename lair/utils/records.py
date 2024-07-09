@@ -7,7 +7,7 @@ Utilities for working with files and directories.
 
 from typing import Callable, Literal
 
-from lair.config import verbose, vprint
+from lair.config import vprint
 
 
 def unzip(zf, dir_path=None):
@@ -228,7 +228,7 @@ class Cacher:
 
     import pickle as pkl
 
-    def __init__(self, func, cache_file, verbose=verbose, reload=False):
+    def __init__(self, func, cache_file, reload=False):
         """
         Initializes a Cacher object.
 
@@ -243,7 +243,6 @@ class Cacher:
 
         self.func = func
         self.cache_file = cache_file
-        self.verbose = verbose
         self.reload = reload
 
         self.cache_index = self.load_cache_index()
@@ -262,8 +261,7 @@ class Cacher:
             # TODO causes previous caches to become unreadable
             #   need to delete previous cache or append to index_file
             # Force func to be executed by setting cache_index to empty
-            if self.verbose:
-                print(f'Forcing {self.func.__name__} to execute')
+            vprint(f'Forcing {self.func.__name__} to execute')
             return {}
 
         try:
@@ -302,8 +300,7 @@ class Cacher:
 
         if key in self.cache_index:
             # Load the result from the cache_file using its index
-            if self.verbose:
-                print(f"Returning cached result for {args} {kwargs}")
+            vprint(f"Returning cached result for {args} {kwargs}")
 
             with open(self.cache_file, 'rb') as f:
                 f.seek(self.cache_index[key])  # go to index in cache_file
@@ -322,8 +319,7 @@ class Cacher:
 
             self.cache_index[key] = pos
 
-            if self.verbose:
-                print(f"Added {args} {kwargs} to cache")
+            vprint(f"Added {args} {kwargs} to cache")
 
             self.save_cache_index()  # update cache_index
         return result
