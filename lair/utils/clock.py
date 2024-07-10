@@ -5,13 +5,12 @@ lair.utils.clock
 This module provides utility functions for working with time and dates.
 """
 
-from collections import namedtuple
 import datetime as dt
 from functools import partial
 import pandas as pd
 import re
 from typing import Union, Literal
-import pytz
+from zoneinfo import ZoneInfo
 
 AFTERNOON = range(12, 17)  # Local Standard Time
 AFTERNOONUTC = range(18, 23)  # AFTERNOON UTC for SLC
@@ -26,7 +25,17 @@ def get_afternoons(times, hours=AFTERNOON):
     return afternoons
 
 
-def convert_timezones(times, fromtz, totz, localize=False):
+def datetime_accessor(obj, accessor='dt'):
+    """
+    Returns the datetime accessor of the object.
+    """
+    if hasattr(obj, accessor):
+        return getattr(obj, accessor)
+    return obj
+
+
+def convert_timezones(x, totz, fromtz=None, localize=False,
+                      driver=None):
     """
     Convert the times from one timezone to another.
 
@@ -39,18 +48,55 @@ def convert_timezones(times, fromtz, totz, localize=False):
     Returns:
         list: A list of datetime objects in the totz timezone.
     """
-    # If the times are not tz-aware, assign them the fromtz timezone.
-    if not any(t.tzinfo for t in times):
-        times = [t.replace(tzinfo=pytz.timezone(fromtz)) for t in times]
 
-    # Convert the times to the specified timezone.
-    converted_times = [t.astimezone(pytz.timezone(totz)) for t in times]
+    if driver is None:
+        times = x
+        # If the times are not tz-aware, assign them the fromtz timezone.
+        if fromtz is not None and not any(t.tzinfo for t in times):
+            fromtz = ZoneInfo(fromtz)
+            times = [t.replace(tzinfo=fromtz) for t in times]
 
-    # If localize is True, localize the times to the totz timezone.
-    if localize:
-        converted_times = [t.replace(tzinfo=None) for t in converted_times]
+        # Convert the times to the specified timezone.
+        totz = ZoneInfo(totz)
+        converted_times = [t.astimezone(totz) for t in times]
 
-    return converted_times
+        # If localize is True, localize the times to the totz timezone.
+        if localize:
+            converted_times = [t.replace(tzinfo=None) for t in converted_times]
+
+        return converted_times
+    elif driver == 'pandas':
+        data = x.copy(deep=True)
+
+        # If x is a DataFrame, convert DateTimeIndex
+        # If x is a Series, convert the series
+        if isinstance(data, pd.DataFrame):
+            times = data.index
+            index = True
+        elif isinstance(data, pd.Series):
+            times = data
+            index = False
+        else:
+            raise ValueError("x is not a DataFrame or Series")
+
+        # If the times are not tz-aware, assign them the fromtz timezone.
+        if fromtz and datetime_accessor(times).tz is None:
+            times = datetime_accessor(times).tz_localize(fromtz) 
+
+        # Convert the times to the specified timezone.
+        times = datetime_accessor(times).tz_convert(totz)
+
+        # If localize is True, localize the times to the totz timezone.
+        if localize:
+            times = datetime_accessor(times).tz_localize(None)
+
+        if index:
+            data.index = times
+        else:
+            data = times
+        return data
+    else:
+        raise ValueError("Invalid driver")
 
 
 UTC2 = partial(convert_timezones, fromtz='UTC')
