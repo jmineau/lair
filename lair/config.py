@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Fri Apr 28 16:47:29 2023
+lair.config
+~~~~~~~~~~~~
 
-@author: James Mineau (James.Mineau@utah.edu)
-
-Config file for lair package
+Config module for lair package
 """
 
 import os
@@ -36,6 +33,11 @@ STILT_DIR = os.getenv('STILT_DIR')
 # LAIR
 LAIR_DIR = os.path.dirname(__file__)
 
+# Cache
+CACHE_DIR = os.getenv('LAIR_CACHE_DIR',
+                      os.path.join(os.path.expanduser('~'), '.cache', 'lair'))
+if not os.path.exists(CACHE_DIR):
+    os.makedirs(CACHE_DIR)
 
 ##########
 # PANDAS #

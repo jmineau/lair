@@ -5,6 +5,7 @@ lair.utils.records
 Utilities for working with files and directories.
 """
 
+import os
 from typing import Callable, Literal
 
 from lair.config import vprint
@@ -35,8 +36,7 @@ def list_files(path: str = '.', pattern: str = None, ignore_case: bool = False, 
         List[str]: A list of file names or full paths that match the specified pattern.
     """
     import fnmatch
-    import os
-    
+
     result = []
     if recursive:
         walk = os.walk(path)
@@ -68,10 +68,11 @@ def read_kml(path):
     return k
 
 
-def download_ftp_files(host, paths, download_dir,
-                       username='anonymous', password=''):
+def ftp_download(host, paths, download_dir,
+                 username='anonymous', password='',
+                 prefix=None,
+                 pattern=None):
     import ftplib
-    import os
 
     if username == 'anonymous' and password == '':
         password = 'anonymous@'
@@ -86,10 +87,9 @@ def download_ftp_files(host, paths, download_dir,
         # Start in root for every path
         ftp.cwd('/')
 
-        path = '/' + path.strip('/')  # path should start from root on ftp
-        initial_path = path
+        PATH = '/' + path.strip('/')  # path should start from root on ftp
 
-        # Redefine download func for each path to pass inital_path
+        # Redefine download func for each path to pass PATH
         def download(path):
             try:
                 # Try changing to the specified path
@@ -97,38 +97,50 @@ def download_ftp_files(host, paths, download_dir,
 
             except ftplib.error_perm as e:
                 assert 'Failed to change directory' in str(e)
-
                 # If it's not a directory, download the file
-                if path == initial_path:
-                    filename = os.path.basename(path)
+
+                if pattern is not None and pattern not in path:
+                    # Exit if pattern is not in path
+                    vprint(f'Skipping {path} - pattern does not match')
+                    return None
+
+                # Get common path to append to download_dir
+                if prefix is not None:
+                    if prefix == '':
+                        # Recreate the entire structure
+                        common = path.strip('/')  # Remove leading '/'
+                    else:
+                        # Get the relative strucuture from prefix
+                        common = os.path.relpath(path, prefix)
                 else:
-                    initial_parent = os.path.dirname(initial_path)
-                    filename = os.path.relpath(path, initial_parent)
+                    # Drop each PATH directory into the download_dir
+                    common = os.path.relpath(path, os.path.dirname(PATH))
 
-                local_filename = os.path.join(download_dir, filename)
-                os.makedirs(os.path.dirname(local_filename), exist_ok=True)
+                # Create the local directory structure
+                local = os.path.join(download_dir, common)
+                os.makedirs(os.path.dirname(local), exist_ok=True)
 
-                with open(local_filename, 'wb') as local_file:
+                # Download the file
+                with open(local, 'wb') as local_file:
                     print(f'Downloading {path}')
                     ftp.retrbinary(f'RETR {path}', local_file.write)
 
                 return 'f'
 
-            else:
+            else:  # path is a directory
                 files = ftp.nlst()  # Get a list of files in that directory
 
                 for file in files:
-
-                    # Download file/dir
+                    # recursively download files
                     f_d = download('/'.join([path, file]))
 
-                    if f_d == 'd':
-                        # restart in path to be able to traverse multiple dirs
+                    if f_d == 'd':  # file is a directory
+                        # download changed to a subdirectory
+                        # restart in the above directory to be able to traverse multiple dirs
                         ftp.cwd(path)
-
                 return 'd'
 
-        download(path)
+        download(PATH)
 
     ftp.quit()
     return True
@@ -215,7 +227,7 @@ class Cacher:
 
     import pickle as pkl
 
-    def __init__(self, func, cache_file, verbose=False, reload=False):
+    def __init__(self, func, cache_file, reload=False):
         """
         Initializes a Cacher object.
 
@@ -230,9 +242,14 @@ class Cacher:
 
         self.func = func
         self.cache_file = cache_file
-        self.verbose = verbose
         self.reload = reload
 
+        # Make sure the directory exists for the cache file
+        if not os.path.exists(os.path.dirname(cache_file)):
+            os.makedirs(os.path.dirname(cache_file))
+
+        head, tail = os.path.split(cache_file)
+        self.index_file = f'{head}/.{tail}.index'
         self.cache_index = self.load_cache_index()
 
     def load_cache_index(self):
@@ -249,12 +266,11 @@ class Cacher:
             # TODO causes previous caches to become unreadable
             #   need to delete previous cache or append to index_file
             # Force func to be executed by setting cache_index to empty
-            if self.verbose:
-                print(f'Forcing {self.func.__name__} to execute')
+            vprint(f'Forcing {self.func.__name__} to execute')
             return {}
 
         try:
-            with open(self.cache_file + '.index', 'rb') as f:
+            with open(self.index_file, 'rb') as f:
                 cache_index = self.pkl.load(f)
         except FileNotFoundError:
             cache_index = {}
@@ -265,11 +281,11 @@ class Cacher:
         """
         Saves the cache index to a file.
         """
-        with open(self.cache_file + '.index', 'wb') as f:
+        with open(self.index_file, 'wb') as f:
             self.pkl.dump(self.cache_index, f,
                           protocol=self.pkl.HIGHEST_PROTOCOL)
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         """
         Returns the cached result if available, otherwise calls the function
         and caches the result for future use.
@@ -285,12 +301,11 @@ class Cacher:
             The result of the function call.
         """
 
-        key = self.pkl.dumps(args)  # serialize func args
+        key = self.pkl.dumps((args, kwargs))  # serialize func args
 
         if key in self.cache_index:
             # Load the result from the cache_file using its index
-            if self.verbose:
-                print(f"Returning cached result for {args}")
+            vprint(f"Returning cached result for {self.func.__name__} with args: {args} {kwargs}")
 
             with open(self.cache_file, 'rb') as f:
                 f.seek(self.cache_index[key])  # go to index in cache_file
@@ -298,7 +313,7 @@ class Cacher:
 
         else:
             # Call the function and update the cache
-            result = self.func(*args)
+            result = self.func(*args, **kwargs)
 
             with open(self.cache_file, 'ab') as f:
                 f.seek(0, 2)  # go to the end of the pickle file
@@ -309,8 +324,7 @@ class Cacher:
 
             self.cache_index[key] = pos
 
-            if self.verbose:
-                print(f"Added {args} to cache")
+            vprint(f"Added {args} {kwargs} to cache")
 
             self.save_cache_index()  # update cache_index
         return result
