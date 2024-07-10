@@ -54,8 +54,8 @@ def convert_timezones(times, fromtz, totz, localize=False):
 
 
 UTC2 = partial(convert_timezones, fromtz='UTC')
-UTC2MST = partial(UTC2, tz='MST')
-UTC2MTN = partial(UTC2, tz='America/Denver')
+UTC2MST = partial(UTC2, totz='MST')
+UTC2MTN = partial(UTC2, totz='America/Denver')
 MST2UTC = partial(convert_timezones, fromtz='MST', totz='UTC')
 MTN2UTC = partial(convert_timezones, fromtz='America/Denver', totz='UTC')
 
