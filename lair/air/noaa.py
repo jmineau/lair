@@ -5,6 +5,12 @@ lair.air.noaa
 Module to get NOAA greenhouse gas data.
 """
 
+import os
+import pandas as pd
+import xarray as xr
+
+from lair.utils.records import ftp_download
+
 def get_GML_ghg_data(site, parameter, type, level, filetype, download_dir,
                      lab_ID_num=1, measurement_group=None, qualifiers=None):
 
@@ -25,7 +31,7 @@ def get_GML_ghg_data(site, parameter, type, level, filetype, download_dir,
 
     path = f'data/{category}/{parameter}/{type}/{level}/{filetype}/{filename}'
 
-    download_ftp_files(host, path, download_dir)
+    ftp_download(host, path, download_dir)
 
     local_file = os.path.join(download_dir, filename)
 
