@@ -10,7 +10,7 @@ import datetime as dt
 from functools import partial
 import pandas as pd
 import re
-from typing import Union
+from typing import Union, Literal
 import pytz
 
 AFTERNOON = range(12, 17)  # Local Standard Time
@@ -252,9 +252,28 @@ class TimeRange:
             return start
 
 
+def diurnal(data: pd.DataFrame, freq: str='1H', statistic: str='mean',
+            method: Literal['floor', 'ceil', 'round']='floor'):
+    """
+    Aggregate the data to the specified frequency and compute the statistic for each group.
 
-def diurnal(data, statistic='mean', freq='1H'):
-    resolution = data.index.round(freq).time
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The data to aggregate. Panda DataFrame with a DateTimeIndex.
+    freq : str
+        The frequency to aggregate the data to. Sub-Daily.
+    statistic : str or list of str, optional
+        The statistic to compute for each group. Default is 'mean'.
+    method : one of 'floor', 'ceil', 'round'
+        The method to use to round the index to the nearest freq.
+
+    Returns
+    -------
+    pd.DataFrame
+        The aggregated data.
+    """
+    resolution = getattr(data.index, method)(freq).time
     agg = data.groupby(resolution).agg(statistic)
 
     return agg

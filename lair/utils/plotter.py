@@ -5,6 +5,7 @@ lair.utils.plotter
 This module provides utility functions for plotting data.
 """
 
+import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
 from cartopy.io.img_tiles import GoogleWTS
@@ -22,7 +23,7 @@ def log10formatter(x, pos, deci=0):
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     """
     Truncate matplotlib colormaps using min and max vals from 0 to 1,
-    and then linearly building a new colormap
+    and then linearly build a new colormap
     """
 
     new_cmap = mcolors.LinearSegmentedColormap.from_list(
@@ -55,29 +56,54 @@ def NCL_cmap(table_name):
 def get_terrain_cmap(minval=0.42, maxval=1.0, n=256):
     '''Matplotlib terrain map truncated using min and max values between
     0 and 1'''
-
-    import matplotlib.pyplot as plt
     terrain = truncate_colormap(plt.get_cmap('terrain'),
                                 minval=minval, maxval=maxval, n=n)
     return terrain
 
-def diurnalPlot(data, param='CH4', units='ppm', tz='MST', freq='1H', ax=None):
+def diurnalPlot(data, param, stats=['std', 'median', 'mean'], units=None, tz='UTC', freq='1H', ax=None,
+                colors={'mean': 'black', 'median': 'blue', 'std': 'gray'}, min_count = 0):
+    import datetime as dt
+    import matplotlib.dates as mdates
+    from lair.utils.clock import diurnal
+
+    # Check for count in stats
+    if 'count' in stats:
+        plot_count = True
+    else:
+        plot_count = False
+        stats.append('count')
+
     # Calculate diurnal cycle
-    agg = diurnal(data, ['mean', 'median', 'std'], freq)[param]
+    agg = diurnal(data, freq, stats)[param]
 
     # Assign dummy date so locator isn't confused
     agg.index = agg.index.map(lambda t:
                               dt.datetime.combine(dt.date.today(), t))
 
+    # Filter by count
+    if min_count > 0:
+        agg.loc[agg['count'] < min_count] = np.nan
+
     # Plot data
     if ax is None:
         fig, ax = plt.subplots()
 
-    mean, = ax.plot(agg.index, agg['mean'], c='black')
-    std = ax.fill_between(agg.index, agg['mean'] - agg['std'],
-                          agg['mean'] + agg['std'],
-                          color='gray', alpha=0.2, edgecolor='none')
-    median, = ax.plot(agg.index, agg['median'], c='blue', lw=4)
+    legend_elements = {
+    }
+
+    for stat in stats:
+        if stat == 'std' and 'mean' in stats:
+            # Plot standard deviation as fill_between only if 'mean' is also plotted
+            handle = ax.fill_between(agg.index,
+                                  agg['mean'] - agg['std'],
+                                  agg['mean'] + agg['std'],
+                                  color=colors.get(stat, 'gray'), alpha=0.2, edgecolor='none')
+        else:
+            if stat == 'count' and not plot_count:
+                continue
+            # Plot other statistics as lines
+            handle, = ax.plot(agg.index, agg[stat], c=colors.get(stat, 'black'), lw=3)
+        legend_elements[stat] = handle
 
     # Format x axis
     locator = mdates.HourLocator(byhour=range(3, 24, 3))
@@ -87,9 +113,20 @@ def diurnalPlot(data, param='CH4', units='ppm', tz='MST', freq='1H', ax=None):
 
     ax.set_xlim(mdates.date2num(agg.index[0])-0.03, mdates.date2num(agg.index[-1])+0.03)
 
-    ax.legend([(std, mean), median], [r'mean $\pm$1$\sigma$', 'median'])
+    # Build legend
+    if 'std' in stats and 'mean' in stats:
+        std = legend_elements.pop('std')
+        mean = legend_elements.pop('mean')
+        legend_elements[r'mean $\pm$1$\sigma$'] = (std, mean)
+    handles = [value for value in legend_elements.values()]
+    labels = [key for key in legend_elements.keys()]
+    ax.legend(handles, labels)
+
+    ylabel = f'{param}'
+    if units is not None:
+        ylabel += f' [{units}]'
     ax.set(xlabel=f'Time [{tz}]',
-           ylabel=f'{param} [{units}]')
+           ylabel=ylabel)
 
     return ax
 
@@ -99,6 +136,7 @@ def seasonalPlot(data, param='CH4', units='ppm', ax=None):
               'MAM': '#1b9e77', 
               'JJA': '#d95f02', 
               'SON': '#7570b3'}
+    from lair.utils.clock import seasonal
     
     # Calculate seasonal cycle
     agg = seasonal(data, ['mean', 'std'])[param].unstack(level=0)
