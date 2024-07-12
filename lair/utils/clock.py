@@ -5,11 +5,14 @@ lair.utils.clock
 This module provides utility functions for working with time and dates.
 """
 
+from contextlib import ContextDecorator
+from dataclasses import dataclass, field
 import datetime as dt
 from functools import partial
 import pandas as pd
 import re
-from typing import Union, Literal
+import time
+from typing import Any, Callable, ClassVar, Dict, Literal, Optional, Union
 from zoneinfo import ZoneInfo
 
 AFTERNOON = [12, 13, 14, 15, 16] # HH Local Standard Time
@@ -188,6 +191,66 @@ class TimeRange:
             return stop
         else:
             return start
+
+
+@dataclass
+class Timer(ContextDecorator):
+    """
+    Time your code using a class, context manager, or decorator
+    
+    https://realpython.com/python-timer
+    """
+
+    timers: ClassVar[Dict[str, float]] = {}
+    name: str | None = None
+    text: str = "Elapsed time: {:0.4f} seconds"
+    logger: Optional[Callable[[str], None]] = print
+    _start_time: Optional[float] = field(default=None, init=False, repr=False)
+
+    class TimerError(Exception):
+    """A custom exception used to report errors in use of Timer class"""
+
+    def __post_init__(self) -> None:
+        """Initialization: add timer to dict of timers"""
+        if self.name:
+            self.timers.setdefault(self.name, 0)
+
+    def start(self) -> None:
+        """Start a new timer"""
+        if self._start_time is not None:
+            raise Timer.TimerError("Timer is running. Use .stop() to stop it")
+
+        self._start_time = time.perf_counter()
+
+    def stop(self) -> float:
+        """Stop the timer, and report the elapsed time"""
+        if self._start_time is None:
+            raise Timer.TimerError("Timer is not running. Use .start() to start it")
+
+        # Calculate elapsed time
+        elapsed_time = time.perf_counter() - self._start_time
+        self._start_time = None
+
+        # Report elapsed time
+        if self.logger:
+            self.logger(self.text.format(elapsed_time))
+        if self.name:
+            self.timers[self.name] += elapsed_time
+
+        return elapsed_time
+
+    def reset_timers(self):
+        """Reset class timers"""
+        Timer.timers = {}
+
+    def __enter__(self) -> "Timer":
+        """Start a new timer as a context manager"""
+        self.start()
+        return self
+
+    def __exit__(self, *exc_info: Any) -> None:
+        """Stop the context manager timer"""
+        self.stop()
 
 
 def datetime_accessor(obj, accessor='dt'):
