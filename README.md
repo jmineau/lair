@@ -53,7 +53,7 @@ pip install git+https://github.com/jmineau/lair.git[met]
 
 The `air` module contains various modules for working with atmospheric data:
  - `air.air` - Miscellaneous functions for working with atmospheric data.
- - `air.enhancements` - Functions for calculating a background/baseline from a time series.
+ - `air.background` - Functions for calculating a background/baseline from a time series.
  - `air.hrrr` - Functions for working with data from the High-Resolution Rapid Refresh (HRRR) model.
  - `air.inventory` - Classes and functions for working with emissions inventories.
  - `air.mesowest` - Functions for working with data from the MesoWest API.

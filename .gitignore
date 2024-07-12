@@ -1,3 +1,5 @@
 __pycache__/
 
 *.egg-info
+
+lair/air/_ccg_filter.py
