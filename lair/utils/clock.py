@@ -12,117 +12,9 @@ import re
 from typing import Union, Literal
 from zoneinfo import ZoneInfo
 
-AFTERNOON = range(12, 17)  # Local Standard Time
-AFTERNOONUTC = range(18, 23)  # AFTERNOON UTC for SLC
-
+AFTERNOON = [12, 13, 14, 15, 16] # HH Local Standard Time
 SEASONS = {1: 'DJF', 2: 'DJF', 3: 'MAM', 4: 'MAM', 5: 'MAM', 6: 'JJA',
            7: 'JJA', 8: 'JJA', 9: 'SON', 10: 'SON', 11: 'SON', 12: 'DJF'}
-
-
-def get_afternoons(times, hours=AFTERNOON):
-    afternoons = times[times.hour.isin(hours)]
-
-    return afternoons
-
-
-def datetime_accessor(obj, accessor='dt'):
-    """
-    Returns the datetime accessor of the object.
-    """
-    if hasattr(obj, accessor):
-        return getattr(obj, accessor)
-    return obj
-
-
-def convert_timezones(x, totz, fromtz=None, localize=False,
-                      driver=None):
-    """
-    Convert the times from one timezone to another.
-
-    Args:
-        times (list): A list of datetime objects.
-        fromtz (str): The timezone of the input times.
-        totz (str): The timezone to convert the times to.
-        localize (bool): If True, the times will be localized to the totz timezone.
-
-    Returns:
-        list: A list of datetime objects in the totz timezone.
-    """
-
-    if driver is None:
-        times = x
-        # If the times are not tz-aware, assign them the fromtz timezone.
-        if fromtz is not None and not any(t.tzinfo for t in times):
-            fromtz = ZoneInfo(fromtz)
-            times = [t.replace(tzinfo=fromtz) for t in times]
-
-        # Convert the times to the specified timezone.
-        totz = ZoneInfo(totz)
-        converted_times = [t.astimezone(totz) for t in times]
-
-        # If localize is True, localize the times to the totz timezone.
-        if localize:
-            converted_times = [t.replace(tzinfo=None) for t in converted_times]
-
-        return converted_times
-    elif driver == 'pandas':
-        data = x.copy(deep=True)
-
-        # If x is a DataFrame, convert DateTimeIndex
-        # If x is a Series, convert the series
-        if isinstance(data, pd.DataFrame):
-            times = data.index
-            index = True
-        elif isinstance(data, pd.Series):
-            times = data
-            index = False
-        else:
-            raise ValueError("x is not a DataFrame or Series")
-
-        # If the times are not tz-aware, assign them the fromtz timezone.
-        if fromtz and datetime_accessor(times).tz is None:
-            times = datetime_accessor(times).tz_localize(fromtz) 
-
-        # Convert the times to the specified timezone.
-        times = datetime_accessor(times).tz_convert(totz)
-
-        # If localize is True, localize the times to the totz timezone.
-        if localize:
-            times = datetime_accessor(times).tz_localize(None)
-
-        if index:
-            data.index = times
-        else:
-            data = times
-        return data
-    else:
-        raise ValueError("Invalid driver")
-
-
-UTC2 = partial(convert_timezones, fromtz='UTC')
-UTC2MST = partial(UTC2, totz='MST')
-UTC2MTN = partial(UTC2, totz='America/Denver')
-MST2UTC = partial(convert_timezones, fromtz='MST', totz='UTC')
-MTN2UTC = partial(convert_timezones, fromtz='America/Denver', totz='UTC')
-
-
-def dt2decimalDate(datetime):
-    # https://stackoverflow.com/a/36949905
-    start = dt.date(datetime.year, 1, 1).toordinal()
-    year_length = dt.date(datetime.year+1, 1, 1).toordinal() - start
-    return datetime.year + float(datetime.toordinal() - start) / year_length
-
-
-def decimalDate2dt(decimalDate):
-    # https://stackoverflow.com/a/20911144
-    year = int(decimalDate)
-    rem = decimalDate - year
-
-    base = dt.datetime(year, 1, 1)
-    datetime = base + dt.timedelta(seconds=(base.replace(year=base.year + 1)
-                                            - base).total_seconds() * rem)
-
-    return datetime
 
 
 class TimeRange:
@@ -298,6 +190,17 @@ class TimeRange:
             return start
 
 
+def datetime_accessor(obj, accessor='dt'):
+    """
+    Returns the datetime accessor of the object.
+    """
+    if hasattr(obj, accessor):
+        return getattr(obj, accessor)
+    return obj
+
+
+# ----- Time Aggregation ----- #
+
 def diurnal(data: pd.DataFrame, freq: str='1H', statistic: str='mean',
             method: Literal['floor', 'ceil', 'round']='floor'):
     """
@@ -334,3 +237,140 @@ def seasonal(data: pd.DataFrame, statistic: str='mean') -> pd.DataFrame:
     df = df.set_index(['season', df.index.year]) 
 
     return df
+
+
+# ----- Time Conversion ----- #
+
+def seconds_in_year(year: int) -> float:
+    """
+    Calculate the number of seconds in a year.
+
+    Parameters
+    ----------
+    year : int
+        The year to calculate the number of seconds for.
+
+    Returns
+    -------
+    float
+        The number of seconds in the year.
+    """
+    this_year = dt.datetime(year, 1, 1)
+    next_year = dt.datetime(year + 1, 1, 1)
+    return (next_year - this_year).total_seconds()
+
+
+def dt2decimalDate(datetime: dt.datetime) -> float:
+    """
+    Convert a datetime object to a decimal date.
+
+    Parameters
+    ----------
+    datetime : dt.datetime
+        The datetime object to convert.
+
+    Returns
+    -------
+    float
+        The decimal date.
+    """
+    this_year = dt.datetime(datetime.year, 1, 1)
+    total_seconds = (datetime - this_year).total_seconds()
+    total_seconds_year = seconds_in_year(datetime.year)
+    return datetime.year + (total_seconds / total_seconds_year)
+
+
+def decimalDate2dt(decimalDate: float) -> dt.datetime:
+    """
+    Convert a decimal date to a datetime object.
+
+    Parameters
+    ----------
+    decimalDate : float
+        The decimal date to convert.
+
+    Returns
+    -------
+    dt.datetime
+        The datetime object.
+    """
+    year = int(decimalDate)
+    rem = decimalDate - year
+
+    this_year = dt.datetime(year, 1, 1)
+    total_seconds_year = seconds_in_year(year)
+    return this_year + dt.timedelta(seconds=total_seconds_year * rem)
+
+
+# ----- Time Zones ----- #
+
+def convert_timezones(x, totz, fromtz=None, localize=False,
+                      driver=None):
+    """
+    Convert the times from one timezone to another.
+
+    Args:
+        times (list): A list of datetime objects.
+        fromtz (str): The timezone of the input times.
+        totz (str): The timezone to convert the times to.
+        localize (bool): If True, the times will be localized to the totz timezone.
+
+    Returns:
+        list: A list of datetime objects in the totz timezone.
+    """
+
+    if driver is None:
+        times = x
+        # If the times are not tz-aware, assign them the fromtz timezone.
+        if fromtz is not None and not any(t.tzinfo for t in times):
+            fromtz = ZoneInfo(fromtz)
+            times = [t.replace(tzinfo=fromtz) for t in times]
+
+        # Convert the times to the specified timezone.
+        totz = ZoneInfo(totz)
+        converted_times = [t.astimezone(totz) for t in times]
+
+        # If localize is True, localize the times to the totz timezone.
+        if localize:
+            converted_times = [t.replace(tzinfo=None) for t in converted_times]
+
+        return converted_times
+    elif driver == 'pandas':
+        data = x.copy(deep=True)
+
+        # If x is a DataFrame, convert DateTimeIndex
+        # If x is a Series, convert the series
+        if isinstance(data, pd.DataFrame):
+            times = data.index
+            index = True
+        elif isinstance(data, pd.Series):
+            times = data
+            index = False
+        else:
+            raise ValueError("x is not a DataFrame or Series")
+
+        # If the times are not tz-aware, assign them the fromtz timezone.
+        if fromtz and datetime_accessor(times).tz is None:
+            times = datetime_accessor(times).tz_localize(fromtz) 
+
+        # Convert the times to the specified timezone.
+        times = datetime_accessor(times).tz_convert(totz)
+
+        # If localize is True, localize the times to the totz timezone.
+        if localize:
+            times = datetime_accessor(times).tz_localize(None)
+
+        if index:
+            data.index = times
+        else:
+            data = times
+        return data
+    else:
+        raise ValueError("Invalid driver")
+
+
+UTC2 = partial(convert_timezones, fromtz='UTC')
+UTC2MST = partial(UTC2, totz='MST')
+UTC2MTN = partial(UTC2, totz='America/Denver')
+MST2UTC = partial(convert_timezones, fromtz='MST', totz='UTC')
+MTN2UTC = partial(convert_timezones, fromtz='America/Denver', totz='UTC')
