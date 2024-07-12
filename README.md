@@ -53,13 +53,12 @@ pip install git+https://github.com/jmineau/lair.git[met]
 
 The `air` module contains various modules for working with atmospheric data:
  - `air.air` - Miscellaneous functions for working with atmospheric data.
- - `air.carbontracker` - Functions for working with data from the NOAA CarbonTracker program.
  - `air.enhancements` - Functions for calculating a background/baseline from a time series.
  - `air.hrrr` - Functions for working with data from the High-Resolution Rapid Refresh (HRRR) model.
  - `air.inventory` - Classes and functions for working with emissions inventories.
  - `air.mesowest` - Functions for working with data from the MesoWest API.
  - `air.meteorology` - Functions for various meteorological equations.
- - `air.noaa` - Functions to get NOAA greenhouse gas data.
+ - `air.noaa` - Functions to get NOAA greenhouse gas data including flasks and CarbonTracker.
  - `air.plots` - Functions for plotting atmospheric data.
  - `air.soundings` - Functions for working with atmospheric soundings.
  - `air.stilt` - Classes and functions for working with data from the Stochastic Time-Inverted Lagrangian Transport (STILT) model.
