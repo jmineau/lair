@@ -5,65 +5,235 @@ lair.air.noaa
 Module to get NOAA greenhouse gas data.
 """
 
+from abc import ABCMeta
+import datetime as dt
+from functools import cached_property
 import os
 import pandas as pd
+from typing import Literal
 import xarray as xr
 
-from lair.utils.records import ftp_download
+from lair.config import GROUP_DIR
+from lair.utils.records import ftp_download, list_files, Cacher
 
-def get_GML_ghg_data(site, parameter, type, level, filetype, download_dir,
-                     lab_ID_num=1, measurement_group=None, qualifiers=None):
+CARBONTRACKER_DIR = os.path.join(GROUP_DIR, 'carbontracker')
+GML_DIR = os.path.join(GROUP_DIR, 'gml')
 
-    host = 'ftp.gml.noaa.gov'
 
-    category = 'greenhouse_gases'
-    project = f'{level}-{type}'
+class CarbonTracker(metaclass=ABCMeta):
+    specie: Literal['ch4', 'co2']
 
-    filename = f'{parameter}_{site}_{project}_{lab_ID_num}'
+    def __init__(self, version, carbon_tracker_directory=None, cache=True):
+        """
+        Initialize a CarbonTracker object.
 
-    if measurement_group is not None:
-        filename += f'_{measurement_group}'
+        Parameters
+        ----------
+        version : str
+            The version of CarbonTracker data to download.
+            Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.
+        carbon_tracker_dir : str, optional
+            The directory to download the data to, by default CARBONTRACKER_DIR.
+        cache : bool, optional
+            Whether to cache the data, by default True.
+        """
+        self.version = version
 
-    if qualifiers is not None:
-        filename += f'_{qualifiers}'
+        carbon_tracker_directory = carbon_tracker_directory or CARBONTRACKER_DIR
+        self.directory = os.path.join(carbon_tracker_directory, self.specie, version)
 
-    filename = f'{filename}.{filetype}'
+        self.cache = cache
 
-    path = f'data/{category}/{parameter}/{type}/{level}/{filetype}/{filename}'
+    def __repr__(self):
+        return f"{self.__class__.__name__}(version={self.version}, directory={self.directory})"
 
-    ftp_download(host, path, download_dir)
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.version})"
 
-    local_file = os.path.join(download_dir, filename)
+    @staticmethod
+    def get_specie_from_version(version) -> Literal['ch4', 'co2']:
+        return 'ch4' if 'ch4' in version.lower() else 'co2'
 
-    if filetype == 'nc':
-        data = xr.open_dataset(local_file)
+    @staticmethod
+    def from_version(version, carbon_tracker_directory=None):
+        specie = CarbonTracker.get_specie_from_version(version)
+        if specie == 'co2':
+            raise ValueError("CarbonTrackerCO2 not yet implemented")
+            return CarbonTrackerCO2(version, directory)
+        elif specie == 'ch4':
+            return CarbonTrackerCH4(version, carbon_tracker_directory)
+        else:
+            raise ValueError("Invalid specie")
 
-        times = data.time.values
-        data = data.drop_vars('time').assign_coords(time=('obs',times))
+    def download(self, sub_dirs=['fluxes', 'molefractions'], 
+                 pattern=None):
+        """
+        Download CarbonTracker data from the NOAA GML FTP server.
 
-    elif filetype == 'txt':
-        # Get number of lines to skip
-        with open(local_file) as f:
-            header_lines = int(f.readline().split(':')[1].strip())
-            header_lines -= 1  # include column headers
+        Parameters
+        ----------
+        sub_dirs : list of str, optional
+            The subdirectories to download data from, by default ['fluxes', 'molefractions'].
+            If None, download the entire version data.
+        pattern : str, optional
+            The pattern to match against the files, by default None
+        """
+        host = 'ftp.gml.noaa.gov'
+        parent = '/products/carbontracker'
 
-        data = pd.read_csv(local_file, sep=' ', skiprows=header_lines,
-                           parse_dates=['datetime'])
-        data['datetime'] = data.datetime.dt.tz_localize(None)
+        # Build list of remote paths to download
+        path = f'{parent}/{self.specie}/{self.version}'
+        paths = [f'{path}/{sub_dir}' for sub_dir in sub_dirs]
 
-    else:
-        raise ValueError('filetype not implemented!')
+        # Download the data
+        ftp_download(host, paths, self.directory, prefix=path, pattern=pattern)
+        return None
 
-    # Thought that I could save to a tmpdir and read from there, but the tmpdir
-    #   tries to close while the data is loaded into xarray/pandas
-    #   Possible solutions would be to make this function a context manager
-    #   Or change the downloa_ftp_files function to read to an IO stream
 
-    # with tempfile.TemporaryDirectory() as tmpdir:
-    #     download_ftp_files(host, path, tmpdir)
+class CarbonTrackerCH4(CarbonTracker):
+    specie = 'ch4'
 
-    #     tmp_filepath = os.path.join(tmpdir, filename)
-    #     if filetype == 'nc':
-    #         data = xr.open_dataset(tmp_filepath)
+    def __init__(self, version='CT-CH4-2023', carbon_tracker_directory=None, cache=True,
+                 parallel_parse=True):
+        super().__init__(version, carbon_tracker_directory, cache)
+        self.parallel_parse = parallel_parse
 
-    return data
+    @staticmethod
+    def _preprocess_molefractions(ds):
+        time_components = ds['time_components'].values
+        time = [dt.datetime(*row) for row in time_components]
+
+        ds = ds.assign_coords(time=time)
+        ds = ds.drop_vars('time_components')
+
+        return ds
+
+    @cached_property
+    def molefractions(self) -> xr.Dataset:
+        path = os.path.join(self.directory, 'molefractions')
+
+        files = list_files(path, '*nc', full_names=True, recursive=True)
+
+        if self.cache:
+            from lair.config import CACHE_DIR
+            cache_file = os.path.join(CACHE_DIR, 'carbontracker', self.specie, self.version, 'molefractions.pkl')
+            open_mfdataset = Cacher(xr.open_mfdataset, cache_file)
+        else:
+            open_mfdataset = xr.open_mfdataset
+        ds = open_mfdataset(files, preprocess=CarbonTrackerCH4._preprocess_molefractions, 
+                            parallel=self.parallel_parse)
+        return ds
+
+    @staticmethod
+    def calc_molefractions_pressure(molefractions) -> xr.Dataset:
+        """
+        Calculate the pressure at each level in the molefractions Dataset.
+
+        Parameters
+        ----------
+        molefractions : xr.Dataset
+            The molefractions Dataset.
+
+        Returns
+        -------
+        xr.Dataset
+            The molefractions Dataset with the pressure calculated.
+        """
+        molefractions['P'] = (molefractions.at 
+                              + molefractions.bt * molefractions.surf_pressure)
+        molefractions['P'] /= 100  # Convert to hPa
+        molefractions['P'].attrs = {'long_name': 'Pressure', 'units': 'hPa',
+                                    'comment': 'Calculated from hybrid sigma-pressure coefficients and surface pressure.'}
+        return molefractions
+
+
+class Flask:
+    """
+    NOAA GML Flask
+    """
+    file_template = '{specie}_{site}_{platform}-flask_{lab_id}_{measurement_group}_{frequency}.{ext}'
+
+    driver_ext = {
+        'pandas': 'txt',
+        'xarray': 'nc'
+    }
+
+    def __init__(self, specie: str, site: str,
+                 platform: Literal['surface', 'shipboard']='surface',
+                 lab_id: int=1,
+                 measurement_group: Literal['ccgg', 'sil']='ccgg',
+                 frequency: Literal['event', 'month']='event',
+                 driver: Literal['pandas', 'xarray']='pandas',
+                 gml_dir: str|None=None):
+        """
+        Initialize a Flask object.
+        
+        Parameters
+        ----------
+        specie : str
+            The greenhouse gas specie.
+        site : str
+            The site where the flask samples were collected.
+        platform : str, optional
+            The platform where the flask samples were collected, by default 'surface'.
+        lab_id : int, optional
+            The lab ID, by default 1.
+        measurement_group : str, optional
+            The measurement group, by default 'ccgg'.
+        frequency : str, optional
+            The frequency of the measurements, by default 'event'.
+        driver : str, optional
+            The driver to use to read the data, by default 'pandas'.
+        gml_dir : str, optional
+            The NOAA GML directory to download the data to, by default GML_DIR.
+    """
+        self.specie = specie
+        self.site = site
+        self.platform = platform
+        self.lab_id = lab_id
+        self.measurement_group = measurement_group
+        self.frequency = frequency
+        self.driver = driver
+        self.ext = self.driver_ext[driver]
+        self.gml_dir = gml_dir or GML_DIR
+        self.directory = os.path.join(self.gml_dir, specie, 'flask')
+        self.filename = self.file_template.format(**self.__dict__)
+        self.filepath = os.path.join(self.directory, self.filename)
+
+    def __repr__(self):
+        return f'Flask(specie={self.specie}, site={self.site}, platform={self.platform}, lab_id={self.lab_id}, measurement_group={self.measurement_group}, frequency={self.frequency}, driver={self.driver})'
+
+    def __str__(self):
+        return f'NOAA GML Flask({self.specie}, {self.site})'
+
+    def download(self):
+        host = 'ftp.gml.noaa.gov'
+        path = f'/data/trace_gases/{self.specie}/flask/surface/{self.ext}/{self.filename}'
+        ftp_download(host, path, self.directory)
+        return self.filepath
+
+    @cached_property
+    def data(self):
+        if self.driver == 'pandas':
+            data = pd.read_csv(self.filepath, sep=' ', comment='#',
+                               parse_dates=['datetime'])
+            data['datetime'] = data.datetime.dt.tz_localize(None)
+            data = data.dropna(subset=['datetime']).set_index('datetime').sort_index()
+        elif self.driver == 'xarray':
+            data = xr.open_dataset(self.filepath)
+            times = data.time.values
+            data = data.drop_vars('time').assign_coords(time=('obs', times))
+        else:
+            raise ValueError("Invalid driver")
+
+        return data
+
+    @staticmethod
+    def apply_qaqc(data: pd.DataFrame|xr.Dataset, driver='pandas'):
+        if driver == 'pandas':
+            data = data[data.qcflag == '...']
+        elif driver == 'xarray':
+            data = data.where(data.qcflag == '...')
+        else:
+            raise ValueError("Invalid driver")
+        return data

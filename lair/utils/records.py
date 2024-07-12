@@ -16,10 +16,10 @@ def unzip(zf, dir_path=None):
     import zipfile
 
     with zipfile.ZipFile(zf, 'r') as zip_ref:
-        zip_ref.extractall(dir_path)
+        zip_ref.extractall(dir_path or os.path.dirname(zf))
 
 
-def list_files(path: str = '.', pattern: str = None, ignore_case: bool = False, all_files: bool = False,
+def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = False, all_files: bool = False,
                full_names: bool = False, recursive: bool = False) -> list[str]:
     """
     Returns a list of files in the specified directory that match the specified pattern.
@@ -122,7 +122,7 @@ def ftp_download(host, paths, download_dir,
 
                 # Download the file
                 with open(local, 'wb') as local_file:
-                    print(f'Downloading {path}')
+                    vprint(f'Downloading {path} to {os.path.dirname(local)}')
                     ftp.retrbinary(f'RETR {path}', local_file.write)
 
                 return 'f'
