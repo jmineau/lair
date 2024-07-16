@@ -1,9 +1,3 @@
-"""
-lair.air.__init__
-~~~~~~~~~~~~~~~~~
-
-Init file for air subpackage.
-"""
 import os
 from lair.utils.records import ftp_download, unzip
 

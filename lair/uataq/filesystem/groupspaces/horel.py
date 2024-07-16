@@ -1,6 +1,5 @@
 """
-lair.uataq.filesystem.groupspaces.horel
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+John Horel group - MesoWest, TRAX/eBUS, etc.
 
 This module contains classes and functions for working with the Horel group data in the CHPC UATAQ filesystem.
 """
@@ -19,31 +18,35 @@ from lair.units import F2C
 from lair.utils.clock import TimeRange
 from lair.utils.records import list_files
 
-
-HOREL_DIR = os.path.join(HOME, 'horel-group')
+#: Horel group directory
+HOREL_DIR: str = os.path.join(HOME, 'horel-group')
 
 # UUTRAX directories
 #   Consider UUTRAX project as part of UATAQ (includes TRX, BUS, RAIL, HAWTH)
 #   TODO add rail and hawth
 #   Includes a pilot phase which does not have QAQC data
-UUTRAX_DIR = os.path.join(HOREL_DIR, 'uutrax')
-UUTRAX_PILOT_DIR = os.path.join(HOREL_DIR, 'uutrax_pilot')
+#: UUTRAX directory
+UUTRAX_DIR: str = os.path.join(HOREL_DIR, 'uutrax')
+#: UUTRAX pilot directory
+UUTRAX_PILOT_DIR: str = os.path.join(HOREL_DIR, 'uutrax_pilot')
 
-PILOT_PHASE = {
+#: Pilot phase time ranges for UUTRAX data
+PILOT_PHASE: dict[str, TimeRange] = {
     'TRX01': TimeRange(start='2014-11-11',
                        stop=pd.Timestamp('2018-11-19T20:03:58')),
     'TRX02': TimeRange(start='2016-02-04',
                        stop=pd.Timestamp('2018-11-19T18:53:52'))
 }
 
-# Data levels for UUTRAX data
-lvl_data_dirs = {
+#: Data levels for UUTRAX data
+lvl_data_dirs: dict[str, list] = {
     'raw': [UUTRAX_PILOT_DIR, UUTRAX_DIR],
     'qaqc': [UUTRAX_DIR],
     'final': [UUTRAX_DIR]
 }
 
-column_mapping = {
+#: Horel to UATAQ column mapping
+column_mapping: dict[str, dict[str, str]] = {
     '2b_205': {
         'OZNE':                        'O3_ppb',
         '2B_Ozone_Concentration':      'O3_ppb',
@@ -495,6 +498,7 @@ class HorelGroup(filesystem.GroupSpace):
     A class representing the Horel group data space in the CHPC UATAQ filesystem.
 
     Attributes
+    ----------
     name : str
         The group name.
     datafiles : dict[str, Type[DataFile]]

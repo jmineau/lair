@@ -1,6 +1,5 @@
 """
-lair.uataq.filesystem.groupspaces.lin
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+John Lin group - UUCON, TRAX, etc.
 
 This module contains classes and functions for working with the Lin group data in the CHPC UATAQ filesystem.
 """
@@ -23,17 +22,21 @@ from lair.utils.records import list_files
 
 # TODO: check for reprocessing
 
-MEASUREMENTS_DIR = os.path.join(HOME, 'lin-group20', 'measurements')
-DATA_DIR = os.path.join(MEASUREMENTS_DIR, 'data')
+#: Directory for Lin group measurements.
+MEASUREMENTS_DIR: str = os.path.join(HOME, 'lin-group20', 'measurements')
+#: Directory for Lin group data.
+DATA_DIR: str = os.path.join(MEASUREMENTS_DIR, 'data')
 
 with open(os.path.join(MEASUREMENTS_DIR, 'pipeline', 'config',
                        'data_config.json')) as data_config_file:
-    DATA_CONFIG = json.load(data_config_file)
+    #: Data configuration.
+    DATA_CONFIG: dict = json.load(data_config_file)
 
 # SITE_CONFIG = pd.read_json(os.path.join(MEASUREMENTS_DIR, 'pipeline', 'config', # TODO
 #                                         'site_config.json'))
 
-column_mapping = {
+#: Lin to UATAQ column mapping
+column_mapping: dict[str, dict[str, str]] = {
     '2b_205': {
         'o3_ppb':       'O3_ppb',
         't_c':          'Internal_T_C',

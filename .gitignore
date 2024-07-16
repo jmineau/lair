@@ -2,4 +2,8 @@ __pycache__/
 
 *.egg-info
 
+docs/build/
+docs/source/savefig/
+docs/source/api
+
 lair/air/_ccg_filter.py

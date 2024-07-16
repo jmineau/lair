@@ -1,7 +1,4 @@
 """
-lair.uataq.filesystem._filesystem
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 This module contains classes and functions for working in the CHPC UATAQ filesystem.
 """
 
@@ -16,7 +13,7 @@ from lair.utils.clock import TimeRange
 from lair.utils.records import parallelize_file_parser
 
 
-lvls = {
+lvls: dict = {
     'raw':        1,
     'qaqc':       2,
     'calibrated': 3,
@@ -53,7 +50,7 @@ class DataFile(metaclass=ABCMeta):
     file_freq: str
     ext: str
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         """
         Initialize the DataFile object.
         Determines the period of the data file from the file name.
@@ -70,14 +67,17 @@ class DataFile(metaclass=ABCMeta):
         date_str = fname[self.date_slicer].replace('_', '-')
         self.period = pd.Period(date_str, freq=self.file_freq)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.path
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.path})'
 
     @abstractmethod
     def parse(self) -> pd.DataFrame:
+        """
+        Parse the data file. Must be implemented by subclasses.
+        """
         raise NotImplementedError
 
 
@@ -122,7 +122,7 @@ def filter_datafiles(files: list[DataFile], time_range: TimeRange,
     return filtered_files
 
 
-def _parse_datafile(datafile: DataFile):
+def _parse_datafile(datafile: DataFile) -> pd.DataFrame | None:
     """
     Private function to parse a single data file.
 
@@ -369,4 +369,4 @@ class GroupSpace(metaclass=ABCMeta):
         raise NotImplementedError
 
 
-groups = {}
+groups: dict = {}

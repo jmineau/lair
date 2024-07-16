@@ -1,8 +1,5 @@
 """
-lair.met.soundings
-~~~~~~~~~~~~~~~~~~
-
-Module for working with upper air sounding data.
+Upper air sounding data.
 """
 
 try:
@@ -24,13 +21,46 @@ from lair.constants import Rd
 from lair.air.meteorology import ideal_gas_law, hypsometric, poisson
 from lair.units import C2K, hPa, J, kg, K, m
 
+
+#: Sounding data directory
 SOUNDING_DIR = os.path.join(GROUP_DIR, 'soundings')
 
 
 class Sounding:
+    """
+    Upper air sounding data.
+
+    Attributes
+    ----------
+    path : str
+        The path to the sounding data.
+    filename : str
+        The filename of the sounding data.
+    station : str
+        The station identifier.
+    time : datetime
+        The date and time of the sounding.
+    data : pd.DataFrame
+        The sounding data.
+
+    Methods
+    -------
+    interpolate(start=1289, stop=5000, interval=10)
+        Interpolate sounding data to regular height intervals.
+    """
     _attrs = ['station', 'time', 'station_number', 'latitude', 'longitude', 'elevation', 'pw']
 
-    def __init__(self, path):
+    def __init__(self, path: str):
+        """
+        Initialize a Sounding object.
+
+        Strips the station identifier and time from the filename and reads the data.
+
+        Parameters
+        ----------
+        path : str
+            The path to the sounding data.
+        """
         self.path = path
         self.filename = os.path.basename(path)
 
@@ -93,8 +123,9 @@ class Sounding:
         raise NotImplementedError
 
 
-def merge(soundings: list):
-    """Merge a list of sounding data.
+def merge(soundings: list) -> pd.DataFrame:
+    """
+    Merge a list of sounding data.
 
     Parameters
     ----------
@@ -116,8 +147,9 @@ def merge(soundings: list):
     return pd.concat(dfs)
 
 
-def download_sounding(station, date, dst=None):
-    """Download an upper air sounding from the Wyoming archive.
+def download_sounding(station, date, dst=None) -> str:
+    """
+    Download an upper air sounding from the Wyoming archive.
 
     Parameters
     ----------
@@ -127,6 +159,11 @@ def download_sounding(station, date, dst=None):
         The date and time.
     dst : str
         The destination directory.
+
+    Returns
+    -------
+    str
+        The path to the downloaded sounding data.
     """
     if dst is None:
         dst = os.path.join(SOUNDING_DIR, station)
@@ -143,6 +180,22 @@ def download_sounding(station, date, dst=None):
     return path
 
 def download_soundings(station, start, end, dst=None, months=None):
+    """
+    Download upper air soundings from the Wyoming archive.
+
+    Parameters
+    ----------
+    station : str
+        The 4-letter station identifier.
+    start : datetime
+        The start date and time.
+    end : datetime
+        The end date and time.
+    dst : str
+        The destination directory.
+    months : list
+        The months to download.
+    """
     print('Downloading soundings...')
 
     dates = pd.date_range(start, end, freq='12h')
@@ -227,7 +280,7 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
     return data
 
 
-def valleyheatdeficit(data, integration_height=2200):
+def valleyheatdeficit(data, integration_height=2200) -> xr.DataArray:
     """
     Calculate the valley heat deficit.
 
