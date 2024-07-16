@@ -136,7 +136,7 @@ html_theme_options = {
          'alt_text': 'LAIR - Home'
       },
      'navbar_start': ['navbar-logo', 'version-switcher'],
-     'show_version_warning_banner': True,
+    #  'show_version_warning_banner': True,
      'switcher': {
          'json_url': 'https://raw.githubusercontent.com/jmineau/lair/main/docs/switcher.json',
          'version_match': version
