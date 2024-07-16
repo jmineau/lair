@@ -3,8 +3,8 @@
 # Change to lair docs directory
 cd ~/.lair-docs
 
-# Build directory for the docs
-BUILD_DIR=~/public_html/lair
+# Hosting directory for the docs
+HOST_DIR=~/public_html/lair
 
 # Pull the latest changes from the git repo
 status=$(git pull)
@@ -14,6 +14,11 @@ if [[ $status == *"Already up to date."* ]]; then
     echo "No changes detected."
 else
     echo Changes detected! Rebuilding docs...
-    sphinx-build docs/source $BUILD_DIR
+    cd docs
+    make html
     echo "Docs rebuilt successfully!"
+
+    # Copy the built docs to the hosting directory
+    mkdir -p $HOST_DIR
+    cp -r build/html/* $HOST_DIR
 fi
