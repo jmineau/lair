@@ -1,8 +1,5 @@
 """
-lair.air.air
-~~~~~~~~~~~~
-
-Module of miscellaneous functions for air quality data.
+Miscellaneous functions for atmospheric data.
 """
 
 import numpy as np
@@ -34,8 +31,27 @@ def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON):
 
 # %% Polar
 
-def bin_polar(data, wd='wd', x='ws', xbins=30):
-    # Bin directions
+def bin_polar(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30
+              ) -> pd.DataFrame:
+    """
+    Bin data into polar coordinates.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Data to bin.
+    x : str, optional
+        Variable to bin. Default is 'ws'.
+    wd : str, optional
+        Wind direction column name. Default is 'wd'.
+    xbins : int, optional
+        Number of bins for x. Default is 30.
+
+    Returns
+    -------
+    pd.DataFrame
+        Data with binned wind direction and speed.
+    """
     directions = {
         "N":   0,
         "NNE": 22.5,
@@ -82,7 +98,20 @@ def bin_polar(data, wd='wd', x='ws', xbins=30):
     return data
 
 
-def circularize_contour_data(agg):
+def circularize_radial_data(agg: pd.DataFrame):
+    """
+    Circularize radial data for polar plots.
+
+    Parameters
+    ----------
+    agg : pd.DataFrame
+        Aggregated data. Index is theta, columns are r.
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray, np.ndarray]
+        Theta, r, and c for polar
+    """
     theta = agg.index.values
     dtheta = np.diff(theta).mean()
     theta = np.concatenate((theta, theta[-1:] + dtheta))
@@ -99,9 +128,22 @@ def circularize_contour_data(agg):
 # %% Wind
 
 def wind_components(speed, wind_direction):
-    # Wind direction is in degrees clockwise from North
-    #   specified as blowing from
-        
+    """
+    Calculate the u and v components of the wind.
+    
+    Parameters
+    ----------
+    speed : float
+        Wind speed in m/s.
+
+    wind_direction : float
+        Wind direction in degrees clockwise from North (specified as blowing from).
+
+    Returns
+    -------
+    tuple[float, float]
+        u and v components of the wind.
+    """
     u = - speed * np.sin(np.deg2rad(wind_direction))
     v = - speed * np.cos(np.deg2rad(wind_direction))
     

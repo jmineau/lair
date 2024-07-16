@@ -1,8 +1,5 @@
 """
-lair.utils.clock
-~~~~~~~~~~~~~~~~
-
-This module provides utility functions for working with time and dates.
+Utility classes & functions for working with time and dates.
 """
 
 from contextlib import ContextDecorator
@@ -21,12 +18,6 @@ SEASONS = {1: 'DJF', 2: 'DJF', 3: 'MAM', 4: 'MAM', 5: 'MAM', 6: 'JJA',
 
 
 class TimeRange:
-    _input_types = Union[str,
-                        list[Union[str, dt.datetime, None]],
-                        tuple[Union[str, dt.datetime, None],
-                              Union[str, dt.datetime, None]],
-                        slice,
-                        None]
     """
     TimeRange class to represent a time range with start and stop times.
 
@@ -42,6 +33,13 @@ class TimeRange:
     parse_iso(string: str, inclusive: bool = False) -> dt.datetime
         Parse the ISO8601 formatted time string and return a datetime object.
     """
+
+    _input_types = Union[str,
+                        list[Union[str, dt.datetime, None]],
+                        tuple[Union[str, dt.datetime, None],
+                              Union[str, dt.datetime, None]],
+                        slice,
+                        None]
 
     def __init__(self, time_range: 'TimeRange' | _input_types = None,
                  start: Union[_input_types, dt.datetime] = None,
@@ -197,7 +195,7 @@ class TimeRange:
 class Timer(ContextDecorator):
     """
     Time your code using a class, context manager, or decorator
-    
+
     https://realpython.com/python-timer
     """
 
@@ -208,7 +206,8 @@ class Timer(ContextDecorator):
     _start_time: Optional[float] = field(default=None, init=False, repr=False)
 
     class TimerError(Exception):
-    """A custom exception used to report errors in use of Timer class"""
+        """A custom exception used to report errors in use of Timer class"""
+        pass
 
     def __post_init__(self) -> None:
         """Initialization: add timer to dict of timers"""
@@ -292,6 +291,21 @@ def diurnal(data: pd.DataFrame, freq: str='1H', statistic: str='mean',
 
 
 def seasonal(data: pd.DataFrame, statistic: str='mean') -> pd.DataFrame:
+    """
+    Aggregate data by season and year.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The data to aggregate. Panda DataFrame with a DateTimeIndex.
+    statistic : str, optional
+        The statistic to compute for each group. Default is 'mean'.
+
+    Returns
+    -------
+    pd.DataFrame
+        The aggregated data.
+    """
     # Resample the data to the start of quarters and group by year
     df = data.resample('QS-DEC').agg(statistic)
     df['season'] = df.index.month.map(SEASONS)
@@ -372,14 +386,21 @@ def convert_timezones(x, totz, fromtz=None, localize=False,
     """
     Convert the times from one timezone to another.
 
-    Args:
-        times (list): A list of datetime objects.
-        fromtz (str): The timezone of the input times.
-        totz (str): The timezone to convert the times to.
-        localize (bool): If True, the times will be localized to the totz timezone.
+    Parameters
+    ----------
+    x : list[dt.datetime] | pd.DataFrame | pd.Series
+        The times to convert.
+    totz : str
+        The timezone to convert the times to.
+    fromtz : str, optional
+        The timezone of the input times, by default None
+    localize : bool, optional
+        If True, the times will be localized to the totz timezone, by default False
 
-    Returns:
-        list: A list of datetime objects in the totz timezone.
+    Returns
+    -------
+    list[dt.datetime] | pd.DataFrame | pd.Series
+        The converted times.
     """
 
     if driver is None:

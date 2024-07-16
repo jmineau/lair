@@ -21,7 +21,12 @@ now = dt.datetime.now(dt.timezone.utc)
 project = 'LAIR'
 copyright = f'{now: %Y}, James Mineau | Last Updated: {now: %B %d, %Y}'
 author = 'James Mineau'
-release = lair.VERSION
+
+release = lair.__version__
+
+# Get the version from the environment if it's set
+# This allows me to set the version to 'dev' when autobuilding dev docs
+version = 'dev' if os.getenv('LAIR_DOCS_VERSION') == 'dev' else release
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -118,7 +123,7 @@ exclude_patterns = [
 html_theme = 'pydata_sphinx_theme'
 html_theme_options = {
      'github_url': 'https://github.com/jmineau/lair',
-     "header_links_before_dropdown": 7,
+     'header_links_before_dropdown': 7,
      'icon_links': [
          {
              'name': 'James Mineau',
@@ -127,8 +132,13 @@ html_theme_options = {
          }
         ],
      'logo': {
-         'text': f'LAIR {lair.VERSION} docs',
+         'text': f'LAIR docs',
          'alt_text': 'LAIR - Home'
+      },
+     'navbar_start': ['navbar-logo', 'version-switcher'],
+     'switcher': {
+         'json_url': 'https://github.com/jmineau/lair/blob/main/docs/switcher.json',
+         'version_match': version
      }
 }
 

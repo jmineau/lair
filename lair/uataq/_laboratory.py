@@ -1,13 +1,11 @@
 """
-lair.uataq._laboratory
-~~~~~~~~~~~~~~~~~~~~~
-
 This module provides a factory class for creating site objects with instruments from a configuration file.
 """
 
 from copy import deepcopy
 import json
-import os
+import pkgutil
+from typing import Literal
 
 from lair.config import LAIR_DIR, vprint
 from lair.uataq.instruments import InstrumentEnsemble
@@ -27,7 +25,7 @@ class Laboratory:
     Methods:
         get_site(SID): Returns a site object for the specified site ID.
     '''
-    def __init__(self, config: str | dict = os.path.join(LAIR_DIR, 'uataq', 'config.json')):
+    def __init__(self, config: str | dict ):
         '''
         Initialize the Laboratory class.
 
@@ -55,14 +53,14 @@ class Laboratory:
         self.instruments = list(set([instrument for SID in self.sites
                                      for instrument in self.config[SID].get('instruments', {}).keys()]))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         config = json.dumps(self.config, indent=4)
         return f"Laboratory(config={config})"
 
-    def __str__(self):
+    def __str__(self) -> Literal['UATAQ Laboratory']:
         return "UATAQ Laboratory"
 
-    def get_site(self, SID: str):
+    def get_site(self, SID: str) -> sites.Site:
         '''
         Return site object from config file
 
@@ -73,7 +71,7 @@ class Laboratory:
 
         Returns
         -------
-        Site
+        sites.Site
             A site object.
 
         Raises
@@ -105,7 +103,24 @@ class Laboratory:
         return SiteClass(SID, config, instruments)
 
 
-laboratory = Laboratory()
+config = json.loads(pkgutil.get_data('lair.uataq',
+                                     'config.json'
+                                     ).decode('utf-8'))
+laboratory = Laboratory(config)
+
 
 def get_site(SID: str) -> sites.Site:
+    """
+    Return site object from config file
+    
+    Parameters
+    ----------
+    SID : str
+        The site ID.
+
+    Returns
+    -------
+    sites.Site
+        A site object.
+    """
     return laboratory.get_site(SID)
