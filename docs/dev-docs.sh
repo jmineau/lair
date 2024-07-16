@@ -4,4 +4,13 @@
 
 export LAIR_DOCS_VERSION='dev'
 
-sphinx-build ~/lair/docs/source ~/public_html/lair/dev
+HOST_DIR=~/public_html/lair/dev
+
+cd ~/lair/docs
+
+echo "Building developer documentation..."
+make html
+
+echo "Copying developer documentation to hosting directory..."
+mkdir -p $HOST_DIR
+cp -r build/html/* $HOST_DIR
