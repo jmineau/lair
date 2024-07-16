@@ -1,17 +1,39 @@
 """
-lair.utils.grid
-~~~~~~~~~~~~~~~
-
-This module provides utility functions for working with spatial grid data.
+Functions for working with spatial grid data.
 """
 
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
                                 LongitudeFormatter, LongitudeLocator)
+import matplotlib.pyplot as plt
 import numpy as np
+from xarray import DataArray
+from xarray import DataArray
 
 
-def dms2dd(d=0.0, m=0.0, s=0.0):  # degree-minute-second to decimal degree
+def dms2dd(d: float=0.0, m: float=0.0, s: float=0.0) -> float:
+    """
+    Degree-minute-second to decimal degree
+
+    Parameters
+    ----------
+    d : float, optional
+        Degrees, by default 0.0
+    m : float, optional
+        Minutes, by default 0.0
+    s : float, optional
+        Seconds, by default 0.0
+
+    Returns
+    -------
+    float
+        Decimal degrees
+
+    Raises
+    ------
+    ValueError
+        If any of the inputs are not floats
+    """
     try:
         dd = float(d) + float(m) / 60 + float(s) / 3600
         return dd
@@ -19,25 +41,80 @@ def dms2dd(d=0.0, m=0.0, s=0.0):  # degree-minute-second to decimal degree
         return np.nan
 
 
-def bbox2extent(bbox):
+def bbox2extent(bbox: list[float]) -> list[float]:
+    """
+    Bounding box to extent.
+
+    Parameters
+    ----------
+    bbox : list[minx, miny, maxx, maxy]
+        Bounding box
+
+    Returns
+    -------
+    list[minx, maxx, miny, maxy]
+        Extent
+    """
     minx, miny, maxx, maxy = bbox
     extent = [minx, maxx, miny, maxy]
     return extent
 
 
-def extent2bbox(extent):
+def extent2bbox(extent: list[float]) -> list[float]:
+    """
+    Extent to bounding box.
+
+    Parameters
+    ----------
+    extent : list[minx, maxx, miny, maxy]
+        Extent
+
+    Returns
+    -------
+    list[minx, miny, maxx, maxy]
+        Bounding box
+    """
     minx, maxx, miny, maxy = extent
     bbox = [minx, miny, maxx, maxy]
     return bbox
 
 
 def wrap_lons(lons):
-    '''Wrap longitudes ranging from 0~360 to -180~180'''
+    '''
+    Wrap longitudes ranging from 0~360 to -180~180
 
+    Parameters
+    ----------
+    lons : array-like  # TODO
+        Longitudes
+
+    Returns
+    -------
+    array-like
+        Wrapped longitudes
+    '''
     return (lons.round(2) + 180) % 360 - 180
 
 
-def add_lat_ticks(ax, ylims, labelsize=None, more_ticks=0):
+def add_lat_ticks(ax: plt.Axes, ylims: list[float], labelsize: int | None=None, more_ticks: int=0) -> None:
+    """
+    Add latitude ticks to the map.
+
+    Parameters
+    ----------
+    ax : plt.Axes
+        Axes object
+    ylims : list[float]
+        Latitude limits
+    labelsize : int, optional
+        Font size of the labels, by default None
+    more_ticks : int, optional
+        Number of additional ticks, by default 0
+
+    Returns
+    -------
+    None
+    """
     fig = ax.figure
     bins = (fig.get_size_inches()[1] * fig.dpi / 100).astype(int) + 1
 
@@ -52,7 +129,27 @@ def add_lat_ticks(ax, ylims, labelsize=None, more_ticks=0):
         ax.tick_params(axis='y', labelsize=labelsize)
 
 
-def add_lon_ticks(ax, xlims, rotation=0, labelsize=None, more_ticks=0):
+def add_lon_ticks(ax: plt.Axes, xlims: list[float], rotation: int=0, labelsize: int | None=None, more_ticks: int=0) -> None:
+    """
+    Add longitude ticks to the map.
+
+    Parameters
+    ----------
+    ax : plt.Axes
+        Axes object
+    xlims : list[float]
+        Longitude limits
+    rotation : int, optional
+        Rotation of the labels, by default 0
+    labelsize : int, optional
+        Font size of the labels, by default None
+    more_ticks : int, optional
+        Number of additional ticks, by default 0
+
+    Returns
+    -------
+    None
+    """
     fig = ax.figure
     bins = (fig.get_size_inches()[0] * fig.dpi / 100).astype(int) + 1
 
@@ -71,8 +168,30 @@ def add_lon_ticks(ax, xlims, rotation=0, labelsize=None, more_ticks=0):
         ax.tick_params(axis='x', labelsize=labelsize)
 
 
-def add_latlon_ticks(ax, extent, x_rotation=0, labelsize=None,
-                     more_lon_ticks=0, more_lat_ticks=0):
+def add_latlon_ticks(ax: plt.Axes, extent: list[float], x_rotation: int=0, labelsize: int | None=None,
+                     more_lon_ticks: int=0, more_lat_ticks: int=0) -> None:
+    """
+    Add latitude and longitude ticks to the map.
+
+    Parameters
+    ----------
+    ax : plt.Axes
+        Axes object
+    extent : list[float]
+        Extent of the map. [minx, maxx, miny, maxy]
+    x_rotation : int, optional
+        Rotation of the longitude labels, by default 0
+    labelsize : int, optional
+        Font size of the labels, by default None
+    more_lon_ticks : int, optional
+        Number of additional longitude ticks, by default 0
+    more_lat_ticks : int, optional
+        Number of additional latitude ticks, by default 0
+
+    Returns
+    -------
+    None
+    """
     xlims, ylims = extent[:2], extent[2:]
 
     add_lat_ticks(ax, ylims, labelsize=labelsize, more_ticks=more_lat_ticks)
@@ -83,25 +202,24 @@ def add_latlon_ticks(ax, extent, x_rotation=0, labelsize=None,
 
 def area_grid(lat, lon):
     """
-    Calculate the area of each grid cell
-    Area is in square meters
+    Calculate the area of each grid cell [m2]
 
-    Input
-    -----------
-    lat: vector of latitude in degrees
-    lon: vector of longitude in degrees
+    Parameters
+    ----------
+    lat : array-like
+        vector of latitude in degrees
+    lon : array-like
+        vector of longitude in degrees
 
-    Output
-    -----------
-    area: grid-cell area in square-meters with dimensions, [lat,lon]
+    Returns
+    -------
+    array-like
+        grid-cell area in square-meters with dimensions, [lat,lon]
 
     Notes
-    -----------
-    Originally copied from
-        https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
-
-    Based on the function in
-        https://github.com/chadagreene/CDT/blob/master/cdt/cdtarea.m
+    -----
+     - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
+     - Based on the function in https://github.com/chadagreene/CDT/blob/master/cdt/cdtarea.m
     """
     from numpy import meshgrid, deg2rad, gradient, cos
 
@@ -119,23 +237,23 @@ def area_grid(lat, lon):
     return area
 
 
-def area_DataArray(da):
+def area_DataArray(da: DataArray) -> DataArray:
     """
-    Calculate the area of each grid cell in xarray dataarray
-    Area is in square meters
+    Calculate the area of each grid cell in xarray dataarray [m2]
 
-    Input
-    -----------
-    da: rioxarray DataArray
+    Parameters
+    ----------
+    da : xr.DataArray
+        DataArray with dimensions [lat, lon]
 
-    Output
-    -----------
-    ada: rioxarray DataArray with grid-cell area in square-meters
+    Returns
+    -------
+    xr.DataArray
+        grid-cell area in square-meters
 
     Notes
-    -----------
-    Originally copied from
-        https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
+    -----
+    Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
     """
 
     from xarray import DataArray
@@ -156,26 +274,24 @@ def area_DataArray(da):
     return ada
 
 
-def earth_radius(lat):
+def earth_radius(lat: float | np.ndarray) -> float | np.ndarray:
     '''
-    calculate radius of Earth assuming oblate spheroid
-    defined by WGS84
+    Calculate radius of Earth assuming oblate spheroid defined by WGS84
 
-    Input
-    ---------
-    lat: vector or latitudes in degrees
-
-    Output
+    Parameters
     ----------
-    r: vector of radius in meters
+    lat : array-like
+        latitudes in degrees
+
+    Returns
+    -------
+    array-like
+        vector of radius in meters
 
     Notes
-    -----------
-    Originally copied from
-        https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
-
-    WGS84:
-        https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
+    -----
+     - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
+     - WGS84: https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
     '''
 
     # define oblate spheroid from WGS84
@@ -236,14 +352,45 @@ def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
     return brng
 
 
-def add_extent_map(fig, main_extent, main_extent_crs,
-                   extent_map_rect, extent_map_extent, extent_map_proj,
-                   color, linewidth, zorder=None):
+def add_extent_map(fig: 'matplotlib.figure.Figure', main_extent: list[float], main_extent_crs: ccrs.CRS,
+                   extent_map_rect: list[float], extent_map_extent: list[float], extent_map_crs: ccrs.CRS,
+                   color: str, linewidth: int, zorder: int | None=None) -> plt.Axes:
+    """
+    Add an extent map to the figure.
+    
+    TODO This needs better naming and documentation.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        Figure object
+    main_extent : list[float]
+        Extent of the main map
+    main_extent_crs : ccrs.CRS
+        CRS of the main extent
+    extent_map_rect : list[float]
+        Rectangle of the extent map
+    extent_map_extent : list[float]
+        Extent of the extent map
+    extent_map_crs : ccrs.CRS
+        CRS of the extent map
+    color : str
+        Color of the extent map
+    linewidth : int
+        Line width of the extent map
+    zorder : int, optional
+        Zorder of the extent map, by default None
+
+    Returns
+    -------
+    plt.Axes
+        Axes object of the extent map
+    """
     import cartopy.feature as cfeature
     from shapely.geometry import box
 
     extent_map_ax = fig.add_axes(extent_map_rect,
-                                 projection=extent_map_proj, zorder=zorder)
+                                 projection=extent_map_crs, zorder=zorder)
     extent_map_ax.set_extent(extent_map_extent)
 
     extent_map_ax.add_feature(cfeature.LAND)

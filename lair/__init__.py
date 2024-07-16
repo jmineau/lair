@@ -3,4 +3,5 @@ from . import air
 from . import uataq
 from . import utils
 
-VERSION = '0.0.1'
+
+__version__ = '0.0.1'

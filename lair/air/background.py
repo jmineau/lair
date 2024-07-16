@@ -1,8 +1,5 @@
 """
-lair.air.background
-~~~~~~~~~~~~~~~~~~~
-
-Module to calculate background concentrations.
+Calculate background concentrations.
 """
 
 import datetime as dt

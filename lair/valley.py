@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Mon Apr 10 22:35:03 2023
+Module for creating a map of the Salt Lake Valley.
 
-@author: James Mineau (James.Mineau@utah.edu)
+.. warning::
+    This module was more or less useable until I moved it to the lair package, now it is not.
+    I will need to update the imports and paths to get it working again.
 """
 
 import cartopy.crs as ccrs
@@ -29,11 +29,40 @@ DATA_DIR = os.path.join(wkspace, 'data')
 # TODO
 #   create tilers to select from
 
+#: Salt Lake Valley bounding box [lonmin, latmin, lonmax, latmax]
 BOUNDS = (-112.25, 40.4, 
           -111.62, 40.95)
 
 
 class SaltLake:
+    """
+    Salt Lake Valley map class.
+
+    Methods
+    -------
+    add_tiler(tiler, tiler_zoom)
+        Add a tiler background to the map.
+    add_Inventory(Inventory, alpha)
+        Add an inventory to the map.
+    add_census(census, alpha)
+        Add census data to the map.
+    add_border(lvl)
+        Add state or county borders to the map.
+    add_interstates()
+        Add interstate highways to the map.
+    add_TRAX(lines)
+        Add TRAX lines to the map.
+    add_UUCON(sites)
+        Add UUCON sites to the map.
+    add_MesoWest(status, networks)
+        Add MesoWest stations to the map.
+    add_north_arrow()
+        Add a north arrow to the map.
+    add_legend(legend_kws, legend_mapper)
+        Add a legend to the map.
+    add_extent_map()
+        Add an extent map to the map.
+    """
     def __init__(self, bounds=BOUNDS,
                  ax=None, crs=None, figsize=(6, 6),
                  tiler=None, tiler_zoom=9,

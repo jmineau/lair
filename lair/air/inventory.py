@@ -1,23 +1,17 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Mon Mar 20 14:00:42 2023
-
-@author: James Mineau (James.Mineau@utah.edu)
-
-Module for working with Emission Inventories
+Emission inventories.
 """
 
 import os
 import rioxarray as rxr
+from typing import Union
+import xarray as xr
+
+from lair.config import GROUP_DIR
 
 
-INVENTORY_DIR = ('/uufs/chpc.utah.edu/common/home/u6036966'
-                 '/wkspace/data/EmissionInventories')
-
-# TODO - use this instead, need to add to it
-LAIR_inventory_dir = ('/uufs/chpc.utah.edu/common/home/lin-group9/inventories')
-
+#: Inventory directory
+INVENTORY_DIR = os.path.join(GROUP_DIR, 'inventories')
 
 # Unit Conversions
 avogadro = 6.02214076e23  # molec / mol
@@ -37,7 +31,24 @@ km2_to_m2 = 1e6
 a_to_s = 3.1536e7
 
 
-def convertunits(ds, converter, units='umol m-2 s-1'):
+def convertunits(ds: xr.DataArray, converter: float, units='umol m-2 s-1'):
+    """
+    Convert the units of a DataArray in place.
+
+    Parameters
+    ----------
+    ds : xr.DataArray
+        DataArray to convert units of.
+    converter : float
+        Conversion factor.
+    units : str, optional
+        Units to set the DataArray to.
+
+    Returns
+    -------
+    None
+        DataArray is modified in place.
+    """
     # TODO create FluxUnitConverter class
     ds *= converter
     ds.attrs['units'] = units
@@ -46,12 +57,48 @@ def convertunits(ds, converter, units='umol m-2 s-1'):
 
 
 class Inventory:
-    def __init__(self, ID, specie, sector, file):
+    """
+    Inventory base class for emission inventories.
+
+    Attributes
+    ----------
+    ID : str
+        Inventory ID.
+    specie : str
+        Specie of the inventory.
+    sector : str
+        Sector of the inventory.
+    file : str
+        Filename of the inventory.
+    path : str
+        Path to the inventory file.
+    inventory : xr.DataArray | xr.Dataset
+        Inventory data.
+
+    Methods
+    -------
+    process(path)
+        Process the inventory file.
+    clip(geom, box=False, crs=None)
+        Clip the inventory to a geometry.
+    apply_weights()
+        Apply weights to the inventory.
+    get_cell_area(inventory)
+        Get the area of each cell in the inventory.
+    integrate()
+        Integrate the inventory.
+    add2map(ax, **kwargs)
+        Add the inventory to a map.
+    """
+
+    inventory: Union[xr.DataArray, xr.Dataset]
+
+    def __init__(self, ID: str, specie: str, sector: str, file: str):
         self.ID = ID
         self.specie = specie
         self.sector = sector
         self.file = file
-        self.path = self.get_path(file)
+        self.path = self._build_path(file)
         # TODO accept units kw
 
     def __repr__(self):
@@ -61,10 +108,24 @@ class Inventory:
     def __copy__(self):
         return
 
-    def get_path(self, file):
+    def _build_path(self, file) -> str:
+        'Build the path to the inventory file.'
         return os.path.join(INVENTORY_DIR, self.ID, file)
 
-    def process(self, path):
+    def process(self, path: str) -> Union[xr.Dataset, xr.DataArray]:
+        """
+        Process the inventory file.
+
+        Parameters
+        ----------
+        path : str
+            Path to the inventory file.
+
+        Returns
+        -------
+        xr.DataArray | xr.Dataset
+            Processed inventory.
+        """
         ds = rxr.open_rasterio(path)
         ds.rio.write_crs(4326, inplace=True)
         return ds
@@ -127,6 +188,9 @@ class Inventory:
 
 
 class CSL(Inventory):
+    """
+    NOAA CSL Inventory
+    """
     def __init(self, specie):
         ID = 'CSL'
         file = ''
@@ -134,6 +198,14 @@ class CSL(Inventory):
 
 
 class EDGAR(Inventory):
+    """
+    EDGAR - Emissions Database for Global Atmospheric Research
+
+    Attributes
+    ----------
+    version_file : dict[str, str]
+        Version file mapping.
+    """
     version_file = {'7.0': 'EDGARv7_{specie}_total_2021.nc'}
 
     def __init__(self, specie, version='7.0'):
@@ -165,6 +237,9 @@ class EDGAR(Inventory):
 
 
 class EPA(Inventory):
+    """
+    EPA Greenhouse Gas Inventory
+    """
     def __init__(self, sector='total'):
         ID = 'EPA'
         specie = 'CH4'
@@ -211,6 +286,9 @@ class EPA(Inventory):
 
 
 class GFEI(Inventory):
+    """
+    Global Fuel Exploitation Inventory
+    """
     def __init__(self, version=2, sector='Total_Fuel_Exploitation',
                  subsector=None):
         ID = 'GFEI'
@@ -241,16 +319,25 @@ class GFEI(Inventory):
 
 
 class Hestia(Inventory):
+    """
+    Hestia Urban Emissions Inventory
+    """
     def __init__(self):
         pass
 
 
 class SUMRF(Inventory):
+    """
+    Solar-Induced Fluorescence for Modeling Urban biogenic Fluxes (SMUrF)
+    """
     def __init__(self):
         pass
 
 
 class Vulcan(Inventory):
+    """
+    Vulcan Project - Fossil Fuel Emissions
+    """
     def __init__(self, year='2015', version=3, sector='total',
                  uncertainty='mn'):
         ID = 'Vulcan'

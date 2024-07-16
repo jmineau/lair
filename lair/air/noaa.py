@@ -1,8 +1,5 @@
 """
-lair.air.noaa
-~~~~~~~~~~~~~
-
-Module to get NOAA greenhouse gas data.
+NOAA greenhouse gas data.
 """
 
 from abc import ABCMeta
@@ -10,20 +7,47 @@ import datetime as dt
 from functools import cached_property
 import os
 import pandas as pd
-from typing import Literal
+from typing import Literal, Union
 import xarray as xr
 
 from lair.config import GROUP_DIR
 from lair.utils.records import ftp_download, list_files, Cacher
 
+#: CarbonTracker data directory
 CARBONTRACKER_DIR = os.path.join(GROUP_DIR, 'carbontracker')
+
+#: NOAA GML data directory
 GML_DIR = os.path.join(GROUP_DIR, 'gml')
 
 
 class CarbonTracker(metaclass=ABCMeta):
+    """
+    NOAA CarbonTracker
+
+    Attributes
+    ----------
+    specie : Literal['ch4', 'co2']
+        The greenhouse gas specie.
+    version : str
+        The CarbonTracker version.
+    directory : str
+        The directory for the version.
+    cache : bool
+        Whether to cache the data.
+
+    Methods
+    -------
+    get_specie_from_version(version)
+        Get the specie from the version.
+    from_version(version, carbon_tracker_directory=None)
+        Create a CarbonTracker object from the version.
+    download(sub_dirs=['fluxes', 'molefractions'], pattern=None)
+        Download CarbonTracker data from the NOAA GML FTP server.
+    """
     specie: Literal['ch4', 'co2']
 
-    def __init__(self, version, carbon_tracker_directory=None, cache=True):
+    def __init__(self, version: str, carbon_tracker_directory: str | None=None,
+                 cache: bool=True):
         """
         Initialize a CarbonTracker object.
 
@@ -51,11 +75,40 @@ class CarbonTracker(metaclass=ABCMeta):
         return f"{self.__class__.__name__}({self.version})"
 
     @staticmethod
-    def get_specie_from_version(version) -> Literal['ch4', 'co2']:
+    def get_specie_from_version(version: str) -> Literal['ch4', 'co2']:
+        """
+        Get the specie from the version.
+
+        Parameters
+        ----------
+        version : str
+            The version of CarbonTracker data.
+
+        Returns
+        -------
+        Literal['ch4', 'co2']
+            The specie.
+        """
         return 'ch4' if 'ch4' in version.lower() else 'co2'
 
     @staticmethod
-    def from_version(version, carbon_tracker_directory=None):
+    def from_version(version: str, carbon_tracker_directory: str | None=None):
+        """
+        Create a CarbonTracker object from the version.
+
+        Parameters
+        ----------
+        version : str
+            The version of CarbonTracker data to download.
+            Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.
+        carbon_tracker_directory : str, optional
+            The directory to download the data to, by default CARBONTRACKER_DIR.
+
+        Returns
+        -------
+        CarbonTracker
+            The CarbonTracker object.
+        """
         specie = CarbonTracker.get_specie_from_version(version)
         if specie == 'co2':
             raise ValueError("CarbonTrackerCO2 not yet implemented")
@@ -65,8 +118,8 @@ class CarbonTracker(metaclass=ABCMeta):
         else:
             raise ValueError("Invalid specie")
 
-    def download(self, sub_dirs=['fluxes', 'molefractions'], 
-                 pattern=None):
+    def download(self, sub_dirs: list[str]=['fluxes', 'molefractions'], 
+                 pattern: str=None):
         """
         Download CarbonTracker data from the NOAA GML FTP server.
 
@@ -91,6 +144,19 @@ class CarbonTracker(metaclass=ABCMeta):
 
 
 class CarbonTrackerCH4(CarbonTracker):
+    """
+    NOAA CarbonTracker-CH4
+
+    Attributes
+    ----------
+    molefractions : xr.Dataset
+        The molefractions Dataset.
+
+    Methods
+    -------
+    calc_molefractions_pressure(molefractions)
+        Calculate the pressure at each level in the molefractions Dataset.
+    """
     specie = 'ch4'
 
     def __init__(self, version='CT-CH4-2023', carbon_tracker_directory=None, cache=True,
@@ -110,6 +176,7 @@ class CarbonTrackerCH4(CarbonTracker):
 
     @cached_property
     def molefractions(self) -> xr.Dataset:
+        'Molefractions Dataset. Cached property.'
         path = os.path.join(self.directory, 'molefractions')
 
         files = list_files(path, '*nc', full_names=True, recursive=True)
@@ -150,6 +217,37 @@ class CarbonTrackerCH4(CarbonTracker):
 class Flask:
     """
     NOAA GML Flask
+
+    Attributes
+    ----------
+    specie : str
+        The greenhouse gas specie.
+    site : str
+        The site where the flask samples were collected.
+    platform : str, optional
+        The platform where the flask samples were collected, by default 'surface'.
+    lab_id : int, optional
+        The lab ID, by default 1.
+    measurement_group : str, optional
+        The measurement group, by default 'ccgg'.
+    frequency : str, optional
+        The frequency of the measurements, by default 'event'.
+    driver : str, optional
+        The driver to use to read the data, by default 'pandas'.
+    gml_dir : str, optional
+        The NOAA GML directory to download the data to, by default GML_DIR.
+    directory : str
+        The directory for the Flask data.
+    filename : str
+        The filename for the Flask data.
+    filepath : str
+        The filepath for the Flask data.
+    data : pd.DataFrame | xr.Dataset
+        The Flask data.
+    file_template : str
+        The template for the Flask filename.
+    driver_ext : dict
+        The driver extensions.
     """
     file_template = '{specie}_{site}_{platform}-flask_{lab_id}_{measurement_group}_{frequency}.{ext}'
 
@@ -186,7 +284,7 @@ class Flask:
             The driver to use to read the data, by default 'pandas'.
         gml_dir : str, optional
             The NOAA GML directory to download the data to, by default GML_DIR.
-    """
+        """
         self.specie = specie
         self.site = site
         self.platform = platform
@@ -229,7 +327,22 @@ class Flask:
         return data
 
     @staticmethod
-    def apply_qaqc(data: pd.DataFrame|xr.Dataset, driver='pandas'):
+    def apply_qaqc(data: Union[pd.DataFrame, xr.Dataset], driver: str='pandas'):
+        """
+        Apply QA/QC to the Flask data.
+
+        Parameters
+        ----------
+        data : pd.DataFrame | xr.Dataset
+            The Flask data.
+        driver : str, optional
+            The driver to use to read the data, by default 'pandas'.
+
+        Returns
+        -------
+        pd.DataFrame | xr.Dataset
+            The Flask data with QA/QC applied.
+        """
         if driver == 'pandas':
             data = data[data.qcflag == '...']
         elif driver == 'xarray':

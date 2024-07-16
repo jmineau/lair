@@ -1,18 +1,17 @@
 """
-lair.uataq.instruments
-~~~~~~~~~~~~~~~~~~~~~~
-
 This module implements UATAQ instruments as classes.
+
 Each instrument class is a subclass of the `Instrument` abstract base class and
-    implements methods for reading and parsing data files.
+implements methods for reading and parsing data files.
+
 The `Instrument` class provides a common interface for all instrument classes
-    and defines abstract methods that must be implemented by each subclass.
+and defines abstract methods that must be implemented by each subclass.
 """
 
 from abc import ABCMeta
 import json
 import pandas as pd
-from typing import Literal, Iterator
+from typing import Literal, Iterator, Type
 
 from lair.config import vprint
 from lair.uataq import errors, filesystem
@@ -42,14 +41,8 @@ class Instrument(metaclass=ABCMeta):
     
     Methods
     -------
-    available_lvls(group: str) -> list[str]
-        Get the available data levels for the instrument ranked in increasing order.
-    get_highest_lvl(group: str) -> str
-        Get the highest data level for the instrument.
     get_files(group: str, lvl: str) -> list[str]
         Get list of file paths for a given level.
-    get_datafiles(group: str, lvl: str, time_range: TimeRange, pattern: str) -> list[DataFile]
-        Get data files for the given level and time range from the groupspace.
     read_data(group: str, lvl: str, time_range: TimeRange, num_processes: int, file_pattern: str) -> pd.DataFrame
         Read and parse group data files for the given level and time range using multiple processes.
     """
@@ -457,8 +450,8 @@ class Teom_1400ab(Instrument, SensorMixin):
     pollutants = ('PM2.5',)
 
 
-# Instrument catalog
-catalog = {
+#: Instrument catalog
+catalog: dict[str, Type[Instrument]] = {
     '2b_205':         BB_205,
     '2b_405':         BB_405,
     'cr1000':         CR1000,

@@ -47,47 +47,9 @@ conda install -c conda-forge boto3 metpy s3fs siphon synopticpy zarr
 pip install git+https://github.com/jmineau/lair.git[met]
 ```
 
-# Contents
+# Documentation
 
-### `lair.air`
-
-The `air` module contains various modules for working with atmospheric data:
- - `air.air` - Miscellaneous functions for working with atmospheric data.
- - `air.background` - Functions for calculating a background/baseline from a time series.
- - `air.hrrr` - Functions for working with data from the High-Resolution Rapid Refresh (HRRR) model.
- - `air.inventory` - Classes and functions for working with emissions inventories.
- - `air.mesowest` - Functions for working with data from the MesoWest API.
- - `air.meteorology` - Functions for various meteorological equations.
- - `air.noaa` - Functions to get NOAA greenhouse gas data including flasks and CarbonTracker.
- - `air.plots` - Functions for plotting atmospheric data.
- - `air.soundings` - Functions for working with atmospheric soundings.
- - `air.stilt` - Classes and functions for working with data from the Stochastic Time-Inverted Lagrangian Transport (STILT) model.
-
-### `lair.config`
-
-The `config` module contains configuration settings for the `lair` package.
-
-### `lair.constants`
-
-The `constants` module contains various constants used throughout the `lair` package.
-
-### `lair.uataq`
-
-The `uataq` subpackage contains classes and functions for working with data from the Utah Atmospheric Trace Gas and Air Quality (UATAQ) project.
-
- - [Documentation](docs/uataq.md)
-
-### `lair.units`
-
-The `units` module contains various unit conversion functions & factors used throughout the `lair` package.
-
-### `lair.utils`
-
-The `utils` module contains various utility functions used throughout the `lair` package.
-
-### `lair.valley`
-
-The `valley` module contains classes and functions for creating maps of measurements taken` in the Salt Lake Valley.
+Documentation for the `lair` package can be found [here](https://jamesmineau.chpc.utah.edu/lair/).
 
 # Verbosity
 

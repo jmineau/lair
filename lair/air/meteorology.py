@@ -1,8 +1,5 @@
 """
-lair.air.meteorology
-~~~~~~~~~~~~~~~~~~~~
-
-Module for meteorological calculations.
+Meteorological calculations.
 
 Inspired by AOS 330 at UW-Madison with Grant Petty.
 """
@@ -10,14 +7,16 @@ Inspired by AOS 330 at UW-Madison with Grant Petty.
 import numpy as np
 
 from lair.constants import Rstar, Rd, kb, Na, cp, g, epsilon
-from lair.units import K, Pa, hPa, kg, m, sec, J, W, C2K
+from lair.units import K, Pa, hPa, kg, m, sec, C2K
 
-# Standard Atmosphere
-T_stnd   = C2K(15) *K
-p_stnd   = 1013.25 *hPa
-rho_stnd = 1.225 *kg/m**3
-z_stnd   = 0 *m
 
+#: Standard Atmosphere
+standard: dict[str, float] = {
+    'T': C2K(15) *K,
+    'p': 1013.25 *hPa,
+    'rho': 1.225 *kg/m**3,
+    'z': 0 *m
+}
 
 #############
 # Functions #
@@ -135,23 +134,132 @@ def hypsometric(Tv=None, p1=None, p2=None,
     raise ValueError('Invalid input combination')
 
 
-def virt_T(T, q):  # K, kg kg-1
+def virt_T(T: float, q: float) -> float:
+    """
+    Calculate the virtual temperature.
+
+    Parameters
+    ----------
+    T : float
+        Temperature in Kelvin.
+    q : float
+        Specific humidity in kg/kg.
+
+    Returns
+    -------
+    float
+        Virtual temperature in Kelvin.
+    """
     return T * (1 + 0.61 * q)
 
-def poisson(T, p, p0 = 1000*hPa): #K, Pa
-    return T * (p0/p)**(Rd/cp) #theta (potential temp) K
 
-def inv_poisson(p, theta, p0 = 1000*hPa): #Pa, K
+def poisson(T: float, p: float, p0: float = 1000*hPa) -> float:
+    """
+    Calculate the potential temperature. (Poission's equation)
+
+    Parameters
+    ----------
+    T : float
+        Temperature in Kelvin.
+    p : float
+        Pressure in Pascals.
+    p0 : float, optional
+        Reference pressure in Pascals. Default is 1000 hPa.
+
+    Returns
+    -------
+    float
+        Potential temperature in Kelvin.
+    """
+    return T * (p0/p)**(Rd/cp)
+
+
+def inv_poisson(p: float, theta: float, p0: float = 1000*hPa) -> float:
+    """
+    Calculate the temperature from potential temperature. (Inverse Poission's equation)
+
+    Parameters
+    ----------
+    p : float
+        Pressure in Pascals.
+    theta : float
+        Potential temperature in Kelvin.
+    p0 : float, optional
+        Reference pressure in Pascals. Default is 1000 hPa.
+
+    Returns
+    -------
+    float
+        Temperature in Kelvin.
+    """
     return theta * (p/p0)**(Rd/cp)
 
-def sat_vapor_pres(T): #K
-    return 2.53e11 * np.exp(-5420/T) #Pa
 
-def sat_vapor_pres_ice(T): #K
-    return 3.41e11 * np.exp(-6130/T) #Pa
+def sat_vapor_pres(T: float) -> float:
+    """
+    Calculate the saturation vapor pressure.
 
-def mixing_ratio(e, p): #Pa
-    return epsilon * e / p #kg/kg
+    Parameters
+    ----------
+    T : float
+        Temperature in Kelvin.
 
-def T_from_e(e): #Pa
+    Returns
+    -------
+    float
+        Saturation vapor pressure in Pascals.
+    """
+    return 2.53e11 * np.exp(-5420/T)
+
+
+def sat_vapor_pres_ice(T: float) -> float:
+    """
+    Calculate the saturation vapor pressure over ice.
+
+    Parameters
+    ----------
+    T : float
+        Temperature in Kelvin.
+
+    Returns
+    -------
+    float
+        Saturation vapor pressure over ice in Pascals.
+    """
+    return 3.41e11 * np.exp(-6130/T)
+
+
+def mixing_ratio(e: float, p: float) -> float:
+    """
+    Calculate the mixing ratio.
+
+    Parameters
+    ----------
+    e : float
+        Vapor pressure in Pascals.
+    p : float
+        Pressure in Pascals.
+
+    Returns
+    -------
+    float
+        Mixing ratio in kg/kg.
+    """
+    return epsilon * e / p
+
+
+def T_from_e(e: float) -> float: #Pa
+    """
+    Calculate the temperature from vapor pressure.
+
+    Parameters
+    ----------
+    e : float
+        Vapor pressure in Pascals.
+
+    Returns
+    -------
+    float
+        Temperature in Kelvin.
+    """
     return -5420/np.log(e/2.53e11) #K

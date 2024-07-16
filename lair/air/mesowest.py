@@ -1,9 +1,31 @@
+"""
+SODAR data from MesoWest.
+
+Hopefully will add more functionality in the future.
+"""
+
+import os
 import pandas as pd
 import tables as pytbls
 import xarray as xr
 
+from lair.config import MESOWEST_DIR
+from lair.uataq.filesystem import DataFile, filter_datafiles  # this probably shouldn't be here
 
-class Sodar:  # TODO move to mesowest module - import HorelH5File
+
+class SodarFile(DataFile):
+    # TODO
+    pass
+
+    def parse(self):
+        pass
+
+
+class Sodar:
+    """
+    Horel Group Sodar
+    """
+    # TODO move to mesowest module - import HorelH5File
     # TODO:
     #  - qaqc lvl is under hdf5archive/_Processed
     #  - how should this work with get_obs
@@ -15,7 +37,7 @@ class Sodar:  # TODO move to mesowest module - import HorelH5File
     sodar_dir = os.path.join(MESOWEST_DIR, 'sodar_data')
     archive_dir = os.path.join(sodar_dir, 'hdf5archive')
 
-    def __init__(self, SID):
+    def __init__(self, SID: str):
         self.SID = SID.upper()
 
         self.metafile = os.path.join(self.archive_dir, 
@@ -24,15 +46,15 @@ class Sodar:  # TODO move to mesowest module - import HorelH5File
         self.variables = pd.read_hdf(self.metafile, key='metagroup/variables')
         self.variables.set_index('SHORTNAME', inplace=True)
 
-    def get_files(self, lvl='raw', time_range=(None, None)):
+    def get_files(self, lvl: str='raw', time_range=(None, None)):
         files = []
         for file in os.listdir(self.archive_dir):
             if file.startswith(self.SID) and file.endswith('sodar.h5'):
                 file_path = os.path.join(self.archive_dir, file)
                 date_str = file[6:13].replace('_', '-')
                 period = pd.Period(date_str, freq='M')
-                files.append(DataFile(file_path, period))
-        return filter_files(files, time_range)
+                files.append(SodarFile(file_path))
+        return filter_datafiles(files, time_range)
     
     @staticmethod
     def parse(file, variables):
