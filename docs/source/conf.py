@@ -26,7 +26,7 @@ release = lair.__version__
 
 # Get the version from the environment if it's set
 # This allows me to set the version to 'dev' when autobuilding dev docs
-version = 'dev' if os.getenv('LAIR_DOCS_VERSION') == 'dev' else release
+version = os.getenv('LAIR_DOCS_VERSION', release)
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -136,6 +136,7 @@ html_theme_options = {
          'alt_text': 'LAIR - Home'
       },
      'navbar_start': ['navbar-logo', 'version-switcher'],
+     'show_version_warning_banner': True,
      'switcher': {
          'json_url': 'https://raw.githubusercontent.com/jmineau/lair/main/docs/switcher.json',
          'version_match': version

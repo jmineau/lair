@@ -2,6 +2,8 @@
 
 # LAIR (Land-Air Interactions Research)
 
+<a href="https://jamesmineau.chpc.utah.edu/lair/" target="_blank"><button style="background-color: #2a6e14; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px;">Documentation</button></a>
+
 </div>
 
 `lair` is a collection of tools that I have developed/acquired for my research regarding land-air interactions. I spent a lot of time developing the `uataq` subpackage which provides a simple interface for reading in data from the Utah Atmospheric Trace Gas and Air Quality (UATAQ) project - the idea being that we as scientists spend too much time on data wrangling and not enough time on analysis. The `lair` package is designed to make it easier to work with atmospheric data, particularly data from the UATAQ project.
@@ -46,10 +48,6 @@ conda install -c conda-forge boto3 metpy s3fs siphon synopticpy zarr
 # via pip
 pip install git+https://github.com/jmineau/lair.git[met]
 ```
-
-# Documentation
-
-Documentation for the `lair` package can be found [here](https://jamesmineau.chpc.utah.edu/lair/).
 
 # Verbosity
 
