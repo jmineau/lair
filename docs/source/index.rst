@@ -139,6 +139,10 @@ Contributing
 
 Contributions are welcome! Please take a look at current `issues <https://github.com/jmineau/lair/issues>`_ and feel free to submit a pull request with new features or bug fixes.
 
+.. important::
+
+   Please document your code using `numpydoc <https://numpydoc.readthedocs.io/en/latest/format.html>`_ style docstrings.
+
 Citation
 ========
 
