@@ -137,7 +137,7 @@ html_theme_options = {
       },
      'navbar_start': ['navbar-logo', 'version-switcher'],
      'switcher': {
-         'json_url': 'https://github.com/jmineau/lair/blob/main/docs/switcher.json',
+         'json_url': 'https://raw.githubusercontent.com/jmineau/lair/main/docs/switcher.json',
          'version_match': version
      }
 }
