@@ -2,8 +2,7 @@
 
 # LAIR (Land-Air Interactions Research)
 
-[![Static Badge](https://img.shields.io/badge/Documentation-2a6e14?logo=readthedocs)](https://jamesmineau.chpc.utah.edu/lair)
-
+## [:scroll: Documentation](https://jamesmineau.chpc.utah.edu/lair)
 
 </div>
 
