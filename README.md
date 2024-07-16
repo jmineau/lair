@@ -2,7 +2,8 @@
 
 # LAIR (Land-Air Interactions Research)
 
-<a href="https://jamesmineau.chpc.utah.edu/lair/" target="_blank"><button style="background-color: #2a6e14; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 5px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px;">Documentation</button></a>
+[![Static Badge](https://img.shields.io/badge/Documentation-2a6e14?logo=readthedocs)](https://jamesmineau.chpc.utah.edu/lair)
+
 
 </div>
 
