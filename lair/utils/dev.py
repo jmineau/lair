@@ -1,7 +1,5 @@
 """
-lair.utils.dev
-
-Module of tools for code development.
+Tools for code development.
 """
 
 

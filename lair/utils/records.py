@@ -1,18 +1,26 @@
 """
-lair.utils.records
-~~~~~~~~~~~~~~~~~~
-
 Utilities for working with files and directories.
 """
 
 import os
 from typing import Callable, Literal
 
+from fastkml import KML
+
 from lair.config import vprint
 
 
-def unzip(zf, dir_path=None):
-    '''Unzip file into dir_path if given'''
+def unzip(zf: str, dir_path: str | None=None):
+    '''
+    Unzip file into dir_path if given
+    
+    Parameters
+    ----------
+    zf : str
+        Path to zip file
+    dir_path : str, optional
+        Path to directory to unzip to, by default None
+    '''
     import zipfile
 
     with zipfile.ZipFile(zf, 'r') as zip_ref:
@@ -24,16 +32,25 @@ def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = Fa
     """
     Returns a list of files in the specified directory that match the specified pattern.
 
-    Args:
-        path (str): The directory to search for files. Defaults to the current directory.
-        pattern (str): The glob-style pattern to match against file names. Defaults to None, which matches all files.
-        ignore_case (bool): Whether to ignore case when matching file names. Defaults to False.
-        all_files (bool): Whether to include hidden files (files that start with a dot). Defaults to False.
-        full_names (bool): Whether to return the full path of each file. Defaults to False.
-        recursive (bool): Whether to search for files recursively in subdirectories. Defaults to False.
+    Parameters
+    ----------
+    path : str, optional
+        The directory to search for files. Defaults to the current directory.
+    pattern : str, optional
+        The glob-style pattern to match against file names. Defaults to None, which matches all files.
+    ignore_case : bool, optional
+        Whether to ignore case when matching file names. Defaults to False.
+    all_files : bool, optional
+        Whether to include hidden files (files that start with a dot). Defaults to False.
+    full_names : bool, optional
+        Whether to return the full path of each file. Defaults to False.
+    recursive : bool, optional
+        Whether to search for files recursively in subdirectories. Defaults to False.
 
-    Returns:
-        List[str]: A list of file names or full paths that match the specified pattern.
+    Returns
+    -------
+    List[str]
+        A list of file names or full paths that match the specified pattern.
     """
     import fnmatch
 
@@ -58,8 +75,20 @@ def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = Fa
     return result
 
 
-def read_kml(path):
-    '''Read kml file from path'''
+def read_kml(path: str) -> KML:
+    """
+    Read kml file from path
+
+    Parameters
+    ----------
+    path : str
+        The path to the KML file.
+
+    Returns
+    -------
+    KML
+        The KML object.
+    """
     from fastkml import kml
 
     with open(path, 'rt') as KML:
@@ -68,10 +97,35 @@ def read_kml(path):
     return k
 
 
-def ftp_download(host, paths, download_dir,
-                 username='anonymous', password='',
-                 prefix=None,
-                 pattern=None):
+def ftp_download(host: str, paths: str | list[str], download_dir: str,
+                 username: str='anonymous', password: str='',
+                 prefix: str | None=None,
+                 pattern: str | None=None):
+    """
+    Recursively download files from an FTP server.
+
+    Parameters
+    ----------
+    host : str
+        The FTP server host.
+    paths : str | list[str]
+        The path(s) to download from the FTP server.
+    download_dir : str
+        The local directory to download files to.
+    username : str, optional
+        The username to use for the FTP server. Defaults to 'anonymous'.
+    password : str, optional
+        The password to use for the FTP server. Defaults to ''.
+    prefix : str, optional
+        The common prefix to use for the local directory structure. Defaults to None.
+    pattern : str, optional
+        The pattern to match against file names. Defaults to None.
+
+    Returns
+    -------
+    bool
+        True if the download was successful, False otherwise.
+    """
     import ftplib
 
     if username == 'anonymous' and password == '':
@@ -150,13 +204,18 @@ def parallelize_file_parser(file_parser: Callable,
                             num_processes: int | Literal['max'] = 1):
     """
     Parallelizes a file parser function to read multiple files in parallel.
-    
-    Args:
-        file_parser (function): The function to be parallelized. Must be picklable.
-        num_processes (int): The number of processes to use for parallelization. Defaults to 1.
 
-    Returns:
-        function: A parallelized version of the file parser function.
+    Parameters
+    ----------
+    file_parser : function
+        The function to be parallelized. Must be picklable.
+    num_processes : int | 'max', optional
+        The number of processes to use for parallelization. Defaults to 1.
+
+    Returns
+    -------
+    function
+        A parallelized version of the file parser function.
     """
 
     import multiprocessing
@@ -166,9 +225,12 @@ def parallelize_file_parser(file_parser: Callable,
         """
         Parses multiple files in parallel using the file parser function.
 
-        Args:
-            files (list): A list of file to be parsed. Format is determined by the file parser function.
-            **kwargs: Additional keyword arguments to be passed to the file parser function.
+        Parameters
+        ----------
+        files : list[str]
+            A list of file to be parsed. Format is determined by the file parser function.
+        kwargs : dict
+            Additional keyword arguments to be passed to the file parser function.
 
         Returns:
             list: A list of datasets parsed from the input files.
@@ -217,17 +279,19 @@ class Cacher:
     """
     A class that caches function results to a file for future use.
 
-    Parameters
+    Attributes
     ----------
     func : function
         The function to be cached.
     cache_file : str
         The name of the file to cache results to.
+    reload : bool
+        Whether to reload the cache index from the index file.
     """
 
     import pickle as pkl
 
-    def __init__(self, func, cache_file, reload=False):
+    def __init__(self, func: Callable, cache_file: str, reload=False):
         """
         Initializes a Cacher object.
 
@@ -237,6 +301,8 @@ class Cacher:
             The function to be cached.
         cache_file : str
             The name of the file to cache results to.
+        reload : bool, optional
+            Whether to reload the cache index from the index file. Defaults to False.
         """
         assert cache_file.endswith('.pkl')
 
@@ -292,7 +358,7 @@ class Cacher:
 
         Parameters
         ----------
-        *args : tuple
+        args : tuple
             The arguments to be passed to the function.
 
         Returns

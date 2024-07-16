@@ -13,4 +13,4 @@ Utilities
    plotter
    records
 
-   .. some utils.__init__ funcs
+   .. some utils.__init__ funcs - not sure if id like that

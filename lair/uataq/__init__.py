@@ -1,22 +1,24 @@
 """
-lair.uataq.__init__
-~~~~~~~~~~~~~~~~~~~
-
 Init file for UATAQ package.
 """
 
 import datetime as dt
 import pandas as pd
-from typing import Dict, List, Optional, Sequence, Union, Literal
+from typing import Union, Literal
 
 
 from lair.utils.clock import TimeRange
-from ._laboratory import laboratory, get_site
+from ._laboratory import Laboratory, laboratory, get_site
 from .filesystem import DEFAULT_GROUP
 from . import instruments, sites
 
 
 _all_or_mult_strs = Union[Literal['all'], str, list[str], tuple[str, ...], set[str]]
+
+#: UATAQ Laboratory object.
+#: 
+#: Built from :doc:`UATAQ configuration <config>`.
+laboratory: Laboratory
 
 
 # sites = {SID: laboratory.get_site(SID)  # name conflict
@@ -131,4 +133,8 @@ def get_recent_obs(SID, recent: str | dt.timedelta = dt.timedelta(days=10),
     return obs
 
 
-#__all__ = ['Site', 'instruments', 'laboratory', 'get_obs', 'read_data' 'site_config']
+__all__ = [
+    'sites', 'instruments',
+    'laboratory',
+    'get_site', 'read_data', 'get_obs', 'get_recent_obs',
+    ]

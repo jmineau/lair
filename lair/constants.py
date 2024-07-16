@@ -1,29 +1,28 @@
 """
-lair.constants
-~~~~~~~~~~~~~~
+Mathematical, physical & scienfitic constants.
 
-Module for storing constants.
-Constants are s
+All in scientific units.
 """
 
 from lair.units import J, kg, m, sec, K, km, W
 
-R_earth = 6371 * km # radius of the Earth
-c       = 299792458 *m/sec  # speed of light
-h       = 6.62607015e-34 *J*sec  # Planck constant
-kb      = 1.380649e-23 *J/K  # Boltzmann constant
-sigma   = 5.67e-8 *W/m**2/K**4  # Stefan-Boltzmann constant
-Na      = 6.02214076e23  # Avogadro constant
-Rstar   = kb * Na  # universal gas constant
-Rv      = 461.5 *J/kg/K  # gas constant water vapor
-Rd      = 287.05 *J/kg/K  # gas constant dry air
-epsilon = Rd/Rv  # ratio of gas constants
-cv      = 718 *J/kg/K  # heat capacity water vapor
-cp      = 1005 *J/kg/K  # heat capacity dry air
-c_l     = 4186 *J/kg/K #heat capacity liquid water
-g       = 9.81 *m/sec**2
-L       = 2.501e6 *J/kg # latent heat of vaporization
-L_f     = 3.337e5 *J/kg # latent heat of fusion
-L_s     = L + L_f  # latent heat of sublimation
-Gamma_d = 9.8 *K/km  # dry adiabatic lapse rate
-rho_w = 997 *kg/m**3 # density of water
+
+Na = 6.02214076e23            #: Avogadro constant [1/mol]
+kb = 1.380649e-23 *J/K        #: Boltzmann constant [J/K]
+rho_w = 997 *kg/m**3          #: Density of water [kg/m^3]
+Gamma_d = 9.8 *K/km           #: Dry adiabatic lapse rate [K/km]
+Rd = 287.05 *J/kg/K           #: Gas constant for dry air [J/kg/K]
+Rv = 461.5 *J/kg/K            #: Gas constant for water vapor [J/kg/K]
+g = 9.81 *m/sec**2            #: Gravitational acceleration [m/sec^2]
+cp = 1005 *J/kg/K             #: Heat capacity of dry air [J/kg/K]
+c_l = 4186 *J/kg/K            #: Heat capacity of liquid water [J/kg/K]
+cv = 718 *J/kg/K              #: Heat capacity of water vapor [J/kg/K]
+L_f = 3.337e5 *J/kg           #: Latent heat of fusion [J/kg]
+L = 2.501e6 *J/kg             #: Latent heat of vaporization [J/kg]
+L_s = L + L_f                 #: Latent heat of sublimation [J/kg]
+h = 6.62607015e-34 *J*sec     #: Planck constant [J*sec]
+R_earth = 6371 * km           #: Radius of the Earth [km]
+epsilon = Rd/Rv               #: Ratio of gas constants [#]
+c = 299792458 *m/sec          #: Speed of light [m/sec]
+sigma = 5.67e-8 *W/m**2/K**4  #: Stefan-Boltzmann constant [W/m^2/K^4]
+Rstar = kb * Na               #: Universial gas constant TODO

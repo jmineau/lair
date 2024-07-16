@@ -1,7 +1,4 @@
 """
-lair.uataq.errors
-~~~~~~~~~~~~~~~~~
-
 This module provides custom exceptions for UATAQ.
 """
 

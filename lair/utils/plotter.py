@@ -1,30 +1,65 @@
 """
-lair.utils.plotter
-~~~~~~~~~~~~~~~~~~
-
 This module provides utility functions for plotting data.
 """
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
+import pandas as pd
 from cartopy.io.img_tiles import GoogleWTS
 from matplotlib.legend_handler import HandlerLineCollection
 
 
-def log10formatter(x, pos, deci=0):
+def log10formatter(x, pos, deci=0) -> str:
     """
-    Format ticks to log 10 format with deci number of decimals
+    Format ticks to log 10 format with deci number of decimals.
+
+    Parameters
+    ----------
+    x : float
+        Tick value.
+    deci : int, optional
+        Number of decimals to display. Defaults to 0.
+
+    Returns
+    -------
+    str
+        Formatted tick label.
+
+    Examples
+    --------
+    >>> from functools import partial
+    >>> import numpy as np
+    >>> data: xr.DataArray  # some data, in this case, 3D (time, lat, lon)
+    >>> np.log10(data).plot(cbar_kwargs={'format': partial(log10formatter, deci=2)})
     """
 
     return f'$10^{{{x:.{deci}f}}}$'
 
 
-def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
+def truncate_colormap(cmap: str | mcolors.Colormap, minval: float=0.0, maxval: float=1.0, n: int=100) -> mcolors.LinearSegmentedColormap:
     """
     Truncate matplotlib colormaps using min and max vals from 0 to 1,
     and then linearly build a new colormap
+
+    Parameters
+    ----------
+    cmap : str | matplotlib.colors.Colormap
+        Colormap to be truncated.
+    minval : float, optional
+        Minimum value to truncate the colormap. Defaults to 0.0.
+    maxval : float, optional
+        Maximum value to truncate the colormap. Defaults to 1.0.
+    n : int, optional
+        Number of colors in the new colormap. Defaults to 100.
+
+    Returns
+    -------
+    matplotlib.colors.LinearSegmentedColormap
+        Truncated colormap.
     """
+    if isinstance(cmap, str):
+        cmap: mcolors.Colormap = plt.get_cmap(cmap)
 
     new_cmap = mcolors.LinearSegmentedColormap.from_list(
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
@@ -33,10 +68,20 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     return new_cmap
 
 
-def NCL_cmap(table_name):
-    '''Generate matplotlib colormap from NCL color table'''
+def NCL_cmap(table_name: str) -> mcolors.LinearSegmentedColormap:
+    """
+    Generate matplotlib colormap from NCL color table.
+
+    Parameters
+    ----------
+    table_name : str
+
+    Returns
+    -------
+    matplotlib.colors.LinearSegmentedColormap
+        matplotlib colormap from NCL color table.
+    """
     import pandas as pd
-    from matplotlib.colors import LinearSegmentedColormap as LSC
 
     # Get NCL table link
     tables = 'https://www.ncl.ucar.edu/Document/Graphics/ColorTables/Files'
@@ -49,19 +94,68 @@ def NCL_cmap(table_name):
     colortab = colortab.rename({'#': 'r', 'r': 'g', 'g': 'b'}, axis=1)
 
     # Create linear matplotlib cmap from pandas dataframe
-    cmap = LSC.from_list(table_name, colortab.values/255, N=100)
+    cmap = mcolors.LinearSegmentedColormap.from_list(table_name, colortab.values/255, N=100)
     return cmap
 
 
-def get_terrain_cmap(minval=0.42, maxval=1.0, n=256):
-    '''Matplotlib terrain map truncated using min and max values between
-    0 and 1'''
-    terrain = truncate_colormap(plt.get_cmap('terrain'),
-                                minval=minval, maxval=maxval, n=n)
-    return terrain
+def terrain_cmap(minval: float=0.42, maxval: float=1.0, n: int=256) -> mcolors.LinearSegmentedColormap:
+    """
+    Matplotlib terrain cmap.
 
-def diurnalPlot(data, param, stats=['std', 'median', 'mean'], units=None, tz='UTC', freq='1H', ax=None,
-                colors={'mean': 'black', 'median': 'blue', 'std': 'gray'}, min_count = 0):
+    Parameters
+    ----------
+    minval : float, optional
+        Minimum value to truncate the colormap. Defaults to 0.42.
+    maxval : float, optional
+        Maximum value to truncate the colormap. Defaults to 1.0.
+    n : int, optional
+        Number of colors in the new colormap. Defaults to 256.
+
+    Returns
+    -------
+    matplotlib.colors.LinearSegmentedColormap
+        Matplotlib terrain colormap.
+    """
+    return truncate_colormap('terrain', minval=minval, maxval=maxval, n=n)
+
+
+def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str]=['std', 'median', 'mean'],
+                units: str | None=None, tz: str='UTC', freq: str='1H', ax: plt.Axes | None=None,
+                colors: str | dict[str, str]={'mean': 'black', 'median': 'blue', 'std': 'gray'},
+                min_count: int = 0) -> plt.Axes:
+    """
+    Plot the diurnal cycle of data.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Data to plot.
+    param : str
+        Parameter to plot.
+    stats : str | list[str], optional
+        Statistics to plot. Defaults to ['std', 'median', 'mean'].
+    units : str | None, optional
+        Units of the parameter for the ylabel. Defaults to None.
+    tz : str, optional
+        Timezone of the data. Defaults to 'UTC'.
+
+        .. warning::
+            DOES NOT CONVERT TIMEZONES.
+
+    freq : str, optional
+        Frequency of the data. Defaults to '1H'.
+    ax : plt.Axes | None, optional
+        Axis to plot on. Defaults to None.
+    colors : str | dict[str, str], optional
+        Colors of the statistics. Defaults to {'mean': 'black', 'median': 'blue', 'std': 'gray'}.
+    min_count : int, optional
+        Minimum count to plot. Defaults to 0.
+
+    Returns
+    -------
+    plt.Axes
+        Axis with the plot
+    """
     import datetime as dt
     import matplotlib.dates as mdates
     from lair.utils.clock import diurnal
@@ -131,7 +225,27 @@ def diurnalPlot(data, param, stats=['std', 'median', 'mean'], units=None, tz='UT
     return ax
 
 
-def seasonalPlot(data, param='CH4', units='ppm', ax=None):
+def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt.Axes | None=None
+                 ) -> plt.Axes:
+    """
+    Plot the seasonal cycle of data by year.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Data to plot.
+    param : str, optional
+        Parameter to plot. Defaults to 'CH4'.
+    units : str, optional
+        Units of the parameter for the ylabel. Defaults to 'ppm'.
+    ax : plt.Axes | None, optional
+        Axis to plot on. Defaults to None.
+
+    Returns
+    -------
+    plt.Axes
+        Axis with the plot
+    """
     colors = {'DJF': '#e7298a', 
               'MAM': '#1b9e77', 
               'JJA': '#d95f02', 
@@ -158,7 +272,15 @@ def seasonalPlot(data, param='CH4', units='ppm', ax=None):
     return ax
 
 
-def create_polar_ax():
+def create_polar_ax() -> plt.Axes:
+    """
+    Create a polar axis with North at the top.
+
+    Returns
+    -------
+    plt.Axes
+        Polar axis.
+    """
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     ax.set_theta_direction(-1)
     ax.set_theta_zero_location('N')
@@ -167,7 +289,23 @@ def create_polar_ax():
     return ax
 
 
-def format_radial_axis(ax, x, scale_angle):
+def format_radial_axis(ax: plt.Axes, x: str, scale_angle: float) -> None:
+    """
+    Format radial axis of polar plot.
+
+    Parameters
+    ----------
+    ax : plt.Axes
+        Axis to format.
+    x : str
+        Label of the radial axis.
+    scale_angle : float
+        Angle to position the label.
+
+    Returns
+    -------
+    None
+    """
     if scale_angle is not None:
         ax.set_rlabel_position(scale_angle)
     ha = 'right' if ax.get_rlabel_position() > 180 else 'left'
@@ -179,8 +317,39 @@ def format_radial_axis(ax, x, scale_angle):
     return None
 
 
-def polarPlot(data, param='CH4', x='ws', wd='wd', statistic='mean',
-              units='ppm', min_bin=1, xbins=30, scale_angle=None):
+def polarPlot(data: pd.DataFrame, param: str='CH4', x: str='ws', wd: str='wd',
+              statistic: str='mean', units: str='ppm', min_bin: int=1, xbins: int=30,
+              scale_angle: float | None=None) -> plt.Axes:
+    """
+    Plot polar contour of data.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Data to plot.
+    param : str, optional
+        Parameter to plot. Defaults to 'CH4'.
+    x : str, optional
+        Variable to bin in the radial axis. Defaults to 'ws'.
+    wd : str, optional
+        Variable to bin in the angular axis. Defaults to 'wd'.
+    statistic : str, optional
+        Statistic to plot. Defaults to 'mean'.
+    units : str, optional
+        Units of the parameter for the colorbar label. Defaults to 'ppm'.
+    min_bin : int, optional
+        Minimum count in each bin to plot. Defaults to 1.
+    xbins : int, optional
+        Number of bins in the radial axis. Defaults to 30.
+    scale_angle : float | None, optional
+        Angle to position the radial axis label. Defaults to None.
+
+    Returns
+    -------
+    plt.Axes
+        Axis with the plot
+    """
+    from lair.air.air import bin_polar, circularize_radial_data
 
     binned_data = bin_polar(data, wd, x, xbins)
 
@@ -192,7 +361,7 @@ def polarPlot(data, param='CH4', x='ws', wd='wd', statistic='mean',
     bins_n = agg['count']
     agg = agg[statistic].where(bins_n > min_bin)
 
-    theta, r, c = circularize_contour_data(agg)
+    theta, r, c = circularize_radial_data(agg)
 
     ax = create_polar_ax()
 
@@ -206,7 +375,29 @@ def polarPlot(data, param='CH4', x='ws', wd='wd', statistic='mean',
     return ax
 
 
-def polarFreq(data, x='ws', wd='wd', xbins=30, scale_angle=None):
+def polarFreq(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30,
+              scale_angle: float | None =None) -> plt.Axes:
+    """
+    Plot the contoured frequency of the data.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Data to plot.
+    x : str, optional
+        Variable to bin in the radial axis. Defaults to 'ws'.
+    wd : str, optional
+        Variable to bin in the angular axis. Defaults to 'wd'.
+    xbins : int, optional
+        Number of bins in the radial axis. Defaults to 30.
+    scale_angle : float | None, optional
+        Angle to position the radial axis label. Defaults to None.
+
+    Returns
+    -------
+    plt.Axes
+        Axis with the plot
+    """
 
     binned_data = bin_polar(data, wd, x, xbins)
 
@@ -232,7 +423,32 @@ def polarFreq(data, x='ws', wd='wd', xbins=30, scale_angle=None):
     return ax
 
 
-def windvectorPlot(data, wd='WD', ws='WS', ax=None, unit_length=False, **kwargs):
+def windvectorPlot(data: pd.DataFrame, wd: str='WD', ws: str='WS',
+                   ax: plt.Axes | None =None, unit_length: bool=False,
+                   **kwargs) -> plt.Axes:
+    """
+    Plot wind vectors.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Data to plot.
+    wd : str, optional
+        Wind direction variable. Defaults to 'WD'.
+    ws : str, optional
+        Wind speed variable. Defaults to 'WS'.
+    ax : plt.Axes | None, optional
+        Axis to plot on. Defaults to None.
+    unit_length : bool, optional
+        Normalize vectors to unit length. Defaults to False.
+    **kwargs
+        Additional arguments to pass to plt.quiver.
+
+    Returns
+    -------
+    plt.Axes
+        Axis with the plot
+    """
     if ax is None:
         fig, ax = plt.subplots()
 
@@ -253,6 +469,8 @@ def windvectorPlot(data, wd='WD', ws='WS', ax=None, unit_length=False, **kwargs)
 class HandlerDashedLines(HandlerLineCollection):
     """
     Custom Handler for LineCollection instances.
+
+    This needs a new names and better documentation.
     """
 
     def create_artists(self, legend, orig_handle,
@@ -332,10 +550,12 @@ class StadiaMapsTiles(GoogleWTS):
     cache : bool or str, optional
         If True, the default cache directory is used. If False, no cache is
         used. If a string, the string is used as the path to the cache.
+
+    Notes
+    -----
+     - COPIED FROM CARTOPY GITHUB ON 2023-11-03
+     - HOPEFULLY THIS WILL BE IN THE NEXT RELEASE
     """
-    
-    # COPIED FROM CARTOPY GITHUB ON 2023-11-03
-    # HOPEFULLY THIS WILL BE IN THE NEXT RELEASE
 
     def __init__(self,
                  apikey,

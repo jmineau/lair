@@ -1,7 +1,4 @@
 """
-lair.uataq.sites
-~~~~~~~~~~~~~~~~
-
 This module provides classes and functions for working with UATAQ sites.
 """
 
@@ -59,22 +56,26 @@ class Site:
             The site identifier.
         config : dict
             A dictionary containing configuration information for the site:
-            {
-                name: str,
-                is_active: bool,
-                is_mobile: bool,
-                latitude: float,
-                longitude: float,
-                zagl: float,
-                loggers: dict,
-                instruments: {
-                    instrument: {
-                        loggers: dict
-                        installation_date: str,
-                        removal_date: str,
+
+            .. code-block:: python
+
+                {
+                    name: str,
+                    is_active: bool,
+                    is_mobile: bool,
+                    latitude: float,
+                    longitude: float,
+                    zagl: float,
+                    loggers: dict,
+                    instruments: {
+                        instrument: {
+                            loggers: dict
+                            installation_date: str,
+                            removal_date: str,
+                        }
                     }
                 }
-            }
+
         instruments : InstrumentEnsemble
             An instance of the InstrumentEnsemble class representing the instruments at the site.
         """
@@ -272,21 +273,26 @@ class Site:
 class MobileSite(Site):
     """
     A class representing a mobile site where atmospheric measurements are taken.
-    
+
     Parameters
     ----------
     SID : str
         The site identifier.
     config : dict
         A dictionary containing configuration information for the site:
-        SID: {
-            is_mobile: true,
-            instruments: {
-                instrument: {...}
+
+        .. code-block:: python
+
+            {
+                ...
+                is_mobile: True,
+                instruments: {
+                    instrument: {...}
+                }
+                ...
             }
-            ...
-        }
     """
+
     _pilot_sites = ['trx01', 'trx02']
 
     @staticmethod

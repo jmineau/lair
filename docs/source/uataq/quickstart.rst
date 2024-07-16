@@ -36,7 +36,7 @@ Research Sites
 
 The :class:`~sites.Site` object is the primary interface for accessing data from a UATAQ site.
 Each site has a unique site identifier (SID) that corresponds to a key in the configuration file.
-The :dat:`lab <laboratory>` is responsible for constructing :class:`~sites.Site` objects from the configuration file,
+The :data:`lab <laboratory>` is responsible for constructing :class:`~sites.Site` objects from the configuration file,
 including building the :class:`~instruments.InstrumentEnsemble` for each site.
 The :class:`~instruments.InstrumentEnsemble` is a container object that hold different
 :class:`~instruments.Instrument` objects which provide the linkage between a :class:`~sites.Site` and the data files.
