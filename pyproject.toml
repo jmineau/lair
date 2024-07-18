@@ -54,7 +54,7 @@ Issues = "https://github.com/jmineau/lair/issues"
 include-package-data = true
 
 [tool.setuptools.dynamic]
-version = {attr = "lair.VERSION"}
+version = {attr = "lair.__version__"}
 
 [tool.setuptools.packages.find]
 include = ["lair*"]
