@@ -13,11 +13,14 @@ keywords = ["land-air interactions", "research", "uataq", "pollution", "atmosphe
 requires-python = ">=3.10"
 dependencies = [
   "cartopy",
+  "cf_xarray",
   "fastkml",
   "geopandas",
   "matplotlib",
+  "molmass",
   "numpy<2",  # numpy 2.0 breaks pytables
   "pandas",
+  "pint-xarray",
   "pyproj",
   "rioxarray",
   "scipy",

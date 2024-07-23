@@ -14,7 +14,7 @@ from typing import Dict, List
 from lair.config import HOME, vprint
 from lair.uataq import errors
 import lair.uataq.filesystem._filesystem as filesystem
-from lair.units import F2C
+from lair import units
 from lair.utils.clock import TimeRange
 from lair.utils.records import list_files
 
@@ -620,7 +620,7 @@ class HorelGroup(filesystem.GroupSpace):
 
         if 'ITMP' in data.columns:
             # Convert from F to C
-            data['ITMP'] = F2C(data.ITMP)
+            data['ITMP'] = (data.ITMP.values * units('degF')).to(units('degC')).magnitude
 
             # Replace ITMP with instrument-specific column name
             new_col = mapping['ITMP'][:-1] + 'C'
