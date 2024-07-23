@@ -6,7 +6,7 @@ import datetime as dt
 import pandas as pd
 
 from lair.config import verbose
-from lair.air._ccg_filter import ccgFilter
+from lair.air._ccg_filter import ccgFilter  # make available to user
 from lair.utils.clock import dt2decimalDate
 
 
@@ -65,13 +65,17 @@ def thonning(data: pd.Series, return_filt: bool=False, **kwargs
         If return_filt is True, returns the filter object.
         Otherwise, returns the smoothed data as a pandas series.
     """
+    if not 'debug' in kwargs:
+        # Set debug level using lair's verbose setting
+        kwargs['debug'] = verbose
+
     # Convert datetime index to decimal date
     data = data.dropna()
     xp = data.index.to_series().apply(dt2decimalDate).values
     yp = data.values
 
     # Fit the Thonning curve
-    filt = ccgFilter(xp, yp, debug=verbose, **kwargs)
+    filt = ccgFilter(xp, yp, **kwargs)
     if return_filt:
         return filt  # Return the filter object
 
