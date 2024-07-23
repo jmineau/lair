@@ -18,7 +18,6 @@ UATAQ project.
    config <config>
    constants <constants>
    uataq <uataq/index>
-   units <units>
    utils <utils>
    valley <valley>
 
@@ -49,12 +48,6 @@ UATAQ project.
       :link-type: doc
 
       Utah Atmospheric Trace-gas & Air Quality data.
-
-   .. grid-item-card:: :fas:`ruler` Units
-      :link: units
-      :link-type: doc
-
-      Unit conversion functions & factors.
 
    .. grid-item-card:: :fas:`screwdriver-wrench` Utils
       :link: utils
