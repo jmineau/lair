@@ -3,6 +3,7 @@ Utilities for working with files and directories.
 """
 
 import os
+from pathlib import Path
 from typing import Callable, Literal
 
 from fastkml import KML
@@ -95,6 +96,78 @@ def read_kml(path: str) -> KML:
         k = kml.KML()
         k.from_string(KML.read().encode('utf-8'))
     return k
+
+
+def wget_download(urls: str | list[str],
+                  download_dir: str | None,
+                  prefix: str | None = None, num_threads: int = 1,
+                  unzip: bool = True):
+    """
+    Download multiple files from given URLs using wget and extract them if they are ZIP files.
+
+    Parameters
+    ----------
+    urls : str | list[str]
+        List of URLs to download.
+    download_dir : str
+        The local directory to download files to.
+    prefix : str, optional
+        The common prefix to use for the local directory structure. Defaults to None.
+        If None, the files will be downloaded directly into the download_dir.
+        If an empty string, the entire structure will be recreated.
+    num_threads : int, optional
+        Maximum number of threads to use for downloading, by default 4.
+    unzip : bool, optional
+        Whether to unzip the downloaded files if they are ZIP files. Defaults to True.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+    import subprocess
+    from urllib.parse import urlparse
+
+    def download_file(url: str):
+        """
+        Download a file from a given URL and unzip it if it's a ZIP file.
+
+        Parameters
+        ----------
+        url : str
+            URL of the file to download.
+        """
+        # Parse the URL to extract the filename
+        parsed_url = urlparse(url)
+        
+        # Get common path to append to download_dir
+        if prefix is not None:
+            if prefix == '':
+                # Recreate the entire structure
+                common = parsed_url.path.strip('/')  # Remove leading '/'
+            else:
+                # Get the relative strucuture from prefix
+                common = os.path.relpath(parsed_url.path.strip('/'), prefix)
+        else:
+            # Drop each file into the download_dir
+            common = os.path.basename(parsed_url.path)
+        local_path = os.path.join(download_dir, common)
+
+        # Ensure the output directory exists
+        output_dir = os.path.dirname(local_path)
+        os.makedirs(output_dir, exist_ok=True)
+
+        vprint(f"Downloading: {url} to {local_path}")
+        try:
+            # Use wget with the -O option to specify the output file
+            subprocess.run(['wget', '-O', local_path, url], check=True)
+        except subprocess.CalledProcessError as e:
+            vprint(f"Failed to download {url}: {e}")
+            return
+
+        if unzip and local_path.endswith('.zip'):
+            vprint('Unzipping...')
+            subprocess.run(['unzip', '-d', output_dir, local_path], check=True)
+            os.remove(local_path)
+
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        executor.map(download_file, urls)
 
 
 def ftp_download(host: str, paths: str | list[str], download_dir: str,
