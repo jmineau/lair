@@ -15,6 +15,7 @@ dependencies = [
   "cartopy",
   "fastkml",
   "geopandas",
+  "lmxl",  # speeds up fastkml
   "matplotlib",
   "numpy<2",  # numpy 2.0 breaks pytables
   "pandas",
