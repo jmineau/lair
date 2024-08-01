@@ -7,8 +7,88 @@ from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
                                 LongitudeFormatter, LongitudeLocator)
 import matplotlib.pyplot as plt
 import numpy as np
-from xarray import DataArray
-from xarray import DataArray
+from numpy.typing import ArrayLike
+import pyproj
+import rasterio
+import rasterio.crs
+from shapely import Polygon
+from typing import Any, Sequence
+from xarray import DataArray, Dataset
+import xesmf as xe
+
+
+PC = ccrs.PlateCarree()  # Plate Carree projection
+
+
+class CRS:
+    """
+    Coordinate Reference System (CRS) class.
+
+    This class is a wrapper around the pyproj.CRS class, with additional methods
+    for converting to other CRS classes.
+
+    See https://pyproj4.github.io/pyproj/stable/crs_compatibility.html#cartopy for more information.
+
+    .. note::
+        `osgeo`, `fiona`, and `pycrs` conversions have not been implemented.
+
+    Attributes
+    ----------
+    crs : pyproj.CRS
+        Pyproj CRS object
+    epsg : int | None
+        EPSG code of the CRS
+    proj4 : str
+        PROJ4 string of the CRS
+    wkt : str
+        WKT string of the CRS
+    """
+
+    def __init__(self, crs: Any):
+        # Convert input to pyproj.CRS
+        if isinstance(crs, int):
+            self.crs = pyproj.CRS.from_epsg(crs)
+        elif isinstance(crs, str) and crs.startswith('EPSG:'):
+            epsg = int(crs.split(':')[1])
+            self.crs = pyproj.CRS.from_epsg(epsg)
+        elif isinstance(crs, ccrs.CRS):
+            self.crs = pyproj.CRS.from_user_input(crs)
+        elif isinstance(crs, pyproj.CRS):
+            self.crs = crs
+        elif isinstance(crs, rasterio.CRS):
+            with rasterio.Env(OSR_WKT_FORMAT="WKT2_2018"):
+                self.crs = pyproj.CRS.from_wkt(crs.wkt)
+        else:
+            # If not any of the above, try to convert to pyproj.CRS
+            # using the from_user_input method
+            self.crs = pyproj.CRS.from_user_input(crs)
+
+    @property
+    def epsg(self) -> int | None:
+        """Get the EPSG code of the CRS."""
+        return self.crs.to_epsg()
+
+    @property
+    def proj4(self) -> str:
+        """Get the PROJ4 string of the CRS."""
+        return self.crs.to_proj4()
+
+    @property
+    def wkt(self) -> str:
+        """Get the WKT string of the CRS."""
+        return self.crs.to_wkt()
+
+    def to_cartopy(self) -> ccrs.CRS:
+        """Convert to cartopy CRS."""
+        return ccrs.CRS(self.crs)
+
+    def to_rasterio(self) -> rasterio.CRS:
+        """Convert to rasterio CRS."""
+        return rasterio.CRS.from_user_input(self.crs)
+
+    def to_pyproj(self) -> pyproj.CRS:
+        """Convert to pyproj CRS."""
+        return self.crs
 
 
 def dms2dd(d: float=0.0, m: float=0.0, s: float=0.0) -> float:
@@ -60,7 +140,8 @@ def bbox2extent(bbox: list[float]) -> list[float]:
     return extent
 
 
-def extent2bbox(extent: list[float]) -> list[float]:
+def extent2bbox(extent: list[float] | tuple[float, float, float, float]
+                ) -> list[float]:
     """
     Extent to bounding box.
 
@@ -79,13 +160,66 @@ def extent2bbox(extent: list[float]) -> list[float]:
     return bbox
 
 
-def wrap_lons(lons):
+def clip(data: DataArray | Dataset,
+         bbox: list[float] | tuple[float, float, float, float] | None = None,
+         extent: list[float] | tuple[float, float, float, float] | None = None,
+         geom: Polygon | list[Polygon] | None = None,
+         crs: Any='EPSG:4326',
+         **kwargs: Any
+         ) -> DataArray | Dataset:
+    """
+    Clip the data to the given bounds.
+
+    Input bounds must be in the same CRS as the data.
+
+    .. note::
+        The result can be slightly different between supplying a geom and a bbox/extent.
+        Clipping with a geom seems to be exclusive of the bounds,
+        while clipping with a bbox/extent seems to be inclusive of the bounds.
+
+    Parameters
+    ----------
+    data : xr.DataArray | xr.Dataset
+        The data to clip.
+    bbox : tuple[minx, miny, maxx, maxy]
+        The bounding box to clip the data to.
+    extent : tuple[minx, maxx, miny, maxy]
+        The extent to clip the data to.
+    geom : shapely.Polygon
+        The geometry to clip the data to.
+    crs : Any, optional
+        The CRS of the input geometries. Default is 'EPSG:4326'.
+    kwargs : Any
+        Additional keyword arguments to pass to the rioxarray clip method.
+
+    Returns
+    -------
+    xr.DataArray | xr.Dataset
+        The clipped data.
+    """
+    assert (bbox is not None) + (extent is not None) + (geom is not None) == 1, 'Only one of bbox, extent, or geom must be provided.'
+
+    if extent is not None:
+        # Convert extent to bbox
+        bbox = extent2bbox(extent)
+    if bbox is not None:
+        data = data.rio.clip_box(*bbox, crs=crs, **kwargs)
+    elif geom is not None:
+        if not isinstance(geom, Sequence):
+            geom = [geom]
+
+        data = data.rio.clip(geom, crs=crs, **kwargs)
+
+    return data
+
+
+def wrap_lons(lons: np.ndarray) -> ArrayLike:
     '''
     Wrap longitudes ranging from 0~360 to -180~180
 
     Parameters
     ----------
-    lons : array-like  # TODO
+    lons : np.ndarray
         Longitudes
 
     Returns
@@ -200,79 +334,83 @@ def add_latlon_ticks(ax: plt.Axes, extent: list[float], x_rotation: int=0, label
                   more_ticks=more_lon_ticks)
 
 
-def area_grid(lat, lon):
+def cosine_weights(lats: np.ndarray) -> np.ndarray:
     """
-    Calculate the area of each grid cell [m2]
+    Calculate cosine weights from latitude.
 
     Parameters
     ----------
-    lat : array-like
-        vector of latitude in degrees
-    lon : array-like
-        vector of longitude in degrees
+    lats : np.ndarray
+        Latitude values
 
     Returns
     -------
-    array-like
-        grid-cell area in square-meters with dimensions, [lat,lon]
+    np.ndarray
+        Cosine weighting
+
+    Examples
+    --------
+    >>> ds: xr.Dataset
+    >>> weights = cosine_weighting(ds.lat)
+    >>> ds_weighted = ds.weighted(weights)
+    """
+    return np.cos(np.deg2rad(lats))
+
+
+def gridcell_area(data: DataArray | Dataset | None = None,
+                  lat: np.ndarray | None = None, lon: np.ndarray | None = None,
+                  R: float | None = None) -> np.ndarray | DataArray:
+    """
+    Calculate the area of each grid cell in a rectilinear lat lon grid.
+    Output units are dependent on the radius of the earth.
+
+    If data is provided, the area will be returned as a DataArray with the same dimensions as the data.
+    Otherwise, if lat and lon are provided, the area will be returned as a numpy array.
+
+    Uses `xesmf.utils.grid_area` to calculate the area of each grid cell.
+
+    .. note::
+        If the radius of the earth is not provided, it will be calculated based on the latitude.
+        Output units are in square-meters.
+
+    Parameters
+    ----------
+    lat : np.ndarray, optional
+        vector of latitude in degrees
+    lon : np.ndarray, optional
+        vector of longitude in degrees
+    data : xr.DataArray | xr.Dataset, optional
+        DataArray with dimensions [lat, lon]
+    R : str, optional
+        Radius of the earth, by default calculated based on the latitude
+
+    Returns
+    -------
+    np.ndarray | xr.DataArray
+        grid-cell area in square-meters
 
     Notes
     -----
      - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
      - Based on the function in https://github.com/chadagreene/CDT/blob/master/cdt/cdtarea.m
     """
-    from numpy import meshgrid, deg2rad, gradient, cos
 
-    xlon, ylat = meshgrid(lon, lat)
-    R = earth_radius(ylat)
+    return_np = False
+    if data is None:
+        assert lat is not None and lon is not None, 'lat and lon must be provided if data is not provided'
+        assert lat.ndim == 1 and lon.ndim == 1, 'lat and lon must be 1D arrays'
+        return_np = True
+        data = DataArray(np.zeros((len(lat), len(lon))),
+                         coords={'lat': lat, 'lon': lon},
+                         dims=['lat', 'lon'])
 
-    dlat = deg2rad(gradient(ylat, axis=0))
-    dlon = deg2rad(gradient(xlon, axis=1))
+    R = R or earth_radius(data[data.rio.y_dim])
 
-    dy = dlat * R
-    dx = dlon * R * cos(deg2rad(ylat))
+    area = xe.util.cell_area(data, earth_radius=R)
 
-    area = dy * dx
-
+    if return_np:
+        area = area.values
     return area
-
-
-def area_DataArray(da: DataArray) -> DataArray:
-    """
-    Calculate the area of each grid cell in xarray dataarray [m2]
-
-    Parameters
-    ----------
-    da : xr.DataArray
-        DataArray with dimensions [lat, lon]
-
-    Returns
-    -------
-    xr.DataArray
-        grid-cell area in square-meters
-
-    Notes
-    -----
-    Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
-    """
-
-    from xarray import DataArray
-
-    lat_name, lon_name = da.rio.y_dim, da.rio.x_dim
-
-    da = da.sortby(lat_name)  # sort lats so areas aren't negative
-    lat, lon = da[lat_name], da[lon_name]
-
-    area = area_grid(lat, lon)
-    ada = DataArray(area,
-                    dims=[lat_name, lon_name],
-                    coords={lat_name: lat, lon_name: lon},
-                    attrs={"long_name": "area_per_pixel",
-                           "description": "area per pixel",
-                           "units": "m^2"})
-
-    return ada
-
 
 def earth_radius(lat: float | np.ndarray) -> float | np.ndarray:
     '''
@@ -286,7 +424,7 @@ def earth_radius(lat: float | np.ndarray) -> float | np.ndarray:
     Returns
     -------
     array-like
-        vector of radius in meters
+        vector of radius in kilometers
 
     Notes
     -----
@@ -311,11 +449,13 @@ def earth_radius(lat: float | np.ndarray) -> float | np.ndarray:
         / (1 - (e2 * np.cos(lat_gc)**2))**0.5
         )
 
+    r /= 1000  # convert to km
     return r
 
 
 def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
     # http://www.movable-type.co.uk/scripts/latlong.html
+    # TODO not sure this is completely correct
 
     if deg:
         lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
@@ -332,6 +472,7 @@ def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
 
 def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
     # http://www.movable-type.co.uk/scripts/latlong.html
+    # TODO I dont think this works correctly
 
     if deg:
         lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
@@ -414,23 +555,3 @@ def add_extent_map(fig: 'matplotlib.figure.Figure', main_extent: list[float], ma
                                  color=color, linewidth=linewidth)
 
     return extent_map_ax
-
-
-class CRS_Converter:
-    # TODO
-    def __init__(self, in_crs):
-        self.crs = in_crs
-
-        self._type = self._which_type()
-
-    def _which_type(self):
-        'Determine type of in_crs'
-
-    def to_cartopy(self):
-        pass
-
-    def to_pyproj(self):
-        pass
-
-    def to_rasterio(self):
-        pass
