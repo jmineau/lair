@@ -7,15 +7,15 @@ Inspired by AOS 330 at UW-Madison with Grant Petty.
 import numpy as np
 
 from lair.constants import Rstar, Rd, kb, Na, cp, g, epsilon
-from lair.units import K, Pa, hPa, kg, m, sec, C2K
+from lair import units
 
 
 #: Standard Atmosphere
 standard: dict[str, float] = {
-    'T': C2K(15) *K,
-    'p': 1013.25 *hPa,
-    'rho': 1.225 *kg/m**3,
-    'z': 0 *m
+    'T': 288.15 * units('K'),
+    'p': 1013.25 * units('hPa'),
+    'rho': 1.225 * units('kg / m**3'),
+    'z': 0 * units('m')
 }
 
 #############
@@ -153,7 +153,7 @@ def virt_T(T: float, q: float) -> float:
     return T * (1 + 0.61 * q)
 
 
-def poisson(T: float, p: float, p0: float = 1000*hPa) -> float:
+def poisson(T: float, p: float, p0: float = 1000 * units('hPa')) -> float:
     """
     Calculate the potential temperature. (Poission's equation)
 
@@ -174,7 +174,7 @@ def poisson(T: float, p: float, p0: float = 1000*hPa) -> float:
     return T * (p0/p)**(Rd/cp)
 
 
-def inv_poisson(p: float, theta: float, p0: float = 1000*hPa) -> float:
+def inv_poisson(p: float, theta: float, p0: float = 1000 * units('hPa')) -> float:
     """
     Calculate the temperature from potential temperature. (Inverse Poission's equation)
 
