@@ -1,6 +1,6 @@
 from abc import ABCMeta
 import datetime as dt
-from matplotlib.pyplot import Axes
+import matplotlib.pyplot as plt
 from molmass import Formula
 import numpy as np
 import os
@@ -17,23 +17,36 @@ import xesmf as xe
 from lair.config import GROUP_DIR
 from lair import units
 from lair.utils.clock import TimeRange
-from lair.utils.grid import CRS, clip, gridcell_area, wrap_lons
+from lair.utils.grid import CRS, PC, clip, gridcell_area, wrap_lons, write_rio_crs
 
 xr.set_options(keep_attrs=True)
-
-# TODO
-# Citation & Metadat for each inventory
-# Regridding still has some issues, but its pretty close
-# I think default units should probably be in kg
 
 
 #: Inventory directory
 INVENTORY_DIR = os.path.join(GROUP_DIR, 'inventories')
 
-DST_UNITS: str = 'umol m-2 s-1'
+#: Default destination units
+DST_UNITS: str = 'kg km-2 d-1'
+
+DEFAULT_PINT_FMT = '~C'
+
+Regrid_Methods = Literal['conservative', 'conservative_normed']
 
 
 def molecular_weight(pollutant: str) -> pint.Quantity:
+    """
+    Calculate the molecular weight of a pollutant.
+
+    Parameters
+    ----------
+    pollutant : str
+        The pollutant.
+
+    Returns
+    -------
+    pint.Quantity
+        The molecular weight.
+    """
     return Formula(pollutant).mass * units('g/mol')
 
 
@@ -60,38 +73,56 @@ def sum_sectors(data: Dataset) -> DataArray:
 class Inventory:
     """
     Base class for inventories.
+
+    An emission(s) inventory is an accounting of the amount of pollutants
+    discharged into the atmosphere. An emission inventory usually contains
+    the total emissions for one or more specific greenhouse gases or air
+    pollutants, originating from all source categories in a certain
+    geographical area and within a specified time span, usually a specific year.
     """
 
     def __init__(self,
                  data: str | Path | Dataset,
                  pollutant: str,
                  src_units: str | None = None,
-                 freq: str = 'annual',
+                 time_step: str = 'annual',
                  crs: str = 'EPSG:4326',
                  version: str | None = None,
                  ) -> None:
+        """
+        Initialize the inventory.
+
+        Parameters
+        ----------
+        data : str | Path | xr.Dataset
+            The inventory data. If a string or Path, the path to the data. If an xr.Dataset, the data itself.
+            Data should have dimensions of time, lat, lon and each variable should be a different emissions sector.
+            If the source data is not in the correct format, the `_process` method should be overridden.
+        pollutant : str
+            The pollutant.
+        src_units : str, optional
+            The source units of the data, by default None. If None, the units are extracted from the data attributes.
+        time_step : str, optional
+            The time step of the data, by default 'annual'.
+        crs : str, optional
+            The CRS of the data, by default 'EPSG:4326'.
+        version : str, optional
+            The version of the inventory, by default None.
+        """
 
         self.pollutant: str = pollutant.upper()
-        self.version: str | None = version
-        self.freq: str = freq
+        self.time_step: str = time_step
         self.crs = CRS(crs)
+        self.version: str | None = version
 
         if isinstance(data, str | Path):
             self.path = str(data)
 
             # Open dataset
-            files = self.get_files()
-            data = self._open(files)
-
-            # Set the rioxarray CRS
-            data.rio.write_crs(self.crs.to_rasterio(), inplace=True)
+            data = self._open(self.get_files())
 
             # Apply inventory-specific processing
             data = self._process(data)
-
-            # Standardize units
-            # this requires that all variables are emissions, all in the same self.src_units
-            data = self._convert_units(self._quantify(data))
         elif  isinstance(data, Dataset):
             self.path = None
 
@@ -103,11 +134,19 @@ class Inventory:
         else:
             raise ValueError('Data must be a path to a file or an xarray Dataset')
 
+        # Standardize units
+        # - Requirements:
+        #   - all variables are emissions
+        #   - all in the same units
+        self.src_units: str | pint.registry.Unit = src_units
+        data = self._convert_units(self._quantify(data))
+
+        # Set the rioxarray CRS
+        write_rio_crs(data, self.crs)
+
         # Store the data
         self._data: Dataset = data
         self._is_clipped: bool = False  # initially unclipped
-        self.src_units: str | pint.registry.Unit = src_units
-
 
     def get_standard_name(self) -> str:
         """
@@ -118,7 +157,7 @@ class Inventory:
         str
             The standard name.
         """
-        return f'{self.freq.lower()}_{self.pollutant}_emissions'
+        return f'{self.time_step.lower()}_{self.pollutant}_emissions'
 
     def get_files(self) -> None | list[Path]:
         """
@@ -146,17 +185,8 @@ class Inventory:
         -------
         xr.DataArray
             The grid cell area.
-
-        Raises
-        ------
-        ValueError
-            If the data is not in EPSG:4326.
         """
-        # data must have coords of lat and lon
-        if self.data.rio.crs == 'EPSG:4326':
-            return gridcell_area(data=self.data)
-        else:
-            raise ValueError('Data must be in EPSG:4326 to calculate grid cell area')
+        return gridcell_area(self._data)
 
     @property
     def absolute_emissions(self) -> Dataset:
@@ -171,6 +201,7 @@ class Inventory:
 
         # Extract current unit information
         #  - dimension order of str(pint.Unit) is set here: https://github.com/hgrecco/pint/blob/master/pint/delegates/formatter/full.py#L54
+        #    - units.formatter.default_sort_func was set in lair.__init__
         #  - for mass fluxes, the order will always be [substance | mass] / [area] / [time]
         var = list(self._data.data_vars)[0]  # all variables should be in the same units
         data_units = f'{self._data[var].pint.units: ~C}'  # compact symbols
@@ -182,29 +213,29 @@ class Inventory:
         # Get the number of seconds in each time step
         # - I am calculating the exact number of seconds in each time step.
         #   Inventory providers may have used a simpler method of avg secs per time step.
-        #   However, its probably close enough to not matter,
+        #   However, its probably close enough to not matter  TODO check this
         years = absolute.time.dt.year.values
         months = absolute.time.dt.month.values
         days = absolute.time.dt.day.values
-        if self.freq == 'annual':
+        if self.time_step == 'annual':
             seconds_per_step = [TimeRange(str(year)).total_seconds
                                 for year in years]
-        elif self.freq == 'monthly':
+        elif self.time_step == 'monthly':
             seconds_per_step = [TimeRange(f'{year}-{month:02d}').total_seconds
                                   for year, month in zip(years, months)]
-        elif self.freq == 'daily':
+        elif self.time_step == 'daily':
             seconds_per_step = [TimeRange(f'{year}-{month:02d}-{day:02d}').total_seconds
                                   for year, month, day in zip(years, months, days)]
         else:
-            raise ValueError(f'Frequency {self.freq} not supported')
+            raise ValueError(f'Time step {self.time_step} not supported')
         seconds_per_step = self._data.assign(sec_per_step=('time', seconds_per_step)).sec_per_step
 
         # Then multiply by the time in the time step to get mass|substance per gridcell
         absolute = absolute * (seconds_per_step * units('s')).pint.to(time_unit)
 
         absolute.attrs = {'long_name': 'Absolute Emissions',
-                          'standard_name': f'{self.freq.lower()}_emissions_per_gridcell'}
-        return absolute.pint.dequantify()
+                          'standard_name': f'{self.time_step.lower()}_emissions_per_gridcell'}
+        return absolute.pint.dequantify(DEFAULT_PINT_FMT)
 
     @property
     def total_emissions(self) -> DataArray:
@@ -216,7 +247,7 @@ class Inventory:
         xr.DataArray
             The total emissions.
         """
-        return sum_sectors(self.data)
+        return sum_sectors(self._data).pint.dequantify(DEFAULT_PINT_FMT)
 
     @property
     def data(self) -> Dataset:
@@ -231,11 +262,12 @@ class Inventory:
         xr.DataArray | xr.Dataset
             The inventory data.
         """
-        return self._data.pint.dequantify()
+        return self._data.pint.dequantify(DEFAULT_PINT_FMT)
 
     @data.setter
     def data(self, data: Dataset) -> None:
-        self._data = self._quantify(data, use_attrs=True)
+        # Reattach pint units to the data from attrs
+        self._data = data.pint.quantify()
 
     def quantify(self) -> Dataset:
         """
@@ -306,9 +338,14 @@ class Inventory:
 
         return self
 
-    def regrid(self, out_grid: Dataset) -> Self:
+    def regrid(self, out_grid: Dataset,
+               method: Regrid_Methods = 'conservative') -> Self:
         """
-        Regrid the data to a new grid.
+        Regrid the data to a new grid. Uses `xesmf` for regridding.
+
+        .. note::
+            At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.
+            Possibly could use `xesmf.frontend.BaseRegridder` to regrid to a generic grid.
 
         .. warning::
             `xarray.Dataset.cf.add_bounds` is known to have issues, including near the 180th meridian.
@@ -317,7 +354,13 @@ class Inventory:
         Parameters
         ----------
         out_grid : xr.DataArray
-            The new grid to resample to.
+            The new grid to resample to. Must be a lat-lon grid.
+        method : str, optional
+            The regridding method, by default 'conservative'.
+
+            .. note::
+                Other `xesmf` regrid methods can be passed,
+                but it is **highly** encouraged to use a conservative method for fluxes.
 
         Returns
         -------
@@ -328,12 +371,28 @@ class Inventory:
         data = self.data.cf.add_bounds(['lat', 'lon'])
 
         # Regrid the data using a conservative regridder
-        regridder = xe.Regridder(ds_in=data, ds_out=out_grid, method='conservative_normed')
-        self.data = regridder(data, keep_attrs=True)  # setting on self.data will update self._data
+        regridder = xe.Regridder(ds_in=data, ds_out=out_grid, method=method)
+        regridded = regridder(data, keep_attrs=True)
 
+        if len(regridded.lon.dims) == 2:
+            # New grid has 2D lat/lon, but lat is constant over x axis,
+            # and lon is constant over y axis.
+            # We need to convert to 1D lat/lon
+            lats = regridded.lat.isel(x=0).values
+            lons = regridded.lon.isel(y=0).values
+            regridded = regridded.drop_vars(['lat', 'lon'])\
+                .rename_dims({'x': 'lon', 'y': 'lat'})\
+                .assign_coords(lat=lats, lon=lons)
+            
+        # Regridding drops rioxarray info - reattach
+        regridded.rio.set_spatial_dims(x_dim='lon', y_dim='lat', inplace=True)
+        write_rio_crs(regridded, 'EPSG:4326')
+
+        self.data = regridded  # setting on self.data will update self._data
         return self
 
-    def resample(self, resolution: float | tuple[float, float]) -> Self:
+    def resample(self, resolution: float | tuple[float, float],
+                 regrid_method: Regrid_Methods = 'conservative') -> Self:
         """
         Resample the data to a new resolution.
 
@@ -342,6 +401,8 @@ class Inventory:
         resolution : float | tuple[x_res, y_res]
             The new resolution in degrees. If a single value is provided, the resolution
             is assumed to be the same in both dimensions.
+        regrid_method : str, optional
+            The regridding method, by default 'conservative'.
 
         Returns
         -------
@@ -364,12 +425,13 @@ class Inventory:
                                        ymin, ymax, dy)
         else:
             out_grid = xr.Dataset({
-                "lat": (["lat"], np.arange(ymin, ymax+dy, dy), {"units": "degrees_north"}),
-                "lon": (["lon"], np.arange(xmin, xmax+dx, dx), {"units": "degrees_east"}),
+                "lat": (["lat"], np.arange(ymin + dy/2, ymax - dy/2, dy), {"units": "degrees_north"}),
+                "lon": (["lon"], np.arange(xmin + dx/2, xmax - dx/2, dx), {"units": "degrees_east"}),
                 })
-        return self.regrid(out_grid)
+        return self.regrid(out_grid=out_grid, method=regrid_method)
 
-    def reproject(self, resolution: float | tuple[float, float]) -> Self:
+    def reproject(self, resolution: float | tuple[float, float],
+                  regrid_method: Regrid_Methods = 'conservative') -> Self:
         """
         Reproject the data to a lat lon rectilinear grid.
 
@@ -378,6 +440,8 @@ class Inventory:
         resolution : float | tuple[x_res, y_res]
             The new resolution in degrees. If a single value is provided, the resolution
             is assumed to be the same in both dimensions.
+        regrid_method : str, optional
+            The regridding method, by default 'conservative'.
 
         Returns
         -------
@@ -385,21 +449,27 @@ class Inventory:
             The reprojected inventory.
         """
         assert self.crs.epsg != 4326, 'Data is already in lat lon'
-        return self.resample(resolution)
+        self = self.resample(resolution=resolution, regrid_method=regrid_method)
+        self.crs = CRS('EPSG:4326')
+        write_rio_crs(self._data, self.crs)
+        return self
 
     def integrate(self) -> DataArray:
         """
         Integrate the data over the spatial dimensions
-        to get the total emissions per time period.
+        to get the total emissions per time step.
 
         Returns
         -------
         xr.DataArray
             The integrated data.
         """
-        return sum_sectors(self.absolute_emissions.sum(['lat', 'lon']))
+        x_dim, y_dim = self.data.rio.x_dim, self.data.rio.y_dim
+        return sum_sectors(self.absolute_emissions.sum([x_dim, y_dim]))
 
-    def plot(self, ax: Axes, sector: str | None = None, **kwargs) -> Axes:
+    def plot(self, ax: plt.Axes | None = None,
+             time: str | int = 'mean',
+             sector: str | None = None, **kwargs) -> plt.Axes:
         """
         Plot the inventory data.
 
@@ -407,6 +477,9 @@ class Inventory:
         ----------
         ax : matplotlib.axes.Axes
             The axes to plot on.
+        time : str | int, optional
+            The time step to plot, by default 'mean'. If 'mean', the mean emissions are plotted.
+            Otherwise pass a string selector or integer index.
         sector : str, optional
             The sector to plot, by default None. If None, the total emissions are plotted.
         kwargs : dict
@@ -417,12 +490,22 @@ class Inventory:
         matplotlib.axes.Axes
             The axes with the plot.
         """
+        if ax is None:
+            fig, ax = plt.subplots(subplot_kw={'projection': PC})
+
         if sector is not None:
             data = self.data[sector]
         else:
             data = self.total_emissions
 
-        data.plot(ax=ax, transform=self.crs.to_cartopy(), **kwargs)
+        if time == 'mean':
+            data = data.mean('time')
+        elif isinstance(time, int):
+            data = data.isel(time=time)
+        else:
+            data = data.sel(time=time)
+
+        data.plot(ax=ax, x='lon', y='lat', transform=PC, **kwargs)
 
         return ax
 
@@ -430,17 +513,24 @@ class Inventory:
         # Open the dataset, preprocessing if necessary
         return xr.open_mfdataset(files, preprocess=getattr(self, '_preprocess', None))
 
+    def _round_latlon(self, data: Dataset, x_deci: int, y_deci: int) -> Dataset:
+        # Round grid to nearest xres, yres
+        # Some grids are not perfectly aligned to multiples of 5
+
+        # This doesn't necessarily need to be a method, but I'm keeping it here for now
+        return data.assign_coords(lat=data.lat.astype(float).round(y_deci),
+                                  lon=data.lon.astype(float).round(x_deci))
+
     def _process(self, data) -> Dataset:
         # In the base case, we just return the data
         # This method can be overridden in the subclasses to process the data
         # Resulting ds hould have coords of time, lat, lon and all variables should be emissions
         return data
 
-    def _quantify(self, data: Dataset, use_attrs: bool = False) -> Dataset:
+    def _quantify(self, data: Dataset) -> Dataset:
         # Quantify the data using `pint` units
-        src_units = None if use_attrs else self.src_units
         for var in data.data_vars:
-            data[var] = data[var].pint.quantify(src_units)
+            data[var] = data[var].pint.quantify(self.src_units)
         return data
 
     def _convert_units(self, data: Dataset, dst_units: Any = None) -> Dataset:
@@ -457,7 +547,7 @@ class Inventory:
         return data
 
 
-class MultiModelInventory(Inventory, metaclass=ABCMeta):
+class MultiModelInventory(Inventory):
     """
     Base class for inventories that are multi-model.
     """
@@ -467,12 +557,36 @@ class MultiModelInventory(Inventory, metaclass=ABCMeta):
                  data: str | Path | Dataset,
                  pollutant: str,
                  src_units: str | None = None,
-                 freq: str = 'annual',
+                 time_step: str = 'annual',
                  crs: str = 'EPSG:4326',
                  version: str | None = None,
                  model: str|None = None) -> None:
+        """
+        Initialize the multi-model inventory.
+
+        Parameters
+        ----------
+        data : str | Path | xr.Dataset
+            The inventory data. If a string or Path, the path to the data. If an xr.Dataset, the data itself.
+            Data should have dimensions of time, lat, lon and each variable should be a different emissions sector.
+            If the source data is not in the correct format, the `_process` method should be overridden.
+        pollutant : str
+            The pollutant.
+        src_units : str, optional
+            The source units of the data, by default None. If None, the units are extracted from the data attributes.
+        time_step : str, optional
+            The time step of the data, by default 'annual'.
+        crs : str, optional
+            The CRS of the data, by default 'EPSG:4326'.
+        version : str, optional
+            The version of the inventory, by default None.
+        model : str, optional
+            The model to select from the multimodel data, by default None.
+            If None, the mean of all models is used.
+        """
         self.model = model or 'mean'
-        super().__init__(data, pollutant, src_units, freq, crs, version)
+        super().__init__(data, pollutant, src_units=src_units,
+                         time_step=time_step, crs=crs, version=version)
 
     def _process(self, data: Dataset) -> Dataset:
         self.multimodel_data = data
@@ -488,6 +602,17 @@ class MultiModelInventory(Inventory, metaclass=ABCMeta):
 class EDGAR(Inventory, metaclass=ABCMeta):
     """
     EDGAR - Emissions Database for Global Atmospheric Research
+
+    https://edgar.jrc.ec.europa.eu/
+
+    EDGAR is a multipurpose, independent, global database of anthropogenic
+    emissions of greenhouse gases and air pollution on Earth. EDGAR provides
+    independent emission estimates compared to what reported by European Member
+    States or by Parties under the United Nations Framework Convention on Climate
+    Change (UNFCCC), using international statistics and a consistent IPCC methodology.
+
+    EDGAR provides both emissions as national totals and gridmaps at 0.1 x 0.1 degree
+    resolution at global level, with yearly, monthly and up to hourly data. 
     """
     edgar_dir = os.path.join(INVENTORY_DIR, 'EDGAR')
     src_units: str = 'kg m-2 s-1'
@@ -671,14 +796,32 @@ class EDGAR(Inventory, metaclass=ABCMeta):
         # Substitute unwanted characters in the 'description' key to create 'name'
         name = re.sub(r'[\s\(\&\-]', '_', description)\
             .replace(')', '').replace(',', '')
-        print(description, name)
         return name
 
 
 class EDGARv7(EDGAR):
+    """
+    EDGAR v7 - Global Greenhouse Gas Emissions
+
+    https://edgar.jrc.ec.europa.eu/dataset_ghg70
+
+    EDGAR (Emissions Database for Global Atmospheric Research) Community
+    GHG Database (a collaboration between the European Commission, Joint
+    Research Centre (JRC), the International Energy Agency (IEA), and
+    comprising IEA-EDGAR CO2, EDGAR CH4, EDGAR N2O, EDGAR F-GASES version 7.0,
+    (2022) European Commission, JRC (Datasets).
+    """
     version: str = 'v7'
 
-    def __init__(self, pollutant: str):
+    def __init__(self, pollutant: str) -> None:
+        """
+        Initialize the EDGAR inventory.
+
+        Parameters
+        ----------
+        pollutant : str
+            The pollutant.
+        """
         path = os.path.join(self.edgar_dir, self.version, pollutant)
         super().__init__(path, pollutant,
                          src_units=self.src_units, version=self.version)
@@ -711,17 +854,41 @@ class EDGARv7(EDGAR):
         data = data.assign_coords(lon=wrap_lons(data.lon))\
             .sortby('lon')
 
+        # Round grid to nearest 0.1 degrees
+        # - cell coordinates are center-of-cell, so we actually need to round to nearest 0.05
+        data = self._round_latlon(data, 2, 2)
         return data
 
 
 class EDGARv8(EDGAR):
+    """
+    EDGAR v8 - Global Greenhouse Gas Emissions
+
+    https://edgar.jrc.ec.europa.eu/dataset_ghg80
+
+    EDGAR (Emissions Database for Global Atmospheric Research) Community
+    GHG Database, a collaboration between the European Commission, Joint
+    Research Centre (JRC), the International Energy Agency (IEA), and
+    comprising IEA-EDGAR CO2, EDGAR CH4, EDGAR N2O, EDGAR F-GASES
+    version 8.0, (2023) European Commission, JRC (Datasets).
+    """
     version: str = 'v8'
 
-    def __init__(self, pollutant: str, freq: Literal['annual', 'monthly']='annual'):
+    def __init__(self, pollutant: str, time_step: Literal['annual', 'monthly']='annual'):
+        """
+        Initialize the EDGAR inventory.
+
+        Parameters
+        ----------
+        pollutant : str
+            The pollutant.
+        time_step : Literal['annual', 'monthly'], optional
+            The time step of the data, by default 'annual'.
+        """
         path = os.path.join(self.edgar_dir, self.version,
-                            '' if freq == 'annual' else freq, pollutant)
+                            '' if time_step == 'annual' else time_step, pollutant)
         super().__init__(path, pollutant,
-                         src_units=self.src_units, freq=freq, version=self.version)
+                         src_units=self.src_units, time_step=time_step, version=self.version)
 
     def _preprocess(self, ds: Dataset) -> Dataset:
         # Rename var and add attributes
@@ -732,7 +899,7 @@ class EDGARv8(EDGAR):
         attrs['long_name'] = f'{var}_Emissions'
         attrs['standard_name'] = self.get_standard_name()
 
-        if self.freq == 'annual':
+        if self.time_step == 'annual':
             # Add time coordinate to annual data
             ds = ds.expand_dims(time=[dt.datetime(int(attrs['year']), 1, 1)])
         return ds
@@ -745,7 +912,16 @@ class EDGARv8(EDGAR):
 
 class EPA(Inventory, metaclass=ABCMeta):
     """
-    EPA Greenhouse Gas Inventory
+    United States Environmental Protection Agency (EPA) Gridded Methane Emissions
+
+    https://www.epa.gov/ghgemissions/us-gridded-methane-emissions
+
+    The gridded EPA U.S. methane greenhouse gas inventory (gridded methane GHGI)
+    includes time series of annual methane emission maps with 0.1° x 0.1°
+    (~ 10 x 10 km) spatial and monthly temporal resolution for the contiguous
+    United State (CONUS). This gridded methane inventory is designed to be
+    consistent with methane emissions from the U.S. EPA Inventory of U.S.
+    Greenhouse Gas Emissions and Sinks (U.S. GHGI).
     """
     epa_dir: str = os.path.join(INVENTORY_DIR, 'EPA')
     pollutant: str = 'CH4'
@@ -782,44 +958,72 @@ class EPA(Inventory, metaclass=ABCMeta):
         data = data.rename(name_dict)
 
         # Round grid to nearest 0.1 degrees
-        data = data.assign_coords(lon=data.lon.round(2),
-                                  lat=data.lat.round(2))
+        # - cell coordinates are center-of-cell, so we actually need to round to nearest 0.05
+        data = self._round_latlon(data, 2, 2)
         return data
 
 
 class EPAv1(EPA):
     """
-    EPA Greenhouse Gas Inventory v1
+    EPA Gridded 2012 Methane Emissions
+
+    https://www.epa.gov/ghgemissions/gridded-2012-methane-emissions
+
+    Maasakkers JD, Jacob DJ, Sulprizio MP, Turner AJ, Weitz M, Wirth T,
+    Hight C, DeFigueiredo M, Desai M, Schmeltz R, Hockstad L, Bloom AA,
+    Bowman KW, Jeong S, Fischer ML. Gridded National Inventory of U.S.
+    Methane Emissions. Environ Sci Technol. 2016 Dec 6;50(23):13123-13133.
+    doi: 10.1021/acs.est.6b02878. Epub 2016 Nov 16. PMID: 27934278.
     """
     version: str = 'v1'
     year = 2012
 
     _emissions_prefix: str = 'emissions'
 
-    def __init__(self, freq='Annual'):
-        self.freq = freq.lower()
-        path = os.path.join(self.epa_dir, self.version, f'GEPA_{self.freq.capitalize()}.nc')
+    def __init__(self, time_step='Annual') -> None:
+        """
+        Initialize the EPA inventory.
+
+        Parameters
+        ----------
+        time_step : str, optional
+            The time step of the data, by default 'Annual'.
+        """
+        self.time_step = time_step.lower()
+        path = os.path.join(self.epa_dir, self.version, f'GEPA_{self.time_step.capitalize()}.nc')
         super().__init__(path, self.pollutant,
-                         src_units=self.src_units, freq=self.freq, version=self.version)
+                         src_units=self.src_units, time_step=self.time_step, version=self.version)
 
     def _process(self, data: Dataset) -> Dataset:
         data = super()._process(data)
 
         # Format time coordinates
-        if self.freq == 'annual':
+        if self.time_step == 'annual':
             data = data.expand_dims(time=[dt.datetime(self.year, 1, 1)])
-        elif self.freq == 'monthly':
+        elif self.time_step == 'monthly':
             data = data.assign_coords(time=[dt.datetime(self.year, month, 1)
                                             for month in range(1, 13)])
-        elif self.freq == 'daily':
+        elif self.time_step == 'daily':
             data = data.assign_coords(time=[dt.datetime(self.year, 1, 1)
                                             + dt.timedelta(days=i) for i in range(366)])
         else:
-            raise ValueError(f'Frequency {self.freq} not supported')
+            raise ValueError(f'Time step {self.time_step} not supported')
         return data
 
 
 class EPAv2(EPA):
+    """
+    EPA U.S. Anthropogenic Methane Greenhouse Gas Inventory
+
+    https://zenodo.org/records/8367082
+
+    McDuffie, Erin, E., Maasakkers, Joannes, D., Sulprizio,
+    Melissa, P., Chen, C., Schultz, M., Brunelle, L., Thrush, R.,
+    Steller, J., Sherry, C., Jacob, Daniel, J., Jeong, S., Irving,
+    B., & Weitz, M. (2023). Gridded EPA U.S. Anthropogenic Methane
+    Greenhouse Gas Inventory (gridded GHGI) (v1.0) [Data set]. Zenodo.
+    https://doi.org/10.5281/zenodo.8367082
+    """
     version: str = 'v2'
 
     _emissions_prefix: str = 'emi_ch4'
@@ -827,7 +1031,17 @@ class EPAv2(EPA):
         'Manure_Management', 'Rice_Cultivation', 'Field_Burning'
     ]
 
-    def __init__(self, express: bool=False, scale_by_month: bool=False):
+    def __init__(self, express: bool=False, scale_by_month: bool=False) -> None:
+        """
+        Initialize the EPA inventory.
+
+        Parameters
+        ----------
+        express : bool, optional
+            Whether to use the express extension, by default False.
+        scale_by_month : bool, optional
+            Whether to scale emissions by month, by default False.
+        """
         self.express = express
         self.scale_by_month = scale_by_month
 
@@ -852,7 +1066,7 @@ class EPAv2(EPA):
         return ds
 
     def _scale_by_month(self, data: Dataset) -> Dataset:
-        self.freq = 'monthly'
+        self.time_step = 'monthly'
         sf = self.get_monthly_scale_factors()
 
         # Filter to variables with strong interannual variability and 
@@ -890,7 +1104,14 @@ class EPAv2(EPA):
 
 class GFEI(Inventory, metaclass=ABCMeta):
     """
-    Global Fuel Exploitation Inventory 
+    Global Fuel Exploitation Inventory (GFEI)
+
+    https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HH4EUM
+
+    This is the Global Fuel Exploitation Inventory (GFEI)
+    which provides a 0.1 x 0.1 degree grid of methane emissions
+    of fugitive emissions related to oil, gas, and coal activities
+    (IPCC Sector 1B1 and 1B2).
     """
 
     pollutant: str = 'CH4'
@@ -898,7 +1119,10 @@ class GFEI(Inventory, metaclass=ABCMeta):
 
     _file_prefix: str
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Initialize the GFEI inventory.
+        """
         path = os.path.join(INVENTORY_DIR, 'GFEI', self.version)
         super().__init__(path, self.pollutant,
                          src_units=self.src_units, version=self.version)
@@ -929,10 +1153,33 @@ class GFEI(Inventory, metaclass=ABCMeta):
 
     def _process(self, data: Dataset) -> Dataset:
         # Drop the 'Total_Fuel_Exploitation' variable (can be calculated)
-        return data.drop_vars(['Total_Fuel_Exploitation'])
+        data = data.drop_vars(['Total_Fuel_Exploitation'])
+
+        # Even though we aren't quantifying the dims, pint gets mad that
+        # the units for lat and lon have spaces in them
+        # I feel like this is probably a bug in pint-xarray
+        data.lon.attrs['units'] = 'degrees_east'
+        data.lat.attrs['units'] = 'degrees_north'
+
+        # Round grid to nearest 0.1 degrees
+        # - cell coordinates are center-of-cell, so we actually need to round to nearest 0.05
+        data = self._round_latlon(data, 2, 2)
+        return data
 
 
 class GFEIv1(GFEI):
+    """
+    Global Fuel Exploitation Inventory v1
+
+    https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HH4EUM&version=1.0
+
+    Scarpelli, T. R., Jacob, D. J., Maasakkers, J. D., Sulprizio, M. P.,
+    Sheng, J.-X., Rose, K., Romeo, L., Worden, J. R., and Janssens-Maenhout, G.:
+    A global gridded (0.1° × 0.1°) inventory of methane emissions from oil, gas,
+    and coal exploitation based on national reports to the United Nations Framework
+    Convention on Climate Change, Earth Syst. Sci. Data, 12, 563–575,
+    https://doi.org/10.5194/essd-12-563-2020, 2020a. 
+    """
     version: str = 'v1'
     _file_prefix: str = 'Global_Fuel_Exploitation_Inventory'
 
@@ -975,11 +1222,39 @@ class GFEIv1(GFEI):
 
 
 class GFEIv2(GFEI):
+    """
+    Global Fuel Exploitation Inventory v2
+
+    https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HH4EUM&version=2.0
+
+    Scarpelli, T. R., Jacob, D. J., Grossman, S., Lu, X., Qu, Z.,
+    Sulprizio, M. P., Zhang, Y., Reuland, F., Gordon, D., and Worden, J. R.:
+    Updated Global Fuel Exploitation Inventory (GFEI) for methane emissions
+    from the oil, gas, and coal sectors: evaluation with inversions of
+    atmospheric methane observations, Atmos. Chem. Phys., 22, 3235–3249,
+    https://doi.org/10.5194/acp-22-3235-2022, 2022.
+    """
     version: str = 'v2'
     _file_prefix: str = 'Global_Fuel_Exploitation_Inventory_v2_2019'
 
 
 class Vulcan(Inventory):
+    """
+    The Vulcan Project
+
+    https://vulcan.rc.nau.edu/
+    v3: https://daac.ornl.gov/NACP/guides/Vulcan_V3_Annual_Emissions.html
+
+    The Vulcan Project quantifies all fossil fuel CO2 emissions for the entire
+    United States at high space- and time-resolution with details on economic
+    sector, fuel, and combustion process. It was created by the research team
+    of Dr. Kevin Robert Gurney at Northern Arizona University.
+
+    Gurney, K.R., J. Liang, R. Patarasuk, Y. Song, J. Huang, and G. Roest. 2019.
+    Vulcan: High-Resolution Annual Fossil Fuel CO2 Emissions in USA, 2010-2015,
+    Version 3. ORNL DAAC, Oak Ridge, Tennessee, USA.
+    https://doi.org/10.3334/ORNLDAAC/1741
+    """
     # hourly data is 1.6 Tb !!!
     vulcan_dir = os.path.join(INVENTORY_DIR, 'vulcan')
 
@@ -987,7 +1262,7 @@ class Vulcan(Inventory):
     pollutant: str = 'CO2'
     crs = '+proj=lcc +lat_1=33 +lat_2=45 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs'
 
-    _freq_dict = {
+    _time_step_dict = {
         'annual': {
             'src_units': 'Mg km-2 a-1',
             'glob_pattern': '*{}.nc4',
@@ -1005,17 +1280,27 @@ class Vulcan(Inventory):
         'upper': 'hi'  # upper 95% confidence interval
     }
 
-    def __init__(self, freq: Literal['annual', 'hourly']='annual', region: Literal['US', 'AK']='US'):
+    def __init__(self, time_step: Literal['annual', 'hourly']='annual',
+                 region: Literal['US', 'AK']='US') -> None:
+        """
+        Initialize the Vulcan inventory.
 
-        src_units = self._freq_dict[freq]['src_units']
-        self._glob_pattern = self._freq_dict[freq]['glob_pattern']
-        self._sep = self._freq_dict[freq]['sep']
+        Parameters
+        ----------
+        time_step : Literal['annual', 'hourly'], optional
+            The time step of the data, by default 'annual'.
+        region : Literal['US', 'AK'], optional
+            The region of the data, by default 'US'.
+        """
+        src_units = self._time_step_dict[time_step]['src_units']
+        self._glob_pattern = self._time_step_dict[time_step]['glob_pattern']
+        self._sep = self._time_step_dict[time_step]['sep']
         self.region = region
         if region == 'AK':
             raise ValueError('Alaska region not supported - issues with 180th meridian')
-        path = os.path.join(self.vulcan_dir, self.version, 'data/native', freq)
+        path = os.path.join(self.vulcan_dir, self.version, 'data/native', time_step)
         super().__init__(path, self.pollutant,
-                         src_units=src_units, freq=freq, crs=self.crs, version=self.version)
+                         src_units=src_units, time_step=time_step, crs=self.crs, version=self.version)
 
     def get_files(self, uncertainty='central') -> list[Path]:
         p = Path(self.path)
@@ -1025,11 +1310,12 @@ class Vulcan(Inventory):
                 and self.region in f.stem]
 
     def get_uncertainties(self, uncertainty: Literal['lower', 'upper']) -> Dataset:
-        assert self.freq == 'annual', 'Uncertainties are only available for annual data'
+        assert self.time_step == 'annual', 'Uncertainties are only available for annual data'
         files = self.get_files(self._uncertainties[uncertainty])
         return xr.open_mfdataset(files)
 
     def reproject(self, resolution: float | tuple[float, float] = 0.01,
+                  regrid_method: Regrid_Methods = 'conservative',
                   force: bool = False) -> Self:
         """
         Reproject the data to a lat lon rectilinear grid.
@@ -1053,7 +1339,7 @@ class Vulcan(Inventory):
         """
         if not self._is_clipped and not force:
             raise ValueError('Data must be clipped before reprojecting! Set force=True to override')
-        return super().reproject(resolution)
+        return super().reproject(resolution, regrid_method)
 
     def _preprocess(self, ds: Dataset) -> Dataset:
         # Rename variables
@@ -1072,7 +1358,7 @@ class Vulcan(Inventory):
         return data
 
     def _process(self, data: Dataset) -> Dataset:
-        if self.freq == 'annual':
+        if self.time_step == 'annual':
             # Set time to first day of year
             data = data.assign_coords(time=[dt.datetime(int(year), 1, 1)
                                             for year in data.time.dt.year])
@@ -1081,20 +1367,47 @@ class Vulcan(Inventory):
 
 
 class WetCHARTs(MultiModelInventory):
+    """
+    WetCHARTs - Wetland Methane Emissions and Uncertainty
+
+    https://daac.ornl.gov/CMS/guides/MonthlyWetland_CH4_WetCHARTs.html
+
+    This dataset provides global monthly wetland methane (CH4) emissions
+    estimates at 0.5 by 0.5-degree resolution for the period 2001-2019
+    that were derived from an ensemble of multiple terrestrial biosphere
+    models, wetland extent scenarios, and CH4:C temperature dependencies
+    that encompass the main sources of uncertainty in wetland CH4 emissions.
+    There are 18 model configurations. WetCHARTs v1.3.1 is an updated product
+    of WetCHARTs v1.0 Extended Ensemble.
+
+    Bloom, A.A., K.W. Bowman, M. Lee, A.J. Turner, R. Schroeder, J.R. Worden,
+    R.J. Weidner, K.C. McDonald, and D.J. Jacob. 2021. CMS: Global 0.5-deg
+    Wetland Methane Emissions and Uncertainty (WetCHARTs v1.3.1). ORNL DAAC,
+    Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1915
+    """
     wetcharts_dir = os.path.join(INVENTORY_DIR, 'WetCHARTs')
     version: str = 'v1.3.1'
     pollutant = 'CH4'
     src_units: str = 'mg m-2 d-1'
-    freq = 'monthly'
+    time_step = 'monthly'
 
     def __init__(self, model: str | None = None):
+        """
+        Initialize the WetCHARTs inventory.
+
+        Parameters
+        ----------
+        model : str | None, optional
+            The model to select, by default None.
+            If None, the mean of all models is used.
+        """
         path = os.path.join(self.wetcharts_dir, self.version)
         super().__init__(path, self.pollutant,
-                         src_units=self.src_units, freq=self.freq, version=self.version, model=model)
+                         src_units=self.src_units, time_step=self.time_step, version=self.version, model=model)
 
     def _process(self, data: Dataset) -> Dataset:
         # Drop unnecessary variables and dims
-        data = data.drop_vars(['time_bnds', 'crs']).drop_dims('nv')
+        data = data.drop_vars(['time_bnds', 'crs'])
 
         # Rename variables
         data = data.rename({'wetland_CH4_emissions': 'wetlands'})

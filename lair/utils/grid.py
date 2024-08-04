@@ -63,6 +63,12 @@ class CRS:
             # using the from_user_input method
             self.crs = pyproj.CRS.from_user_input(crs)
 
+    def __repr__(self):
+        return repr(self.crs)
+
+    def __str__(self):
+        return str(self.crs)
+
     @property
     def epsg(self) -> int | None:
         """Get the EPSG code of the CRS."""
@@ -72,6 +78,11 @@ class CRS:
     def proj4(self) -> str:
         """Get the PROJ4 string of the CRS."""
         return self.crs.to_proj4()
+
+    @property
+    def units(self) -> str:
+        """Get the units of the CRS."""
+        return self.to_rasterio().linear_units
 
     @property
     def wkt(self) -> str:
@@ -89,6 +100,13 @@ class CRS:
     def to_pyproj(self) -> pyproj.CRS:
         """Convert to pyproj CRS."""
         return self.crs
+
+
+def write_rio_crs(data: DataArray | Dataset, crs: Any) -> None:
+    if isinstance(crs, CRS):
+        crs = crs.to_rasterio()
+    data.rio.write_crs(crs, inplace=True)
+    data.rio.write_coordinate_system(inplace=True)
 
 
 def dms2dd(d: float=0.0, m: float=0.0, s: float=0.0) -> float:
@@ -174,8 +192,8 @@ def clip(data: DataArray | Dataset,
 
     .. note::
         The result can be slightly different between supplying a geom and a bbox/extent.
-        Clipping with a geom seems to be exclusive of the bounds,
-        while clipping with a bbox/extent seems to be inclusive of the bounds.
+        Clipping with a geom seems to be exclusive of the outer bounds,
+        while clipping with a bbox/extent seems to be inclusive of the outer bounds.
 
     Parameters
     ----------
@@ -186,7 +204,7 @@ def clip(data: DataArray | Dataset,
     extent : tuple[minx, maxx, miny, maxy]
         The extent to clip the data to.
     geom : shapely.Polygon
-        The geometry to clip the data to.
+        The geometry or geometries to clip the data to.
     crs : Any, optional
         The CRS of the input geometries. Default is 'EPSG:4326'.
     kwargs : Any
@@ -227,7 +245,7 @@ def wrap_lons(lons: np.ndarray) -> ArrayLike:
     array-like
         Wrapped longitudes
     '''
-    return (lons.round(2) + 180) % 360 - 180
+    return (lons + 180) % 360 - 180
 
 
 def add_lat_ticks(ax: plt.Axes, ylims: list[float], labelsize: int | None=None, more_ticks: int=0) -> None:
@@ -357,62 +375,73 @@ def cosine_weights(lats: np.ndarray) -> np.ndarray:
     return np.cos(np.deg2rad(lats))
 
 
-def gridcell_area(data: DataArray | Dataset | None = None,
-                  lat: np.ndarray | None = None, lon: np.ndarray | None = None,
-                  R: float | None = None) -> np.ndarray | DataArray:
+def gridcell_area(grid: DataArray | Dataset, R: float | ArrayLike | None = None
+                  ) -> DataArray:
     """
-    Calculate the area of each grid cell in a rectilinear lat lon grid.
-    Output units are dependent on the radius of the earth.
-
-    If data is provided, the area will be returned as a DataArray with the same dimensions as the data.
-    Otherwise, if lat and lon are provided, the area will be returned as a numpy array.
-
-    Uses `xesmf.utils.grid_area` to calculate the area of each grid cell.
+    Calculate the area of each grid cell in a grid.
 
     .. note::
-        If the radius of the earth is not provided, it will be calculated based on the latitude.
-        Output units are in square-meters.
+        For lat-lon grids, `xesmf.utils.grid_area` is used to calculate the area,
+        which requires the radius of the earth in kilometers. If the radius of the
+        earth is not provided, it will be calculated based on the latitude.
 
     Parameters
     ----------
-    lat : np.ndarray, optional
-        vector of latitude in degrees
-    lon : np.ndarray, optional
-        vector of longitude in degrees
-    data : xr.DataArray | xr.Dataset, optional
-        DataArray with dimensions [lat, lon]
-    R : str, optional
-        Radius of the earth, by default calculated based on the latitude
+    grid : xr.DataArray | xr.Dataset
+        Grid data. `rioxarray` coords must be set.
+    R : float, optional
+        Radius of earth in kilometers, by default calculated based on the latitude.
 
     Returns
     -------
     np.ndarray | xr.DataArray
-        grid-cell area in square-meters
-
-    Notes
-    -----
-     - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
-     - Based on the function in https://github.com/chadagreene/CDT/blob/master/cdt/cdtarea.m
+        grid-cell area in square-kilometers
     """
 
-    return_np = False
-    if data is None:
-        assert lat is not None and lon is not None, 'lat and lon must be provided if data is not provided'
-        assert lat.ndim == 1 and lon.ndim == 1, 'lat and lon must be 1D arrays'
-        return_np = True
-        data = DataArray(np.zeros((len(lat), len(lon))),
-                         coords={'lat': lat, 'lon': lon},
-                         dims=['lat', 'lon'])
-
-    R = R or earth_radius(data[data.rio.y_dim])
-
-    area = xe.util.cell_area(data, earth_radius=R)
-
-    if return_np:
-        area = area.values
+    if grid.rio.crs == 'EPSG:4326':
+        R = R or earth_radius(grid['lat'])
+        area = xe.util.cell_area(grid, earth_radius=R)
+    elif grid.rio.crs.linear_units == 'metre':
+        bounds = grid.cf.add_bounds(['x', 'y'])
+        dx = bounds.x_bounds.diff('bounds').squeeze()
+        dy = bounds.y_bounds.diff('bounds').squeeze()
+        cell_area_m2 = dx * dy
+        area = cell_area_m2.pint.quantify('m2')\
+            .pint.to('km2')\
+            .pint.dequantify()
+    else:
+        raise ValueError('Only lat-lon and meter grids are supported.')
     return area
 
-def earth_radius(lat: float | np.ndarray) -> float | np.ndarray:
+
+def gridcell_area_from_latlon(lat: ArrayLike, lon: ArrayLike,
+                              R: float | None = None) -> np.ndarray:
+    """
+    Calculate the area of each grid cell in a lat-lon grid.
+
+    Parameters
+    ----------
+    lat : ArrayLike
+        Latitude array
+    lon : ArrayLike
+        Longitude array
+
+    Returns
+    -------
+    np.ndarray
+        Grid-cell area in square-kilometers
+    """
+    lat, lon = np.array(lat), np.array(lon)
+    grid = DataArray(coords={'lat': lat, 'lon': lon},
+                     dims=['lat', 'lon'])
+    grid.rio.set_spatial_dims('lon', 'lat', inplace=True)
+    write_rio_crs(grid, crs='EPSG:4326')
+
+    area = gridcell_area(grid, R=R)
+    return area.values
+
+
+def earth_radius(lat: ArrayLike) -> ArrayLike:
     '''
     Calculate radius of Earth assuming oblate spheroid defined by WGS84
 
