@@ -27,6 +27,8 @@ class TimeRange:
         The start time of the time range.
     stop : dt.datetime | None
         The stop time of the time range.
+    total_seconds : float
+        The total number of seconds in the time range.
 
     Methods
     -------
@@ -130,6 +132,12 @@ class TimeRange:
             self._stop = TimeRange.parse_iso(stop, inclusive=True)
         else:
             raise ValueError("Invalid stop time format")
+
+    @property
+    def total_seconds(self) -> float:
+        if not all([self.start, self.stop]):
+            raise ValueError("Both start and stop times must be specified")
+        return (self.stop - self.start).total_seconds()
 
     @staticmethod
     def parse_iso(string: str, inclusive: bool = False) -> dt.datetime:
@@ -316,26 +324,7 @@ def seasonal(data: pd.DataFrame, statistic: str='mean') -> pd.DataFrame:
     return df
 
 
-# ----- Time Conversion ----- #
-
-def seconds_in_year(year: int) -> float:
-    """
-    Calculate the number of seconds in a year.
-
-    Parameters
-    ----------
-    year : int
-        The year to calculate the number of seconds for.
-
-    Returns
-    -------
-    float
-        The number of seconds in the year.
-    """
-    this_year = dt.datetime(year, 1, 1)
-    next_year = dt.datetime(year + 1, 1, 1)
-    return (next_year - this_year).total_seconds()
-
+# ----- Decimal Time ----- #
 
 def dt2decimalDate(datetime: dt.datetime) -> float:
     """
@@ -353,7 +342,7 @@ def dt2decimalDate(datetime: dt.datetime) -> float:
     """
     this_year = dt.datetime(datetime.year, 1, 1)
     total_seconds = (datetime - this_year).total_seconds()
-    total_seconds_year = seconds_in_year(datetime.year)
+    total_seconds_year = TimeRange(str(datetime.year)).total_seconds
     return datetime.year + (total_seconds / total_seconds_year)
 
 
@@ -375,7 +364,7 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
     rem = decimalDate - year
 
     this_year = dt.datetime(year, 1, 1)
-    total_seconds_year = seconds_in_year(year)
+    total_seconds_year = TimeRange(str(year)).total_seconds
     return this_year + dt.timedelta(seconds=total_seconds_year * rem)
 
 

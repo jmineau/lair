@@ -5,12 +5,19 @@ channels:
 dependencies:
   - boto3
   - cartopy
+  - cf_xarray
+  - dask
+  - xesmf
   - fastkml
   - geopandas
+  - jupyterlab
+  - lxml
   - matplotlib
   - metpy
+  - molmass
   - numpy
   - pandas
+  - pint-xarray
   - pyproj
   - pytables
   - rioxarray
@@ -19,5 +26,6 @@ dependencies:
   - shapely
   - siphon
   - synopticpy
+  - typing-extensions
   - xarray
   - zarr
