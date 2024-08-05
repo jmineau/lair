@@ -138,7 +138,7 @@ html_theme_options = {
      'navbar_start': ['navbar-logo', 'version-switcher'],
     #  'show_version_warning_banner': True,
      'switcher': {
-         'json_url': 'https://raw.githubusercontent.com/jmineau/lair/main/docs/switcher.json',
+         'json_url': 'https://raw.githubusercontent.com/jmineau/lair/main/docs/versions.json',
          'version_match': version
      }
 }
