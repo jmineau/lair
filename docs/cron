@@ -1,2 +1,1 @@
-0 0 * * * ~/lair/docs/dev-docs.sh
-0 0 * * * ~/.lair-docs/docs/latest-docs.sh
+0 0 * * * ~/software/python/miniconda3/envs/lair-dev/bin/python ~/.lair-docs/docs/make_docs.py --version dev latest
