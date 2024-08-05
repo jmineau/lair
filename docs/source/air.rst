@@ -14,7 +14,7 @@ The `air` subpackage contains modules for working with various atmospheric data.
    air
    background
    hrrr
-   inventory
+   inventories
    mesowest
    meteorology
    noaa

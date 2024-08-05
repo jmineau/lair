@@ -1,3 +1,13 @@
+"""
+Emissions Inventories
+
+An emission(s) inventory is an accounting of the amount of pollutants
+discharged into the atmosphere. An emission inventory usually contains
+the total emissions for one or more specific greenhouse gases or air
+pollutants, originating from all source categories in a certain
+geographical area and within a specified time span, usually a specific year.
+"""
+
 from abc import ABCMeta
 import datetime as dt
 import matplotlib.pyplot as plt
@@ -73,12 +83,6 @@ def sum_sectors(data: Dataset) -> DataArray:
 class Inventory:
     """
     Base class for inventories.
-
-    An emission(s) inventory is an accounting of the amount of pollutants
-    discharged into the atmosphere. An emission inventory usually contains
-    the total emissions for one or more specific greenhouse gases or air
-    pollutants, originating from all source categories in a certain
-    geographical area and within a specified time span, usually a specific year.
     """
 
     def __init__(self,
