@@ -18,6 +18,9 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Check out the main branch
+        run: git checkout main
+
       - name: Run _version.py
         run: python lair/_version.py
 
@@ -27,4 +30,4 @@ jobs:
           git config --local user.email "actions@github.com"
           git add lair/__init__.py
           git commit -m "auto-update package version"
-          git push
+          git push origin main
