@@ -7,10 +7,29 @@ import pandas as pd
 
 from lair.config import verbose
 from lair.air._ccg_filter import ccgFilter  # make available to user
-from lair.utils.clock import dt2decimalDate
+from lair.utils.clock import AFTERNOON, dt2decimalDate
 
 
-def baseline(data: pd.Series, window: int=24, q: float=0.01
+def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -> pd.Series | pd.DataFrame:
+    """
+    Subset the data to the well-mixed hours of the day.
+
+    Parameters
+    ----------
+    data : pd.Series | pd.DataFrame
+        Time series data to subset. Must have a datetime index.
+    hours : list[int], optional
+        Hours of the day to subset. Default is LST afternoon hours.
+
+    Returns
+    -------
+    pd.Series | pd.DataFrame
+        Subset of the data for the well-mixed hours.
+    """
+    return data[data.index.hour.isin(hours)].resample('1d').mean()
+
+
+def rolling_baseline(data: pd.Series, window: int=24, q: float=0.01
              ) -> pd.Series:
     """
     Calculate the baseline concentration as the {q} quantile of a rolling
@@ -37,13 +56,59 @@ def baseline(data: pd.Series, window: int=24, q: float=0.01
     return baseline
 
 
+def phase_shift_corrected_baseline(data: pd.Series, n: int = 3600, q: float = 0.01) -> pd.Series:
+    """
+    Derive a baseline concentration using a low quantile approach to minimize
+    phase shift effects. This method uses forward-looking and backward-looking
+    windows to better represent the lowest observed concentrations during
+    periods of rapid change.
+
+    .. note::
+        Original developed by Ben Fasoli for the Google Street View project.
+        See supplementary material in: https://doi.org/10.1016/j.atmosenv.2023.119995
+
+    Parameters
+    ----------
+    data : pd.Series
+        Signal time series with local datetime index.
+    n : int
+        Window size in seconds.
+    q : float
+        Quantile to extract from signal.
+    timezone : str, optional
+        Timezone to convert the datetime index to.
+
+    Returns
+    -------
+    pd.Series
+        Baseline concentration
+    """
+    if not n % 2:
+        n += 1
+
+    b = []
+    for index, y in data.groupby(data.index.floor('d')):
+        hz = y.asfreq('s')
+        left = hz.rolling(n, min_periods=1).quantile(q)
+        right = hz.iloc[::-1].rolling(n, min_periods=1).quantile(q).iloc[::-1]
+
+        forward = right.rolling(n, min_periods=1).max()
+        backward = left.iloc[::-1].rolling(n, min_periods=1).max().iloc[::-1]
+
+        b.append(pd.concat([forward, backward], axis=1)
+                 .max(axis=1)
+                 .rolling(n, min_periods=1, center=True, win_type='blackman')
+                 .mean())
+
+    return pd.concat(b)
+
+
 def thonning(data: pd.Series, return_filt: bool=False, **kwargs
              )-> ccgFilter | pd.Series:
     """
     Thonning curve fitting.
 
-    Wraps code published by NOAA GML
-        https://gml.noaa.gov/ccgg/mbl/crvfit/crvfit.html
+    Wraps code published by NOAA GML: https://gml.noaa.gov/ccgg/mbl/crvfit/crvfit.html
 
     Thoning, K.W., P.P. Tans, and W.D. Komhyr, 1989,
         Atmospheric carbon dioxide at Mauna Loa Observatory,
