@@ -5,30 +5,6 @@ Miscellaneous functions for atmospheric data.
 import numpy as np
 import pandas as pd
 
-from lair.utils.clock import AFTERNOON
-
-
-# %% Time Series
-
-def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON):
-    """
-    Subset the data to the well-mixed hours of the day.
-
-    Parameters
-    ----------
-    data : pd.Series | pd.DataFrame
-        Time series data to subset. Must have a datetime index.
-    hours : list[int], optional
-        Hours of the day to subset. Default is LST afternoon hours.
-
-    Returns
-    -------
-    pd.Series | pd.DataFrame
-        Subset of the data for the well-mixed hours.
-    """
-    return data[data.index.hour.isin(hours)].resample('1d').mean()
-
-
 # %% Polar
 
 def bin_polar(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30
