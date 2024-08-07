@@ -4,6 +4,7 @@ Miscellaneous functions for atmospheric data.
 
 import numpy as np
 import pandas as pd
+from typing import Any
 
 # %% Polar
 
@@ -103,7 +104,7 @@ def circularize_radial_data(agg: pd.DataFrame):
 
 # %% Wind
 
-def wind_components(speed, wind_direction):
+def wind_components(speed, wind_direction)-> tuple[Any, Any]:
     """
     Calculate the u and v components of the wind.
     
@@ -124,3 +125,62 @@ def wind_components(speed, wind_direction):
     v = - speed * np.cos(np.deg2rad(wind_direction))
     
     return u, v
+
+
+def wind_direction(u, v):
+    """
+    Convert u and v components to wind direction.
+
+    Parameters
+    ----------
+    u : np.array
+        u component of wind
+    v : np.array
+        v component of wind
+
+    Returns
+    -------
+    np.array
+        wind direction in degrees
+    """
+    return (270 - np.rad2deg(np.arctan2(v, u))) % 360
+
+
+def rotate_winds(u, v, lon) -> tuple[Any, Any]:
+    """
+    Rotate winds from grid to earth coordinates.
+
+    .. note::
+        Based on https://rapidrefresh.noaa.gov/faq/HRRR.faq.html
+        Modified from https://gist.github.com/fischcheng/411d0bafe7762e6b5d7b1233b625a2bb
+
+    Parameters
+    ----------
+    u : np.array
+        u component of wind
+    v : np.array
+        v component of wind
+    lon : float
+        longitude of point
+
+    Returns
+    -------
+    tuple[np.array, np.array]
+        u and v components of wind in earth coordinates
+    """
+
+    # Parameters
+    rotcon_p = 0.622515
+    lon_xx_p = -97.5
+    # lat_tan_p  =  25.0 (np.sin(lat_tan_p/180*np.pi)) to get rotcon_p
+
+    # Calc right grid_angle
+    angle2 = rotcon_p * (lon - lon_xx_p) * 0.017453  # convert to radian
+    sinx2 = np.sin(angle2)
+    cosx2 = np.cos(angle2)
+
+    # Wind rotation
+    u_out = cosx2 * u + sinx2 * v
+    v_out = -sinx2 * u + cosx2 * v
+
+    return u_out, v_out
