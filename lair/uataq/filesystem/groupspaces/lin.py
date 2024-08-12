@@ -17,7 +17,7 @@ from lair.config import HOME, vprint
 from lair.uataq.errors import DataFileInitializationError, ParserError
 import lair.uataq.filesystem._filesystem as filesystem
 from lair.utils.clock import TimeRange
-from lair.utils.grid import dms2dd
+from lair.utils.geo import dms2dd
 from lair.utils.records import list_files
 
 # TODO: check for reprocessing

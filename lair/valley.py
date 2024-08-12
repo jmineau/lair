@@ -144,7 +144,7 @@ class SaltLake:
                         Inventory, census, background_alpha,
                         state_borders, county_borders,
                         latlon_ticks, more_lon_ticks, more_lat_ticks):
-        from utils.grid import bbox2extent, add_latlon_ticks
+        from lair.utils.geo import bbox2extent, add_latlon_ticks
 
         # Matplotlib axes
         if not ax:  # if an ax is not given
@@ -466,7 +466,7 @@ class SaltLake:
 
     @collect_feature
     def add_extent_map(self):
-        from utils.grid import add_extent_map
+        from lair.utils.geo import add_extent_map
 
         fig = self.ax.get_figure()
 

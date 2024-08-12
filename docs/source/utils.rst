@@ -9,7 +9,7 @@ Utilities
 
    clock
    dev
-   grid
+   geo
    plotter
    records
 

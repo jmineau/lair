@@ -1,5 +1,5 @@
 """
-Functions for working with spatial grid data.
+Geo-spatial utilities.
 """
 
 import cartopy.crs as ccrs
