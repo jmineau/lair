@@ -27,7 +27,7 @@ import xesmf as xe
 from lair.config import GROUP_DIR
 from lair import units
 from lair.utils.clock import TimeRange
-from lair.utils.grid import CRS, PC, clip, gridcell_area, wrap_lons, write_rio_crs
+from lair.utils.geo import CRS, PC, clip, gridcell_area, wrap_lons, write_rio_crs
 
 xr.set_options(keep_attrs=True)
 
