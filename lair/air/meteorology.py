@@ -2,6 +2,12 @@
 Meteorological calculations.
 
 Inspired by AOS 330 at UW-Madison with Grant Petty.
+
+.. note::
+    It would be nice to be able to wrap these funtions with `pint` - however,
+    because I input both numpy and xarray arrays, this will not work.
+    Waiting for https://github.com/xarray-contrib/pint-xarray/pull/143
+    For now, we will assume all inputs are in SI units.
 """
 
 import numpy as np
@@ -153,7 +159,7 @@ def virt_T(T: float, q: float) -> float:
     return T * (1 + 0.61 * q)
 
 
-def poisson(T: float, p: float, p0: float = 1000 * units('hPa')) -> float:
+def poisson(T: float, p: float, p0: float = 1e5) -> float:
     """
     Calculate the potential temperature. (Poission's equation)
 
@@ -174,7 +180,7 @@ def poisson(T: float, p: float, p0: float = 1000 * units('hPa')) -> float:
     return T * (p0/p)**(Rd/cp)
 
 
-def inv_poisson(p: float, theta: float, p0: float = 1000 * units('hPa')) -> float:
+def inv_poisson(p: float, theta: float, p0: float = 1e5) -> float:
     """
     Calculate the temperature from potential temperature. (Inverse Poission's equation)
 

@@ -9,7 +9,6 @@ except ImportError:
 
 from collections import deque
 import datetime as dt
-import numpy as np
 import os
 import pandas as pd
 import requests
@@ -17,9 +16,9 @@ from time import sleep
 import xarray as xr
 
 from lair.config import vprint, GROUP_DIR
-from lair.constants import Rd
+from lair import units
+from lair.constants import Rd, cp
 from lair.air.meteorology import ideal_gas_law, hypsometric, poisson
-from lair.units import C2K, hPa, J, kg, K, m
 
 
 #: Sounding data directory
@@ -260,8 +259,17 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
         download_soundings(station, start, end, sounding_dir, months)
 
     soundings = []
-    # TODO filter by start/end
     for file in files:
+        # Skip files that don't match the date range
+        date = file.split('_')[1].split('.')[0]
+        date = dt.datetime.strptime(date, '%Y%m%d%H')
+        if start:
+            if date <= start:
+                continue
+        if end:
+            if date > end:
+                continue
+
         path = os.path.join(sounding_dir, file)
         try:
             soundings.append(Sounding(path))
@@ -280,7 +288,7 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
     return data
 
 
-def valleyheatdeficit(data, integration_height=2200) -> xr.DataArray:
+def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray:
     """
     Calculate the valley heat deficit.
 
@@ -294,38 +302,44 @@ def valleyheatdeficit(data, integration_height=2200) -> xr.DataArray:
     data : xr.DataSet
         The sounding data.
     integration_height : int
-        The height to integrate to.
+        The height to integrate to [m].
     
     Returns
     -------
     xr.DataArray
-        The valley heat deficit.
+        The valley heat deficit [MJ/m^2].
     """
-    h0 = data.elevation * m
-    cp = 1005 * J/kg/K
-    
+    h0 = data.elevation
+
     # Subset to the heights between the surface and the integration height
     data = data.sel(height=slice(h0, integration_height))
     
-    T = C2K(data.temperature)
-    p = data.pressure * hPa
+    T = data.temperature.pint.quantify('degC').pint.to('degK')
+    p = data.pressure.pint.quantify('hPa').pint.to('Pa')
 
     # Calculate potential temperature using poisson's equation
-    theta = poisson(T, p)
+    theta = poisson(T=T, p=p, p0=1e5 * units('Pa'))
     theta_h = theta.sel(height=integration_height, method='nearest')
 
     # Calculate virtual temperature to account for water vapor
     Tv = hypsometric(p1=p.isel(height=slice(0, -1)).values,
                      p2=p.isel(height=slice(1, None)).values,
-                     deltaz=data.interpolation_interval)
+                     deltaz=data.interpolation_interval * units('m'))
     layer_heights = T.height.values[:-1] + data.interpolation_interval / 2
     Tv = xr.DataArray(Tv, coords=[data.time, layer_heights],
-                      dims=['time', 'height']).interp_like(T, method='linear')
+                      dims=['time', 'height'])\
+            .interp_like(T, method='linear')\
+            .pint.quantify('degK')
 
     # Calculate the density using the ideal gas law
     rho = ideal_gas_law(solve_for='rho', p=p, T=Tv, R=Rd)
+    # Set pint units - Setting units to kg/m3 doesnt change the numbers
+    # pint-xarray hasnt implemented .to_base_units() yet
+    # when they do, we can change this to .pint.to_base_units()
+    rho = rho.pint.to('kg/m^3')
 
     # Calculate the heat deficit by integrating using the trapezoid method
-    heat_deficit = (cp * rho * (theta_h - theta)).dropna('height', how='all').integrate('height')
+    heat_deficit = (cp * rho * (theta_h - theta)).dropna('height', how='all')\
+        .integrate('height') * (1 * units('m'))  # J/m2
 
-    return heat_deficit  # J/m2
+    return heat_deficit.pint.to('MJ/m^2').pint.dequantify()
