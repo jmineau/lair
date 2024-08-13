@@ -246,6 +246,7 @@ def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt
     plt.Axes
         Axis with the plot
     """
+    # TODO need to add a year or int x formatter
     colors = {'DJF': '#e7298a', 
               'MAM': '#1b9e77', 
               'JJA': '#d95f02', 
@@ -449,6 +450,7 @@ def windvectorPlot(data: pd.DataFrame, wd: str='WD', ws: str='WS',
     plt.Axes
         Axis with the plot
     """
+    from lair.air.air import wind_components
     if ax is None:
         fig, ax = plt.subplots()
 
