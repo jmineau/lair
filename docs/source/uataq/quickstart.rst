@@ -28,6 +28,7 @@ The configuration file is a JSON file which specifies UATAQ site characteristics
 including name, location, status, research groups collecting data, and installed instruments.
 
 The :class:`~lair.uataq._laboratory.Laboratory` object contains the following attributes:
+
  - sites : A list of site identifiers.
  - instruments : A list of instrument names.
 
@@ -51,6 +52,7 @@ The :class:`~instruments.InstrumentEnsemble` is a container object that hold dif
     For convenience, :meth:`uataq.laboratory.get_site` is aliased as :meth:`uataq.get_site`
 
 The :class:`~sites.Site` object contains the following information as attributes:
+
  - SID : The site identifier.
  - config : A dictionary containing configuration information for the site from the config file.
  - instruments : An instance of the InstrumentEnsemble class representing the instruments at the site.

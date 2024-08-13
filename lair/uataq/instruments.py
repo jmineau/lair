@@ -279,7 +279,7 @@ class InstrumentEnsemble:
     """
     Container for an ensemble of instruments at a site.
 
-    Attributes:
+    Attributes
     ----------
     SID : str
         Site ID of the ensemble.
