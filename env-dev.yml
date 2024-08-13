@@ -15,7 +15,9 @@ dependencies:
   - matplotlib
   - metpy
   - molmass
+  - myst-parser
   - numpy
+  - numpydoc
   - pandas
   - pint-xarray
   - pyproj
@@ -26,6 +28,7 @@ dependencies:
   - shapely
   - siphon
   - sphinx
+  - sphinx-design
   - synopticpy
   - typing-extensions
   - xarray
