@@ -8,8 +8,6 @@ from pathlib import Path
 import subprocess
 import requests
 
-# Load the git module on CHPC
-subprocess.run('module load git', shell=True)
 
 # Parse args
 parser = argparse.ArgumentParser()
