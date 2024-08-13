@@ -7,4 +7,4 @@ module load git
 conda activate lair-dev
 
 # Run the make_docs.py script
-python ~/.lair-docs/docs/make_docs.py
+python ~/.lair-docs/docs/make_docs.py --version dev latest
