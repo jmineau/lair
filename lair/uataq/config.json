@@ -298,6 +298,48 @@
             }
         }
     },
+    "BUS14": {
+        "name": "BUS 23111",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2024-05-08"
+            },
+            "cr1000": {
+                "installation_date": "2024-05-08"
+            },
+            "gps": {
+                "installation_date": "2024-05-08"
+            },
+            "metone_es405": {
+                "installation_date": "2024-05-08"
+            }
+        }
+    },
+    "BUS15": {
+        "name": "BUS 23112",
+        "is_mobile": true,
+        "loggers": {
+            "horel": "campbellsci"
+        },
+        "instruments": {
+            "2b_205": {
+                "installation_date": "2024-05-14"
+            },
+            "cr1000": {
+                "installation_date": "2024-05-14"
+            },
+            "gps": {
+                "installation_date": "2024-05-14"
+            },
+            "metone_es405": {
+                "installation_date": "2024-05-14"
+            }
+        }
+    },
     "CSP": {
         "name": "Castle Peak",
         "latitude": 40.0509,
