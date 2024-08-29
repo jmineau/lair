@@ -82,7 +82,8 @@ print('to_build:', to_build)
 os.chdir(docs)
 
 # Pull the latest changes from the git repository
-subprocess.run(['git', 'pull'], check=True)
+status = subprocess.run(['git', 'pull'], check=True,
+                        stdout=subprocess.PIPE)
 
 # Iterate over the versions in the switcher
 for v in switcher:
@@ -97,6 +98,9 @@ for v in switcher:
     elif 'latest' in name:
         if 'latest' not in to_build and version not in to_build:
             # Skip building the latest version if it's not specified
+            continue
+        elif 'Already up to date' in status.stdout.decode():
+            # Skip building the latest version if the repository is up to date
             continue
         print(f"Building version {version} ({name})")
         # Build the latest version from the head of main branch
