@@ -20,6 +20,7 @@ dependencies:
   - numpydoc
   - pandas
   - pint-xarray
+  - pydata-sphinx-theme
   - pyproj
   - pytables
   - rioxarray
