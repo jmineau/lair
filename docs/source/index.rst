@@ -64,7 +64,31 @@ UATAQ project.
 Installation
 ============
 
-``lair`` can be installed via ``pip``:
+The ``lair`` package is installable from the git repository via ``pip``, however, some dependencies can only be installed via ``conda``.
+Additionally, many components of ``lair`` require access to CHPC which encourages the use of ``conda``. Therefore, we recommend using ``conda`` to install the package.
+
+.. important::
+
+   If you are using CHPC, it is assumed that ``miniforge3`` is installed following the instructions at https://www.chpc.utah.edu/documentation/software/python-anaconda.php
+
+To create a new conda environment for ``lair``, use the following command:
+
+.. code-block:: bash
+
+   mamba create -n lair -c conda-forge python=3.10 esmpy
+
+If you already have a conda environment, simply install the dependencies:
+
+.. code-block:: bash
+
+   mamba activate <lair-env>
+   mamba install -c conda-forge esmpy
+
+.. note::
+
+   ``lair`` requires Python 3.10 or higher.
+
+Now we can install the package via ``pip``. Either directly from the git repository:
 
 .. code-block:: bash
 
@@ -79,7 +103,7 @@ or by cloning the repository and installing it as an editable package:
    pip install -e .
 
 Optional Dependencies
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 ``lair`` is a rather dependecy-heavy package, however, many are common in the field of atmospheric science. To keep ``lair`` as lightweight as possible, some dependencies related to meteorology are currently optional. These include:
 
@@ -94,9 +118,6 @@ The following modules are impacted:
 
 - ``lair.air.hrrr``
 - ``lair.air.soundings``
-
-Installing Optional Dependencies
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To install the optional dependencies, use the following command:
 
