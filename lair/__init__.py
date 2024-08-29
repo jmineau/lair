@@ -24,4 +24,4 @@ from . import uataq
 from . import utils
 
 
-__version__ = '2024.08.15'
+__version__ = '2024.08.16'
