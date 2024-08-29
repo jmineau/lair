@@ -18,7 +18,7 @@ dependencies = [
   "xesmf",
   "fastkml",
   "geopandas",
-  "lmxl",  # speeds up fastkml
+  "lxml",  # speeds up fastkml
   "matplotlib",
   "molmass",
   "numpy<2",  # numpy 2.0 breaks pytables
