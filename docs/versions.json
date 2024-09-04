@@ -5,9 +5,14 @@
         "url": "https://jamesmineau.chpc.utah.edu/lair/dev"
     },
     {
-        "name": "alpha (latest)",
-        "version": "2024.08",
+        "name": "latest",
+        "version": "2024.12",
         "url": "https://jamesmineau.chpc.utah.edu/lair/latest",
         "preferred": true
+    },
+    {
+        "name": "alpha",
+        "version": "2024.08",
+        "url": "https://jamesmineau.chpc.utah.edu/lair/alpha"
     }
 ]
