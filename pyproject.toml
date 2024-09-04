@@ -15,7 +15,6 @@ dependencies = [
   "cartopy",
   "cf_xarray",
   "dask",
-  "xesmf",
   "fastkml",
   "geopandas",
   "lxml",  # speeds up fastkml
@@ -31,6 +30,7 @@ dependencies = [
   "tables",
   "typing-extensions",  # needed to import Self before 3.11
   "xarray",
+  "xesmf",
 ]
 license = {file = "LICENSE"}
 classifiers = [
