@@ -55,12 +55,15 @@ autodoc_default_options = {
 autodoc_mock_imports = [
     'boto3',
     'cartopy',
+    'cf-xarray',
     'fastkml',
     'geopandas',
     'matplotlib',
     'metpy',
     'numpy',
     'pandas',
+    'pint',
+    'pint-xarray',
     'pyproj',
     'rioxarray',
     's3fs',
@@ -70,6 +73,7 @@ autodoc_mock_imports = [
     'synopticpy',
     'tables',
     'xarray',
+    'xesmf',
     'zarr'
 ]
 autodoc_typehints = "signature"
@@ -78,24 +82,31 @@ autosummary_generate = True  # Turn on sphinx.ext.autosummary
 
 # Set up mapping for other projects' docs
 intersphinx_mapping = {
-    'cartopy': ('https://scitools.org.uk/cartopy/docs/latest/', None),
-    'fastkml': ('https://fastkml.readthedocs.io/en/latest/', None),
-    'geopandas': ('https://geopandas.org/en/stable/', None),
-    'metpy': ('https://unidata.github.io/MetPy/latest/', None),
-    'matplotlib': ('https://matplotlib.org/', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'pyproj': ('https://pyproj4.github.io/pyproj/stable/', None),
-    'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
-    'rioxarray': ('https://corteva.github.io/rioxarray/stable/', None),
-    's3fs': ('https://s3fs.readthedocs.io/en/latest/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-    'shapely': ('https://shapely.readthedocs.io/en/stable/', None),
-    'siphon': ('https://unidata.github.io/siphon/latest/', None),
-    'synopticpy': ('https://synopticpy.readthedocs.io/en/stable/', None),
-    'tables': ('https://www.pytables.org/', None),
-    'xarray': ('https://xarray.pydata.org/en/stable/', None),
-    'zarr': ('https://zarr.readthedocs.io/en/stable/', None)
+    'boto3': ('https://boto3.amazonaws.com/v1/documentation/api/latest', None),
+    'cartopy': ('https://scitools.org.uk/cartopy/docs/latest', None),
+    'cf-xarray': ('https://cf-xarray.readthedocs.io/en/latest', None),
+    'dask': ('https://docs.dask.org/en/stable', None),
+    'esmpy': ('https://earthsystemmodeling.org/esmpy_doc/release/latest/html', None),
+    'fastkml': ('https://fastkml.readthedocs.io/en/latest', None),
+    'geopandas': ('https://geopandas.org/en/stable', None),
+    'metpy': ('https://unidata.github.io/MetPy/latest', None),
+    'matplotlib': ('https://matplotlib.org/stable', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+    'pint': ('https://pint.readthedocs.io/en/stable', None),
+    'pint-xarray': ('https://pint-xarray.readthedocs.io/en/stable', None),
+    'pyproj': ('https://pyproj4.github.io/pyproj/stable', None),
+    'python': ('https://docs.python.org/3', None),
+    'rioxarray': ('https://corteva.github.io/rioxarray/stable', None),
+    's3fs': ('https://s3fs.readthedocs.io/en/latest', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy', None),
+    'shapely': ('https://shapely.readthedocs.io/en/stable', None),
+    'siphon': ('https://unidata.github.io/siphon/latest', None),
+    'synopticpy': ('https://synopticpy.readthedocs.io/en/stable', None),
+    'tables': ('https://www.pytables.org', None),
+    'xarray': ('https://docs.xarray.dev/en/stable', None),
+    'xesmf': ('https://xesmf.readthedocs.io/en/stable', None),
+    'zarr': ('https://zarr.readthedocs.io/en/stable', None)
 }
 
 numpydoc_show_class_members = False
