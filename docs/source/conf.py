@@ -143,7 +143,8 @@ html_theme_options = {
          }
         ],
      'logo': {
-         'text': f'LAIR docs',
+         'image_light': '_static/lair_forlight_r.png',
+         'image_dark': '_static/lair_fordark_r.png',
          'alt_text': 'LAIR - Home'
       },
      'navbar_start': ['navbar-logo', 'version-switcher'],

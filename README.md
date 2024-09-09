@@ -1,6 +1,11 @@
 <div align=center>
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="/docs/source/_static/lair_fordark_r.png">
+    <source media="(prefers-color-scheme: light)" srcset="/docs/source/_static/lair_forlight_r.png">
+    <img alt="lair logo" src="/docs/source/_static/lair_fordark_r.png">
+</picture>
 
-# LAIR (Land-Air Interactions Research)
+# Land-Air Interactions Research
 
 ## [:scroll: Documentation](https://jamesmineau.chpc.utah.edu/lair)
 
