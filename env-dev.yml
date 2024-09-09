@@ -7,7 +7,7 @@ dependencies:
   - cartopy
   - cf_xarray
   - dask
-  - xesmf
+  - esmpy
   - fastkml
   - geopandas
   - jupyterlab
@@ -19,6 +19,7 @@ dependencies:
   - numpy
   - numpydoc
   - pandas
+  - pint
   - pint-xarray
   - pydata-sphinx-theme
   - pyproj
@@ -33,4 +34,5 @@ dependencies:
   - synopticpy
   - typing-extensions
   - xarray
+  - xesmf
   - zarr
