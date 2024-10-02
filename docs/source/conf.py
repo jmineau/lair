@@ -60,6 +60,7 @@ autodoc_mock_imports = [
     'geopandas',
     'matplotlib',
     'metpy',
+    'netcdf4',
     'numpy',
     'pandas',
     'pint',

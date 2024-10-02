@@ -20,6 +20,7 @@ dependencies = [
   "lxml",  # speeds up fastkml
   "matplotlib",
   "molmass",
+  "netcdf4",
   "numpy<2",  # numpy 2.0 breaks pytables
   "pandas",
   "pint-xarray",
