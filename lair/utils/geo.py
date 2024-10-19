@@ -92,7 +92,9 @@ class CRS:
 
     def __init__(self, crs: Any):
         # Convert input to pyproj.CRS
-        if isinstance(crs, int):
+        if isinstance(crs, CRS):
+            self.crs = crs.crs
+        elif isinstance(crs, int):
             self.crs = pyproj.CRS.from_epsg(crs)
         elif isinstance(crs, str) and crs.startswith('EPSG:'):
             epsg = int(crs.split(':')[1])
@@ -625,6 +627,100 @@ def gridcell_area(grid: DataArray | Dataset, R: float | ArrayLike | None = None
     else:
         raise ValueError('Only lat-lon and meter grids are supported.')
     return area
+
+
+def plot_grid(grid: DataArray | Dataset,
+              lw: float = 1,
+              ax: plt.Axes | None = None,
+              extent: list[float] | None = None,
+              crs: ccrs.CRS | None = None,
+              **kwargs: Any) -> plt.Axes:
+    """
+    Plot a grid.
+
+    Parameters
+    ----------
+    grid : xr.DataArray | xr.Dataset
+        The grid to plot.
+    ax : plt.Axes, optional
+        Axes object to plot to, by default None.
+    extent : list[minx, maxx, miny, maxy], optional
+        Extent of the plot, by default None.
+    crs : ccrs.CRS, optional
+        CRS of the plot, by default None.
+    kwargs : Any
+        Additional keyword arguments to pass to the pcol
+        or pcolormesh method.
+    
+    Returns
+    -------
+    plt.Axes
+        Axes object
+    """
+    if crs is None:
+        crs = PC
+    elif isinstance(crs, CRS):
+        crs = crs.to_cartopy()
+
+    if ax is None:
+        fig, ax = plt.subplots(subplot_kw={'projection': crs})
+
+    if extent is not None:
+        ax.set_extent(extent, crs=crs)
+
+    lat, lon = grid['lat'], grid['lon']
+    
+    grid = DataArray(np.zeros((len(lat), len(lon)), dtype=float),
+        coords={'lat': lat, 'lon': lon})
+
+    grid.plot(ax=ax, transform=PC,
+              facecolor='none', edgecolor='black',
+              linewidth=lw,
+              **kwargs)
+
+    return ax
+
+
+def generate_regular_grid(xmin: float, xmax: float, dx: float,
+                          ymin: float, ymax: float, dy: float,
+                          x_deci: int, y_deci: int,
+                          x_label='x', y_label='y',
+                          chunks: dict | None = None) -> DataArray:
+    """
+    Generate a regular grid. Grid points are cell centers.
+
+    Parameters
+    ----------
+    xmin : float
+        Minimum x value
+    xmax : float
+        Maximum x value
+    dx : float
+        x resolution
+    ymin : float
+        Minimum y value
+    ymax : float
+        Maximum y value
+    dy : float
+        y resolution
+    x_deci : int
+        Number of decimal places to round x values to
+    y_deci : int
+        Number of decimal places to round y values to
+    x_label : str, optional
+        Name of the x coordinate, by default 'x'
+    y_label : str, optional
+        Name of the y coordinate, by default 'y'
+
+    Returns
+    -------
+    xr.DataArray
+        The generated grid
+    """
+    x = np.round(np.arange(xmin, xmax, dx), x_deci)
+    y = np.round(np.arange(ymin, ymax, dy), y_deci)
+    zeros = np.zeros((len(y), len(x)))
+    return DataArray(zeros, coords={y_label: y, x_label: x})
 
 
 def regrid(data: DataArray | Dataset,
