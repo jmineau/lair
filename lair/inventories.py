@@ -62,6 +62,43 @@ def molecular_weight(pollutant: str) -> pint.Quantity:
     return Formula(pollutant).mass * units('g/mol')
 
 
+def convert_units(data: DataArray | Dataset, pollutant: str, dst_units: Any,
+                  ) -> DataArray | Dataset:
+    """
+    Convert the units of a pint quantified data array or dataset.
+
+    Parameters
+    ----------
+    data : xr.DataArray | xr.Dataset
+        The data to convert. Must have pint units.
+    pollutant : str
+        The pollutant.
+    dst_units : Any
+        The destination units.
+
+    Returns
+    -------
+    xr.DataArray | xr.Dataset
+        The data with converted units.
+    """
+
+    # Calculate molecular weight of pollutant
+    mw = molecular_weight(pollutant)
+
+    # Use custom pint context to convert mass <--> substance
+    with units.context('mass_flux', mw=mw):
+        if isinstance(data, xr.Dataset):
+            for var in data.data_vars:
+                data[var] = data[var].pint.to(dst_units)
+                data[var].attrs['units'] = dst_units
+        elif isinstance(data, xr.DataArray):
+            data = data.pint.to(dst_units)
+            data.attrs['units'] = dst_units
+        else:
+            raise TypeError("data must be an xarray Dataset or DataArray")
+    return data
+
+
 def sum_sectors(data: Dataset) -> DataArray:
     """
     Sum emissions from all sectors in the dataset.
@@ -76,8 +113,9 @@ def sum_sectors(data: Dataset) -> DataArray:
     xr.DataArray
         The sum of emissions from all sectors.
     """
-    total = data.to_array().sum('variable')
+    total = data.to_array(dim='sector', name='emissions').sum('sector')
     total.attrs['long_name'] = 'Total Emissions'
+    total.attrs['units'] = data[list(data.data_vars)[0]].attrs['units']
 
     return total
 
@@ -145,7 +183,7 @@ class Inventory(BaseGrid):
         #   - all variables are emissions
         #   - all in the same units
         self.src_units: str | pint.registry.Unit = src_units
-        data = self._convert_units(self._quantify(data))
+        data = convert_units(self._quantify(data), pollutant=self.pollutant, dst_units=DST_UNITS)
 
         # Set the rioxarray CRS
         data = write_rio_crs(data, self.crs)
@@ -243,6 +281,18 @@ class Inventory(BaseGrid):
         return sum_sectors(self._data).pint.dequantify(DEFAULT_PINT_FMT)
 
     @property
+    def collapsed(self) -> DataArray:
+        """
+        Collapse the inventory data to a single variable.
+
+        Returns
+        -------
+        xr.DataArray
+            The collapsed data.
+        """
+        return self._data.to_dataarray(dim='sector', name='emissions').pint.dequantify(DEFAULT_PINT_FMT)
+
+    @property
     def data(self) -> Dataset:
         """
         The inventory data.
@@ -273,9 +323,9 @@ class Inventory(BaseGrid):
         """
         return self._data
 
-    def convert_units(self, dst_units: Any) -> None:
+    def convert_units(self, dst_units: str) -> Self:
         """
-        Convert the units of the data to the desired output units.
+        Convert the units of the data to the desired output units. Modifies the data in place.
 
         Parameters
         ----------
@@ -286,9 +336,9 @@ class Inventory(BaseGrid):
         -------
         None - modifies the data in place
         """
-        self._data = self._convert_units(self._data, dst_units)
+        self._data = convert_units(data=self._data, pollutant=self.pollutant, dst_units=dst_units)
 
-        return None
+        return self
 
     def integrate(self) -> DataArray:
         """
@@ -430,19 +480,6 @@ class Inventory(BaseGrid):
         # Quantify the data using `pint` units
         for var in data.data_vars:
             data[var] = data[var].pint.quantify(self.src_units)
-        return data
-
-    def _convert_units(self, data: Dataset, dst_units: Any = None) -> Dataset:
-        dst_units = dst_units or DST_UNITS
-
-        # Calculate molecular weight of pollutant
-        mw = molecular_weight(self.pollutant)
-
-        # Use custom pint context to convert mass <--> substance
-        with units.context('mass_flux', mw=mw):
-            for var in data.data_vars:
-                data[var] = data[var].pint.to(dst_units)
-                data[var].attrs['units'] = DST_UNITS  # FIXME
         return data
 
 
@@ -828,6 +865,8 @@ class EPA(Inventory, metaclass=ABCMeta):
 
     _emissions_prefix: str
     _variable_pattern: str = r'{}(?:_Supp)?_([1-9][A-Z]?[1-9]?[a-z]*)_([A-Za-z_]*)'
+    _lat_deci = 2
+    _lon_deci = 2
 
     def _extract_ipcc_code_and_short_name(self, var_name, prefix):
         pattern = self._variable_pattern.format(prefix)
@@ -858,7 +897,7 @@ class EPA(Inventory, metaclass=ABCMeta):
 
         # Round grid to nearest 0.1 degrees
         # - cell coordinates are center-of-cell, so we actually need to round to nearest 0.05
-        data = round_latlon(data, 2, 2)
+        data = round_latlon(data, self._lat_deci, self._lon_deci)
         return data
 
 
@@ -967,6 +1006,9 @@ class EPAv2(EPA):
     def _scale_by_month(self, data: Dataset) -> Dataset:
         self.time_step = 'monthly'
         sf = self.get_monthly_scale_factors()
+
+        # Round grid coordinates due to floating point errors
+        sf = round_latlon(sf, self._lat_deci, self._lon_deci)
 
         # Filter to variables with strong interannual variability and 
         # expand time dimension by repeating Jan values
