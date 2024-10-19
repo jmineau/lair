@@ -107,6 +107,18 @@ class TimeRange:
     def __iter__(self):
         return iter([self.start, self.stop])
 
+    def __contains__(self, item):
+        if not any([self.start, self.stop]):
+            # Entire Period - True
+            return True
+        if not self.start:
+            # Before stop - True if item <= stop
+            return item <= self.stop
+        if not self.stop:
+            # After start - True if start <= item
+            return self.start <= item
+        return self.start <= item <= self.stop
+
     @property
     def start(self) -> dt.datetime | None:
         return self._start
@@ -267,6 +279,25 @@ def datetime_accessor(obj, accessor='dt'):
     if hasattr(obj, accessor):
         return getattr(obj, accessor)
     return obj
+
+
+def periodindex_to_binedges(periodindex: pd.PeriodIndex) -> list[pd.Timestamp]:
+    """
+    Convert a PeriodIndex to a list of bin edges.
+
+    Parameters
+    ----------
+    periodindex : pd.PeriodIndex
+        The PeriodIndex to convert.
+
+    Returns
+    -------
+    list[pd.Timestamp]
+        The bin edges.
+    """
+    start_times = [p.start_time for p in periodindex]
+    end_times = [p.end_time for p in periodindex]
+    return start_times + [end_times[-1]]
 
 
 # ----- Time Aggregation ----- #
