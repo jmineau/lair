@@ -32,8 +32,8 @@ with open(os.path.join(MEASUREMENTS_DIR, 'pipeline', 'config',
     #: Data configuration.
     DATA_CONFIG: dict = json.load(data_config_file)
 
-# SITE_CONFIG = pd.read_json(os.path.join(MEASUREMENTS_DIR, 'pipeline', 'config', # TODO
-#                                         'site_config.json'))
+SITE_CONFIG = pd.read_csv('https://raw.githubusercontent.com/uataq/data-pipeline/main/config/site_config.csv',
+                          skipinitialspace=True, index_col='stid')
 
 #: Lin to UATAQ column mapping
 column_mapping: dict[str, dict[str, str]] = {
