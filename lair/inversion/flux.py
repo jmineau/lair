@@ -4,21 +4,24 @@ Bayesian Flux Inversion
 
 import datetime as dt
 import itertools
+from pathlib import Path
+from typing import Any, Literal
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 import scipy
 import sparse
-from typing import Any
 import xarray as xr
 import xesmf as xe
-
-from lair.air.stilt import Receptor, Footprint
+from lair.air.stilt import Footprint
 from lair.air.stilt import Model as STILTModel
-from lair.inversion.bayesian import Inversion
+from lair.air.stilt import Receptor
 from lair.inventories import Inventory
+from lair.inversion.bayesian import Inversion
 from lair.utils.clock import TimeRange
-
+from lair.utils.geo import earth_radius
+from lair import uataq
+from sklearn.metrics.pairwise import haversine_distances
 
 # TODO:
 # - non lat-lon grids
@@ -45,6 +48,44 @@ def generate_obs_index(receptor_obs: dict['Receptor', pd.Series]) -> pd.MultiInd
     receptor_obs_tuples = [(r, t) for r, times in receptor_obs.items() for t in times]
     obs_index = pd.MultiIndex.from_tuples(receptor_obs_tuples, names=['receptor', 'obs_time'])
     return obs_index
+
+
+def uataq_receptor_obs(SID: str, method: Literal['get_obs', 'read_data'] = 'get_obs', **kwargs):
+    """
+    Get observations for UATAQ receptors.
+    
+    Parameters
+    ----------
+    SID : str
+        Site ID
+    method : 'get_obs' | 'read_data', optional
+        UATAQ method to get observations, by default 'get_obs'.
+    **kwargs
+        Additional keyword arguments to pass to the UATAQ method
+
+    Returns
+    -------
+    receptor_obs : pd.DataFrame
+        Receptor observations with a MultiIndex[receptor, obs_time]
+    """
+    # Build site and receptor objects
+    site = uataq.get_site(SID)  # get Site object
+    latitude = site.config['latitude']
+    longitude = site.config['longitude']
+    zagl = site.config['zagl']
+    receptor = Receptor(latitude=latitude, longitude=longitude, height=zagl)
+
+    # Get observations
+    data = getattr(site, method)(**kwargs)
+    if method == 'read_data':
+        # Need instrument to get data from read_data dict
+        instrument = kwargs['instrument']
+        data = data[instrument]
+    data.index.name = 'obs_time'
+    data = data.reset_index().assign(receptor=receptor)  # add receptor column
+    data = data.set_index(['receptor', 'obs_time'])  # set MultiIndex
+
+    return data
 
 
 def add_receptor_index(receptor: Receptor, obs: pd.Series):
@@ -117,8 +158,8 @@ def generate_flux_index(t_bins: pd.IntervalIndex,
     x_dim, y_dim = 'lon', 'lat'
     x, y = out_grid[x_dim].values, out_grid[y_dim].values
     xx, yy = np.meshgrid(x, y, indexing='ij')
-    x_y_tuples = pd.Index(zip(xx.ravel(), yy.ravel())).values.reshape(xx.shape)
-    cells = xr.DataArray(x_y_tuples, coords={x_dim: x, y_dim: y})
+    y_x_tuples = pd.Index(zip(yy.ravel(), xx.ravel())).values.reshape(yy.shape)
+    cells = xr.DataArray(y_x_tuples, coords={y_dim: y, x_dim: x})
 
     if grid_mask is not None:
         # Mask grid cells where mask == 0
@@ -157,6 +198,9 @@ class FluxInversion(Inversion):
     """
     Bayesian flux inversion
     """
+
+    _reuse_options = ['prior', 'prior_error', 'prior_error_cov', 'jacobian']
+
     def __init__(self,
                  project: str | Path,
                  obs: pd.Series,  # with MultiIndex[receptor, obs_time]
@@ -171,8 +215,10 @@ class FluxInversion(Inversion):
                  prior_error_cov: xr.DataArray | None = None,
                  modeldata_mismatch: None = None,
                  write_jacobian: bool = True,
-                 regrid_weights: str | Path | None = None
+                 regrid_weights: str | Path | None = None,
+                 reuse: bool | str | list[str] = True,
                  ) -> None:
+        # Set project directory
         self.project = Path(project)
         self.project.mkdir(exist_ok=True, parents=True)  # create project directory if it doesn't exist
 
@@ -188,13 +234,14 @@ class FluxInversion(Inversion):
         self.modeldata_mismatch = modeldata_mismatch
         self.write_jacobian = write_jacobian
         self.regrid_weights = regrid_weights
+        self.reuse = reuse
 
-        self.obs_index = obs.index
+        self.obs_index = obs.index  # FIXME: should be generate_obs_index(receptor_obs)
         self.flux_index = generate_flux_index(t_bins=t_bins, out_grid=out_grid, grid_mask=grid_mask)
 
-        self.receptors = obs.index.get_level_values('receptor').unique()
-        self.obs_times = obs.index.get_level_values('obs_time').unique()
-        self.flux_times = t_bins
+        self.receptors = self.obs_index.get_level_values('receptor').unique()
+        self.obs_times = self.obs_index.get_level_values('obs_time').unique()
+        self.flux_times = self.flux_index.get_level_values('flux_time').unique()
         self.cells = self.flux_index.get_level_values('cell').unique()
 
         x_0 = self.build_x_0(inventory)
@@ -219,46 +266,109 @@ class FluxInversion(Inversion):
         """
         return inventory.groupby_bins(group='time', bins=self.flux_times).sum()
 
-    def build_S_s(self, variance, length_scale):
+    def build_S_s(self, method: str | dict | None = None, **kwargs) -> np.ndarray:
         """
         Build the spatial error covariance matrix for the inversion.
+        Has dimensions of cells x cells.
 
         Parameters
         ----------
-        variance : float
-            Variance of the spatial error.
-        length_scale : float
-            Length scale of the spatial error.
+        method : str, dict, optional
+            Method for calculating the spatial error covariance matrix.
+            Options include:
+                - 'exp': exponentially decaying with an e-folding length kwargs['length_scale']
+                - 'downscale': each cell is highly correlated with the same cell in the kwargs['src_grid'].
+                               Covariance is defined as the multiplication of the `xesmf.Regridder` weights
+                               between dst cells.
+            Defaults to 'exp'.
 
         Returns
         -------
         S_s : xr.DataArray
             Spatial error covariance matrix for the inversion.
         """
+        # Handle method input
+        if method is None:
+            method = {'exp': 1.0}
+        elif isinstance(method, str):
+            method = {method: 1.0}
+        elif isinstance(method, dict):
+            assert sum(method.values()) == 1.0, 'Weights for spatial error methods must sum to 1.0'
+        else:
+            raise ValueError('method must be a string or dict')
+
         # Calculate the spatial error covariance matrix
-        
-        # TODO: from copilot - check if this is correct
-        S_s = xr.DataArray(
-            data=scipy.spatial.distance.squareform(
-                scipy.spatial.distance.pdist(self.out_grid[['lon', 'lat']].values, metric='euclidean')
-            ),
-            dims=['cell', 'cell'],
-            coords={'cell': self.cells}
-        )
-        S_s = variance * np.exp(-S_s / length_scale)
+        cells = np.array([*self.cells.to_numpy()])  # convert to 2D numpy array [[lat, lon], ...]
+        N = len(cells)  # number of flux cells
+
+        # Initialize the spatial covariance matrix
+        S_s = np.zeros((N, N))
+
+        # Calculate and combine covariance matrices based on the method weights
+        for method_name, weight in method.items():
+            if method_name == 'exp':
+                distances = haversine_distances(np.deg2rad(cells)) * earth_radius(cells[:, 0])
+                length_scale = kwargs['length_scale']
+                cov_matrix = np.exp((-1 * distances) / length_scale)
+
+            elif method_name == 'downscale':
+                # Set covariance to 1 for cells that have the same source cell after downscaling
+                src_grid = kwargs['src_grid']  # TODO: would prefer to get this from regridder or something, but not sure how to do that right now
+                regridder = kwargs['regridder']
+
+                # Reshape the weights to the shape of the regridder and assign coords
+                # https://github.com/pangeo-data/xESMF/blob/7083733c7801960c84bf06c25ca952d3b44eac3e/xesmf/frontend.py#L596
+                weights = regridder.weights.data.reshape(regridder.shape_out + regridder.shape_in)
+                weights = xr.DataArray(weights, coords={
+                    'lat': cells[:, 0],
+                    'lon': cells[:, 1],
+                    'src_lat': src_grid['lat'],
+                    'src_lon': src_grid['lon'],
+                }).stack(cell=('lat', 'lon'), src_cell=('src_lat', 'src_lon'))
+
+                in_cells = weights.coords['cell_in'].values  # stack input cell coords
+
+                # Create an empty matrix with dimensions out_cell x out_cell
+                cov_matrix = np.zeros((N, N))
+
+                # Set the diagonal elements to 1
+                np.fill_diagonal(cov_matrix, 1)
+
+                # Populate the matrix using broadcasting
+                for in_cell in in_cells:
+                    # For each input cell, find the output cells that share the same input cell
+                    in_cell_weights = weights.sel(cell_in=in_cell)
+                    shared_out_cells = np.where((in_cell_weights > 0).values)[0]
+                    if len(shared_out_cells) > 0:
+                        # Get the weight values for the shared output cells
+                        values = weights.sel(in_cell=in_cell).values[shared_out_cells]
+                        # Set the covariance matrix values for the shared output cells
+                        # (np.ix_ is a fancy way to symmetrically index a 2D array)
+                        cov_matrix[np.ix_(shared_out_cells, shared_out_cells)] = np.outer(values, values)
+
+            else:
+                raise ValueError(f"Unknown method: {method_name}")
+
+            S_s += weight * cov_matrix
 
         return S_s
 
-    def build_S_t(self, variance, time_scale):
+    def build_S_t(self, method: str | dict | None = None, **kwargs):
         """
         Build the temporal error covariance matrix for the inversion.
+        Has dimensions of flux_times x flux_times.
 
         Parameters
         ----------
-        variance : float
-            Variance of the temporal error.
         time_scale : float
             Time scale of the temporal error.
+        method : dict, optional
+            Method for calculating the temporal error covariance matrix.
+            The key defines the method and the value is the weight for the method.
+            Options include:
+              - 'exp': exponentially decaying with an e-folding length of self.t_bins freq
+              - 'clim': each month is highly correlated with the same month in other years
+              - 'diel': each hour is highly correlated with the same hour in other days
 
         Returns
         -------
@@ -371,7 +481,7 @@ class FluxInversion(Inversion):
 
         if write_to_disk:
             # Write to disk
-            H.to_netcdf(self.stilt.stilt_wd / 'jacobian.nc')
+            H.to_netcdf(self.project / 'H' / 'jacobian.nc')
 
         return H
 
