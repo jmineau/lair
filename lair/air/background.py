@@ -7,7 +7,7 @@ import pandas as pd
 
 from lair.config import verbose
 from lair.air._ccg_filter import ccgFilter  # make available to user
-from lair.utils.clock import AFTERNOON, dt2decimalDate
+from lair.utils.clock import AFTERNOON, dt2decimalDate, decimalDate2dt
 
 
 def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -> pd.Series | pd.DataFrame:
@@ -103,7 +103,37 @@ def phase_shift_corrected_baseline(data: pd.Series, n: int = 3600, q: float = 0.
     return pd.concat(b)
 
 
-def thonning(data: pd.Series, return_filt: bool=False, **kwargs
+def thonning_filter(data: pd.Series, **kwargs) -> ccgFilter:
+    """
+    Create a Thonning filter object from a time series of data.
+
+    Parameters
+    ----------
+    data : pd.Series
+        Time series of data to be smoothed. Must have a datetime index.
+    **kwargs
+        Additional keyword arguments to pass to the ccgFilter class.
+
+    Returns
+    -------
+    ccgFilter
+        Thonning filter object.
+    """
+    # Convert datetime index to decimal date
+    data = data.dropna()
+    xp = data.index.to_series().apply(dt2decimalDate).values
+    yp = data.values
+
+    if not 'debug' in kwargs:
+        # Set debug level using lair's verbose setting
+        kwargs['debug'] = verbose
+
+    # Fit the Thonning curve
+    return ccgFilter(xp, yp, **kwargs)
+
+def thonning(data: pd.Series,
+             smooth_time: list[dt.datetime] | None = None,
+             **kwargs
              )-> ccgFilter | pd.Series:
     """
     Thonning curve fitting.
@@ -119,31 +149,25 @@ def thonning(data: pd.Series, return_filt: bool=False, **kwargs
     ----------
     data : pd.Series
         Time series of data to be smoothed. Must have a datetime index.
-    return_filt : bool, optional
-        Return the filter object instead of the smoothed data.
+    
     **kwargs
         Additional keyword arguments to pass to the ccgFilter class.
 
     Returns
     -------
-    ccgFilter | pd.Series
-        If return_filt is True, returns the filter object.
-        Otherwise, returns the smoothed data as a pandas series.
+
     """
-    if not 'debug' in kwargs:
-        # Set debug level using lair's verbose setting
-        kwargs['debug'] = verbose
+    # Create a Thonning filter object
+    filt = thonning_filter(data, **kwargs)
 
-    # Convert datetime index to decimal date
-    data = data.dropna()
-    xp = data.index.to_series().apply(dt2decimalDate).values
-    yp = data.values
-
-    # Fit the Thonning curve
-    filt = ccgFilter(xp, yp, **kwargs)
-    if return_filt:
-        return filt  # Return the filter object
+    # Get the times to return the smoothed data
+    if smooth_time is None:
+        # Use the original time series
+        smooth_time = filt.xp
+    else:
+        smooth_time = [dt2decimalDate(t) for t in smooth_time]
 
     # Return the smoothed data
-    smooth = filt.getSmoothValue(xp)
-    return pd.Series(smooth, index=data.index)
+    smooth = filt.getSmoothValue(smooth_time)
+    smooth_time = [decimalDate2dt(t) for t in smooth_time]
+    return pd.Series(smooth, index=smooth_time)
