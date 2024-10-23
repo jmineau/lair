@@ -266,26 +266,26 @@ class FluxInversion(Inversion):
         """
         return inventory.groupby_bins(group='time', bins=self.flux_times).sum()
 
-    def build_S_s(self, method: str | dict | None = None, **kwargs) -> np.ndarray:
+    def build_spatial_corr(self, method: str | dict | None = None, **kwargs) -> np.ndarray:
         """
-        Build the spatial error covariance matrix for the inversion.
+        Build the spatial error correlation matrix for the inversion.
         Has dimensions of cells x cells.
 
         Parameters
         ----------
         method : str, dict, optional
-            Method for calculating the spatial error covariance matrix.
+            Method for calculating the spatial error correlation matrix.
             Options include:
                 - 'exp': exponentially decaying with an e-folding length kwargs['length_scale']
                 - 'downscale': each cell is highly correlated with the same cell in the kwargs['src_grid'].
-                               Covariance is defined as the multiplication of the `xesmf.Regridder` weights
+                               Correlation is defined as the multiplication of the `xesmf.Regridder` weights
                                between dst cells.
             Defaults to 'exp'.
 
         Returns
         -------
         S_s : xr.DataArray
-            Spatial error covariance matrix for the inversion.
+            Spatial error correlation matrix for the inversion.
         """
         # Handle method input
         if method is None:
@@ -297,22 +297,22 @@ class FluxInversion(Inversion):
         else:
             raise ValueError('method must be a string or dict')
 
-        # Calculate the spatial error covariance matrix
+        # Get the lat/lon coordinates of the flux cells
         cells = np.array([*self.cells.to_numpy()])  # convert to 2D numpy array [[lat, lon], ...]
         N = len(cells)  # number of flux cells
 
-        # Initialize the spatial covariance matrix
-        S_s = np.zeros((N, N))
+        # Initialize the spatial correlation matrix
+        corr = np.zeros((N, N))
 
-        # Calculate and combine covariance matrices based on the method weights
+        # Calculate and combine correlation matrices based on the method weights
         for method_name, weight in method.items():
-            if method_name == 'exp':
+            if method_name == 'exp':  # Closer cells are more correlated
                 distances = haversine_distances(np.deg2rad(cells)) * earth_radius(cells[:, 0])
                 length_scale = kwargs['length_scale']
-                cov_matrix = np.exp((-1 * distances) / length_scale)
+                method_corr = np.exp((-1 * distances) / length_scale)
 
-            elif method_name == 'downscale':
-                # Set covariance to 1 for cells that have the same source cell after downscaling
+            elif method_name == 'downscale':  # Cells that are from the same source cell are highly correlated
+
                 src_grid = kwargs['src_grid']  # TODO: would prefer to get this from regridder or something, but not sure how to do that right now
                 regridder = kwargs['regridder']
 
@@ -326,36 +326,36 @@ class FluxInversion(Inversion):
                     'src_lon': src_grid['lon'],
                 }).stack(cell=('lat', 'lon'), src_cell=('src_lat', 'src_lon'))
 
-                in_cells = weights.coords['cell_in'].values  # stack input cell coords
+                src_cells = weights.coords['src_cell'].values  # stack source cell coords
 
-                # Create an empty matrix with dimensions out_cell x out_cell
-                cov_matrix = np.zeros((N, N))
+                # Create an empty matrix with dimensions len(cells) x len(cells)
+                method_corr = np.zeros((N, N))
 
                 # Set the diagonal elements to 1
-                np.fill_diagonal(cov_matrix, 1)
+                np.fill_diagonal(method_corr, 1)
 
                 # Populate the matrix using broadcasting
-                for in_cell in in_cells:
+                for in_cell in src_cells:
                     # For each input cell, find the output cells that share the same input cell
                     in_cell_weights = weights.sel(cell_in=in_cell)
                     shared_out_cells = np.where((in_cell_weights > 0).values)[0]
                     if len(shared_out_cells) > 0:
                         # Get the weight values for the shared output cells
                         values = weights.sel(in_cell=in_cell).values[shared_out_cells]
-                        # Set the covariance matrix values for the shared output cells
+                        # Set the correlation matrix values for the shared output cells
                         # (np.ix_ is a fancy way to symmetrically index a 2D array)
-                        cov_matrix[np.ix_(shared_out_cells, shared_out_cells)] = np.outer(values, values)
+                        method_corr[np.ix_(shared_out_cells, shared_out_cells)] = np.outer(values, values)
 
             else:
                 raise ValueError(f"Unknown method: {method_name}")
 
-            S_s += weight * cov_matrix
+            corr += weight * method_corr
 
-        return S_s
+        return corr
 
-    def build_S_t(self, method: str | dict | None = None, **kwargs):
+    def build_temporal_corr(self, method: str | dict | None = None, **kwargs):
         """
-        Build the temporal error covariance matrix for the inversion.
+        Build the temporal error correlation matrix for the inversion.
         Has dimensions of flux_times x flux_times.
 
         Parameters
@@ -363,33 +363,80 @@ class FluxInversion(Inversion):
         time_scale : float
             Time scale of the temporal error.
         method : dict, optional
-            Method for calculating the temporal error covariance matrix.
+            Method for calculating the temporal error correlation matrix.
             The key defines the method and the value is the weight for the method.
             Options include:
               - 'exp': exponentially decaying with an e-folding length of self.t_bins freq
+              - 'diel': like 'exp', except correlations are only non-zero for the same time of day
               - 'clim': each month is highly correlated with the same month in other years
-              - 'diel': each hour is highly correlated with the same hour in other days
 
         Returns
         -------
         S_t : xr.DataArray
-            Temporal error covariance matrix for the inversion.
+            Temporal error correlation matrix for the inversion.
         """
-        # Calculate the temporal error covariance matrix
-        
-        # TODO: from copilot - check if this is correct
-        S_t = xr.DataArray(
-            data=scipy.spatial.distance.squareform(
-                scipy.spatial.distance.pdist(self.flux_times.mid.values.reshape(-1, 1), metric='euclidean')
-            ),
-            dims=['flux_time', 'flux_time'],
-            coords={'flux_time': self.flux_times}
-        )
-        S_t = variance * np.exp(-S_t / time_scale)
+        # Handle method input
+        if method is None:
+            method = {'exp': 1.0}
+        elif isinstance(method, str):
+            method = {method: 1.0}
+        elif isinstance(method, dict):
+            assert sum(method.values()) == 1.0, 'Weights for temporal error methods must sum to 1.0'
+        else:
+            raise ValueError('method must be a dict')
 
-        return S_t
+        # Use midpoints of the flux time bins
+        times = self.flux_times.mid
+        N = len(times)  # number of flux times
 
-    def build_S_0(self, prior_error_variances: xr.DataArray) -> xr.DataArray:
+        # Initialize the temporal correlation matrix
+        corr = np.zeros((N, N))
+
+        # Calculate and combine correlation matrices based on the method weights
+        for method_name, weight in method.items():
+            if method_name in ['exp', 'diel']:  # Closer times are more correlated
+                # Calculate the time differences between the midpoint of the flux times
+                time_diffs = np.abs(np.subtract.outer(times, times))
+
+                # Wrap in pandas DataFrame to use pd.Timedelta functionality
+                time_diffs = pd.DataFrame(time_diffs, index=self.flux_times, columns=self.flux_times)
+
+                # Get time_scale as a pd.Timedelta
+                # time_scale is formatted as a string like '1D' or '1h'
+                time_scale = pd.Timedelta(kwargs['time_scale'])
+
+                # Calculate the correlation matrix using an exponential decay
+                method_corr =  np.exp(-time_diffs / time_scale).values  # values gets the numpy array
+
+                if method_name == 'diel':
+                    # Set the correlation values for the same hour of day
+                    hours = times.hour
+                    same_time_mask = (hours[:, None] - hours[None, :]) == 0
+                    method_corr[~same_time_mask] = 0
+
+            elif method_name == 'clim':  # Each month is highly correlated with the same month in other years
+                # Initialize the correlation matrix as identity matrix
+                method_corr = np.eye(N)  # the diagonal
+
+                # Set the correlation values for the same month in other years
+                corr_val = 0.9
+                months = times.month
+
+                # Create a mask for the same month in different years
+                same_month_mask = (months[:, None] - months[None, :]) % 12 == 0
+
+                # Apply the correlation value using the mask
+                method_corr[same_month_mask] = corr_val
+            else:
+                raise ValueError(f"Unknown method: {method_name}")
+
+            corr += weight * method_corr
+
+        return corr
+
+    def build_S_0(self, prior_error_variances: xr.DataArray,
+                  spatial_corr: str | dict | None = None,
+                  temporal_corr: str | dict | None = None) -> xr.DataArray:
         """
         Build the prior error covariance matrix for the inversion.
 
@@ -397,12 +444,15 @@ class FluxInversion(Inversion):
         ----------
         prior_error_variances : xr.DataArray
             Prior error variances for the inversion.
+        spatial_corr : str | dict, optional
+
 
         Returns
         -------
         S_0 : xr.DataArray
             Prior error covariance matrix for the inversion.
         """
+        spatial_corr = 
         
         return prior_error_variances
 
