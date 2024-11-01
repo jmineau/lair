@@ -163,11 +163,11 @@ def thonning(data: pd.Series,
     # Get the times to return the smoothed data
     if smooth_time is None:
         # Use the original time series
-        smooth_time = filt.xp
+        smooth_time = data.index
+        decimal_time = filt.xp
     else:
-        smooth_time = [dt2decimalDate(t) for t in smooth_time]
+        decimal_time = [dt2decimalDate(t) for t in smooth_time]
 
     # Return the smoothed data
-    smooth = filt.getSmoothValue(smooth_time)
-    smooth_time = [decimalDate2dt(t) for t in smooth_time]
-    return pd.Series(smooth, index=smooth_time)
+    smooth = filt.getSmoothValue(decimal_time)
+    return pd.Series(smooth, index=smooth_time)  # reassign index times to avoid issues with decimal rounding
