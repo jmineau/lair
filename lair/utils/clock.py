@@ -11,6 +11,7 @@ import re
 import time
 from typing import Any, Callable, ClassVar, Dict, Literal, Optional, Union
 from zoneinfo import ZoneInfo
+import numpy as np
 
 AFTERNOON = [12, 13, 14, 15, 16] # HH Local Standard Time
 SEASONS = {1: 'DJF', 2: 'DJF', 3: 'MAM', 4: 'MAM', 5: 'MAM', 6: 'JJA',
@@ -129,6 +130,8 @@ class TimeRange:
             self._start = start
         elif isinstance(start, str):
             self._start = TimeRange.parse_iso(start)
+        elif isinstance(start, np.datetime64):
+            self._start = pd.to_datetime(start).to_pydatetime()
         else:
             raise ValueError("Invalid start time format")
 
@@ -142,6 +145,8 @@ class TimeRange:
             self._stop = stop
         elif isinstance(stop, str):
             self._stop = TimeRange.parse_iso(stop, inclusive=True)
+        elif isinstance(stop, np.datetime64):
+            self._stop = pd.to_datetime(stop).to_pydatetime()
         else:
             raise ValueError("Invalid stop time format")
 
