@@ -24,16 +24,20 @@ from lair.utils.records import list_files
 
 #: Directory for Lin group measurements.
 MEASUREMENTS_DIR: str = os.path.join(HOME, 'lin-group20', 'measurements')
+#: Directory for Lin group pipeline configuration.
+CONFIG_DIR: str = os.path.join(MEASUREMENTS_DIR, 'pipeline', 'config')
 #: Directory for Lin group data.
 DATA_DIR: str = os.path.join(MEASUREMENTS_DIR, 'data')
 
-with open(os.path.join(MEASUREMENTS_DIR, 'pipeline', 'config',
-                       'data_config.json')) as data_config_file:
+with open(os.path.join(CONFIG_DIR, 'data_config.json')) as data_config_file:
     #: Data configuration.
     DATA_CONFIG: dict = json.load(data_config_file)
 
-SITE_CONFIG = pd.read_csv('https://raw.githubusercontent.com/uataq/data-pipeline/main/config/site_config.csv',
-                          skipinitialspace=True, index_col='stid')
+site_config_path = os.path.join(CONFIG_DIR, 'site_config.csv')
+if not os.path.exists(site_config_path):
+    site_config_path = 'https://raw.githubusercontent.com/uataq/data-pipeline/main/config/site_config.csv'
+#: Site configuration.
+SITE_CONFIG = pd.read_csv(site_config_path, skipinitialspace=True, index_col='stid')
 
 #: Lin to UATAQ column mapping
 column_mapping: dict[str, dict[str, str]] = {
