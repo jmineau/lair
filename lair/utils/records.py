@@ -28,8 +28,8 @@ def unzip(zf: str, dir_path: str | None=None):
         zip_ref.extractall(dir_path or os.path.dirname(zf))
 
 
-def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = False, all_files: bool = False,
-               full_names: bool = False, recursive: bool = False) -> list[str]:
+def list_files(path: str | Path = '.', pattern: str|None = None, ignore_case: bool = False, all_files: bool = False,
+               full_names: bool = False, recursive: bool = False, followlinks: bool = False) -> list[str]:
     """
     Returns a list of files in the specified directory that match the specified pattern.
 
@@ -47,6 +47,8 @@ def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = Fa
         Whether to return the full path of each file. Defaults to False.
     recursive : bool, optional
         Whether to search for files recursively in subdirectories. Defaults to False.
+    followlinks : bool, optional
+        Whether to follow symbolic links. Defaults to False.
 
     Returns
     -------
@@ -57,7 +59,7 @@ def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = Fa
 
     result = []
     if recursive:
-        walk = os.walk(path)
+        walk = os.walk(path, followlinks=followlinks)
     else:
         walk = [(path, None, os.listdir(path))]
         
