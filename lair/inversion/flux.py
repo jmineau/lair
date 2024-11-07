@@ -5,7 +5,10 @@ Bayesian Flux Inversion
 import datetime as dt
 from pathlib import Path
 from typing import Any, Literal
+from typing_extensions import \
+    Self  # requires python 3.11 to import from typing
 
+import cf_xarray as cfxr
 import numpy as np
 import pandas as pd
 import sparse
@@ -373,6 +376,173 @@ def integrate_over_time_bins(data: xr.DataArray, time_bins: pd.IntervalIndex,
     return data.groupby_bins(group=time_dim, bins=time_bins, include_lowest=True, right=False).sum()
 
 
+class Jacobian:
+    def __init__(self, data: xr.DataArray):
+        self.data = data
+        self.flux_times = data.get_index('flux_time')
+        self.cells = data.get_index('cell')
+        self.receptors = data.get_index('receptor')
+        self.obs_times = data.get_index('obs_time')
+
+    @classmethod
+    def from_stilt(cls, stilt: STILTModel, flux_times: pd.IntervalIndex,
+                   out_grid: xr.DataArray, grid_buffer: float = 0.1,
+                   regrid_weights: str | Path | None = None) -> Self:
+
+        print('Building Jacobian matrix...')
+
+        # Get start and end times for the inversion
+        t_start, t_stop = flux_times[0].left, flux_times[-1].right
+
+        # Get successful simulations within the inversion time range
+        print('Getting simulations within inversion time range...')
+        assert stilt.n_hours < 0, 'STILT must be ran backwards in time'
+        sim_df = stilt.simulations.to_dataframe(subset='successful').reset_index()
+        assert len(sim_df) > 0, 'No successful simulations found'
+        # TODO: perhaps can use the time_range attribute of the Simulation object, but would need to be able to pass additional columns in to_dataframe
+        sim_df['sim_t_start'] = sim_df.run_time + pd.Timedelta(hours=stilt.n_hours)
+        sim_df['sim_t_end'] = sim_df.run_time - pd.Timedelta(hours=1)  # subtract 1 hour to get the start of the end hour
+        sim_df = sim_df[(sim_df.sim_t_start < t_stop) & (sim_df.sim_t_end >= t_start)]  # identify overlaps
+
+        H_rows = []
+        weights = None
+        for sim_id in sim_df['sim_id']:
+            sim = stilt.simulations[sim_id]
+
+            # Check if footprint actually has any data during the inversion time range
+            # (Particles may exit the domain before the inversion time range)
+            if not sim.footprint.time_range.start < t_stop and sim.footprint.time_range.stop > t_start:
+                continue
+
+            print(f'Computing Jacobian row for {sim.id}...')
+
+            # First spatially clip the footprints to slightly larger than the output grid
+            footprint = sim.footprint.clip_to_grid(out_grid, buffer=grid_buffer)
+            del sim.footprint  # free up memory
+
+            # Sum the footprints over the inversion time bins
+            foot = footprint.data.to_dataset()
+            foot = integrate_over_time_bins(data=foot, time_bins=flux_times)\
+                .rename({'time_bins': 'flux_time',
+                        'run_time': 'obs_time'})
+
+            # Regrid the footprints to the output grid using conservative regridding
+            regridder = xe.Regridder(ds_in=foot, ds_out=out_grid, method='conservative',
+                                     weights=weights if weights is not None else regrid_weights)#, parallel=True if not weights else False)
+            # Adding parallel=True is complicated - xesmf doesn't like how my datasets are chunked?
+            #  When I do chunk the out_grid, I get:
+            #    ValueError: zip() argument 2 is shorter than argument 1
+            #  When I don't chunk the out_grid, I get:
+            #    ValueError: Using `parallel=True` requires the output grid to have chunks along all spatial dimensions.
+            #    If the dataset has no variables, consider adding an all-True spatial mask with appropriate chunks.
+
+            if weights is None:
+                weights = regridder.weights
+            if regrid_weights is not None and not Path(regrid_weights).exists():
+                # Write weights to disk and save the filename to reuse
+                regridder.to_netcdf(filename=regrid_weights)
+
+            regridded = regridder(foot, keep_attrs=True)
+
+            # Stack the lon/lat dims into a single cell dim
+            row = regridded.stack(cell=('lon', 'lat'))
+
+            H_rows.append(row)
+
+        H = xr.merge(H_rows).foot
+
+        # Remove stilt attrs
+        H.flux_time.attrs = {}
+
+        # Check for empty rows
+        empty_rows = H.isnull().all(dim=['flux_time', 'cell'])
+        if empty_rows.any():
+            print('Warning: Empty rows in Jacobian matrix for receptors: '
+                  f'{empty_rows.where(empty_rows, drop=True).stack(receptor_time=("receptor", "obs_time")).receptor_time.values}')
+        else:
+            print('Jacobian matrix built successfully.')
+
+        return cls(H)
+
+    @classmethod
+    def from_path(cls, path: str | Path) -> Self:
+        """
+        Read the Jacobian matrix from disk.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to the Jacobian matrix. If a directory is given, all flux time slices in the directory are read.
+            If a single file is given, only that flux time slice is read.
+
+        Returns
+        -------
+        Jacobian
+            Jacobian matrix.
+        """
+        path = Path(path)
+        if path.is_dir():
+            # Read all netcdf files in the directory
+            data = xr.open_mfdataset(str(path / '*.nc'))
+        else:
+            # Read the single file
+            data = xr.open_dataset(path)
+
+        # Rebuild the IntervalIndex with the correct closed attribute
+        flux_times = pd.IntervalIndex.from_arrays(left=data.flux_time.values,
+                                                  right=data.flux_t_stop.values,
+                                                  closed=data.attrs.pop('flux_time_closed'))
+        data = data.drop('flux_t_stop')  # drop the flux_t_stop coord
+
+        # Assign the rebuilt IntervalIndex to the data
+        data = data.assign_coords(flux_time=flux_times)
+
+        # Rebuild the cell MultiIndex
+        # (Drops the bnds dim so we need to do after rebuilding flux_times)
+        data = cfxr.decode_compress_to_multi_index(encoded=data, idxnames='cell')
+
+        return cls(data.foot)
+
+    def to_netcdf(self, path: str | Path) -> None:
+        """
+        Write the Jacobian matrix to disk.
+        Each flux_time coordinate is written to a separate file.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to write the Jacobian matrix.
+        """
+        # Write jacobian to disk
+        path = Path(path)
+        assert path.is_dir(), 'Path must be a directory'
+        path.mkdir(exist_ok=True, parents=True)
+
+        H = self.data.to_dataset()  # convert to dataset to write to disk
+
+        # Can't write python objects to disk
+
+        # Need to encode pandas MultiIndex to a netcdf compatible format
+        H = cfxr.encode_multi_index_as_compress(ds=H, idxnames='cell')
+
+        # Need to serialize the IntervalIndex to a netcdf compatible format
+        # Assign the start time as the flux_time coordinate
+        # and add an additional flux_t_stop coord to the flux_time dimension
+        H = H.assign_coords(
+            flux_time=self.flux_times.left,
+            flux_t_stop=("flux_time", self.flux_times.right)
+        )
+
+        # Add attributes
+        H.attrs['flux_time_closed'] = self.flux_times.closed
+
+        # Write the data to disk
+        slice_times, flux_slices = zip(*H.groupby('flux_time'))
+        flux_paths = [path / f'{pd.Timestamp(flux_time):%Y%m%d%H}_jacobian.nc'
+                      for flux_time in slice_times]
+        xr.save_mfdataset(flux_slices, paths=flux_paths)
+
+
 class FluxInversion(Inversion):
     """
     Bayesian flux inversion
@@ -562,100 +732,7 @@ class FluxInversion(Inversion):
         H : xr.DataArray
             Jacobian matrix for the inversion.
         """
-        path = self.project / 'H'
-
-        if not self._should_build(objs=['jacobian', 'H'], path=path):
-            print('Jacobian matrix already exists. Loading from disk.')
-            return xr.open_mfdataset(path / 'jacobian_*.nc')
-
-        print('Building Jacobian matrix...')
-
-        # Get start and end times for the inversion
-        t_start, t_stop = self.flux_times[0].left, self.flux_times[-1].right
-
-        # Get successful simulations within the inversion time range
-        print('Getting simulations within inversion time range...')
-        assert self.stilt.n_hours < 0, 'STILT must be ran backwards in time'
-        sim_df = self.stilt.simulations.to_dataframe(subset='successful').reset_index()
-        assert len(sim_df) > 0, 'No successful simulations found'
-        # TODO: perhaps can use the time_range attribute of the Simulation object, but would need to be able to pass additional columns in to_dataframe
-        sim_df['sim_t_start'] = sim_df.run_time + pd.Timedelta(hours=self.stilt.n_hours)
-        sim_df['sim_t_end'] = sim_df.run_time - pd.Timedelta(hours=1)  # subtract 1 hour to get the start of the end hour
-        sim_df = sim_df[(sim_df.sim_t_start < t_stop) & (sim_df.sim_t_end >= t_start)]  # identify overlaps
-
-        H_rows = []
-        for sim_id in sim_df['sim_id']:
-            sim = self.stilt.simulations[sim_id]
-
-            # Check if footprint actually has any data during the inversion time range
-            # (Particles may exit the domain before the inversion time range)
-            if not sim.footprint.time_range.start < t_stop and sim.footprint.time_range.stop > t_start:
-                continue
-
-            print(f'Computing Jacobian row for {sim.id}...')
-
-            # First spatially clip the footprints to slightly larger than the output grid
-            footprint = sim.footprint.clip_to_grid(self.out_grid, buffer=self.grid_buffer)
-            del sim.footprint  # free up memory
-
-            # Sum the footprints over the inversion time bins
-            foot = footprint.data.to_dataset()
-            foot = integrate_over_time_bins(data=foot, time_bins=self.flux_times)\
-                .rename({'time_bins': 'flux_time',
-                        'run_time': 'obs_time'})
-
-            # Regrid the footprints to the output grid using conservative regridding
-            weights = self.regrid_weights.get('footprints')
-            regridder = xe.Regridder(foot, self.out_grid, method='conservative',
-                                     filename=weights)#, parallel=True if not weights else False)
-            # Adding parallel=True is complicated - xesmf doesn't like how my datasets are chunked?
-            #  When I do chunk the out_grid, I get:
-            #    ValueError: zip() argument 2 is shorter than argument 1
-            #  When I don't chunk the out_grid, I get:
-            #    ValueError: Using `parallel=True` requires the output grid to have chunks along all spatial dimensions.
-            #    If the dataset has no variables, consider adding an all-True spatial mask with appropriate chunks.
-
-            if not weights:
-                # Write weights to disk and save the filename to reuse
-                self.regrid_weights['footprints'] = regridder.to_netcdf(filename=self._regrid_path / 'footprints.nc')
-
-            regridded = regridder(foot, keep_attrs=True)
-
-            # Stack the lon/lat dims into a single cell dim
-            row = regridded.stack(cell=('lon', 'lat'))
-
-            H_rows.append(row)
-
-        H = xr.merge(H_rows).foot
-
-        # Check for empty rows
-        empty_rows = H.isnull().all(dim=['flux_time', 'cell'])
-        if empty_rows.any():
-            print('Warning: Empty rows in Jacobian matrix for receptors: '
-                  f'{empty_rows.where(empty_rows, drop=True).stack(receptor_time=("receptor", "obs_time")).receptor_time.values}')
-        else:
-            print('Jacobian matrix built successfully.')
-
-        # # Write jacobian to disk
-        path.mkdir(exist_ok=True, parents=True)
-
-        # Can't write python objects to disk
-        # Need to serialize the IntervalIndex to a netcdf compatible format
-        # Assign the midpoint to the flux_time coordinate
-        # Create a new flux_time_bnds dim with the left and right bounds - size 2
-        # Assign the left and right bounds to the flux_time_bnds coords
         
-        # # Convert IntervalIndex to list of tuples
-        # # How do i keep track of which side is closed?                                                                                                                                                                                                                                                                       
-        # H = H.assign_coords(flux_t_start=('flux_time', [t.left for t in flux_times]),
-        #                     flux_t_stop=('flux_time', [t.right for t in flux_times])).
-
-        for flux_time in H.flux_t_start.values:
-            print(f'Writing Jacobian matrix for {flux_time} to disk...')
-            # Write each flux_time coordinate to a different file
-            H.sel(flux_t_start=flux_time).to_netcdf(path / f'jacobian_{flux_time:%Y%m%d%H}.nc')
-
-        return H
 
     def build_bio(self, bio: xr.DataArray) -> pd.Series:
         bio_fluxes = integrate_over_time_bins(data=bio, time_bins=self.flux_times)
