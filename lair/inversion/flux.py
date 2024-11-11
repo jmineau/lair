@@ -3,6 +3,7 @@ Bayesian Flux Inversion
 """
 
 import datetime as dt
+from functools import cached_property, partial
 from pathlib import Path
 from typing import Any, Literal
 from typing_extensions import \
@@ -11,18 +12,19 @@ from typing_extensions import \
 import cf_xarray as cfxr
 import numpy as np
 import pandas as pd
-import sparse
 import xarray as xr
 import xesmf as xe
 from lair import uataq
 from lair.air.stilt import Footprint
 from lair.air.stilt import Model as STILTModel
 from lair.air.stilt import Receptor
+from lair import inventories
 from lair.inventories import Inventory
 from lair.inversion.bayesian import Inversion
-from lair.utils.clock import TimeRange
+from lair.utils.clock import regular_times_to_intervals
 from lair.utils.geo import earth_radius
 from sklearn.metrics.pairwise import haversine_distances
+import concurrent.futures
 
 # TODO:
 # - non lat-lon grids
@@ -341,18 +343,54 @@ def build_temporal_corr(times: pd.DatetimeIndex, method: str | dict | None = Non
     return corr
 
 
-def build_prior_error_cov(prior_error: xr.DataArray,
-                          spatial_corr: np.ndarray, temporal_corr: np.ndarray
-                          ) -> np.ndarray:
+def build_prior_error_cov(prior_error_variances: np.ndarray,
+                          flux_index: pd.MultiIndex,
+                          spatial_corr: dict | np.ndarray | None = None,
+                          temporal_corr: dict | np.ndarray | None = None) -> xr.DataArray:
     """
     Build the prior error covariance matrix for the inversion.
-    
-    I am a little confused about what is supposed to be used as the prior error.
-    Ultimately I know we want variances, but it seems like sometimes values are scaled
-    or we set this value to an 
-    """
-    pass
 
+    Parameters
+    ----------
+    prior_error_variances : xr.DataArray
+        Prior error variances for the inversion.
+    flux_index : pd.MultiIndex
+        MultiIndex for flux state.
+    spatial_corr : dict | np.ndarray, optional
+        Spatial error correlation matrix for the inversion, by default None.
+        If None, the spatial error correlation matrix is an identity matrix.
+        See `build_spatial_corr` for more options.
+    temporal_corr : dict | np.ndarray, optional
+        Temporal error correlation matrix for the inversion, by default None.
+        If None, the temporal error correlation matrix is an identity matrix.
+        See `build_temporal_corr` for more options.
+
+    Returns
+    -------
+    S_0 : xr.DataArray
+        Prior error covariance matrix for the inversion.
+    """
+    cells = flux_index.get_level_values('cell').unique()
+    flux_times = flux_index.get_level_values('flux_time').unique()
+
+    if spatial_corr is None:
+        spatial_corr = np.eye(len(cells))
+    elif isinstance(spatial_corr, dict):
+        spatial_corr = build_spatial_corr(cells=cells, **spatial_corr)
+    elif not isinstance(spatial_corr, np.ndarray):
+        raise ValueError('spatial_corr must be a dict or np.ndarray')
+
+    if temporal_corr is None:
+        temporal_corr = np.eye(len(flux_times))
+    elif isinstance(temporal_corr, dict):
+        temporal_corr = build_temporal_corr(times=flux_times.left, **temporal_corr)
+    elif not isinstance(temporal_corr, np.ndarray):
+        raise ValueError('temporal_corr must be a dict or np.ndarray')
+
+    S_0 = (prior_error_variances ** 2) * np.kron(spatial_corr, temporal_corr)
+    # S_0 = xr.DataArray(S_0, coords=[flux_index, flux_index], name='S_0')
+
+    return S_0
 
 def integrate_over_time_bins(data: xr.DataArray, time_bins: pd.IntervalIndex,
                              time_dim: str = 'time') -> xr.DataArray:
@@ -373,7 +411,69 @@ def integrate_over_time_bins(data: xr.DataArray, time_bins: pd.IntervalIndex,
     xr.DataArray
         Integrated footprint.
     """
-    return data.groupby_bins(group=time_dim, bins=time_bins, include_lowest=True, right=False).sum()
+    # Use pd.cut to bin the data by time into time bins
+    integrated = data.groupby_bins(group=time_dim, bins=time_bins, include_lowest=True, right=False
+                                   ).sum()
+
+    # Fill nans with 0s
+    integrated = integrated.fillna(0)
+    return integrated
+
+
+class Prior:
+    def __init__(self, data: xr.DataArray):
+        self.data = data
+        self.flux_times = data.get_index('flux_time')
+        self.cells = data.get_index('cell')
+
+        # Store regridder if it was used
+        self._regridder = None
+
+    @classmethod
+    def from_inventory(cls, inventory: Inventory, flux_times, out_grid,
+                       units: str | None = None,
+                       regrid_weights: str | Path | None = None) -> Self:
+        pollutant = inventory.pollutant
+        time_step = inventory.time_step
+        crs = inventory.crs
+
+        print('Building prior state matrix...')
+        # Sum sectors
+        total = inventories.sum_sectors(inventory.data)
+
+        # Wrap in Inventory object
+        wrapped = inventories.Inventory(total.to_dataset(), pollutant=pollutant, time_step=time_step,
+                                        src_units=total.attrs['units'], crs=crs)
+
+        # Convert units
+        if units:
+            wrapped = wrapped.convert_units(units)
+        emis = wrapped.data['emissions']
+
+        # Regrid to out_grid
+        regridder = xe.Regridder(emis, out_grid, method='conservative',
+                                 weights=regrid_weights)
+        prior = regridder(emis)
+
+        # Stack lat lon into cell dimension
+        prior = prior.stack(cell=['lat', 'lon'])
+
+        # Convert time coords to IntervalIndex
+        intervalindex = regular_times_to_intervals(prior.time, time_step=time_step,
+                                                   closed='left')
+        prior = prior.assign_coords(time=intervalindex)
+        prior = prior.rename({'time': 'flux_time'})
+
+        # Filter to flux_times
+        prior = prior.sel(flux_time=flux_times)
+
+        prior.name = 'prior_emissions'  # Rename emissions
+
+        print('Prior state matrix built successfully.')
+
+        prior = cls(prior)
+        prior._regridder = regridder  # store regridder for later use
+        return prior
 
 
 class Jacobian:
@@ -384,10 +484,36 @@ class Jacobian:
         self.receptors = data.get_index('receptor')
         self.obs_times = data.get_index('obs_time')
 
+    @staticmethod
+    def _compute_jacobian_row_from_stilt(sim_id, stilt, t_start, t_stop, flux_times,
+                                         out_grid, grid_buffer, regrid_weights) -> xr.DataArray | None:
+        sim = stilt.simulations[sim_id]
+
+        if not sim.footprint.time_range.start < t_stop and sim.footprint.time_range.stop > t_start:
+            return None
+
+        print(f'Computing Jacobian row for {sim.id}...')
+
+        footprint = sim.footprint.clip_to_grid(out_grid, buffer=grid_buffer)
+        del sim.footprint  # free up memory
+
+        # Integrate each simulation over flux_time bins
+        foot = footprint.data.to_dataset()
+        foot = integrate_over_time_bins(data=foot, time_bins=flux_times)
+        foot = foot.rename({'time_bins': 'flux_time', 'run_time': 'obs_time'})
+
+        # Regrid the footprint to the output grid
+        regridder = xe.Regridder(ds_in=foot, ds_out=out_grid, method='conservative',
+                                 weights=regrid_weights)
+        regridded = regridder(foot, keep_attrs=True)
+        row = regridded.stack(cell=('lat', 'lon'))  # stack lat-lon into a single cell dimension
+        return row
+
     @classmethod
     def from_stilt(cls, stilt: STILTModel, flux_times: pd.IntervalIndex,
                    out_grid: xr.DataArray, grid_buffer: float = 0.1,
-                   regrid_weights: str | Path | None = None) -> Self:
+                   regrid_weights: str | Path | None = None,
+                   num_processes: int | Literal['max'] = 1) -> Self:
 
         print('Building Jacobian matrix...')
 
@@ -399,62 +525,35 @@ class Jacobian:
         assert stilt.n_hours < 0, 'STILT must be ran backwards in time'
         sim_df = stilt.simulations.to_dataframe(subset='successful').reset_index()
         assert len(sim_df) > 0, 'No successful simulations found'
-        # TODO: perhaps can use the time_range attribute of the Simulation object, but would need to be able to pass additional columns in to_dataframe
         sim_df['sim_t_start'] = sim_df.run_time + pd.Timedelta(hours=stilt.n_hours)
-        sim_df['sim_t_end'] = sim_df.run_time - pd.Timedelta(hours=1)  # subtract 1 hour to get the start of the end hour
-        sim_df = sim_df[(sim_df.sim_t_start < t_stop) & (sim_df.sim_t_end >= t_start)]  # identify overlaps
+        sim_df['sim_t_end'] = sim_df.run_time - pd.Timedelta(hours=1)
+        sim_df = sim_df[(sim_df.sim_t_start < t_stop) & (sim_df.sim_t_end >= t_start)]
 
-        H_rows = []
-        weights = None
-        for sim_id in sim_df['sim_id']:
-            sim = stilt.simulations[sim_id]
-
-            # Check if footprint actually has any data during the inversion time range
-            # (Particles may exit the domain before the inversion time range)
-            if not sim.footprint.time_range.start < t_stop and sim.footprint.time_range.stop > t_start:
-                continue
-
-            print(f'Computing Jacobian row for {sim.id}...')
-
-            # First spatially clip the footprints to slightly larger than the output grid
+        # Compute the xesmf weights for regridding the footprints
+        if regrid_weights is not None and not Path(regrid_weights).exists():
+            print('Computing regrid weights...')
+            sim = stilt.simulations[sim_df['sim_id'].iloc[0]]
             footprint = sim.footprint.clip_to_grid(out_grid, buffer=grid_buffer)
-            del sim.footprint  # free up memory
-
-            # Sum the footprints over the inversion time bins
             foot = footprint.data.to_dataset()
-            foot = integrate_over_time_bins(data=foot, time_bins=flux_times)\
-                .rename({'time_bins': 'flux_time',
-                        'run_time': 'obs_time'})
+            regridder = xe.Regridder(ds_in=foot, ds_out=out_grid, method='conservative')
+            regridder.to_netcdf(filename=regrid_weights)
 
-            # Regrid the footprints to the output grid using conservative regridding
-            regridder = xe.Regridder(ds_in=foot, ds_out=out_grid, method='conservative',
-                                     weights=weights if weights is not None else regrid_weights)#, parallel=True if not weights else False)
-            # Adding parallel=True is complicated - xesmf doesn't like how my datasets are chunked?
-            #  When I do chunk the out_grid, I get:
-            #    ValueError: zip() argument 2 is shorter than argument 1
-            #  When I don't chunk the out_grid, I get:
-            #    ValueError: Using `parallel=True` requires the output grid to have chunks along all spatial dimensions.
-            #    If the dataset has no variables, consider adding an all-True spatial mask with appropriate chunks.
-
-            if weights is None:
-                weights = regridder.weights
-            if regrid_weights is not None and not Path(regrid_weights).exists():
-                # Write weights to disk and save the filename to reuse
-                regridder.to_netcdf(filename=regrid_weights)
-
-            regridded = regridder(foot, keep_attrs=True)
-
-            # Stack the lon/lat dims into a single cell dim
-            row = regridded.stack(cell=('lon', 'lat'))
-
-            H_rows.append(row)
+        # Compute the Jacobian matrix in parallel
+        H_rows = []
+        max_workers = None if num_processes == 'max' else num_processes
+        compute_jacobian_row = partial(cls._compute_jacobian_row_from_stilt,
+                                       stilt=stilt, t_start=t_start, t_stop=t_stop,
+                                       flux_times=flux_times, out_grid=out_grid,
+                                       grid_buffer=grid_buffer, regrid_weights=regrid_weights)
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+            for row in executor.map(compute_jacobian_row, sim_df['sim_id']):
+                if row is not None:
+                    H_rows.append(row)
 
         H = xr.merge(H_rows).foot
 
-        # Remove stilt attrs
-        H.flux_time.attrs = {}
+        H.flux_time.attrs = {}  # drop flux_time attrs from stilt
 
-        # Check for empty rows
         empty_rows = H.isnull().all(dim=['flux_time', 'cell'])
         if empty_rows.any():
             print('Warning: Empty rows in Jacobian matrix for receptors: '
@@ -543,57 +642,88 @@ class Jacobian:
         xr.save_mfdataset(flux_slices, paths=flux_paths)
 
 
+class MDMcomponent:
+    """
+    Model-data mismatch component for the inversion.
+    """
+    def __init__(self):
+        pass
+
+    @classmethod
+    def from_rmse(cls, name: str, rmse: float, time_scale,
+                  correlate_full: bool, correlate_between_time_steps: bool):
+        pass
+
+    @staticmethod
+    def merge(components: list['MDMcomponent']) -> Self:
+        pass
+
+
 class FluxInversion(Inversion):
     """
     Bayesian flux inversion
     """
 
-    _reuse_options = ['prior', 'prior_error', 'prior_error_cov', 'jacobian']
+    _rebuild_options = ['prior', 'prior_error_cov', 'jacobian']
 
     def __init__(self,
                  project: str | Path,
-                 obs: pd.Series,  # with MultiIndex[receptor.id, obs_time]
-                 background: pd.Series,  # with Index[obs_time]
-                 inventory: Inventory,
-                 stilt: STILTModel,
                  t_bins: pd.IntervalIndex,
                  out_grid: xr.DataArray,
+                 obs: pd.Series,  # with MultiIndex[receptor.id, obs_time]
+                 background: pd.Series,  # with Index[obs_time]
+                 prior: xr.DataArray | Prior | None = None,
+                 inventory: Inventory | None = None,
+                 stilt: STILTModel | None = None,
+                 stilt_run_script: str | Path | None = None,
                  grid_buffer: float = 0.1,
                  grid_mask: xr.DataArray | None = None,
                  bio: xr.DataArray | None = None,
+                 jacobian: xr.DataArray | Jacobian | None = None,
+                 num_processes: int | Literal['max'] = 1,
                  prior_error_cov: xr.DataArray | None = None,
+                 prior_error_variances: xr.DataArray | None = None,
+                 spatial_corr: dict | np.ndarray | None = None,
+                 temporal_corr: dict | np.ndarray | None = None,
                  modeldata_mismatch: None = None,
-                 reuse: bool | str | list[str] = True,
+                 rebuild: bool | str | list[str] = False,
                  ) -> None:
         # Set project directory
         self.project = Path(project)
         self.project.mkdir(exist_ok=True, parents=True)  # create project directory if it doesn't exist
 
-        self.obs = obs
-        self.background = background
-        self.inventory = inventory
-        self.stilt = stilt if isinstance(stilt, STILTModel) else STILTModel(path=stilt)
-        self.out_grid = out_grid
-        self.grid_buffer = grid_buffer
-        self.grid_mask = grid_mask
-        self.bio = bio
-        self.prior_error_cov = prior_error_cov
-        self.modeldata_mismatch = modeldata_mismatch
+        # Set paths
+        self.paths = {
+            'regrid_weights': self.project / 'regrid_weights',
+            'obs': self.project / 'obs.csv',
+            'background': self.project / 'background.csv',
+            'prior': self.project / 'prior.nc',
+            'jacobian': self.project / 'H',
+            'prior_error_cov': self.project / 'S_0.nc',
+            'modeldata_mismatch': self.project / 'S_z.nc',
+            'posterior': self.project / 'posterior.nc',
+            # TODO: bio
+        }
+
+        # Rebuild options
+        if isinstance(rebuild, str):
+            rebuild = [rebuild]
+        elif not isinstance(rebuild, bool):
+            rebuild = [s.lower() for s in rebuild]
+        self.rebuild = rebuild
 
         # Initialize regrid weights
         self.regrid_weights = {}
-        self._regrid_path = self.project / 'regrid_weights'
-        if self._regrid_path.exists():
-            self.regrid_weights = {p.stem: p for p in self._regrid_path.iterdir()}
+        regrid_path = self.paths['regrid_weights']
+        if regrid_path.exists():
+            self.regrid_weights = {p.stem: p for p in regrid_path.iterdir()}
         else:
-            self._regrid_path.mkdir(exist_ok=True, parents=True)
+            regrid_path.mkdir(exist_ok=True, parents=True)
 
-        # Reuse options
-        if isinstance(reuse, str):
-            reuse = [reuse]
-        elif not isinstance(reuse, bool):
-            reuse = [s.lower() for s in reuse]
-        self.reuse = reuse
+        # Define state
+        self.flux_times = t_bins
+        self.out_grid = out_grid
+        self.grid_mask = grid_mask
 
         # Generate indices
         self.obs_index = obs.index
@@ -601,26 +731,72 @@ class FluxInversion(Inversion):
 
         self.receptors = self.obs_index.get_level_values('receptor').unique()
         self.obs_times = self.obs_index.get_level_values('obs_time').unique()
-        self.flux_times = self.flux_index.get_level_values('flux_time').unique()
+        # self.flux_times = self.flux_index.get_level_values('flux_time').unique()
         self.cells = self.flux_index.get_level_values('cell').unique()
 
-        # Build the prior state matrix
-        x_0 = self.build_x_0(inventory)
+        # Set obs data
+        self.obs = obs
+        self.background = background
+        self.bio = bio  # TODO: this could be an array or dataarray
 
-        # Build the jacobian matrix from STILT footprints
-        # self.jacobian = self.build_jacobian()
+        # Set the prior state matrix
+        if isinstance(prior, xr.DataArray):
+            prior = Prior(prior)
+        elif prior is None and inventory is not None:
+            prior = Prior.from_inventory(inventory,
+                                         flux_times=self.flux_times, out_grid=self.out_grid,
+                                         units='umol/m2/s',
+                                         regrid_weights=self.regrid_weights.get('inventory'))
+        else:
+            raise ValueError('prior must be an xr.DataArray or Inventory object')
+        self.prior = prior
 
-        # super().__init__(z=obs, c=background, x_0=x_0, H=self.jacobian,
-        #                  S_0=prior_error_cov, S_z=modeldata_mismatch)
+        # Set the Jacobian matrix
+        if isinstance(jacobian, xr.DataArray):
+            jacobian = Jacobian(jacobian)
+        elif jacobian is None and any([stilt, stilt_run_script]):
+            if stilt_run_script:
+                # Build STILT model from run script
+                stilt = STILTModel.from_run_script(stilt_run_script)
+            # Build the jacobian matrix from STILT footprints
+            stilt = stilt if isinstance(stilt, STILTModel) else STILTModel(path=stilt)
+            jacobian = Jacobian.from_stilt(stilt=stilt, flux_times=t_bins,
+                                           out_grid=out_grid, grid_buffer=grid_buffer,
+                                           regrid_weights=self.regrid_weights.get('footprints'),
+                                           num_processes=num_processes)
+        else:
+            raise ValueError('jacobian must be an xr.DataArray or STILTModel object')
+        self.jacobian = jacobian
+
+        # Set the prior error covariance matrix
+        if prior_error_cov is None and prior_error_variances is not None:
+            prior_error_cov_path = self.paths['prior_error_cov']
+            if self._should_build(['prior_error_cov', 'S_0'], path=prior_error_cov_path):
+                prior_error_cov = build_prior_error_cov(prior_error_variances=prior_error_variances,
+                                                        flux_index=self.flux_index,
+                                                        spatial_corr=spatial_corr,
+                                                        temporal_corr=temporal_corr)
+                prior_error_cov.to_netcdf(prior_error_cov_path)
+            else:
+                prior_error_cov = xr.open_dataarray(prior_error_cov_path)
+        else:
+            raise ValueError('prior_error_cov must be an xr.DataArray or prior_error_variances must be provided')
+        self.prior_error_cov = prior_error_cov
+
+        # Set model-data mismatch covariance matrix
+        self.modeldata_mismatch = modeldata_mismatch
+
+        # super().__init__(z=self.obs, c=self.background, x_0=self.prior.data, H=self.jacobian.data,
+        #                  S_0=self.prior_error_cov, S_z=self.modeldata_mismatch)
 
     def _should_build(self, objs: str | list[str], path: str | Path | None = None) -> bool:
         """
-        Check if objects should be built based on the reuse attribute.
+        Check if objects should be built based on the rebuild attribute.
 
         Parameters
         ----------
         objs : str | list[str]
-            Object names to check if it should be built.
+            Object names to check if it should be rebuilt.
         path : str | Path | None, optional
             Path to the object, by default None
 
@@ -629,8 +805,8 @@ class FluxInversion(Inversion):
         bool
             True if the object should be built, False otherwise.
         """
-        if not self.reuse:
-            # If reuse is False, always build
+        if self.rebuild is True:
+            # If rebuild is True, always build
             return True
 
         if path:
@@ -643,10 +819,10 @@ class FluxInversion(Inversion):
                 # If the path doesn't exist, build
                 return True
 
-        # Check if any of the objects are in the reuse list
+        # Check if any of the objects are in the rebuild list
         if isinstance(objs, str):
             objs = [objs]
-        return any(obj.lower() in self.reuse for obj in objs)
+        return any(obj.lower() in self.rebuild for obj in objs)
 
     def build_x_0(self, inventory: xr.DataArray) -> xr.DataArray:
         """
@@ -664,54 +840,6 @@ class FluxInversion(Inversion):
         """
         return integrate_over_time_bins(data=inventory, time_bins=self.flux_times)
 
-    def build_S_0(self, prior_error_variances: xr.DataArray,
-                  spatial_corr: dict | np.ndarray | None = None,
-                  temporal_corr: dict | np.ndarray | None = None) -> xr.DataArray:
-        """
-        Build the prior error covariance matrix for the inversion.
-
-        Parameters
-        ----------
-        prior_error_variances : xr.DataArray
-            Prior error variances for the inversion.
-        spatial_corr : dict | np.ndarray, optional
-            Spatial error correlation matrix for the inversion, by default None.
-            If None, the spatial error correlation matrix is an identity matrix.
-            See `build_spatial_corr` for more options.
-        temporal_corr : dict | np.ndarray, optional
-            Temporal error correlation matrix for the inversion, by default None.
-            If None, the temporal error correlation matrix is an identity matrix.
-            See `build_temporal_corr` for more options.
-
-        Returns
-        -------
-        S_0 : xr.DataArray
-            Prior error covariance matrix for the inversion.
-        """
-        # If correlation matrices are None, set them to identity matrices
-        # If correlation matrices are dicts, build them
-        # If correlation matrices are np.ndarrays, use them
-
-        if spatial_corr is None:
-            spatial_corr = np.eye(len(self.cells))
-        elif isinstance(spatial_corr, dict):
-            spatial_corr = build_spatial_corr(cells=self.cells, **spatial_corr)
-        elif not isinstance(spatial_corr, np.ndarray):
-            raise ValueError('spatial_corr must be a dict or np.ndarray')
-
-        if temporal_corr is None:
-            temporal_corr = np.eye(len(self.flux_times))
-        elif isinstance(temporal_corr, dict):
-            temporal_corr = build_temporal_corr(times=self.flux_times.mid, **temporal_corr)
-        elif not isinstance(temporal_corr, np.ndarray):
-            raise ValueError('temporal_corr must be a dict or np.ndarray')
-
-        # Build the prior error covariance matrix
-        S_0 = (prior_error_variances ** 2) * np.kron(spatial_corr, temporal_corr)
-        S_0 = xr.DataArray(S_0, coords=[self.flux_index, self.flux_index], name='S_0')
-
-        return S_0
-
     def build_S_z(self,):
         """
         Build the model-data mismatch covariance matrix for the inversion.
@@ -722,17 +850,6 @@ class FluxInversion(Inversion):
             Model-data mismatch covariance matrix for the inversion.
         """
         pass
-
-    def build_jacobian(self) -> xr.DataArray:
-        """
-        Build the Jacobian matrix for the inversion from STILT footprints.
-
-        Returns
-        -------
-        H : xr.DataArray
-            Jacobian matrix for the inversion.
-        """
-        
 
     def build_bio(self, bio: xr.DataArray) -> pd.Series:
         bio_fluxes = integrate_over_time_bins(data=bio, time_bins=self.flux_times)
