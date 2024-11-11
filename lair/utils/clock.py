@@ -286,6 +286,54 @@ def datetime_accessor(obj, accessor='dt'):
     return obj
 
 
+def regular_times_to_intervals(times, time_step='monthly', closed='left') -> pd.IntervalIndex:
+    """
+    Convert an array of regular times to intervals of the specified length.
+
+    Parameters
+    ----------
+    times : np.array
+        A numpy array of datetime64 values indicating the start of each interval.
+    time_step : str, optional
+        The interval step ('hourly', 'daily', 'monthly', 'annual').
+        Determines the length of each interval. Default is 'monthly'.
+    closed : str, optional
+        Defines if the interval is closed on the 'left', 'right', 'both', or 'neither'. Default is 'left'.
+
+    Returns
+    -------
+    pd.IntervalIndex
+        An index with intervals covering the specified time range.
+
+    Raises
+    ------
+    ValueError
+        If `time_step` is not one of 'hourly', 'daily', 'monthly', or 'annual'.
+    """
+    # Convert the numpy array to pandas DatetimeIndex
+    start_times = pd.to_datetime(times)
+
+    # Define a dictionary mapping time_step to DateOffset
+    offsets = {
+        'hourly': pd.offsets.DateOffset(hours=1),
+        'daily': pd.offsets.DateOffset(days=1),
+        'monthly': pd.offsets.DateOffset(months=1),
+        'annual': pd.offsets.DateOffset(years=1)
+    }
+
+    # Get the offset from the dictionary or raise an error if the time_step is invalid
+    if time_step not in offsets:
+        raise ValueError("time_step must be 'hourly', 'daily', 'monthly', or 'annual'")
+    offset = offsets[time_step]
+
+    # Calculate the end times for each interval
+    stop_times = start_times + offset
+
+    # Create the IntervalIndex with specified closure
+    intervals = pd.IntervalIndex.from_arrays(start_times, stop_times, closed=closed)
+    return intervals
+
+
 def periodindex_to_binedges(periodindex: pd.PeriodIndex) -> list[pd.Timestamp]:
     """
     Convert a PeriodIndex to a list of bin edges.
