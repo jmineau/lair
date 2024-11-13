@@ -2,8 +2,9 @@
 Bayesian Flux Inversion
 """
 
+from abc import ABC, abstractmethod
 import datetime as dt
-from functools import cached_property, partial
+from functools import partial
 from pathlib import Path
 from typing import Any, Literal
 from typing_extensions import \
@@ -170,228 +171,6 @@ def generate_flux_index(t_bins: pd.IntervalIndex,
     return flux_index
 
 
-def build_spatial_corr(cells: xr.DataArray, method: str | dict | None = None, **kwargs) -> np.ndarray:
-    """
-    Build the spatial error correlation matrix for the inversion.
-    Has dimensions of cells x cells.
-
-    Parameters
-    ----------
-    cells : xr.DataArray
-        Flux cells.
-    method : str, dict, optional
-        Method for calculating the spatial error correlation matrix.
-        Options include:
-            - 'exp': exponentially decaying with an e-folding length kwargs['length_scale']
-            - 'downscale': each cell is highly correlated with the same cell in the kwargs['coarse_grid'].
-                            Correlation is defined as the multiplication of the `xesmf.Regridder` weights
-                            between dst cells.
-        Defaults to 'exp'.
-
-    Returns
-    -------
-    S_s : np.ndarray
-        Spatial error correlation matrix for the inversion.
-    """
-    # Handle method input
-    if method is None:
-        method = {'exp': 1.0}
-    elif isinstance(method, str):
-        method = {method: 1.0}
-    elif isinstance(method, dict):
-        assert sum(method.values()) == 1.0, 'Weights for spatial error methods must sum to 1.0'
-    else:
-        raise ValueError('method must be a string or dict')
-
-    # Get the lat/lon coordinates of the flux cells
-    cells = np.array([*cells.to_numpy()])  # convert to 2D numpy array [[lat, lon], ...]
-    N = len(cells)  # number of flux cells
-
-    # Initialize the spatial correlation matrix
-    corr = np.zeros((N, N))
-
-    # Calculate and combine correlation matrices based on the method weights
-    for method_name, weight in method.items():
-        if method_name == 'exp':  # Closer cells are more correlated
-            distances = haversine_distances(np.deg2rad(cells)) * earth_radius(cells[:, 0])
-            length_scale = kwargs['length_scale']
-            method_corr = np.exp((-1 * distances) / length_scale)
-
-        elif method_name == 'downscale':  # Cells that are from the same source cell are highly correlated
-
-            coarse_grid = kwargs['coarse_grid']  # TODO: would prefer to get this from regridder or something, but not sure how to do that right now
-            regridder = kwargs['regridder']
-
-            # Reshape the weights to the shape of the regridder and assign coords
-            # https://github.com/pangeo-data/xESMF/blob/7083733c7801960c84bf06c25ca952d3b44eac3e/xesmf/frontend.py#L596
-            weights = regridder.weights.data.reshape(regridder.shape_out + regridder.shape_in)
-            weights = xr.DataArray(weights.todense(),  # load sparse matrix to dense
-                                   coords={
-                                       'lat': regridder.out_coords['lat'].values,
-                                       'lon': regridder.out_coords['lon'].values,
-                                       'coarse_lat': coarse_grid['lat'].values,
-                                       'coarse_lon': coarse_grid['lon'].values,},
-                                   dims=['lat', 'lon',
-                                         'coarse_lat', 'coarse_lon']
-                                   ).stack(cell=('lat', 'lon'),
-                                           coarse_cell=('coarse_lat', 'coarse_lon'))
-
-            coarse_cells = weights.coords['coarse_cell'].values  # stack source cell coords
-
-            # Create an empty matrix with dimensions len(cells) x len(cells)
-            method_corr = np.zeros((N, N))
-
-            # Populate the matrix using broadcasting
-            for coarse_cell in coarse_cells:
-                # For each input cell, find the output cells that share the same input cell
-                coarse_cell_weights = weights.sel(coarse_cell=coarse_cell)
-                shared_out_cells = np.where((coarse_cell_weights > 0).values)[0]
-                if len(shared_out_cells) > 0:
-                    # Get the weight values for the shared output cells
-                    values = coarse_cell_weights.values[shared_out_cells]
-                    # Set the correlation matrix values for the shared output cells as the outer product of the weights
-                    # (np.ix_ is a fancy way to symmetrically index a 2D array)
-                    method_corr[np.ix_(shared_out_cells, shared_out_cells)] = np.outer(values, values)
-
-            # Overwrite the diagonal elements with 1
-            np.fill_diagonal(method_corr, 1)
-        else:
-            raise ValueError(f"Unknown method: {method_name}")
-
-        # Combine the correlation matrices based on the method weights
-        corr += weight * method_corr
-
-    return corr
-
-
-def build_temporal_corr(times: pd.DatetimeIndex, method: str | dict | None = None, **kwargs) -> np.ndarray:
-    """
-    Build the temporal error correlation matrix for the inversion.
-    Has dimensions of flux_times x flux_times.
-
-    Parameters
-    ----------
-    times : pd.DatetimeIndex
-    method : dict, optional
-        Method for calculating the temporal error correlation matrix.
-        The key defines the method and the value is the weight for the method.
-        Options include:
-            - 'exp': exponentially decaying with an e-folding length of self.t_bins freq
-            - 'diel': like 'exp', except correlations are only non-zero for the same time of day
-            - 'clim': each month is highly correlated with the same month in other years
-
-    Returns
-    -------
-    S_t : xr.DataArray
-        Temporal error correlation matrix for the inversion.
-    """
-    # Handle method input
-    if method is None:
-        method = {'exp': 1.0}
-    elif isinstance(method, str):
-        method = {method: 1.0}
-    elif isinstance(method, dict):
-        assert sum(method.values()) == 1.0, 'Weights for temporal error methods must sum to 1.0'
-    else:
-        raise ValueError('method must be a dict')
-
-    # Initialize the temporal correlation matrix
-    N = len(times)  # number of flux times
-    corr = np.zeros((N, N))
-
-    # Calculate and combine correlation matrices based on the method weights
-    for method_name, weight in method.items():
-        if method_name in ['exp', 'diel']:  # Closer times are more correlated
-            # Calculate the time differences between the midpoint of the flux times
-            time_diffs = np.abs(np.subtract.outer(times, times))
-
-            # Wrap in pandas DataFrame to use pd.Timedelta functionality
-            time_diffs = pd.DataFrame(time_diffs)
-
-            # Get time_scale as a pd.Timedelta
-            # time_scale is formatted as a string like '1D' or '1h'
-            time_scale = pd.Timedelta(kwargs['time_scale'])
-
-            # Calculate the correlation matrix using an exponential decay
-            method_corr =  np.exp(-time_diffs / time_scale).values  # values gets the numpy array
-
-            if method_name == 'diel':
-                # Set the correlation values for the same hour of day
-                hours = times.hour
-                same_time_mask = (hours[:, None] - hours[None, :]) == 0
-                method_corr[~same_time_mask] = 0
-
-        elif method_name == 'clim':  # Each month is highly correlated with the same month in other years
-            # Initialize the correlation matrix as identity matrix
-            method_corr = np.eye(N)  # the diagonal
-
-            # Set the correlation values for the same month in other years
-            corr_val = 0.9
-            months = times.month.values
-
-            # Create a mask for the same month in different years
-            same_month_mask = (months[:, None] - months[None, :]) % 12 == 0
-
-            # Apply the correlation value using the mask
-            method_corr[same_month_mask] = corr_val
-        else:
-            raise ValueError(f"Unknown method: {method_name}")
-
-        # Combine the correlation matrices based on the method weights
-        corr += weight * method_corr
-
-    return corr
-
-
-def build_prior_error_cov(prior_error_variances: np.ndarray,
-                          flux_index: pd.MultiIndex,
-                          spatial_corr: dict | np.ndarray | None = None,
-                          temporal_corr: dict | np.ndarray | None = None) -> xr.DataArray:
-    """
-    Build the prior error covariance matrix for the inversion.
-
-    Parameters
-    ----------
-    prior_error_variances : xr.DataArray
-        Prior error variances for the inversion.
-    flux_index : pd.MultiIndex
-        MultiIndex for flux state.
-    spatial_corr : dict | np.ndarray, optional
-        Spatial error correlation matrix for the inversion, by default None.
-        If None, the spatial error correlation matrix is an identity matrix.
-        See `build_spatial_corr` for more options.
-    temporal_corr : dict | np.ndarray, optional
-        Temporal error correlation matrix for the inversion, by default None.
-        If None, the temporal error correlation matrix is an identity matrix.
-        See `build_temporal_corr` for more options.
-
-    Returns
-    -------
-    S_0 : xr.DataArray
-        Prior error covariance matrix for the inversion.
-    """
-    cells = flux_index.get_level_values('cell').unique()
-    flux_times = flux_index.get_level_values('flux_time').unique()
-
-    if spatial_corr is None:
-        spatial_corr = np.eye(len(cells))
-    elif isinstance(spatial_corr, dict):
-        spatial_corr = build_spatial_corr(cells=cells, **spatial_corr)
-    elif not isinstance(spatial_corr, np.ndarray):
-        raise ValueError('spatial_corr must be a dict or np.ndarray')
-
-    if temporal_corr is None:
-        temporal_corr = np.eye(len(flux_times))
-    elif isinstance(temporal_corr, dict):
-        temporal_corr = build_temporal_corr(times=flux_times.left, **temporal_corr)
-    elif not isinstance(temporal_corr, np.ndarray):
-        raise ValueError('temporal_corr must be a dict or np.ndarray')
-
-    S_0 = (prior_error_variances ** 2) * np.kron(spatial_corr, temporal_corr)
-    # S_0 = xr.DataArray(S_0, coords=[flux_index, flux_index], name='S_0')
-
-    return S_0
-
 def integrate_over_time_bins(data: xr.DataArray, time_bins: pd.IntervalIndex,
                              time_dim: str = 'time') -> xr.DataArray:
     """
@@ -420,7 +199,10 @@ def integrate_over_time_bins(data: xr.DataArray, time_bins: pd.IntervalIndex,
     return integrated
 
 
-class Prior:
+class StateMixin(ABC):
+
+    data: xr.DataArray
+
     def __init__(self, data: xr.DataArray):
         self.data = data
         self.flux_times = data.get_index('flux_time')
@@ -428,6 +210,122 @@ class Prior:
 
         # Store regridder if it was used
         self._regridder = None
+
+    @staticmethod
+    def encode_flux_times(data: xr.Dataset) -> xr.Dataset:
+        # Assign the start time as the flux_time coordinate
+        # and add an additional flux_t_stop coord to the flux_time dimension
+        flux_times = data.get_index('flux_time')
+        data = data.assign_coords(
+            flux_time=flux_times.left,
+            flux_t_stop=("flux_time", flux_times.right)
+        )
+
+        # Add attributes
+        data.attrs['flux_time_closed'] = flux_times.closed
+        return data
+
+    @staticmethod
+    def decode_flux_times(data: xr.Dataset) -> xr.Dataset:
+        # Rebuild the IntervalIndex with the correct closed attribute
+        flux_times = pd.IntervalIndex.from_arrays(left=data.flux_time.values,
+                                                  right=data.flux_t_stop.values,
+                                                  closed=data.attrs.pop('flux_time_closed'))
+        data = data.drop('flux_t_stop')  # drop the flux_t_stop coord
+
+        # Assign the rebuilt IntervalIndex to the data
+        data = data.assign_coords(flux_time=flux_times)
+        return data
+
+    @staticmethod
+    def encode_cells(data: xr.Dataset) -> xr.Dataset:
+        # Need to encode pandas MultiIndex to a netcdf compatible format
+        data = cfxr.encode_multi_index_as_compress(ds=data, idxnames='cell')
+        return data
+
+    @staticmethod
+    def decode_cells(data: xr.Dataset) -> xr.Dataset:
+        # Rebuild the cell MultiIndex
+        # (Drops the bnds dim so we need to do after rebuilding flux_times)
+        data = cfxr.decode_compress_to_multi_index(encoded=data, idxnames='cell')
+        return data
+
+    @classmethod
+    def from_path(cls, path: str | Path) -> Self:
+        """
+        Read the Jacobian matrix from disk.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to the Jacobian matrix. If a directory is given, all flux time slices in the directory are read.
+            If a single file is given, only that flux time slice is read.
+
+        Returns
+        -------
+        Jacobian
+            Jacobian matrix.
+        """
+        path = Path(path)
+        if path.is_dir():
+            # Read all netcdf files in the directory
+            data = xr.open_mfdataset(str(path / '*.nc'))
+        else:
+            # Read the single file
+            data = xr.open_dataset(path)
+
+        # Rebuild the IntervalIndex with the correct closed attribute
+        data = cls.decode_flux_times(data)
+
+        # Rebuild the cell MultiIndex
+        # (Drops the bnds dim so we need to do after rebuilding flux_times)
+        data = cls.decode_cells(data)
+
+        var = list(data.data_vars)[0]  # should only be one variable
+        return cls(data[var])
+
+    def to_netcdf(self, path: str | Path) -> None:
+        """
+        Write the state matrix to disk.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to write the state matrix.
+        groups : str, optional
+            Group the data by a variable before writing to disk, by default None.
+        """
+        path = Path(path)
+        if path.is_dir():
+            multifile = True
+            path.mkdir(exist_ok=True, parents=True)
+        else:
+            if not path.parent.exists():
+                path.parent.mkdir(parents=True)
+            multifile = False
+
+        data = self.data.to_dataset()  # convert to dataset to write to disk
+
+        # Can't write python objects to disk
+
+        # Need to encode pandas MultiIndex to a netcdf compatible format
+        data = self.encode_cells(data)
+
+        # Need to serialize the IntervalIndex to a netcdf compatible format
+        data = self.encode_flux_times(data)
+
+        # Write the data to disk
+        suffix = self.__class__.__name__.lower()
+        if multifile:
+            slice_times, flux_slices = zip(*data.groupby('flux_time'))
+            flux_paths = [path / f'{pd.Timestamp(flux_time):%Y%m%d%H}_{suffix}.nc'
+                        for flux_time in slice_times]
+            xr.save_mfdataset(flux_slices, paths=flux_paths)
+        else:
+            data.to_netcdf(path)
+
+
+class Prior(StateMixin):
 
     @classmethod
     def from_inventory(cls, inventory: Inventory, flux_times, out_grid,
@@ -476,11 +374,9 @@ class Prior:
         return prior
 
 
-class Jacobian:
+class Jacobian(StateMixin):
     def __init__(self, data: xr.DataArray):
-        self.data = data
-        self.flux_times = data.get_index('flux_time')
-        self.cells = data.get_index('cell')
+        super().__init__(data)
         self.receptors = data.get_index('receptor')
         self.obs_times = data.get_index('obs_time')
 
@@ -506,12 +402,13 @@ class Jacobian:
         regridder = xe.Regridder(ds_in=foot, ds_out=out_grid, method='conservative',
                                  weights=regrid_weights)
         regridded = regridder(foot, keep_attrs=True)
-        row = regridded.stack(cell=('lat', 'lon'))  # stack lat-lon into a single cell dimension
+        row = regridded.stack(cell=['lat', 'lon'])  # stack lat-lon into a single cell dimension
         return row
 
     @classmethod
     def from_stilt(cls, stilt: STILTModel, flux_times: pd.IntervalIndex,
                    out_grid: xr.DataArray, grid_buffer: float = 0.1,
+                   subset_hours: int | list[int] | None = None,
                    regrid_weights: str | Path | None = None,
                    num_processes: int | Literal['max'] = 1) -> Self:
 
@@ -529,6 +426,12 @@ class Jacobian:
         sim_df['sim_t_end'] = sim_df.run_time - pd.Timedelta(hours=1)
         sim_df = sim_df[(sim_df.sim_t_start < t_stop) & (sim_df.sim_t_end >= t_start)]
 
+        # Subset simulations to specific hours
+        if subset_hours:
+            if isinstance(subset_hours, int):
+                subset_hours = [subset_hours]
+            sim_df = sim_df[sim_df.run_time.dt.hour.isin(subset_hours)]
+
         # Compute the xesmf weights for regridding the footprints
         if regrid_weights is not None and not Path(regrid_weights).exists():
             print('Computing regrid weights...')
@@ -537,6 +440,8 @@ class Jacobian:
             foot = footprint.data.to_dataset()
             regridder = xe.Regridder(ds_in=foot, ds_out=out_grid, method='conservative')
             regridder.to_netcdf(filename=regrid_weights)
+        else:
+            regridder = None
 
         # Compute the Jacobian matrix in parallel
         H_rows = []
@@ -561,85 +466,241 @@ class Jacobian:
         else:
             print('Jacobian matrix built successfully.')
 
-        return cls(H)
+        jacobian = cls(H)
+        jacobian._regridder = regridder
+        return jacobian
+
+
+class PriorErrorCovariance:
+    """
+    Class for handling the prior covariance matrix.
+    """
+
+    def __init__(self, data: np.ndarray):
+        self.data = data
 
     @classmethod
-    def from_path(cls, path: str | Path) -> Self:
+    def from_variances(cls, prior_error_variances: float | np.ndarray,
+                       flux_index: pd.MultiIndex | None = None,
+                       cells: xr.DataArray | None = None, flux_times: pd.IntervalIndex | None = None,
+                       spatial_corr: dict | np.ndarray | None = None,
+                       temporal_corr: dict | np.ndarray | None = None) -> Self:
         """
-        Read the Jacobian matrix from disk.
+        Create a PriorCovariance instance from variances and correlation matrices.
 
         Parameters
         ----------
-        path : str | Path
-            Path to the Jacobian matrix. If a directory is given, all flux time slices in the directory are read.
-            If a single file is given, only that flux time slice is read.
+        prior_error_variances : float | np.ndarray
+            Prior error variances for the inversion.
+        flux_index : pd.MultiIndex, optional
+            MultiIndex for flux state. If None, cells and flux_times must be provided.
+        cells : xr.DataArray, optional
+            Flux cells, by default None. If None, flux_index must be provided.
+        flux_times : pd.IntervalIndex, optional
+            Time bins for the inversion, by default None. If None, flux_index must be provided.
+        spatial_corr : dict | np.ndarray, optional
+            Spatial error correlation matrix for the inversion, by default None.
+            If None, the spatial error correlation matrix is an identity matrix.
+            See `build_spatial_corr` for more options.
+        temporal_corr : dict | np.ndarray, optional
+            Temporal error correlation matrix for the inversion, by default None.
+            If None, the temporal error correlation matrix is an identity matrix.
+            See `build_temporal_corr` for more options.
 
         Returns
         -------
-        Jacobian
-            Jacobian matrix.
+        PriorCovariance
+            Instance of PriorCovariance.
         """
-        path = Path(path)
-        if path.is_dir():
-            # Read all netcdf files in the directory
-            data = xr.open_mfdataset(str(path / '*.nc'))
-        else:
-            # Read the single file
-            data = xr.open_dataset(path)
+        cells = cells or flux_index.get_level_values('cell').unique()
+        flux_times = flux_times or flux_index.get_level_values('flux_time').unique()
 
-        # Rebuild the IntervalIndex with the correct closed attribute
-        flux_times = pd.IntervalIndex.from_arrays(left=data.flux_time.values,
-                                                  right=data.flux_t_stop.values,
-                                                  closed=data.attrs.pop('flux_time_closed'))
-        data = data.drop('flux_t_stop')  # drop the flux_t_stop coord
+        if spatial_corr is None:
+            spatial_corr = np.eye(len(cells))
+        elif isinstance(spatial_corr, dict):
+            spatial_corr = cls.build_spatial_corr(cells=cells, **spatial_corr)
+        elif not isinstance(spatial_corr, np.ndarray):
+            raise ValueError('spatial_corr must be a dict or np.ndarray')
 
-        # Assign the rebuilt IntervalIndex to the data
-        data = data.assign_coords(flux_time=flux_times)
+        if temporal_corr is None:
+            temporal_corr = np.eye(len(flux_times))
+        elif isinstance(temporal_corr, dict):
+            temporal_corr = cls.build_temporal_corr(times=flux_times.left, **temporal_corr)
+        elif not isinstance(temporal_corr, np.ndarray):
+            raise ValueError('temporal_corr must be a dict or np.ndarray')
 
-        # Rebuild the cell MultiIndex
-        # (Drops the bnds dim so we need to do after rebuilding flux_times)
-        data = cfxr.decode_compress_to_multi_index(encoded=data, idxnames='cell')
+        S_0 = (prior_error_variances ** 2) * np.kron(spatial_corr, temporal_corr)
+        return cls(S_0)
 
-        return cls(data.foot)
-
-    def to_netcdf(self, path: str | Path) -> None:
+    @staticmethod
+    def build_spatial_corr(cells: xr.DataArray, method: str | dict | None = None, **kwargs) -> np.ndarray:
         """
-        Write the Jacobian matrix to disk.
-        Each flux_time coordinate is written to a separate file.
+        Build the spatial error correlation matrix for the inversion.
+        Has dimensions of cells x cells.
 
         Parameters
         ----------
-        path : str | Path
-            Path to write the Jacobian matrix.
+        cells : xr.DataArray
+            Flux cells.
+        method : str, dict, optional
+            Method for calculating the spatial error correlation matrix.
+            Options include:
+                - 'exp': exponentially decaying with an e-folding length kwargs['length_scale']
+                - 'downscale': each cell is highly correlated with the same cell in the kwargs['coarse_grid'].
+                                Correlation is defined as the multiplication of the `xesmf.Regridder` weights
+                                between dst cells.
+            Defaults to 'exp'.
+
+        Returns
+        -------
+        np.ndarray
+            Spatial error correlation matrix for the inversion.
         """
-        # Write jacobian to disk
-        path = Path(path)
-        assert path.is_dir(), 'Path must be a directory'
-        path.mkdir(exist_ok=True, parents=True)
+        # Handle method input
+        if method is None:
+            method = {'exp': 1.0}
+        elif isinstance(method, str):
+            method = {method: 1.0}
+        elif isinstance(method, dict):
+            assert sum(method.values()) == 1.0, 'Weights for spatial error methods must sum to 1.0'
+        else:
+            raise ValueError('method must be a string or dict')
 
-        H = self.data.to_dataset()  # convert to dataset to write to disk
+        # Get the lat/lon coordinates of the flux cells
+        cells = np.array([*cells.to_numpy()])  # convert to 2D numpy array [[lat, lon], ...]
+        N = len(cells)  # number of flux cells
 
-        # Can't write python objects to disk
+        # Initialize the spatial correlation matrix
+        corr = np.zeros((N, N))
 
-        # Need to encode pandas MultiIndex to a netcdf compatible format
-        H = cfxr.encode_multi_index_as_compress(ds=H, idxnames='cell')
+        # Calculate and combine correlation matrices based on the method weights
+        for method_name, weight in method.items():
+            if method_name == 'exp':  # Closer cells are more correlated
+                distances = haversine_distances(np.deg2rad(cells)) * earth_radius(cells[:, 0])
+                length_scale = kwargs['length_scale']
+                method_corr = np.exp((-1 * distances) / length_scale)
 
-        # Need to serialize the IntervalIndex to a netcdf compatible format
-        # Assign the start time as the flux_time coordinate
-        # and add an additional flux_t_stop coord to the flux_time dimension
-        H = H.assign_coords(
-            flux_time=self.flux_times.left,
-            flux_t_stop=("flux_time", self.flux_times.right)
-        )
+            elif method_name == 'downscale':  # Cells that are from the same source cell are highly correlated
 
-        # Add attributes
-        H.attrs['flux_time_closed'] = self.flux_times.closed
+                coarse_grid = kwargs['coarse_grid']
+                regridder = kwargs['regridder']
 
-        # Write the data to disk
-        slice_times, flux_slices = zip(*H.groupby('flux_time'))
-        flux_paths = [path / f'{pd.Timestamp(flux_time):%Y%m%d%H}_jacobian.nc'
-                      for flux_time in slice_times]
-        xr.save_mfdataset(flux_slices, paths=flux_paths)
+                # Reshape the weights to the shape of the regridder and assign coords
+                weights = regridder.weights.data.reshape(regridder.shape_out + regridder.shape_in)
+                weights = xr.DataArray(weights.todense(),  # load sparse matrix to dense
+                                       coords={
+                                           'lat': regridder.out_coords['lat'].values,
+                                           'lon': regridder.out_coords['lon'].values,
+                                           'coarse_lat': coarse_grid['lat'].values,
+                                           'coarse_lon': coarse_grid['lon'].values,},
+                                       dims=['lat', 'lon',
+                                             'coarse_lat', 'coarse_lon']
+                                       ).stack(cell=('lat', 'lon'),
+                                               coarse_cell=('coarse_lat', 'coarse_lon'))
+
+                coarse_cells = weights.coords['coarse_cell'].values  # stack source cell coords
+
+                # Create an empty matrix with dimensions len(cells) x len(cells)
+                method_corr = np.zeros((N, N))
+
+                # Populate the matrix using broadcasting
+                for coarse_cell in coarse_cells:
+                    # For each input cell, find the output cells that share the same input cell
+                    coarse_cell_weights = weights.sel(coarse_cell=coarse_cell)
+                    shared_out_cells = np.where((coarse_cell_weights > 0).values)[0]
+                    if len(shared_out_cells) > 0:
+                        # Get the weight values for the shared output cells
+                        values = coarse_cell_weights.values[shared_out_cells]
+                        # Set the correlation matrix values for the shared output cells as the outer product of the weights
+                        method_corr[np.ix_(shared_out_cells, shared_out_cells)] = np.outer(values, values)
+
+                # Overwrite the diagonal elements with 1
+                np.fill_diagonal(method_corr, 1)
+            else:
+                raise ValueError(f"Unknown method: {method_name}")
+
+            # Combine the correlation matrices based on the method weights
+            corr += weight * method_corr
+
+        return corr
+
+    @staticmethod
+    def build_temporal_corr(times: pd.DatetimeIndex, method: str | dict | None = None, **kwargs) -> np.ndarray:
+        """
+        Build the temporal error correlation matrix for the inversion.
+        Has dimensions of flux_times x flux_times.
+
+        Parameters
+        ----------
+        times : pd.DatetimeIndex
+        method : dict, optional
+            Method for calculating the temporal error correlation matrix.
+            The key defines the method and the value is the weight for the method.
+            Options include:
+                - 'exp': exponentially decaying with an e-folding length of self.t_bins freq
+                - 'diel': like 'exp', except correlations are only non-zero for the same time of day
+                - 'clim': each month is highly correlated with the same month in other years
+
+        Returns
+        -------
+        np.ndarray
+            Temporal error correlation matrix for the inversion.
+        """
+        # Handle method input
+        if method is None:
+            method = {'exp': 1.0}
+        elif isinstance(method, str):
+            method = {method: 1.0}
+        elif isinstance(method, dict):
+            assert sum(method.values()) == 1.0, 'Weights for temporal error methods must sum to 1.0'
+        else:
+            raise ValueError('method must be a dict')
+
+        # Initialize the temporal correlation matrix
+        N = len(times)  # number of flux times
+        corr = np.zeros((N, N))
+
+        # Calculate and combine correlation matrices based on the method weights
+        for method_name, weight in method.items():
+            if method_name in ['exp', 'diel']:  # Closer times are more correlated
+                # Calculate the time differences between the midpoint of the flux times
+                time_diffs = np.abs(np.subtract.outer(times, times))
+
+                # Wrap in pandas DataFrame to use pd.Timedelta functionality
+                time_diffs = pd.DataFrame(time_diffs)
+
+                # Get time_scale as a pd.Timedelta
+                time_scale = pd.Timedelta(kwargs['time_scale'])
+
+                # Calculate the correlation matrix using an exponential decay
+                method_corr =  np.exp(-time_diffs / time_scale).values  # values gets the numpy array
+
+                if method_name == 'diel':
+                    # Set the correlation values for the same hour of day
+                    hours = times.hour
+                    same_time_mask = (hours[:, None] - hours[None, :]) == 0
+                    method_corr[~same_time_mask] = 0
+
+            elif method_name == 'clim':  # Each month is highly correlated with the same month in other years
+                # Initialize the correlation matrix as identity matrix
+                method_corr = np.eye(N)  # the diagonal
+
+                # Set the correlation values for the same month in other years
+                corr_val = 0.9
+                months = times.month.values
+
+                # Create a mask for the same month in different years
+                same_month_mask = (months[:, None] - months[None, :]) % 12 == 0
+
+                # Apply the correlation value using the mask
+                method_corr[same_month_mask] = corr_val
+            else:
+                raise ValueError(f"Unknown method: {method_name}")
+
+            # Combine the correlation matrices based on the method weights
+            corr += weight * method_corr
+
+        return corr
 
 
 class MDMcomponent:
@@ -651,11 +712,22 @@ class MDMcomponent:
 
     @classmethod
     def from_rmse(cls, name: str, rmse: float, time_scale,
-                  correlate_full: bool, correlate_between_time_steps: bool):
-        pass
+                  correlate_full: bool, correlate_between_time_steps: bool,
+                  obs_index: pd.MultiIndex):
+        
+        
 
     @staticmethod
     def merge(components: list['MDMcomponent']) -> Self:
+        pass
+
+
+class ModelDataMismatch:
+    def __init__(self, data: np.ndarray):
+        self.data = data
+
+    @classmethod
+    def from_components(cls, components: list[MDMcomponent]):
         pass
 
 
@@ -664,194 +736,116 @@ class FluxInversion(Inversion):
     Bayesian flux inversion
     """
 
-    _rebuild_options = ['prior', 'prior_error_cov', 'jacobian']
+    _inputs = ["obs", "background", "bio", "prior", 'jacobian',
+               "prior_error_cov", "modeldata_mismatch"]
+
+    serializers = {
+        'obs': {
+            'save': lambda obj, path: obj.to_csv(path),
+            'load': lambda path: pd.read_csv(path)
+        },
+        'background': {
+            'save': lambda obj, path: obj.to_csv(path),
+            'load': lambda path: pd.read_csv(path)
+        },
+        'prior': {
+            'save': lambda obj, path: obj.data.to_netcdf(path),
+            'load': lambda path: Prior(xr.open_dataarray(path))
+        },
+        'jacobian': {
+            'save': lambda obj, path: obj.to_netcdf(path),
+            'load': lambda path: Jacobian.from_path(path)
+        },
+        'prior_error_cov': {
+            'save': lambda obj, path: np.save(path, obj),
+            'load': lambda path: np.load(path)
+        },
+        'modeldata_mismatch': {
+            'save': lambda obj, path: np.save(path, obj),
+            'load': lambda path: np.load(path)
+        }
+    }
+
+    # Default paths as class attributes
+    default_paths = {
+        'background': 'background.csv',
+        'jacobian': 'H',
+        'modeldata_mismatch': 'S_z.nc',
+        'obs': 'obs.csv',
+        'posterior': 'posterior.nc',
+        'prior': 'prior.nc',
+        'prior_error_cov': 'S_0.nc',
+    }
 
     def __init__(self,
                  project: str | Path,
-                 t_bins: pd.IntervalIndex,
+                 flux_times: pd.IntervalIndex,
                  out_grid: xr.DataArray,
-                 obs: pd.Series,  # with MultiIndex[receptor.id, obs_time]
-                 background: pd.Series,  # with Index[obs_time]
-                 prior: xr.DataArray | Prior | None = None,
-                 inventory: Inventory | None = None,
-                 stilt: STILTModel | None = None,
-                 stilt_run_script: str | Path | None = None,
-                 grid_buffer: float = 0.1,
-                 grid_mask: xr.DataArray | None = None,
+                 obs: pd.Series | None = None,  # with MultiIndex[receptor.id, obs_time]
+                 background: pd.Series | None = None,  # with Index[obs_time]
                  bio: xr.DataArray | None = None,
-                 jacobian: xr.DataArray | Jacobian | None = None,
-                 num_processes: int | Literal['max'] = 1,
-                 prior_error_cov: xr.DataArray | None = None,
-                 prior_error_variances: xr.DataArray | None = None,
-                 spatial_corr: dict | np.ndarray | None = None,
-                 temporal_corr: dict | np.ndarray | None = None,
+                 prior: Prior | None = None,
+                 jacobian: Jacobian | None = None,
+                 prior_error_cov: PriorErrorCovariance | None = None,
                  modeldata_mismatch: None = None,
-                 rebuild: bool | str | list[str] = False,
+                 grid_mask: xr.DataArray | None = None,
+                 paths: dict[str, str | Path] | None = None,
                  ) -> None:
         # Set project directory
-        self.project = Path(project)
-        self.project.mkdir(exist_ok=True, parents=True)  # create project directory if it doesn't exist
+        self.path = Path(project)
+        self.project = self.path.name
+        self.path.mkdir(exist_ok=True, parents=True)  # create project directory if it doesn't exist
 
         # Set paths
-        self.paths = {
-            'regrid_weights': self.project / 'regrid_weights',
-            'obs': self.project / 'obs.csv',
-            'background': self.project / 'background.csv',
-            'prior': self.project / 'prior.nc',
-            'jacobian': self.project / 'H',
-            'prior_error_cov': self.project / 'S_0.nc',
-            'modeldata_mismatch': self.project / 'S_z.nc',
-            'posterior': self.project / 'posterior.nc',
-            # TODO: bio
-        }
-
-        # Rebuild options
-        if isinstance(rebuild, str):
-            rebuild = [rebuild]
-        elif not isinstance(rebuild, bool):
-            rebuild = [s.lower() for s in rebuild]
-        self.rebuild = rebuild
-
-        # Initialize regrid weights
-        self.regrid_weights = {}
-        regrid_path = self.paths['regrid_weights']
-        if regrid_path.exists():
-            self.regrid_weights = {p.stem: p for p in regrid_path.iterdir()}
+        if paths:
+            # Merge default paths with user-specified paths
+            self.paths = {key: self.path / paths.get(key, default)
+                          for key, default in self.default_paths.items()}
         else:
-            regrid_path.mkdir(exist_ok=True, parents=True)
+            # Use default paths
+            self.paths = {key: self.path / default
+                          for key, default in self.default_paths.items()}
 
         # Define state
-        self.flux_times = t_bins
+        self.flux_times = flux_times
         self.out_grid = out_grid
-        self.grid_mask = grid_mask
+        self.grid_mask = grid_mask  # TODO implment masking
+
+        # Load or build inputs 
+        self.obs = obs if obs is not None else self._load_input('obs')
+        self.background = background if background is not None else self._load_input('background')
+        self.bio = bio if not self.paths.get('bio') else self._load_input('bio')
+        self.prior = prior if prior is not None else self._load_input('prior')
+        self.jacobian = jacobian if jacobian is not None else self._load_input('jacobian')
+        self.prior_error_cov = prior_error_cov if prior_error_cov is not None else self._load_input('prior_error_cov')
+        self.modeldata_mismatch = modeldata_mismatch if modeldata_mismatch is not None else self._load_input('modeldata_mismatch')
 
         # Generate indices
         self.obs_index = obs.index
-        self.flux_index = generate_flux_index(t_bins=t_bins, out_grid=out_grid, grid_mask=grid_mask)
+        self.flux_index = generate_flux_index(t_bins=flux_times, out_grid=out_grid, grid_mask=grid_mask)
 
         self.receptors = self.obs_index.get_level_values('receptor').unique()
         self.obs_times = self.obs_index.get_level_values('obs_time').unique()
         # self.flux_times = self.flux_index.get_level_values('flux_time').unique()
         self.cells = self.flux_index.get_level_values('cell').unique()
 
-        # Set obs data
-        self.obs = obs
-        self.background = background
-        self.bio = bio  # TODO: this could be an array or dataarray
+        # TODO filter to flux_times / cells
 
-        # Set the prior state matrix
-        if isinstance(prior, xr.DataArray):
-            prior = Prior(prior)
-        elif prior is None and inventory is not None:
-            prior = Prior.from_inventory(inventory,
-                                         flux_times=self.flux_times, out_grid=self.out_grid,
-                                         units='umol/m2/s',
-                                         regrid_weights=self.regrid_weights.get('inventory'))
-        else:
-            raise ValueError('prior must be an xr.DataArray or Inventory object')
-        self.prior = prior
-
-        # Set the Jacobian matrix
-        if isinstance(jacobian, xr.DataArray):
-            jacobian = Jacobian(jacobian)
-        elif jacobian is None and any([stilt, stilt_run_script]):
-            if stilt_run_script:
-                # Build STILT model from run script
-                stilt = STILTModel.from_run_script(stilt_run_script)
-            # Build the jacobian matrix from STILT footprints
-            stilt = stilt if isinstance(stilt, STILTModel) else STILTModel(path=stilt)
-            jacobian = Jacobian.from_stilt(stilt=stilt, flux_times=t_bins,
-                                           out_grid=out_grid, grid_buffer=grid_buffer,
-                                           regrid_weights=self.regrid_weights.get('footprints'),
-                                           num_processes=num_processes)
-        else:
-            raise ValueError('jacobian must be an xr.DataArray or STILTModel object')
-        self.jacobian = jacobian
-
-        # Set the prior error covariance matrix
-        if prior_error_cov is None and prior_error_variances is not None:
-            prior_error_cov_path = self.paths['prior_error_cov']
-            if self._should_build(['prior_error_cov', 'S_0'], path=prior_error_cov_path):
-                prior_error_cov = build_prior_error_cov(prior_error_variances=prior_error_variances,
-                                                        flux_index=self.flux_index,
-                                                        spatial_corr=spatial_corr,
-                                                        temporal_corr=temporal_corr)
-                prior_error_cov.to_netcdf(prior_error_cov_path)
-            else:
-                prior_error_cov = xr.open_dataarray(prior_error_cov_path)
-        else:
-            raise ValueError('prior_error_cov must be an xr.DataArray or prior_error_variances must be provided')
-        self.prior_error_cov = prior_error_cov
-
-        # Set model-data mismatch covariance matrix
-        self.modeldata_mismatch = modeldata_mismatch
+        # Save inputs
+        self._save_inputs()
 
         # super().__init__(z=self.obs, c=self.background, x_0=self.prior.data, H=self.jacobian.data,
-        #                  S_0=self.prior_error_cov, S_z=self.modeldata_mismatch)
+        #                  S_0=self.prior_error_cov.data, S_z=self.modeldata_mismatch)
 
-    def _should_build(self, objs: str | list[str], path: str | Path | None = None) -> bool:
-        """
-        Check if objects should be built based on the rebuild attribute.
+    def _save_inputs(self):
+        """Saves all provided inputs to individual files in the project directory."""
+        for input_name in self._inputs:
+            obj = getattr(self, input_name)
+            if obj is not None:
+                path = self.paths[input_name]
+                self.serializers[input_name]['save'](obj, path)
 
-        Parameters
-        ----------
-        objs : str | list[str]
-            Object names to check if it should be rebuilt.
-        path : str | Path | None, optional
-            Path to the object, by default None
-
-        Returns
-        -------
-        bool
-            True if the object should be built, False otherwise.
-        """
-        if self.rebuild is True:
-            # If rebuild is True, always build
-            return True
-
-        if path:
-            path = Path(path)
-            if path.is_dir():
-                if not any(path.iterdir()):
-                    # If the directory is empty, build
-                    return True
-            elif not path.exists():
-                # If the path doesn't exist, build
-                return True
-
-        # Check if any of the objects are in the rebuild list
-        if isinstance(objs, str):
-            objs = [objs]
-        return any(obj.lower() in self.rebuild for obj in objs)
-
-    def build_x_0(self, inventory: xr.DataArray) -> xr.DataArray:
-        """
-        Build the prior state matrix for the inversion.
-
-        Parameters
-        ----------
-        inventory : xarray.DataArray
-            Inventory prior for the inversion.
-
-        Returns
-        -------
-        x_0 : xr.DataArray
-            Initial state matrix for the inversion.
-        """
-        return integrate_over_time_bins(data=inventory, time_bins=self.flux_times)
-
-    def build_S_z(self,):
-        """
-        Build the model-data mismatch covariance matrix for the inversion.
-
-        Returns
-        -------
-        S_z : xr.DataArray
-            Model-data mismatch covariance matrix for the inversion.
-        """
-        pass
-
-    def build_bio(self, bio: xr.DataArray) -> pd.Series:
-        bio_fluxes = integrate_over_time_bins(data=bio, time_bins=self.flux_times)
-        bio_concentrations = bio_fluxes * self.H  # TODO is this multiplied correctly?
-        return bio_concentrations.as_pandas()
+    def _load_input(self, input_name: str):
+        """Loads an input from disk."""
+        path = self.paths[input_name]
+        return self.serializers[input_name]['load'](path)
