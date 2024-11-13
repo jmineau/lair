@@ -22,7 +22,7 @@ from lair.air.stilt import Receptor
 from lair import inventories
 from lair.inventories import Inventory
 from lair.inversion.bayesian import Inversion
-from lair.utils.clock import regular_times_to_intervals
+from lair.utils.clock import regular_times_to_intervals, time_decay_matrix
 from lair.utils.geo import earth_radius
 from sklearn.metrics.pairwise import haversine_distances
 import concurrent.futures
@@ -74,43 +74,6 @@ def add_receptor_index(receptor: Receptor, obs: pd.Series) -> pd.Series:
     obs = obs.reset_index().assign(receptor=receptor.id)  # add receptor column
     obs = obs.set_index(['receptor', 'obs_time'])  # set MultiIndex
     return obs
-
-
-def time_differences(times: pd.DatetimeIndex, time_scale: str | None = None) -> np.ndarray:
-    """
-    Calculate the time differences or temporal decay matrix for the given times.
-
-    Parameters
-    ----------
-    times : pd.DatetimeIndex
-        Observation times.
-    time_scale : str, optional
-        Time scale for the decay. If None, returns time differences in seconds.
-
-    Returns
-    -------
-    result_matrix : np.ndarray
-        Time differences or temporal decay matrix.
-    """
-    # Wrap in DatetimeIndex because subtract.outer doesnt like pd.Series
-    times = pd.DatetimeIndex(times)
-
-    # Calculate the time differences
-    time_diffs = np.abs(np.subtract.outer(times, times))
-
-    if time_scale is None:
-        return time_diffs.astype('timedelta64[s]').astype(int)
-
-    # Wrap in pandas DataFrame to use pd.Timedelta functionality
-    time_diffs = pd.DataFrame(time_diffs)
-
-    # Get time_scale as a pd.Timedelta
-    time_scale = pd.Timedelta(time_scale)
-
-    # Calculate the decay matrix using an exponential decay
-    decay_matrix = np.exp(-time_diffs / time_scale).values  # values gets the numpy array
-
-    return decay_matrix
 
 
 def generate_regular_flux_times(t_start: dt.datetime, t_end: dt.datetime, freq: str,
@@ -664,7 +627,7 @@ class PriorErrorCovariance:
         # Calculate and combine correlation matrices based on the method weights
         for method_name, weight in method.items():
             if method_name in ['exp', 'diel']:  # Closer times are more correlated
-                method_corr = time_differences(times, kwargs['time_scale'])
+                method_corr = time_decay_matrix(times, decay=kwargs['time_scale'])
 
                 if method_name == 'diel':
                     # Set the correlation values for the same hour of day
@@ -694,57 +657,6 @@ class PriorErrorCovariance:
         return corr
 
 
-class MDMcomponent:
-    """
-    Model-data mismatch component for the inversion.
-    """
-    def __init__(self, data: np.ndarray):
-        self.data = data
-
-    @classmethod
-    def from_rmse(cls, name: str, rmse: float | np.ndarray, obs_index: pd.MultiIndex,
-                  time_scale = None) -> Self:
-        """
-        Create a MDM component from the root mean squared error (RMSE).
-
-        Parameters
-        ----------
-        name : str
-            Name of the MDM component.
-        rmse : float | np.ndarray
-            Root mean squared error.
-        obs_index : pd.MultiIndex
-            MultiIndex for observations.
-        time_scale : str, optional
-            Time scale for the MDM component, by default None.
-
-        Returns
-        -------
-        MDMcomponent
-            MDM component.
-        """
-        MDM = np.eye(len(obs_index)) * rmse ** 2
-
-        if time_scale:
-            # Compute off-diagonal elements as exponential decay per each receptor
-            obs_df = obs_index.to_frame(index=False)
-            time_diff_matrix = np.zeros((len(obs_index), len(obs_index)))
-
-            for receptor, group in obs_df.groupby('receptor'):
-                receptor_indices = group.index
-                receptor_times = group['obs_time']
-                decay_matrix = time_differences(receptor_times, time_scale)
-                time_diff_matrix[np.ix_(receptor_indices, receptor_indices)] = decay_matrix
-
-            MDM += time_diff_matrix * (rmse ** 2)
-
-        return cls(MDM)
-
-    @staticmethod
-    def merge(components: list['MDMcomponent']) -> Self:
-        pass
-
-
 class ModelDataMismatch:
     """
     Model-data mismatch matrix for the inversion.
@@ -754,8 +666,73 @@ class ModelDataMismatch:
         self.data = data
 
     @classmethod
-    def from_components(cls, components: list[MDMcomponent]):
-        pass
+    def from_rmse(cls, rmse: float, obs_index: pd.MultiIndex,
+                  time_decay: str | pd.Timedelta | bool | None = None) -> Self:
+        """
+        Create a MDM component from the root mean squared error (RMSE).
+
+        Parameters
+        ----------
+        rmse : float
+            Root mean squared error.
+        obs_index : pd.MultiIndex
+            MultiIndex for observations.
+        time_decay : str | pd.Timedelta | bool, optional
+            Time decay for the MDM component, by default None.
+            If None, the MDM component has diagonal elements set to RMSE^2.
+            If False, all elements are set to RMSE^2.
+            If provided as a time scale, the MDM component is a diagonal matrix
+            with diagonal elements set to RMSE^2
+            and off-diagonal elements set to RMSE^2 * exp(-|t_i - t_j| / time_decay
+
+        Returns
+        -------
+        ModelDataMismatch
+            MDM component.
+        """
+        # TODO:
+        # - accept array of RMSEs
+        # - spatial decay based on receptor locations
+
+        MDM = np.eye(len(obs_index)) * rmse ** 2
+        off_diag_mask = ~np.eye(len(obs_index), dtype=bool)
+
+        if time_decay:
+            # Compute off-diagonal elements as exponential time decay
+            off_diags = np.zeros((len(obs_index), len(obs_index)))
+
+            # Calculate the time differences for each receptor
+            for receptor, group in obs_index.to_frame(index=False).groupby('receptor'):
+                receptor_indices = group.index
+                receptor_times = group['obs_time']
+                decay_matrix = time_decay_matrix(receptor_times, decay=time_decay)
+                off_diags[np.ix_(receptor_indices, receptor_indices)] = decay_matrix
+
+            MDM[off_diag_mask] += off_diags[off_diag_mask] * (rmse ** 2)
+        elif time_decay is False:
+            # Set all elements to the RMSE^2
+            MDM[:] = rmse ** 2
+        # Else leave as identity matrix
+
+        return cls(MDM)
+
+    def __add__(self, other: Self) -> Self:
+        """
+        Add two ModelDataMismatch instances.
+
+        Parameters
+        ----------
+        other : ModelDataMismatch
+            Another ModelDataMismatch instance.
+
+        Returns
+        -------
+        ModelDataMismatch
+            Sum of the two ModelDataMismatch instances.
+        """
+        assert isinstance(other, ModelDataMismatch), 'Can only add ModelDataMismatch instances'
+        assert self.data.shape == other.data.shape, 'ModelDataMismatch instances must have the same shape'
+        return ModelDataMismatch(self.data + other.data)
 
 
 class FluxInversion(Inversion):
@@ -814,7 +791,7 @@ class FluxInversion(Inversion):
                  prior: Prior | None = None,
                  jacobian: Jacobian | None = None,
                  prior_error_cov: PriorErrorCovariance | None = None,
-                 modeldata_mismatch: None = None,
+                 modeldata_mismatch: ModelDataMismatch | None = None,
                  grid_mask: xr.DataArray | None = None,
                  paths: dict[str, str | Path] | None = None,
                  ) -> None:
