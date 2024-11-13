@@ -353,6 +353,59 @@ def periodindex_to_binedges(periodindex: pd.PeriodIndex) -> list[pd.Timestamp]:
     return start_times + [end_times[-1]]
 
 
+def time_difference_matrix(times, absolute: bool = True) -> np.ndarray:
+    """
+    Calculate the time differences between each pair of times.
+
+    Parameters
+    ----------
+    times : list[dt.datetime]
+        The list of times to calculate the differences between.
+    absolute : bool, optional
+        If True, return the absolute differences. Default is True.
+
+    Returns
+    -------
+    np.ndarray
+        The matrix of time differences.
+    """
+    times = pd.DatetimeIndex(times)  # wrap in pandas DatetimeIndex as np.subtract.outer doesn't like pd.Series
+    diffs = np.subtract.outer(times, times)
+    if absolute:
+        diffs = np.abs(diffs)
+    return diffs
+
+
+def time_decay_matrix(times, decay: str | pd.Timedelta) -> np.ndarray:
+    """
+    Calculate the time decay matrix for the specified times and decay.
+
+    Parameters
+    ----------
+    times : list[dt.datetime]
+        The list of times to calculate the decay matrix for.
+    decay : str | pd.Timedelta
+        The decay to use for the exponential decay.
+
+    Returns
+    -------
+    np.ndarray
+        The matrix of time decay values.
+    """
+    # Calculate the time differences
+    diffs = time_difference_matrix(times, absolute=True)
+
+    # Wrap in pandas DataFrame to use pd.Timedelta functionality
+    diffs = pd.DataFrame(diffs)
+
+    # Get decay as a pd.Timedelta
+    decay = pd.Timedelta(decay)
+
+    # Calculate the decay matrix using an exponential decay
+    decay_matrix = np.exp(-diffs / decay).values  # values gets the numpy array
+    return decay_matrix
+
+
 # ----- Time Aggregation ----- #
 
 def diurnal(data: pd.DataFrame, freq: str='1H', statistic: str='mean',
