@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 import datetime as dt
 from functools import partial
 from pathlib import Path
+import shutil
 from typing import Any, Literal
 from typing_extensions import \
     Self  # requires python 3.11 to import from typing
@@ -260,7 +261,8 @@ class StateMixin(ABC):
             Group the data by a variable before writing to disk, by default None.
         """
         path = Path(path)
-        if path.is_dir():
+        if path.suffix == '':  # check if path is a directory
+            # use path.suffix instead of path.is_dir() because is_dir() doesn't work with relative paths
             multifile = True
             path.mkdir(exist_ok=True, parents=True)
         else:
@@ -435,13 +437,47 @@ class Jacobian(StateMixin):
         return jacobian
 
 
-class PriorErrorCovariance:
+class CovarianceMixin(ABC):
+
+    data: np.ndarray
+
+    def __init__(self, data: np.ndarray):
+        self.data = data
+
+    @classmethod
+    def from_path(cls, path: str | Path) -> Self:
+        """
+        Read the covariance matrix from disk.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to the covariance matrix.
+
+        Returns
+        -------
+        CovarianceMixin
+            Covariance matrix.
+        """
+        return cls(np.load(path))
+
+    def to_npy(self, path: str | Path) -> None:
+        """
+        Write the covariance matrix to disk.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to write the covariance matrix.
+        """
+        np.save(path, self.data)
+
+
+class PriorErrorCovariance(CovarianceMixin):
     """
     Prior Error Covariance matrix for the inversion.
     Has dimensions of flux_index x flux_index.
     """
-    def __init__(self, data: np.ndarray):
-        self.data = data
 
     @classmethod
     def from_variances(cls, prior_error_variances: float | np.ndarray,
@@ -657,13 +693,11 @@ class PriorErrorCovariance:
         return corr
 
 
-class ModelDataMismatch:
+class ModelDataMismatch(CovarianceMixin):
     """
     Model-data mismatch matrix for the inversion.
     Has dimensions of obs_index x obs_index.
     """
-    def __init__(self, data: np.ndarray):
-        self.data = data
 
     @classmethod
     def from_rmse(cls, rmse: float, obs_index: pd.MultiIndex,
@@ -746,39 +780,39 @@ class FluxInversion(Inversion):
     serializers = {
         'obs': {
             'save': lambda obj, path: obj.to_csv(path),
-            'load': lambda path: pd.read_csv(path)
+            'load': lambda path: pd.read_csv(path).set_index(['receptor', 'obs_time'])
         },
         'background': {
             'save': lambda obj, path: obj.to_csv(path),
-            'load': lambda path: pd.read_csv(path)
+            'load': lambda path: pd.read_csv(path).set_index('obs_time')
         },
         'prior': {
-            'save': lambda obj, path: obj.data.to_netcdf(path),
-            'load': lambda path: Prior(xr.open_dataarray(path))
+            'save': lambda obj, path: obj.to_netcdf(path),
+            'load': lambda path: Prior.from_path(path)
         },
         'jacobian': {
             'save': lambda obj, path: obj.to_netcdf(path),
             'load': lambda path: Jacobian.from_path(path)
         },
         'prior_error_cov': {
-            'save': lambda obj, path: np.save(path, obj),
-            'load': lambda path: np.load(path)
+            'save': lambda obj, path: obj.to_npy(path),
+            'load': lambda path: PriorErrorCovariance.from_path(path)
         },
         'modeldata_mismatch': {
-            'save': lambda obj, path: np.save(path, obj),
-            'load': lambda path: np.load(path)
+            'save': lambda obj, path: obj.to_npy(path),
+            'load': lambda path: ModelDataMismatch.from_path(path)
         }
     }
 
     # Default paths as class attributes
     default_paths = {
         'background': 'background.csv',
-        'jacobian': 'H',
-        'modeldata_mismatch': 'S_z.nc',
+        'jacobian': 'jacobian',
+        'modeldata_mismatch': 'modeldata_mismatch.npy',
         'obs': 'obs.csv',
         'posterior': 'posterior.nc',
         'prior': 'prior.nc',
-        'prior_error_cov': 'S_0.nc',
+        'prior_error_cov': 'prior_error_cov.npy',
     }
 
     def __init__(self,
@@ -825,7 +859,7 @@ class FluxInversion(Inversion):
         self.modeldata_mismatch = modeldata_mismatch if modeldata_mismatch is not None else self._load_input('modeldata_mismatch')
 
         # Generate indices
-        self.obs_index = obs.index
+        self.obs_index = self.obs.index
         self.flux_index = generate_flux_index(t_bins=flux_times, out_grid=out_grid, grid_mask=grid_mask)
 
         self.receptors = self.obs_index.get_level_values('receptor').unique()
@@ -833,7 +867,9 @@ class FluxInversion(Inversion):
         # self.flux_times = self.flux_index.get_level_values('flux_time').unique()
         self.cells = self.flux_index.get_level_values('cell').unique()
 
-        # TODO filter to flux_times / cells
+        # Filter to flux_times / cells
+        self.jacobian.data = self.jacobian.data.sel(flux_time=self.flux_times, cell=self.cells)
+        self.prior.data = self.prior.data.sel(flux_time=self.flux_times, cell=self.cells)
 
         # Save inputs
         self._save_inputs()
@@ -843,13 +879,22 @@ class FluxInversion(Inversion):
 
     def _save_inputs(self):
         """Saves all provided inputs to individual files in the project directory."""
+        print('Saving inputs...')
         for input_name in self._inputs:
+            print(f'Saving {input_name}')
             obj = getattr(self, input_name)
             if obj is not None:
                 path = self.paths[input_name]
+                if path.exists():
+                    # Remove existing file or directory
+                    if path.suffix == '':
+                        shutil.rmtree(path, ignore_errors=True)
+                    else:
+                        path.unlink()
                 self.serializers[input_name]['save'](obj, path)
 
     def _load_input(self, input_name: str):
         """Loads an input from disk."""
+        print(f'Loading {input_name}')
         path = self.paths[input_name]
         return self.serializers[input_name]['load'](path)
