@@ -11,7 +11,6 @@ from typing import Any, Literal
 from typing_extensions import \
     Self  # requires python 3.11 to import from typing
 
-import cf_xarray as cfxr
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -98,8 +97,8 @@ def generate_regular_flux_times(t_start: dt.datetime, t_end: dt.datetime, freq: 
     return flux_times
 
 
-def generate_flux_index(t_bins: pd.IntervalIndex,
-                        out_grid: xr.DataArray, grid_mask: xr.DataArray | None = None) -> pd.MultiIndex:
+def generate_flux_index_from_latlon_grid(t_bins: pd.IntervalIndex,
+                                         out_grid: xr.DataArray, grid_mask: xr.DataArray | None = None) -> pd.MultiIndex:
     """
     Generate Pandas MultiIndex object for flux state.
 
@@ -116,7 +115,7 @@ def generate_flux_index(t_bins: pd.IntervalIndex,
     Returns
     -------
     flux_index : pd.MultiIndex
-        MultiIndex for flux state
+        MultiIndex for flux state: [flux_time, lat, lon]
     """
 
     x_dim, y_dim = 'lon', 'lat'
@@ -129,8 +128,8 @@ def generate_flux_index(t_bins: pd.IntervalIndex,
         # Mask grid cells where mask == 0
         cells = cells.where(grid_mask)
 
-    flux_index = pd.MultiIndex.from_product([t_bins, cells.values.ravel()],
-                                            names=['flux_time', 'cell'])
+    flux_index = pd.MultiIndex.from_product([t_bins, y, x],
+                                            names=['flux_time', 'lat', 'lon'])
     return flux_index
 
 
@@ -162,17 +161,107 @@ def integrate_over_time_bins(data: xr.DataArray, time_bins: pd.IntervalIndex,
     return integrated
 
 
-class StateMixin(ABC):
+
+class CSVMixin(ABC):
+    obs_dims: list[str]
+    data: pd.Series
+
+    @classmethod
+    def from_path(cls, path: str | Path) -> Self:
+        """
+        Read the data from a CSV file.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to the CSV file.
+
+        Returns
+        -------
+        CSVMixin
+            Instance of CSVMixin.
+        """
+        data = pd.read_csv(path, index_col=cls.obs_dims)
+        return cls(data)
+
+    def to_csv(self, path: str | Path) -> None:
+        """
+        Write the data to a CSV file.
+
+        Parameters
+        ----------
+        path : str | Path
+            Path to the CSV file.
+        """
+        self.data.to_csv(path)
+
+
+class ObsMixin(ABC):
+    obs_dims: list[str] = ['receptor', 'obs_time']  # TODO maybe in the future this will be set by init
+
+    def __init__(self, data: pd.Series):
+        assert data.index.names == self.obs_dims, f'index must have names: {self.obs_dims}'
+        data = data.rename(self.__class__.__name__.lower())  #  rename for consistency
+        self.data = data
+
+    def stack_obs_dims(self, data: xr.DataArray) -> xr.DataArray:
+        """
+        Stack the observation dimensions into a single 'obs' dimension.
+
+        Parameters
+        ----------
+        data : xr.DataArray
+            Data to stack.
+
+        Returns
+        -------
+        xr.DataArray
+            Stacked observations.
+        """
+        return data.stack(obs=self.obs_dims)
+
+
+class Observation(ObsMixin, CSVMixin):
+
+    @property
+    def z(self) -> xr.DataArray:
+        return self.stack_obs_dims(self.data.to_xarray())
+
+
+class Background(ObsMixin, CSVMixin):
+    obs_dims: list[str] = ['obs_time']
+
+    @property
+    def c(self) -> xr.DataArray:
+        return self.data.to_xarray()
+
+
+class FluxMixin(ABC):
 
     data: xr.DataArray
+    flux_dims: list[str] = ['flux_time', 'lat', 'lon']  # TODO maybe in the future this will be set by init
 
     def __init__(self, data: xr.DataArray):
         self.data = data
-        self.flux_times = data.get_index('flux_time')
-        self.cells = data.get_index('cell')
 
         # Store regridder if it was used
         self._regridder = None
+
+    def stack_flux_dims(self, data: xr.DataArray) -> xr.DataArray:
+        """
+        Stack the flux dimensions into a single 'flux' dimension.
+
+        Parameters
+        ----------
+        data : xr.DataArray
+            Data to stack.
+
+        Returns
+        -------
+        xr.DataArray
+            Stacked state.
+        """
+        return data.stack(flux=self.flux_dims)
 
     @staticmethod
     def encode_flux_times(data: xr.Dataset) -> xr.Dataset:
@@ -198,19 +287,6 @@ class StateMixin(ABC):
 
         # Assign the rebuilt IntervalIndex to the data
         data = data.assign_coords(flux_time=flux_times)
-        return data
-
-    @staticmethod
-    def encode_cells(data: xr.Dataset) -> xr.Dataset:
-        # Need to encode pandas MultiIndex to a netcdf compatible format
-        data = cfxr.encode_multi_index_as_compress(ds=data, idxnames='cell')
-        return data
-
-    @staticmethod
-    def decode_cells(data: xr.Dataset) -> xr.Dataset:
-        # Rebuild the cell MultiIndex
-        # (Drops the bnds dim so we need to do after rebuilding flux_times)
-        data = cfxr.decode_compress_to_multi_index(encoded=data, idxnames='cell')
         return data
 
     @classmethod
@@ -240,10 +316,6 @@ class StateMixin(ABC):
         # Rebuild the IntervalIndex with the correct closed attribute
         data = cls.decode_flux_times(data)
 
-        # Rebuild the cell MultiIndex
-        # (Drops the bnds dim so we need to do after rebuilding flux_times)
-        data = cls.decode_cells(data)
-
         var = list(data.data_vars)[0]  # should only be one variable
         return cls(data[var])
 
@@ -271,10 +343,6 @@ class StateMixin(ABC):
         data = self.data.to_dataset()  # convert to dataset to write to disk
 
         # Can't write python objects to disk
-
-        # Need to encode pandas MultiIndex to a netcdf compatible format
-        data = self.encode_cells(data)
-
         # Need to serialize the IntervalIndex to a netcdf compatible format
         data = self.encode_flux_times(data)
 
@@ -289,7 +357,11 @@ class StateMixin(ABC):
             data.to_netcdf(path)
 
 
-class Prior(StateMixin):
+class Prior(FluxMixin):
+
+    @property
+    def x_0(self) -> xr.DataArray:
+        return self.stack_flux_dims(self.data)
 
     @classmethod
     def from_inventory(cls, inventory: Inventory, flux_times, out_grid,
@@ -317,9 +389,6 @@ class Prior(StateMixin):
                                  weights=regrid_weights)
         prior = regridder(emis)
 
-        # Stack lat lon into cell dimension
-        prior = prior.stack(cell=['lat', 'lon'])
-
         # Convert time coords to IntervalIndex
         intervalindex = regular_times_to_intervals(prior.time, time_step=time_step,
                                                    closed='left')
@@ -329,7 +398,7 @@ class Prior(StateMixin):
         # Filter to flux_times
         prior = prior.sel(flux_time=flux_times)
 
-        prior.name = 'prior_emissions'  # Rename emissions
+        prior.name = 'prior_flux'
 
         print('Prior state matrix built successfully.')
 
@@ -338,11 +407,15 @@ class Prior(StateMixin):
         return prior
 
 
-class Jacobian(StateMixin):
+class Jacobian(ObsMixin, FluxMixin):
     def __init__(self, data: xr.DataArray):
-        super().__init__(data)
-        self.receptors = data.get_index('receptor')
-        self.obs_times = data.get_index('obs_time')
+        FluxMixin.__init__(self, data)
+
+    @property
+    def H(self) -> xr.DataArray:
+        data = self.stack_obs_dims(self.data)
+        data = self.stack_flux_dims(data)
+        return data
 
     @staticmethod
     def _compute_jacobian_row_from_stilt(sim_id, stilt, t_start, t_stop, flux_times,
@@ -365,9 +438,8 @@ class Jacobian(StateMixin):
         # Regrid the footprint to the output grid
         regridder = xe.Regridder(ds_in=foot, ds_out=out_grid, method='conservative',
                                  weights=regrid_weights)
-        regridded = regridder(foot, keep_attrs=True)
-        row = regridded.stack(cell=['lat', 'lon'])  # stack lat-lon into a single cell dimension
-        return row
+        foot = regridder(foot, keep_attrs=True)
+        return foot
 
     @classmethod
     def from_stilt(cls, stilt: STILTModel, flux_times: pd.IntervalIndex,
@@ -427,7 +499,7 @@ class Jacobian(StateMixin):
         del H.attrs['long_name']
         H.flux_time.attrs = {}  # drop flux_time attrs from stilt
 
-        empty_rows = H.isnull().all(dim=['flux_time', 'cell'])  # TODO is there ever going to be empty rows?
+        empty_rows = H.isnull().all(dim=['flux_time', 'lat', 'lon'])  # TODO is there ever going to be empty rows?
         if empty_rows.any():
             print('Warning: Empty rows in Jacobian matrix for receptors: '
                   f'{empty_rows.where(empty_rows, drop=True).stack(receptor_time=("receptor", "obs_time")).receptor_time.values}')
@@ -515,7 +587,7 @@ class PriorErrorCovariance(CovarianceMixin):
     Prior Error Covariance matrix for the inversion.
     Has dimensions of flux_index x flux_index.
     """
-    dim: str = 'flux'
+    dim: str = 'state'
 
     @classmethod
     def from_variances(cls, prior_error_variances: float | np.ndarray,
@@ -545,13 +617,14 @@ class PriorErrorCovariance(CovarianceMixin):
         PriorCovariance
             Instance of PriorCovariance.
         """
-        cells = flux_index.get_level_values('cell').unique()
         flux_times = flux_index.get_level_values('flux_time').unique()
+        lats = flux_index.get_level_values('lat').unique()
+        lons = flux_index.get_level_values('lon').unique()
 
         if spatial_corr is None:
-            spatial_corr = np.eye(len(cells))
+            spatial_corr = np.eye(len(lats) * len(lons))
         elif isinstance(spatial_corr, dict):
-            spatial_corr = cls.build_spatial_corr(cells=cells, **spatial_corr)
+            spatial_corr = cls.build_spatial_corr(lat=lats, lon=lons, **spatial_corr)
         elif not isinstance(spatial_corr, np.ndarray):
             raise ValueError('spatial_corr must be a dict or np.ndarray')
 
@@ -566,15 +639,17 @@ class PriorErrorCovariance(CovarianceMixin):
         return cls(S_0, index=flux_index)
 
     @staticmethod
-    def build_spatial_corr(cells: xr.DataArray, method: str | dict | None = None, **kwargs) -> np.ndarray:
+    def build_spatial_corr(lat: np.ndarray, lon: np.ndarray, method: str | dict | None = None, **kwargs) -> np.ndarray:
         """
         Build the spatial error correlation matrix for the inversion.
-        Has dimensions of cells x cells.
+        Has dimensions of lat x lon.
 
         Parameters
         ----------
-        cells : xr.DataArray
-            Flux cells.
+        lat : np.ndarray
+            Latitude coordinates of the flux cells.
+        lon : np.ndarray
+            Longitude coordinates of the flux cells.
         method : str, dict, optional
             Method for calculating the spatial error correlation matrix.
             Options include:
@@ -600,7 +675,8 @@ class PriorErrorCovariance(CovarianceMixin):
             raise ValueError('method must be a string or dict')
 
         # Get the lat/lon coordinates of the flux cells
-        cells = np.array([*cells.to_numpy()])  # convert to 2D numpy array [[lat, lon], ...]
+        lon_grid, lat_grid = np.meshgrid(lon, lat)
+        cells = np.column_stack([lat_grid.ravel(), lon_grid.ravel()])  # create pairwise stacks of lat and lon
         N = len(cells)  # number of flux cells
 
         # Initialize the spatial correlation matrix
@@ -814,11 +890,11 @@ class FluxInversion(Inversion):
     serializers = {
         'obs': {
             'save': lambda obj, path: obj.to_csv(path),
-            'load': lambda path: pd.read_csv(path).set_index(['receptor', 'obs_time'])
+            'load': lambda path: Observation.from_path(path)
         },
         'background': {
             'save': lambda obj, path: obj.to_csv(path),
-            'load': lambda path: pd.read_csv(path).set_index('obs_time')
+            'load': lambda path: Background.from_path(path)
         },
         'prior': {
             'save': lambda obj, path: obj.to_netcdf(path),
@@ -838,7 +914,7 @@ class FluxInversion(Inversion):
         }
     }
 
-    # Default paths as class attributes
+    # Default paths as class attribute
     default_paths = {
         'background': 'background.csv',
         'jacobian': 'jacobian',
@@ -853,9 +929,9 @@ class FluxInversion(Inversion):
                  project: str | Path,
                  flux_times: pd.IntervalIndex,
                  out_grid: xr.DataArray,
-                 obs: pd.Series | None = None,  # with MultiIndex[receptor.id, obs_time]
-                 background: pd.Series | None = None,  # with Index[obs_time]
-                 bio: xr.DataArray | None = None,
+                 obs: Observation | None = None,
+                 background: Background | None = None,
+                 bio: pd.Series | xr.DataArray | None = None,
                  prior: Prior | None = None,
                  jacobian: Jacobian | None = None,
                  prior_error_cov: PriorErrorCovariance | None = None,
@@ -892,24 +968,23 @@ class FluxInversion(Inversion):
         self.prior_error_cov = prior_error_cov if prior_error_cov is not None else self._load_input('prior_error_cov')
         self.modeldata_mismatch = modeldata_mismatch if modeldata_mismatch is not None else self._load_input('modeldata_mismatch')
 
+        # Save original inputs
+        self._save_inputs()
+
         # Generate indices
-        self.obs_index = self.obs.index
-        self.flux_index = generate_flux_index(t_bins=flux_times, out_grid=out_grid, grid_mask=grid_mask)
+        self.obs_index = self.modeldata_mismatch.index
+        self.flux_index = generate_flux_index_from_latlon_grid(t_bins=flux_times, out_grid=out_grid, grid_mask=grid_mask)
 
         self.receptors = self.obs_index.get_level_values('receptor').unique()
         self.obs_times = self.obs_index.get_level_values('obs_time').unique()
         # self.flux_times = self.flux_index.get_level_values('flux_time').unique()
-        self.cells = self.flux_index.get_level_values('cell').unique()
+        self.lats = self.flux_index.get_level_values('lat').unique()
+        self.lons = self.flux_index.get_level_values('lon').unique()
 
-        # Align indices
-        self._align_indices()
+        # Prepare inversion inputs
+        inputs = self._prepare_inputs()
 
-        # Save inputs
-        self._save_inputs()
-
-        super().__init__(z=self.obs.values, c=self.background.values,
-                         x_0=self.prior.data.values, H=self.jacobian.data.values,
-                         S_0=self.prior_error_cov.data, S_z=self.modeldata_mismatch.data)
+        super().__init__(**inputs)
 
     def run(self):
         """
@@ -919,29 +994,24 @@ class FluxInversion(Inversion):
         # save outputs
         print('Inversion complete.')
 
-    def _align_indices(self):
+    def _prepare_inputs(self)-> dict[str, np.ndarray]:
         """
         Align the indices of the inputs.
         """
-        print('Aligning indices...')
-        # Align observations
-        self.obs = self.obs.loc[self.obs_index]
+        inputs = {}
+        
+        print('Preparing inputs...')
+        obs_dim = xr.DataArray(self.obs_index, dims=['obs'])
+        flux_dim = xr.DataArray(self.flux_index, dims=['flux'])
+        
+        inputs['z'] = self.obs.z.reindex_like(obs_dim).values
+        inputs['c'] = self.background.c.sel(obs_time=self.obs_times).values
+        inputs['x_0'] = self.prior.x_0.reindex_like(flux_dim).values
+        inputs['H'] = self.jacobian.H.reindex_like(obs_dim).reindex_like(flux_dim).values
+        inputs['S_0'] = self.prior_error_cov.loc(self.flux_index).data
+        inputs['S_z'] = self.modeldata_mismatch.loc(self.obs_index).data
 
-        # Align background
-        self.background = self.background.loc[self.obs_times]
-
-        # Align prior
-        self.prior = Prior(self.prior.data.sel(flux_time=self.flux_times, cell=self.cells))
-
-        # Align Jacobian
-        self.jacobian = Jacobian(self.jacobian.data.sel(obs_time=self.obs_times, receptor=self.receptors,
-                                                             flux_time=self.flux_times, cell=self.cells))
-
-        # Align prior error covariance
-        self.prior_error_cov = self.prior_error_cov.sort(self.flux_index)
-
-        # Align model-data mismatch
-        self.modeldata_mismatch = self.modeldata_mismatch.sort(self.obs_index)
+        return inputs
 
     def _save_inputs(self):
         """Saves all provided inputs to individual files in the project directory."""
