@@ -3,9 +3,7 @@ Bayesian Inversion
 """
 
 from functools import cached_property
-from pandas import DataFrame
-import xarray as xr
-from xarray import DataArray
+import numpy as np
 
 
 class Inversion:
@@ -14,27 +12,27 @@ class Inversion:
 
     Attributes
     ----------
-    z : xarray.DataArray
+    z : np.ndarray
         Observed data
-    c : xarray.DataArray
+    c : np.ndarray
         Constant (background) data
-    x_0 : xarray.DataArray
+    x_0 : np.ndarray
         Prior state estimate
-    H : xarray.DataArray
+    H : np.ndarray
         Jacobian matrix
-    S_0 : xarray.DataArray
+    S_0 : np.ndarray
         Prior error covariance
-    S_z : xarray.DataArray
+    S_z : np.ndarray
         Model-data mismatch covariance
     """
 
     def __init__(self,
-                 z: DataArray | DataFrame,
-                 c: DataArray | DataFrame,
-                 x_0: DataArray,
-                 H: DataArray,
-                 S_0: DataArray,
-                 S_z: DataArray,
+                 z: np.ndarray,
+                 c: np.ndarray,
+                 x_0: np.ndarray,
+                 H: np.ndarray,
+                 S_0: np.ndarray,
+                 S_z: np.ndarray,
                  rf: float = 1.0,
                  verbose: bool = True
                  ):
@@ -43,28 +41,28 @@ class Inversion:
 
         Parameters
         ----------
-        z : xarray.DataArray | pandas.DataFrame
+        z : np.ndarray
             Observed data
-        c : xarray.DataArray | pandas.DataFrame
+        c : np.ndarray
             Constant (background) data
-        x_0 : xarray.DataArray
+        x_0 : np.ndarray
             Prior state estimate
-        H : xarray.DataArray
+        H : np.ndarray
             Jacobian matrix
-        S_0 : xarray.DataArray
+        S_0 : np.ndarray
             Prior error covariance
-        S_z : xarray.DataArray
+        S_z : np.ndarray
             Model-data mismatch covariance
         """
-        self.z = z if isinstance(z, DataArray) else DataArray(z)
-        self.c = c if isinstance(c, DataArray) else DataArray(c)
+        self.z = z
+        self.c = c
         self.x_0 = x_0
         self.H = H
         self.S_0 = S_0
         self.S_z = S_z
 
-        self.n_obs = len(z)
-        self.n_state = H.shape[1]  # FIXME: check if this is correct
+        self.n_obs = S_z.shape[0]
+        self.n_state = S_0.shape[0]
 
     def forward(self, x):
         """
@@ -73,6 +71,7 @@ class Inversion:
         .. math::
             y = Hx + c
         """
+        print('Performing forward calculation...')
         return self.H @ x + self.c
 
     def residual(self, x):
@@ -82,6 +81,7 @@ class Inversion:
         .. math::
             r = z - (Hx + c)
         """
+        print('Performing residual calculation...')
         return self.z - self.forward(x)
 
     def cost(self, x):
@@ -91,8 +91,9 @@ class Inversion:
         .. math::
             J(x) = \\frac{1}{2}(x - x_0)^T S_0^{-1}(x - x_0) + \\frac{1}{2}(z - Hx - c)^T S_z^{-1}(z - Hx - c)
         """
-        cost_model = (x - self.x_0).T @ xr.linalg.pinv(self.S_0) @ (x - self.x_0)
-        cost_data = (self.z - self.forward(x)).T @ xr.linalg.pinv(self.S_z) @ (self.z - self.forward(x))
+        print('Performing cost calculation...')
+        cost_model = (x - self.x_0).T @ np.linalg.pinv(self.S_0) @ (x - self.x_0)
+        cost_data = (self.z - self.forward(x)).T @ np.linalg.pinv(self.S_z) @ (self.z - self.forward(x))
         return 0.5 * (cost_model + cost_data)
 
     @cached_property
@@ -103,7 +104,8 @@ class Inversion:
         .. math::
             K = (H S_0)^T (H S_0 H^T + S_z)^{-1}
         """
-        return (self.H @ self.S_0).T @ xr.linalg.pinv(self.H @ self.S_0 @ self.H.T + self.S_z)  # TODO auto-completed - not sure if correct
+        print('Calculating Kalman Gain Matrix...')
+        return (self.H @ self.S_0).T @ np.linalg.pinv(self.H @ self.S_0 @ self.H.T + self.S_z)  # TODO auto-completed - not sure if correct
 
     @cached_property
     def S_hat(self):
@@ -114,8 +116,9 @@ class Inversion:
             \\hat{S} = (H^T S_z^{-1} H + S_0^{-1})^{-1}
                 = S_0 - (H S_0)^T(H S_0 H^T + S_z)^{-1}(H S_0)
         """
-        return xr.linalg.pinv(H.T @ xr.linalg.pinv(S_z) @ H + xr.linalg.pinv(S_0))
-        # return self.S_0 - (self.H @ self.S_0).T @ xr.linalg.pinv(self.H @ self.S_0 @ self.H.T + self.S_z) @ (self.H @ self.S_0)
+        print('Calculating Posterior Error Covariance Matrix...')
+        return np.linalg.pinv(self.H.T @ np.linalg.pinv(self.S_z) @ self.H + np.linalg.pinv(self.S_0))
+        # return self.S_0 - (self.H @ self.S_0).T @ np.linalg.pinv(self.H @ self.S_0 @ self.H.T + self.S_z) @ (self.H @ self.S_0)
 
     @cached_property
     def x_hat(self):
@@ -125,6 +128,7 @@ class Inversion:
         .. math::
             \\hat{x} = x_0 + K(z - Hx_0 - c)
         """
+        print('Calculating Posterior Mean State Estimate...')
         return self.x_0 + self.K @ self.residual(self.x_0)
 
     @cached_property
@@ -135,6 +139,7 @@ class Inversion:
         .. math::
             A = KH
         """
+        print('Calculating Average Kernel Matrix...')
         return self.K @ self.H
 
     @cached_property
@@ -145,4 +150,5 @@ class Inversion:
         .. math::
             \\hat{y} = H \\hat{x} + c
         """
+        print('Calculating Posterior Mean Data Estimate...')
         return self.forward(self.x_hat)
