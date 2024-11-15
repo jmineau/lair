@@ -16,10 +16,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import xesmf as xe
-from lair import uataq
-from lair.air.stilt import Footprint
 from lair.air.stilt import Model as STILTModel
-from lair.air.stilt import Receptor
+from lair.air.stilt import Receptor, Footprint
 from lair import inventories
 from lair.inventories import Inventory
 from lair.inversion.bayesian import Inversion
@@ -30,8 +28,8 @@ import concurrent.futures
 
 # TODO:
 # - non lat-lon grids
+#   - polygonal flux "cells"
 # - multiple receptors
-# - polygonal flux "cells"
 
 
 def generate_obs_index(receptor_obs: dict['Receptor', pd.Series]) -> pd.MultiIndex:
@@ -422,7 +420,11 @@ class Jacobian(StateMixin):
                     H_rows.append(row)
 
         H = xr.merge(H_rows).foot
+        H.name = 'jacobian'
 
+        # Reset attrs
+        del H.attrs['standard_name']
+        del H.attrs['long_name']
         H.flux_time.attrs = {}  # drop flux_time attrs from stilt
 
         empty_rows = H.isnull().all(dim=['flux_time', 'cell'])  # TODO is there ever going to be empty rows?
@@ -439,10 +441,12 @@ class Jacobian(StateMixin):
 
 class CovarianceMixin(ABC):
 
+    dim: str
     data: np.ndarray
 
-    def __init__(self, data: np.ndarray):
+    def __init__(self, data: np.ndarray, index):
         self.data = data
+        self.index = index
 
     @classmethod
     def from_path(cls, path: str | Path) -> Self:
@@ -472,17 +476,50 @@ class CovarianceMixin(ABC):
         """
         np.save(path, self.data)
 
+    def loc(self, index: pd.Index) -> np.ndarray:
+        """
+        Get the covariance matrix values for a given index.
+
+        Parameters
+        ----------
+        index : pd.Index
+            Index to get covariance matrix values for.
+
+        Returns
+        -------
+        np.ndarray
+            Covariance matrix values.
+        """
+        df = pd.DataFrame(self.data, index=self.index, columns=self.index)
+        return df.loc[index, index].values
+
+    def sort(self, index: pd.Index) -> Self:
+        """
+        Sort the covariance matrix by index.
+
+        Parameters
+        ----------
+        index : pd.Index
+            Index to sort by.
+
+        Returns
+        -------
+        CovarianceMixin
+            Sorted covariance matrix.
+        """
+        return self.__class__(self.loc(index), index=index)
+
 
 class PriorErrorCovariance(CovarianceMixin):
     """
     Prior Error Covariance matrix for the inversion.
     Has dimensions of flux_index x flux_index.
     """
+    dim: str = 'flux'
 
     @classmethod
     def from_variances(cls, prior_error_variances: float | np.ndarray,
-                       flux_index: pd.MultiIndex | None = None,
-                       cells: xr.DataArray | None = None, flux_times: pd.IntervalIndex | None = None,
+                       flux_index: pd.MultiIndex,
                        spatial_corr: dict | np.ndarray | None = None,
                        temporal_corr: dict | np.ndarray | None = None) -> Self:
         """
@@ -492,12 +529,8 @@ class PriorErrorCovariance(CovarianceMixin):
         ----------
         prior_error_variances : float | np.ndarray
             Prior error variances for the inversion.
-        flux_index : pd.MultiIndex, optional
-            MultiIndex for flux state. If None, cells and flux_times must be provided.
-        cells : xr.DataArray, optional
-            Flux cells, by default None. If None, flux_index must be provided.
-        flux_times : pd.IntervalIndex, optional
-            Time bins for the inversion, by default None. If None, flux_index must be provided.
+        flux_index : pd.MultiIndex
+            MultiIndex for flux state.
         spatial_corr : dict | np.ndarray, optional
             Spatial error correlation matrix for the inversion, by default None.
             If None, the spatial error correlation matrix is an identity matrix.
@@ -512,8 +545,8 @@ class PriorErrorCovariance(CovarianceMixin):
         PriorCovariance
             Instance of PriorCovariance.
         """
-        cells = cells or flux_index.get_level_values('cell').unique()
-        flux_times = flux_times or flux_index.get_level_values('flux_time').unique()
+        cells = flux_index.get_level_values('cell').unique()
+        flux_times = flux_index.get_level_values('flux_time').unique()
 
         if spatial_corr is None:
             spatial_corr = np.eye(len(cells))
@@ -530,7 +563,7 @@ class PriorErrorCovariance(CovarianceMixin):
             raise ValueError('temporal_corr must be a dict or np.ndarray')
 
         S_0 = (prior_error_variances ** 2) * np.kron(spatial_corr, temporal_corr)
-        return cls(S_0)
+        return cls(S_0, index=flux_index)
 
     @staticmethod
     def build_spatial_corr(cells: xr.DataArray, method: str | dict | None = None, **kwargs) -> np.ndarray:
@@ -698,6 +731,7 @@ class ModelDataMismatch(CovarianceMixin):
     Model-data mismatch matrix for the inversion.
     Has dimensions of obs_index x obs_index.
     """
+    dim: str = 'obs'
 
     @classmethod
     def from_rmse(cls, rmse: float, obs_index: pd.MultiIndex,
@@ -728,7 +762,7 @@ class ModelDataMismatch(CovarianceMixin):
         # - accept array of RMSEs
         # - spatial decay based on receptor locations
 
-        MDM = np.eye(len(obs_index)) * rmse ** 2
+        mdm = np.eye(len(obs_index)) * rmse ** 2
         off_diag_mask = ~np.eye(len(obs_index), dtype=bool)
 
         if time_decay:
@@ -742,13 +776,13 @@ class ModelDataMismatch(CovarianceMixin):
                 decay_matrix = time_decay_matrix(receptor_times, decay=time_decay)
                 off_diags[np.ix_(receptor_indices, receptor_indices)] = decay_matrix
 
-            MDM[off_diag_mask] += off_diags[off_diag_mask] * (rmse ** 2)
+            mdm[off_diag_mask] += off_diags[off_diag_mask] * (rmse ** 2)
         elif time_decay is False:
             # Set all elements to the RMSE^2
-            MDM[:] = rmse ** 2
+            mdm[:] = rmse ** 2
         # Else leave as identity matrix
 
-        return cls(MDM)
+        return cls(mdm, index=obs_index)
 
     def __add__(self, other: Self) -> Self:
         """
@@ -867,15 +901,47 @@ class FluxInversion(Inversion):
         # self.flux_times = self.flux_index.get_level_values('flux_time').unique()
         self.cells = self.flux_index.get_level_values('cell').unique()
 
-        # Filter to flux_times / cells
-        self.jacobian.data = self.jacobian.data.sel(flux_time=self.flux_times, cell=self.cells)
-        self.prior.data = self.prior.data.sel(flux_time=self.flux_times, cell=self.cells)
+        # Align indices
+        self._align_indices()
 
         # Save inputs
         self._save_inputs()
 
-        # super().__init__(z=self.obs, c=self.background, x_0=self.prior.data, H=self.jacobian.data,
-        #                  S_0=self.prior_error_cov.data, S_z=self.modeldata_mismatch)
+        super().__init__(z=self.obs.values, c=self.background.values,
+                         x_0=self.prior.data.values, H=self.jacobian.data.values,
+                         S_0=self.prior_error_cov.data, S_z=self.modeldata_mismatch.data)
+
+    def run(self):
+        """
+        Run the inversion.
+        """
+        print('Running inversion...')
+        # save outputs
+        print('Inversion complete.')
+
+    def _align_indices(self):
+        """
+        Align the indices of the inputs.
+        """
+        print('Aligning indices...')
+        # Align observations
+        self.obs = self.obs.loc[self.obs_index]
+
+        # Align background
+        self.background = self.background.loc[self.obs_times]
+
+        # Align prior
+        self.prior = Prior(self.prior.data.sel(flux_time=self.flux_times, cell=self.cells))
+
+        # Align Jacobian
+        self.jacobian = Jacobian(self.jacobian.data.sel(obs_time=self.obs_times, receptor=self.receptors,
+                                                             flux_time=self.flux_times, cell=self.cells))
+
+        # Align prior error covariance
+        self.prior_error_cov = self.prior_error_cov.sort(self.flux_index)
+
+        # Align model-data mismatch
+        self.modeldata_mismatch = self.modeldata_mismatch.sort(self.obs_index)
 
     def _save_inputs(self):
         """Saves all provided inputs to individual files in the project directory."""
