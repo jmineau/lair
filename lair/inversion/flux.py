@@ -4,7 +4,7 @@ Bayesian Flux Inversion
 
 from abc import ABC, abstractmethod
 import datetime as dt
-from functools import partial
+from functools import cached_property, partial
 from pathlib import Path
 import shutil
 from typing import Any, Literal
@@ -635,7 +635,7 @@ class PriorErrorCovariance(CovarianceMixin):
         elif not isinstance(temporal_corr, np.ndarray):
             raise ValueError('temporal_corr must be a dict or np.ndarray')
 
-        S_0 = (prior_error_variances ** 2) * np.kron(spatial_corr, temporal_corr)
+        S_0 = (prior_error_variances ** 2) * np.kron(temporal_corr, spatial_corr)
         return cls(S_0, index=flux_index)
 
     @staticmethod
@@ -993,6 +993,15 @@ class FluxInversion(Inversion):
         print('Running inversion...')
         # save outputs
         print('Inversion complete.')
+
+    @cached_property
+    def x_hat(self) -> xr.DataArray:
+        """
+        Posterior flux estimate.
+        """
+        arr = super().x_hat
+        da = xr.DataArray(arr, coords={'flux': self.flux_index}, dims=['flux'])
+        return da.unstack('flux')
 
     def _prepare_inputs(self)-> dict[str, np.ndarray]:
         """
