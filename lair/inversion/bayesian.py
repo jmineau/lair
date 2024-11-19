@@ -4,6 +4,7 @@ Bayesian Inversion
 
 from functools import cached_property
 import numpy as np
+from numpy.linalg import inv as invert
 
 
 class Inversion:
@@ -92,8 +93,8 @@ class Inversion:
             J(x) = \\frac{1}{2}(x - x_0)^T S_0^{-1}(x - x_0) + \\frac{1}{2}(z - Hx - c)^T S_z^{-1}(z - Hx - c)
         """
         print('Performing cost calculation...')
-        cost_model = (x - self.x_0).T @ np.linalg.pinv(self.S_0) @ (x - self.x_0)
-        cost_data = (self.z - self.forward(x)).T @ np.linalg.pinv(self.S_z) @ (self.z - self.forward(x))
+        cost_model = (x - self.x_0).T @ invert(self.S_0) @ (x - self.x_0)
+        cost_data = (self.z - self.forward(x)).T @ invert(self.S_z) @ (self.z - self.forward(x))
         return 0.5 * (cost_model + cost_data)
 
     @cached_property
@@ -105,7 +106,7 @@ class Inversion:
             K = (H S_0)^T (H S_0 H^T + S_z)^{-1}
         """
         print('Calculating Kalman Gain Matrix...')
-        return (self.H @ self.S_0).T @ np.linalg.pinv(self.H @ self.S_0 @ self.H.T + self.S_z)  # TODO auto-completed - not sure if correct
+        return (self.H @ self.S_0).T @ invert(self.H @ self.S_0 @ self.H.T + self.S_z)
 
     @cached_property
     def S_hat(self):
@@ -117,8 +118,8 @@ class Inversion:
                 = S_0 - (H S_0)^T(H S_0 H^T + S_z)^{-1}(H S_0)
         """
         print('Calculating Posterior Error Covariance Matrix...')
-        return np.linalg.pinv(self.H.T @ np.linalg.pinv(self.S_z) @ self.H + np.linalg.pinv(self.S_0))
-        # return self.S_0 - (self.H @ self.S_0).T @ np.linalg.pinv(self.H @ self.S_0 @ self.H.T + self.S_z) @ (self.H @ self.S_0)
+        return invert(self.H.T @ invert(self.S_z) @ self.H + invert(self.S_0))
+        # return self.S_0 - (self.H @ self.S_0).T @ invert(self.H @ self.S_0 @ self.H.T + self.S_z) @ (self.H @ self.S_0)
 
     @cached_property
     def x_hat(self):
