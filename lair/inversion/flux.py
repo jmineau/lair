@@ -995,13 +995,29 @@ class FluxInversion(Inversion):
         print('Inversion complete.')
 
     @cached_property
-    def x_hat(self) -> xr.DataArray:
+    def posterior(self) -> xr.DataArray:
         """
         Posterior flux estimate.
         """
-        arr = super().x_hat
-        da = xr.DataArray(arr, coords={'flux': self.flux_index}, dims=['flux'])
+        x_hat = super().x_hat
+        da = xr.DataArray(x_hat, coords={'flux': self.flux_index}, dims=['flux'])
         return da.unstack('flux')
+
+    @cached_property
+    def posterior_obs(self) -> pd.Series:
+        """
+        Posterior observation estimate.
+        """
+        y_hat = super().y_hat
+        return pd.Series(y_hat, index=self.obs_index)
+
+    @cached_property
+    def posterior_error_cov(self) -> np.ndarray:
+        """
+        Posterior error covariance matrix.
+        """
+        S_hat = super().S_hat
+        return S_hat
 
     def _prepare_inputs(self)-> dict[str, np.ndarray]:
         """
