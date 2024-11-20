@@ -875,8 +875,9 @@ class ModelDataMismatch(CovarianceMixin):
             Sum of the two ModelDataMismatch instances.
         """
         assert isinstance(other, ModelDataMismatch), 'Can only add ModelDataMismatch instances'
+        assert self.index.equals(other.index), 'ModelDataMismatch instances must have the same index'
         assert self.data.shape == other.data.shape, 'ModelDataMismatch instances must have the same shape'
-        return ModelDataMismatch(self.data + other.data)
+        return ModelDataMismatch(self.data + other.data, index=self.index)
 
 
 class FluxInversion(Inversion):
