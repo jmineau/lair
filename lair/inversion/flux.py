@@ -408,6 +408,8 @@ class Prior(FluxMixin):
 
 
 class Jacobian(ObsMixin, FluxMixin):
+    MISSING_FOOTPRINT = object()
+
     def __init__(self, data: xr.DataArray):
         FluxMixin.__init__(self, data)
 
@@ -421,6 +423,9 @@ class Jacobian(ObsMixin, FluxMixin):
     def _compute_jacobian_row_from_stilt(sim_id, stilt, t_start, t_stop, flux_times,
                                          out_grid, grid_buffer, regrid_weights) -> xr.DataArray | None:
         sim = stilt.simulations[sim_id]
+
+        if not sim.has_footprint:
+            return sim_id
 
         if not sim.footprint.time_range.start < t_stop and sim.footprint.time_range.stop > t_start:
             return None
@@ -481,6 +486,7 @@ class Jacobian(ObsMixin, FluxMixin):
 
         # Compute the Jacobian matrix in parallel
         H_rows = []
+        missing_foots = []
         max_workers = None if num_processes == 'max' else num_processes
         compute_jacobian_row = partial(cls._compute_jacobian_row_from_stilt,
                                        stilt=stilt, t_start=t_start, t_stop=t_stop,
@@ -489,6 +495,8 @@ class Jacobian(ObsMixin, FluxMixin):
         with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
             for row in executor.map(compute_jacobian_row, sim_df['sim_id']):
                 if row is not None:
+                    if isinstance(row, str):
+                        missing_foots.append(row)
                     H_rows.append(row)
 
         H = xr.merge(H_rows).foot
@@ -508,6 +516,7 @@ class Jacobian(ObsMixin, FluxMixin):
 
         jacobian = cls(H)
         jacobian._regridder = regridder
+        jacobian.missing_foots = missing_foots
         return jacobian
 
 
