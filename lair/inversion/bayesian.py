@@ -65,6 +65,20 @@ class Inversion:
         self.n_obs = S_z.shape[0]
         self.n_state = S_0.shape[0]
 
+    @cached_property
+    def S_0_inv(self):
+        """
+        Inverse of prior error covariance matrix
+        """
+        return invert(self.S_0)
+
+    @cached_property
+    def S_z_inv(self):
+        """
+        Inverse of model-data mismatch covariance matrix
+        """
+        return invert(self.S_z)
+
     def forward(self, x):
         """
         Forward model
@@ -93,8 +107,10 @@ class Inversion:
             J(x) = \\frac{1}{2}(x - x_0)^T S_0^{-1}(x - x_0) + \\frac{1}{2}(z - Hx - c)^T S_z^{-1}(z - Hx - c)
         """
         print('Performing cost calculation...')
-        cost_model = (x - self.x_0).T @ invert(self.S_0) @ (x - self.x_0)
-        cost_data = (self.z - self.forward(x)).T @ invert(self.S_z) @ (self.z - self.forward(x))
+        diff_model = x - self.x_0
+        diff_data = self.z - self.forward(x)
+        cost_model = diff_model.T @ self.S_0_inv @ diff_model
+        cost_data = diff_data.T @ self.S_z_inv @ diff_data
         return 0.5 * (cost_model + cost_data)
 
     @cached_property
@@ -106,7 +122,8 @@ class Inversion:
             K = (H S_0)^T (H S_0 H^T + S_z)^{-1}
         """
         print('Calculating Kalman Gain Matrix...')
-        return (self.H @ self.S_0).T @ invert(self.H @ self.S_0 @ self.H.T + self.S_z)
+        HS_0 = self.H @ self.S_0
+        return HS_0.T @ invert(HS_0 @ self.H.T + self.S_z)
 
     @cached_property
     def S_hat(self):
@@ -118,7 +135,7 @@ class Inversion:
                 = S_0 - (H S_0)^T(H S_0 H^T + S_z)^{-1}(H S_0)
         """
         print('Calculating Posterior Error Covariance Matrix...')
-        return invert(self.H.T @ invert(self.S_z) @ self.H + invert(self.S_0))
+        return invert(self.H.T @ self.S_z_inv @ self.H + self.S_0_inv)
         # return self.S_0 - (self.H @ self.S_0).T @ invert(self.H @ self.S_0 @ self.H.T + self.S_z) @ (self.H @ self.S_0)
 
     @cached_property
@@ -135,12 +152,12 @@ class Inversion:
     @cached_property
     def A(self):
         """
-        Average Kernel Matrix
+        Averaging Kernel Matrix
 
         .. math::
             A = KH
         """
-        print('Calculating Average Kernel Matrix...')
+        print('Calculating Averaging Kernel Matrix...')
         return self.K @ self.H
 
     @cached_property
