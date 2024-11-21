@@ -2,9 +2,9 @@
 Bayesian Flux Inversion
 """
 
-from abc import ABC, abstractmethod
+from abc import ABC
 import datetime as dt
-from functools import cached_property, partial
+from functools import cached_property
 from pathlib import Path
 import shutil
 from typing import Any, Literal
@@ -22,8 +22,9 @@ from lair.inventories import Inventory
 from lair.inversion.bayesian import Inversion
 from lair.utils.clock import regular_times_to_intervals, time_decay_matrix
 from lair.utils.geo import earth_radius
+from lair.utils.parallel import parallelize
 from sklearn.metrics.pairwise import haversine_distances
-import concurrent.futures
+
 
 # TODO:
 # - non lat-lon grids
@@ -487,17 +488,19 @@ class Jacobian(ObsMixin, FluxMixin):
         # Compute the Jacobian matrix in parallel
         H_rows = []
         missing_foots = []
-        max_workers = None if num_processes == 'max' else num_processes
-        compute_jacobian_row = partial(cls._compute_jacobian_row_from_stilt,
-                                       stilt=stilt, t_start=t_start, t_stop=t_stop,
-                                       flux_times=flux_times, out_grid=out_grid,
-                                       grid_buffer=grid_buffer, regrid_weights=regrid_weights)
-        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-            for row in executor.map(compute_jacobian_row, sim_df['sim_id']):
-                if row is not None:
-                    if isinstance(row, str):
-                        missing_foots.append(row)
+        parallelized_computer = parallelize(cls._compute_jacobian_row_from_stilt, num_processes=num_processes)
+        results = parallelized_computer(sim_df['sim_id'],
+                                        stilt=stilt, t_start=t_start, t_stop=t_stop,
+                                        flux_times=flux_times, out_grid=out_grid,
+                                        grid_buffer=grid_buffer, regrid_weights=regrid_weights)
+        for row in results:
+            if row is not None:
+                if isinstance(row, xr.Dataset):
                     H_rows.append(row)
+                elif isinstance(row, str):
+                    missing_foots.append(row)
+                else:
+                    raise ValueError('Unexpected output from compute_jacobian_row')
 
         H = xr.merge(H_rows).foot
         H.name = 'jacobian'
@@ -1034,7 +1037,7 @@ class FluxInversion(Inversion):
         Align the indices of the inputs.
         """
         inputs = {}
-        
+
         print('Preparing inputs...')
         obs_dim = xr.DataArray(self.obs_index, dims=['obs'])
         flux_dim = xr.DataArray(self.flux_index, dims=['flux'])

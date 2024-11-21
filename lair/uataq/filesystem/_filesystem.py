@@ -10,7 +10,7 @@ from typing import Literal, Type
 from lair.config import vprint
 from lair.uataq import errors
 from lair.utils.clock import TimeRange
-from lair.utils.records import parallelize_file_parser
+from lair.utils.parallel import parallelize
 
 
 lvls: dict = {
@@ -165,7 +165,7 @@ def parse_datafiles(files: list[DataFile], time_range: TimeRange,
         A DataFrame containing the parsed data.
     """
     # Parse the data files in parallel
-    datasets =  parallelize_file_parser(_parse_datafile, num_processes)(files)
+    datasets =  parallelize(_parse_datafile, num_processes)(files)
 
     # Concatenate the datasets
     vprint('Concatenating datasets and reducing rows to time range...')
