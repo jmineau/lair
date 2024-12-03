@@ -278,7 +278,7 @@ class Inventory(BaseGrid):
         xr.DataArray
             The total emissions.
         """
-        return sum_sectors(self._data).pint.dequantify(DEFAULT_PINT_FMT)
+        return sum_sectors(self.data)
 
     @property
     def collapsed(self) -> DataArray:
