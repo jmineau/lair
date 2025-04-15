@@ -271,6 +271,37 @@ class LinDatFile(filesystem.DataFile):
     file_freq = 'M'
     ext = 'dat'
 
+    def __init__(self, path: str):
+        super().__init__(path)
+
+        # Get instrument name and lvl from file path
+        self.instrument = self.get_instrument_name()
+        self.lvl = self.get_lvl()
+
+    def get_instrument_name(self) -> str:
+        """
+        Get the instrument name from the file path.
+
+        Returns
+        -------
+        str
+            The instrument name.
+        """
+        # Instrument name is the name of the directory two levels up from the file path
+        return os.path.basename(os.path.dirname(os.path.dirname(self.path)))
+
+    def get_lvl(self) -> str:
+        """
+        Get the data level from the file path.
+
+        Returns
+        -------
+        str
+            The data level.
+        """
+        # Data level is the name of the directory one level up from the file path
+        return os.path.basename(os.path.dirname(self.path))
+
     def parse(self) -> pd.DataFrame:
         """
         Parse a Lin data file.
@@ -283,6 +314,13 @@ class LinDatFile(filesystem.DataFile):
         vprint(f'Parsing {os.path.relpath(self.path, DATA_DIR)}')
 
         data = pd.read_csv(self.path, on_bad_lines='skip')
+        
+        if data.columns[0] is not 'TIMESTAMP':
+            col_names = DATA_CONFIG[self.instrument][self.lvl]['col_names']
+            data = pd.DataFrame(np.vstack([
+                    data.columns,
+                    data.values
+                    ]), columns=col_names)
 
         # Format time col
         data.rename(columns={'TIMESTAMP': 'Time_UTC'}, inplace=True)
