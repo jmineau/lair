@@ -350,7 +350,7 @@
         "longitude": -110.0194,
         "zagl": 4,
         "loggers": {
-            "lin": "campbellsci"
+            "lin": "lgr_ugga"
         },
         "instruments": {
             "lgr_ugga": {
@@ -385,7 +385,7 @@
         "longitude": -110.8403,
         "zagl": 4,
         "loggers": {
-            "lin": "campbellsci"
+            "lin": "lgr_ugga"
         },
         "instruments": {
             "lgr_ugga": {
@@ -399,7 +399,7 @@
         "longitude": -111.645278,
         "zagl": 15,
         "loggers": {
-            "lin": "campbellsci"
+            "lin": "lgr_ugga"
         },
         "instruments": {
             "lgr_ugga": {
@@ -427,7 +427,7 @@
         "longitude": -109.4672,
         "zagl": 4,
         "loggers": {
-            "lin": "campbellsci"
+            "lin": "lgr_ugga"
         },
         "instruments": {
             "lgr_ugga": {
@@ -536,7 +536,7 @@
         "longitude": -110.009,
         "zagl": 4,
         "loggers": {
-            "lin": "campbellsci"
+            "lin": "lgr_ugga"
         },
         "instruments": {
             "lgr_ugga": {
