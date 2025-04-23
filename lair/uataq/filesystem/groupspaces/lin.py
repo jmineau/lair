@@ -372,6 +372,10 @@ class LGR_UGGA_File(filesystem.DataFile):
         '2f90039': {
             'slicer': slice(4, 14),
             'format': '%Y-%m-%d'
+        },
+        'cf32204': {
+            'slicer': slice(4, 14),
+            'format': '%Y-%m-%d'
         }
     }
 
