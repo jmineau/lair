@@ -103,9 +103,9 @@ def phase_shift_corrected_baseline(data: pd.Series, n: int = 3600, q: float = 0.
     return pd.concat(b)
 
 
-def thonning_filter(data: pd.Series, **kwargs) -> ccgFilter:
+def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     """
-    Create a Thonning filter object from a time series of data.
+    Create a Thoning filter object from a time series of data.
 
     Parameters
     ----------
@@ -117,10 +117,12 @@ def thonning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     Returns
     -------
     ccgFilter
-        Thonning filter object.
+        Thoning filter object.
     """
+    if data.isna().any():
+        raise ValueError("Data contains NaN values.")
+
     # Convert datetime index to decimal date
-    data = data.dropna()
     xp = data.index.to_series().apply(dt2decimalDate).values
     yp = data.values
 
@@ -128,15 +130,15 @@ def thonning_filter(data: pd.Series, **kwargs) -> ccgFilter:
         # Set debug level using lair's verbose setting
         kwargs['debug'] = verbose
 
-    # Fit the Thonning curve
+    # Fit the Thoning curve
     return ccgFilter(xp, yp, **kwargs)
 
-def thonning(data: pd.Series,
-             smooth_time: list[dt.datetime] | None = None,
-             **kwargs
-             )-> ccgFilter | pd.Series:
+def thoning(data: pd.Series,
+            smooth_time: list[dt.datetime] | None = None,
+            **kwargs
+            )-> pd.Series:
     """
-    Thonning curve fitting.
+    Thoning curve fitting.
 
     Wraps code published by NOAA GML: https://gml.noaa.gov/ccgg/mbl/crvfit/crvfit.html
 
@@ -155,15 +157,20 @@ def thonning(data: pd.Series,
 
     Returns
     -------
-
+    pd.Series
+        Smoothed data.
     """
-    # Create a Thonning filter object
-    filt = thonning_filter(data, **kwargs)
+    # Drop nans (filter does not handle them)
+    orig_index = data.index.copy()  # however, we may want to return the original index
+    data = data.dropna()
+
+    # Create a Thoning filter object
+    filt = thoning_filter(data, **kwargs)
 
     # Get the times to return the smoothed data
     if smooth_time is None:
         # Use the original time series
-        smooth_time = data.index
+        smooth_time = orig_index
         decimal_time = filt.xp
     else:
         decimal_time = [dt2decimalDate(t) for t in smooth_time]
