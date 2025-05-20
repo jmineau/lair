@@ -60,7 +60,11 @@
                 "installation_date": "2022-02-04"
             },
             "metone_es642": {
-                "installation_date": "2022-02-04"
+                "installation_date": "2022-02-04",
+                "removal_date": "2025-03-12"
+            },
+            "metone_es405": {
+                "installation_date": "2025-03-12"
             }
         }
     },
@@ -629,7 +633,14 @@
                 "loggers": {
                     "horel": "campbellsci"
                 },
-                "installation_date": "2014-11-05"
+                "installation_date": "2016-02-04",
+                "removal_date": "2025-01-03"
+            },
+            "metone_es405": {
+                "loggers": {
+                    "horel": "campbellsci"
+                },
+                "installation_date": "2025-01-06"
             },
             "lgr_ugga": {
                 "loggers": {
@@ -684,7 +695,14 @@
                     "horel": "campbellsci",
                     "lin": "air-trend"
                 },
-                "installation_date": "2016-02-04"
+                "installation_date": "2016-02-04",
+                "removal_date": "2025-01-03"
+            },
+            "metone_es405": {
+                "loggers": {
+                    "horel": "campbellsci"
+                },
+                "installation_date": "2025-01-06"
             },
             "teledyne_t500u": {
                 "loggers": {
@@ -711,7 +729,11 @@
                 "installation_date": "2019-11-04"
             },
             "metone_es642": {
-                "installation_date": "2019-11-04"
+                "installation_date": "2019-11-04",
+                "removal_date": "2025-01-03"
+            },
+            "metone_es405": {
+                "installation_date": "2025-01-03"
             }
         }
     },
