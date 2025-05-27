@@ -327,7 +327,8 @@ class Flask:
         return data
 
     @staticmethod
-    def apply_qaqc(data: Union[pd.DataFrame, xr.Dataset], driver: str='pandas'):
+    def apply_qaqc(data: Union[pd.DataFrame, xr.Dataset], flags: None | str | list[str]=None,
+                   driver: str='pandas'):
         """
         Apply QA/QC to the Flask data.
 
