@@ -335,6 +335,9 @@ class Flask:
         ----------
         data : pd.DataFrame | xr.Dataset
             The Flask data.
+        flags : None | str | list of str, optional
+            The allowed QA/QC flags. If None, only keep good data (qcflag == '...').
+            By default None.
         driver : str, optional
             The driver to use to read the data, by default 'pandas'.
 
@@ -343,10 +346,16 @@ class Flask:
         pd.DataFrame | xr.Dataset
             The Flask data with QA/QC applied.
         """
+        allowed_flags = ['...']
+        if flags is not None:
+            if isinstance(flags, str):
+                flags = [flags]
+            allowed_flags.extend(flags)
+
         if driver == 'pandas':
-            data = data[data.qcflag == '...']
+            data = data[data.qcflag.isin(allowed_flags)]
         elif driver == 'xarray':
-            data = data.where(data.qcflag == '...')
+            data = data.where(data.qcflag.isin(allowed_flags), drop=True)
         else:
             raise ValueError("Invalid driver")
         return data
