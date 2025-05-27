@@ -4,6 +4,7 @@ Calculate background concentrations.
 
 import datetime as dt
 import pandas as pd
+from typing import Any
 
 from lair.config import verbose
 from lair.air._ccg_filter import ccgFilter  # make available to user
@@ -29,7 +30,8 @@ def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -
     return data[data.index.hour.isin(hours)].resample('1d').mean()
 
 
-def rolling_baseline(data: pd.Series, window: int=24, q: float=0.01
+def rolling_baseline(data: pd.Series, window: Any='24h', q: float=0.01,
+                     min_periods: int=1, center: bool=True
              ) -> pd.Series:
     """
     Calculate the baseline concentration as the {q} quantile of a rolling
@@ -39,19 +41,25 @@ def rolling_baseline(data: pd.Series, window: int=24, q: float=0.01
     ----------
     data : pd.Series
         Time series of data to calculate the baseline from.
-    window : int, optional
-        Size of the rolling window in hours.
+    window : Any, optional
+        Window size for the rolling calculation. Must be passable to
+        pd.Timedelta. Default is '24h'.
     q : float, optional
-        Quantile to calculate the baseline from.
+        Quantile to calculate the baseline from. Default is 0.01.
+    min_periods : int, optional
+        Minimum number of periods within each window required to have a value.
+        Default is 1.
+    center : bool, optional
+        Center the window on the timestamp. Default is True.
 
     Returns
     -------
     pd.Series
         Baseline concentration
     """
-    window = dt.timedelta(hours=window)
-    baseline = (data.rolling(window=window, center=True).quantile(q)
-                    .rolling(window=window, center=True).mean())
+    window = pd.Timedelta(window)
+    baseline = (data.rolling(window=window, center=center, min_periods=min_periods).quantile(q)
+                    .rolling(window=window, center=center, min_periods=min_periods).mean())
 
     return baseline
 
