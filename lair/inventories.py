@@ -1387,6 +1387,10 @@ class WetCHARTs(MultiModelInventory):
         # Drop unnecessary variables and dims
         data = data.drop_vars(['time_bnds', 'crs'])
 
+        # Set time to first day of month
+        data = data.assign_coords(time=[dt.datetime(int(year), int(month), 1)
+                                       for year, month in zip(data.time.dt.year, data.time.dt.month)])
+
         # Rename variables
         data = data.rename({'wetland_CH4_emissions': 'wetlands'})
         data.wetlands.attrs['long_name'] = 'Wetland_CH4_Emissions'
