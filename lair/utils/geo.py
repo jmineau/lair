@@ -8,6 +8,7 @@ from typing import Any, Literal, Sequence
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import pyproj
 import rasterio
 import rasterio.crs
@@ -16,6 +17,7 @@ from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
                                 LongitudeFormatter, LongitudeLocator)
 from numpy.typing import ArrayLike
 from shapely import Polygon
+from typing import Iterable, Optional
 from typing_extensions import \
     Self  # requires python 3.11 to import from typing
 from xarray import DataArray, Dataset
@@ -180,21 +182,43 @@ def dms2dd(d: float=0.0, m: float=0.0, s: float=0.0) -> float:
         return np.nan
 
 
-def wrap_lons(lons: np.ndarray) -> ArrayLike:
-    '''
-    Wrap longitudes ranging from 0~360 to -180~180
+def wrap_lons(
+    longitudes: npt.ArrayLike, base: float = -180.0, period: Optional[float] = 360.0
+) -> np.ndarray:
+    """
+    Transform the longitude values to be within the closed interval
+    [base, base + period].
 
     Parameters
     ----------
-    lons : np.ndarray
-        Longitudes
+    longitudes : ArrayLike
+        One or more longitude values (degrees) to be wrapped.
+    base : float, default=-180.0
+        The start limit (degrees) of the closed interval.
+    period : float, default=360.0
+        The end limit (degrees) of the closed interval expressed as a length
+        from the `base`.
 
     Returns
     -------
-    array-like
-        Wrapped longitudes
-    '''
-    return (lons + 180) % 360 - 180
+    ndarray
+        The transformed longitude values.
+
+    Notes
+    -----
+    .. copied from https://github.com/jamesp/geovista/blob/4850c519c7a37c4765befa06fbab933350637c93/lib/geovista/common.py#L274
+
+    """
+    #
+    # TODO: support radians
+    #
+    if not isinstance(longitudes, Iterable):
+        longitudes = [longitudes]
+
+    longitudes = np.asanyarray(longitudes)
+    result = ((longitudes.astype(np.float64) - base + period * 2) % period) + base
+
+    return result
 
 
 # ----- PLOTTING UTILITIES ----- #
