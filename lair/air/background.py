@@ -185,4 +185,4 @@ def thoning(data: pd.Series,
 
     # Return the smoothed data
     smooth = filt.getSmoothValue(decimal_time)
-    return pd.Series(smooth, index=smooth_time)  # reassign index times to avoid issues with decimal rounding
+    return pd.Series(smooth, index=smooth_time, name=data.name)  # reassign index times to avoid issues with decimal rounding
