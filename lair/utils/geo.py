@@ -417,7 +417,7 @@ class BaseGrid:
     but return the grid object for chaining.
     """
 
-    def __init__(self, data, crs):
+    def __init__(self, data, crs, **kwargs):
         self.crs = CRS(crs)
         self.data = write_rio_crs(data, self.crs)
 
