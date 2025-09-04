@@ -1,41 +1,43 @@
-"""
-Bayesian Inversion
-"""
-
 from functools import cached_property
 import numpy as np
 from numpy.linalg import inv as invert
 
+from lair.inversion.core import Estimator, ESTIMATOR_REGISTRY
 
-class Inversion:
+
+@ESTIMATOR_REGISTRY.register('bayesian')
+class BayesianSolver(Estimator):
     """
-    Base batch inversion class
+    Bayesian inversion estimator class
+    This class implements a Bayesian inversion framework for solving inverse problems,
+    also known as the batch method.
 
     Attributes
     ----------
     z : np.ndarray
         Observed data
-    c : np.ndarray
-        Constant (background) data
     x_0 : np.ndarray
-        Prior state estimate
+        Prior model estimate
     H : np.ndarray
-        Jacobian matrix
+        Forward operator
     S_0 : np.ndarray
         Prior error covariance
     S_z : np.ndarray
         Model-data mismatch covariance
+    c : np.ndarray
+        Constant data
+    rf : float
+        Regularization factor
     """
 
     def __init__(self,
                  z: np.ndarray,
-                 c: np.ndarray,
                  x_0: np.ndarray,
                  H: np.ndarray,
                  S_0: np.ndarray,
                  S_z: np.ndarray,
+                 c: np.ndarray | float | None = None,
                  rf: float = 1.0,
-                 verbose: bool = True
                  ):
         """
         Initialize inversion object
@@ -44,26 +46,21 @@ class Inversion:
         ----------
         z : np.ndarray
             Observed data
-        c : np.ndarray
-            Constant (background) data
         x_0 : np.ndarray
-            Prior state estimate
+            Prior model estimate
         H : np.ndarray
-            Jacobian matrix
+            Forward operator
         S_0 : np.ndarray
             Prior error covariance
         S_z : np.ndarray
             Model-data mismatch covariance
+        c : np.ndarray | float, optional
+            Constant data, defaults to 0.0
+        rf : float, optional
+            Regularization factor, by default 1.0
         """
-        self.z = z
-        self.c = c
-        self.x_0 = x_0
-        self.H = H
-        self.S_0 = S_0
-        self.S_z = S_z
-
-        self.n_obs = S_z.shape[0]
-        self.n_state = S_0.shape[0]
+        super().__init__(z=z, x_0=x_0, H=H, S_0=S_0, S_z=S_z, c=c)
+        self.rf = rf
 
     @cached_property
     def S_0_inv(self):
@@ -79,25 +76,28 @@ class Inversion:
         """
         return invert(self.S_z)
 
-    def forward(self, x):
+    @cached_property
+    def K(self):
         """
-        Forward model
+        Kalman Gain Matrix
 
         .. math::
-            y = Hx + c
+            K = (H S_0)^T (H S_0 H^T + S_z)^{-1}
         """
-        print('Performing forward calculation...')
-        return self.H @ x + self.c
+        print('Calculating Kalman Gain Matrix...')
+        HS_0 = self.H @ self.S_0
+        return HS_0.T @ invert(HS_0 @ self.H.T + self.S_z)
 
-    def residual(self, x):
+    @cached_property
+    def A(self):
         """
-        Forward model residual
+        Averaging Kernel Matrix
 
         .. math::
-            r = z - (Hx + c)
+            A = KH
         """
-        print('Performing residual calculation...')
-        return self.z - self.forward(x)
+        print('Calculating Averaging Kernel Matrix...')
+        return self.K @ self.H
 
     def cost(self, x):
         """
@@ -112,18 +112,6 @@ class Inversion:
         cost_model = diff_model.T @ self.S_0_inv @ diff_model
         cost_data = diff_data.T @ self.S_z_inv @ diff_data
         return 0.5 * (cost_model + cost_data)
-
-    @cached_property
-    def K(self):
-        """
-        Kalman Gain Matrix
-
-        .. math::
-            K = (H S_0)^T (H S_0 H^T + S_z)^{-1}
-        """
-        print('Calculating Kalman Gain Matrix...')
-        HS_0 = self.H @ self.S_0
-        return HS_0.T @ invert(HS_0 @ self.H.T + self.S_z)
 
     @cached_property
     def S_hat(self):
@@ -141,32 +129,10 @@ class Inversion:
     @cached_property
     def x_hat(self):
         """
-        Posterior Mean State Estimate (solution)
+        Posterior Mean Model Estimate (solution)
 
         .. math::
             \\hat{x} = x_0 + K(z - Hx_0 - c)
         """
-        print('Calculating Posterior Mean State Estimate...')
+        print('Calculating Posterior Mean Model Estimate...')
         return self.x_0 + self.K @ self.residual(self.x_0)
-
-    @cached_property
-    def A(self):
-        """
-        Averaging Kernel Matrix
-
-        .. math::
-            A = KH
-        """
-        print('Calculating Averaging Kernel Matrix...')
-        return self.K @ self.H
-
-    @cached_property
-    def y_hat(self):
-        """
-        Posterior Mean Data Estimate
-
-        .. math::
-            \\hat{y} = H \\hat{x} + c
-        """
-        print('Calculating Posterior Mean Data Estimate...')
-        return self.forward(self.x_hat)
