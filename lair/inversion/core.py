@@ -322,8 +322,10 @@ class ForwardOperator:
             assert out_dims is not None, "Output dimensions must be provided for xarray DataArrays."
 
             # Create space objects from the data coordinates
-            in_space = Space(name=in_space, coords=data.coords[in_dims])
-            out_space = Space(name=out_space, coords=data.coords[out_dims])
+            in_coords = xr.Coordinates({dim: data.coords[dim] for dim in in_dims})
+            out_coords = xr.Coordinates({dim: data.coords[dim] for dim in out_dims})
+            in_space = Space(name=in_space, coords=in_coords)
+            out_space = Space(name=out_space, coords=out_coords)
 
         elif isinstance(data, np.ndarray):
             if data.ndim != 2:
@@ -344,18 +346,24 @@ class ForwardOperator:
             raise TypeError("Data must be a 2D NumPy array or an xarray DataArray.")
 
         self.data = data
-        self._in_space_name = in_space.name
-        self._out_space_name = out_space.name
-        self.spaces = {
-            self._in_space_name: in_space,
-            self._out_space_name: out_space
-        }
+        self._in_space = in_space
+        self._out_space = out_space
 
     def __repr__(self):
         """
         Return a string representation of the ForwardOperator object.
         """
-        return self.stacked.__repr__()
+        return repr(self.stacked)
+
+    @property
+    def spaces(self) -> dict[str, Space]:
+        """
+        Returns the input and output spaces of the forward operator.
+        """
+        return {
+            self._in_space.name: self._in_space,
+            self._out_space.name: self._out_space,
+        }
 
     @property
     def coords(self) -> xr.Coordinates:
@@ -381,10 +389,10 @@ class ForwardOperator:
         """
         selected_data = self.data.sel(**kwargs)
         return self.__class__(data=selected_data,
-                              in_space=self.spaces[self._in_space_name].name,
-                              out_space=self.spaces[self._out_space_name].name,
-                              in_dims=self.spaces[self._in_space_name].dims,
-                              out_dims=self.spaces[self._out_space_name].dims)
+                              in_space=self._in_space.name,
+                              out_space=self._out_space.name,
+                              in_dims=self._in_space.dims,
+                              out_dims=self._out_space.dims)
 
     def align(self, in_space: Space, out_space: Space) -> Self:
         in_coords = in_space.coords
@@ -400,7 +408,7 @@ class ForwardOperator:
     @property
     def stacked(self) -> xr.DataArray:
         # order is important here, we need to stack the input space first
-        return self.spaces[self._out_space_name].stack(self.spaces[self._in_space_name].stack(self.data))
+        return self.spaces[self._out_space.name].stack(self.spaces[self._in_space.name].stack(self.data))
 
     @property
     def H(self) -> np.ndarray: 
@@ -504,13 +512,13 @@ class InverseProblem:
         self._data_space_name = obs.space.name
         self._model_space_name = output_space.name
 
-        has_constant_class = isinstance(self.constant, Constant)
+        has_constant_class = isinstance(constant, Constant)
 
         # Validate inputs
         assert all(name == self._model_space_name for name in
-                   [prior.space.name, forward_operator._out_space_name]), \
+                   [prior.space.name, forward_operator._out_space.name]), \
             "Output space name must match prior and forward operator output space names."
-        assert obs.space.name == forward_operator._in_space_name, \
+        assert obs.space.name == forward_operator._in_space.name, \
             "Observation space name must match forward operator input space name."
         if has_constant_class:
             assert constant.space.name == obs.space.name, \
@@ -518,7 +526,7 @@ class InverseProblem:
 
         # Define the data space as the intersection of the observation and forward operator data spaces
         intersected_index = obs.coords.to_index().intersection(
-            forward_operator.spaces[forward_operator._in_space_name].coords.to_index())
+            forward_operator.spaces[forward_operator._in_space.name].coords.to_index())
         intersected_coords = intersected_index.to_series().to_xarray().coords
         data_space = Space(name=self._data_space_name, coords=intersected_coords)
 

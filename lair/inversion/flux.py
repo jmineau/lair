@@ -18,7 +18,7 @@ class Concentration(Observation):
 
     def __init__(self, data, **kwargs):
         if 'space' not in kwargs:
-            space = 'obs'
+            kwargs['space'] = 'obs'
         super().__init__(data=data, **kwargs)
 
 
@@ -26,24 +26,22 @@ class Flux(State):
 
     def __init__(self, data, **kwargs):
         if 'space' not in kwargs:
-            space = 'state'
+            kwargs['space'] = 'state'
         super().__init__(data=data, **kwargs)
 
 
 class Jacobian(ForwardOperator):
     def __init__(self, data,
-                 obs_dims=['time'],
-                 state_dims=['lon', 'lat', 'state_time'],
+                 obs_dims=['obs_time', 'obs_location'],
+                 state_dims=['lon', 'lat', 'flux_time'],
                  **kwargs):
-        in_space = kwargs.get('in_space', 'obs')
-        out_space = kwargs.get('out_space', 'state')
-        in_dims = kwargs.get('in_dims', obs_dims)
-        out_dims = kwargs.get('out_dims', state_dims)
+        in_space = kwargs.pop('in_space', 'obs')
+        out_space = kwargs.pop('out_space', 'state')
+        kwargs['in_dims'] = obs_dims
+        kwargs['out_dims'] = state_dims
         super().__init__(data=data,
                          in_space=in_space,
                          out_space=out_space,
-                         in_dims=in_dims,
-                         out_dims=out_dims,
                          **kwargs)
 
 
