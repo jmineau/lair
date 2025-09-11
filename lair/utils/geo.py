@@ -12,6 +12,7 @@ import numpy.typing as npt
 import pyproj
 import rasterio
 import rasterio.crs
+import rioxarray as rxr
 import xesmf as xe
 from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
                                 LongitudeFormatter, LongitudeLocator)
@@ -452,9 +453,6 @@ class BaseGrid:
              **kwargs: Any) -> Self:
         """
         Clip the data to the given bounds. Mopdifies the data in place.
-
-        Input bounds must be in the same CRS as the data.
-
         .. note::
             The result can be slightly different between supplying a geom and a bbox/extent.
             Clipping with a geom seems to be exclusive of the bounds,
@@ -570,8 +568,6 @@ def clip(data: DataArray | Dataset,
          ) -> DataArray | Dataset:
     """
     Clip the data to the given bounds.
-
-    Input bounds must be in the same CRS as the data.
 
     .. note::
         The result can be slightly different between supplying a geom and a bbox/extent.
@@ -707,7 +703,6 @@ def plot_grid(grid: DataArray | Dataset,
 
 def generate_regular_grid(xmin: float, xmax: float, dx: float,
                           ymin: float, ymax: float, dy: float,
-                          x_deci: int, y_deci: int,
                           x_label='x', y_label='y',
                           chunks: dict | None = None) -> DataArray:
     """
@@ -716,21 +711,17 @@ def generate_regular_grid(xmin: float, xmax: float, dx: float,
     Parameters
     ----------
     xmin : float
-        Minimum x value
+        x value of the left edge of the grid
     xmax : float
-        Maximum x value
+        x value of the right edge of the grid
     dx : float
         x resolution
     ymin : float
-        Minimum y value
+        y value of the bottom edge of the grid
     ymax : float
-        Maximum y value
+        y value of the top edge of the grid
     dy : float
         y resolution
-    x_deci : int
-        Number of decimal places to round x values to
-    y_deci : int
-        Number of decimal places to round y values to
     x_label : str, optional
         Name of the x coordinate, by default 'x'
     y_label : str, optional
@@ -741,8 +732,15 @@ def generate_regular_grid(xmin: float, xmax: float, dx: float,
     xr.DataArray
         The generated grid
     """
-    x = np.round(np.arange(xmin, xmax, dx), x_deci)
-    y = np.round(np.arange(ymin, ymax, dy), y_deci)
+    x0 = xmin + dx / 2
+    y0 = ymin + dy / 2
+
+    # Determine number of decimal places to round to
+    x_deci = max(0, -int(np.floor(np.log10(dx))) + 1)
+    y_deci = max(0, -int(np.floor(np.log10(dy))) + 1)
+
+    x = np.round(np.arange(x0, xmax, dx), x_deci)
+    y = np.round(np.arange(y0, ymax, dy), y_deci)
     zeros = np.zeros((len(y), len(x)))
     return DataArray(zeros, coords={y_label: y, x_label: x})
 
@@ -837,10 +835,11 @@ def resample(data: DataArray | Dataset,
         out_grid = xe.util.grid_2d(xmin, xmax, dx,
                                     ymin, ymax, dy)
     else:
-        out_grid = Dataset({
-            "lat": (["lat"], np.arange(ymin + dy/2, ymax - dy/2, dy), {"units": "degrees_north"}),
-            "lon": (["lon"], np.arange(xmin + dx/2, xmax - dx/2, dx), {"units": "degrees_east"}),
-            })
+        out_grid = generate_regular_grid(xmin=xmin, xmax=xmax, dx=dx,
+                                         ymin=ymin, ymax=ymax, dy=dy,
+                                         x_label='lon', y_label='lat')
+        out_grid.lat.attrs['units'] = 'degrees_north'
+        out_grid.lon.attrs['units'] = 'degrees_east'
 
     return regrid(data, out_grid=out_grid, method=regrid_method)
 
