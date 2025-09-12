@@ -21,10 +21,6 @@ class StiltJacobian(Jacobian):
 
     from lair.air import stilt
 
-    def __init__(self, data, **kwargs):
-        super().__init__(data=data,
-                         **kwargs)
-
     @classmethod
     def from_simulations(cls, simulations: list[Path],
                          flux_times: pd.IntervalIndex,
@@ -82,7 +78,7 @@ class StiltJacobian(Jacobian):
                 else:
                     raise ValueError('Unexpected output from compute_jacobian_row')
 
-        H = xr.merge(H_rows).foot
+        H = xr.merge(H_rows).foot.fillna(0)
         H.name = 'jacobian'
 
         # Reset attrs
@@ -170,7 +166,7 @@ class StiltJacobian(Jacobian):
         foot = foot.expand_dims({'obs_time': [sim.receptor.time],
                                  'obs_location': [sim.receptor.location.id]})
 
-        return foot
+        return foot.compute()
 
     @staticmethod
     def _clip_footprint_to_grid(footprint: stilt.Footprint, grid: xr.DataArray

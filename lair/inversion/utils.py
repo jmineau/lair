@@ -1,5 +1,6 @@
-
+import numpy as np
 import pandas as pd
+from pandas.api.types import is_float_dtype
 import xarray as xr
 
 
@@ -85,3 +86,52 @@ def merge_multiindexes(multiindexes: list[pd.MultiIndex]) -> pd.MultiIndex:
     return pd.MultiIndex.from_product(
         [level for index in multiindexes for level in index.levels],
     )
+
+
+def round_coords(coords, decimals):
+    rounded_coords = {}
+    for dim, coord in coords.items():
+        if is_float_dtype(coord.dtype):
+            rounded_coords[dim] = np.round(coord, decimals)
+        else:
+            rounded_coords[dim] = coord
+    return rounded_coords
+
+
+def round_index(index, decimals):
+    """
+    Rounds the values in a pandas Index or MultiIndex if the level's
+    data type is a numpy floating type.
+    """
+    if not isinstance(index, (pd.Index, pd.MultiIndex)):
+        raise TypeError("Input must be a pandas Index or MultiIndex.")
+
+    if isinstance(index, pd.MultiIndex):
+        # Handle MultiIndex
+        new_levels = []
+        changed = False
+        for i in range(index.nlevels):
+            level = index.levels[i]
+            if is_float_dtype(level):
+                # Round the level if it's a float type
+                new_levels.append(level.round(decimals))
+                changed = True
+            else:
+                new_levels.append(level)
+        
+        if changed:
+            # Reconstruct the MultiIndex with the new, rounded levels
+            return pd.MultiIndex.from_arrays(
+                [index.get_level_values(i) for i in range(index.nlevels)],
+                names=index.names
+            ).set_levels(new_levels)
+        else:
+            # Return original index if no levels were changed
+            return index
+
+    elif is_float_dtype(index.dtype):
+        # Handle single Index
+        return index.round(decimals)
+    else:
+        # Return original index if it's not a float type
+        return index

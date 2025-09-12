@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from lair.inversion.utils import round_coords, round_index
+
 
 class Estimator(ABC):
     """
@@ -18,7 +20,7 @@ class Estimator(ABC):
     z : np.ndarray
         Observed data
     x_0 : np.ndarray
-        Prior model estimate
+        Prior model state estimate
     H : np.ndarray
         Forward operator
     S_0 : np.ndarray
@@ -45,7 +47,7 @@ class Estimator(ABC):
         z : np.ndarray
             Observed data
         x_0 : np.ndarray
-            Prior model estimate
+            Prior model state estimate
         H : np.ndarray
             Forward operator
         S_0 : np.ndarray
@@ -103,9 +105,9 @@ class Estimator(ABC):
     @abstractmethod
     def x_hat(self) -> np.ndarray:
         """
-        Posterior Mean Model Estimate (solution)
+        Posterior Mean Model State Estimate (solution)
         """
-        print('Calculating Posterior Mean Model Estimate...')
+        print('Calculating Posterior Mean Model State Estimate...')
         pass
 
     @cached_property
@@ -127,6 +129,7 @@ class EstimatorRegistry(dict):
             return cls
         return decorator
 
+
 ESTIMATOR_REGISTRY = EstimatorRegistry()
 
 
@@ -136,7 +139,7 @@ class Space:
     def __init__(self, name: str, coords: xr.Coordinates):
         self.name = name
         self.coords = coords
-        self.dims = coords.dims
+        self.dims = list(coords.dims)
         self.n = len(self.coords.to_index())
 
     def __repr__(self):
@@ -150,6 +153,7 @@ class Space:
     def unstack(self, data: xr.DataArray) -> xr.DataArray:
         """Unstack data back to original dimensions."""
         return data.unstack(self.name)
+
 
 class Data:
     """
@@ -227,14 +231,19 @@ class Data:
         """
         return self.__class__(data=self.data.sel(**kwargs), space=self.space.name)
 
-    def align(self, out_space: Space) -> Self:
+    def align(self, space: Space, coord_decimals: int | None = None) -> Self:
         """Align the data to a new space and return a new Data object."""
-        assert isinstance(out_space, Space), "out_space must be a Space object."
-        assert out_space.name == self.space.name, "Output space must have the same name as the input space."
+        assert isinstance(space, Space), "space must be a Space object."
+        assert space.name == self.space.name, "space must have the same name as the current space."
+        
+        if coord_decimals is not None:
+            data = self.data.assign_coords(round_coords(self.data.coords, decimals=coord_decimals))
+        else:
+            data = self.data
 
-        aligned_data = xr.align(xr.Dataset(coords=out_space.coords), self.data)
+        _, aligned_data = xr.align(xr.Dataset(coords=space.coords), data)
 
-        return self.__class__(aligned_data, space=out_space.name)
+        return self.__class__(aligned_data, space=space.name)
 
     def merge(self, other: Self) -> Self:
         """
@@ -280,7 +289,7 @@ class Constant(Data):
 
 
 class State(Data):
-    """Represents the model state x."""
+    """Represents a model state realization x."""
 
     @property
     def x(self) -> np.ndarray:
@@ -288,10 +297,17 @@ class State(Data):
 
 
 class ForwardOperator:
-    """Represents the forward operator H."""
+    """
+    Represents the forward operator H.
     
-    def __init__(self, data, in_space: Space | str, out_space: Space | str,
-                 in_dims: list[str] | None = None, out_dims: list[str] | None = None):
+    In the forward model equation:
+    .. math::
+        y = Hx + c
+    H maps the state space to the observation space.
+    """
+    
+    def __init__(self, data, obs_space: Space | str, state_space: Space | str,
+                 obs_dims: list[str] | None = None, state_dims: list[str] | None = None):
         """
         Initialize the forward operator.
 
@@ -299,55 +315,55 @@ class ForwardOperator:
         ----------
         data :
             The forward operator matrix.
-        in_space : Space | str
-            The input space, either as a Space object or a string for the name.
-        out_space : Space | str
-            The output space, either as a Space object or a string for the name.
-        in_dims : list[str] | None
-            The input dimensions.
-        out_dims : list[str] | None
-            The output dimensions.
+        obs_space : Space | str
+            The observation space, either as a Space object or a string for the name.
+        state_space : Space | str
+            The state space, either as a Space object or a string for the name.
+        obs_dims : list[str] | None
+            The observation dimensions.
+        state_dims : list[str] | None
+            The state dimensions.
         """
-        assert isinstance(in_space, (Space, str)), "Input space must be a Space object or a string."
-        assert isinstance(out_space, (Space, str)), "Output space must be a Space object or a string."
+        assert isinstance(obs_space, (Space, str)), "Observation space must be a Space object or a string."
+        assert isinstance(state_space, (Space, str)), "State space must be a Space object or a string."
 
         if isinstance(data, pd.Series):
             # Convert pandas Series to xarray DataArray
             data = data.to_xarray()
 
         if isinstance(data, xr.DataArray):
-            assert isinstance(in_space, str), "Input space must be a string for xarray DataArrays."
-            assert isinstance(out_space, str), "Output space must be a string for xarray DataArrays."
-            assert in_dims is not None, "Input dimensions must be provided for xarray DataArrays."
-            assert out_dims is not None, "Output dimensions must be provided for xarray DataArrays."
+            assert isinstance(obs_space, str), "Observation space must be a string for xarray DataArrays."
+            assert isinstance(state_space, str), "State space must be a string for xarray DataArrays."
+            assert obs_dims is not None, "Observation dimensions must be provided for xarray DataArrays."
+            assert state_dims is not None, "State dimensions must be provided for xarray DataArrays."
 
             # Create space objects from the data coordinates
-            in_coords = xr.Coordinates({dim: data.coords[dim] for dim in in_dims})
-            out_coords = xr.Coordinates({dim: data.coords[dim] for dim in out_dims})
-            in_space = Space(name=in_space, coords=in_coords)
-            out_space = Space(name=out_space, coords=out_coords)
+            obs_coords = xr.Coordinates({dim: data.coords[dim] for dim in obs_dims})
+            state_coords = xr.Coordinates({dim: data.coords[dim] for dim in state_dims})
+            obs_space = Space(name=obs_space, coords=obs_coords)
+            state_space = Space(name=state_space, coords=state_coords)
 
         elif isinstance(data, np.ndarray):
             if data.ndim != 2:
                 raise ValueError("Forward operator data must be a 2D NumPy array.")
-            assert isinstance(in_space, Space), "Input space must be a Space object for NumPy arrays."
-            assert isinstance(out_space, Space), "Output space must be a Space object for NumPy arrays."
-            assert len(in_space.dims) == 1, "Input space must have exactly one dimension."
-            assert len(out_space.dims) == 1, "Output space must have exactly one dimension."
+            assert isinstance(obs_space, Space), "Observation space must be a Space object for NumPy arrays."
+            assert isinstance(state_space, Space), "State space must be a Space object for NumPy arrays."
+            assert len(obs_space.dims) == 1, "Observation space must have exactly one dimension."
+            assert len(state_space.dims) == 1, "State space must have exactly one dimension."
 
-            in_dim = in_space.dims[0]
-            out_dim = out_space.dims[0]
+            obs_dim = obs_space.dims[0]
+            state_dim = state_space.dims[0]
 
-            data = xr.DataArray(data, dims=[in_dim, out_dim], coords={
-                in_dim: in_space.coords[in_dim].coords,
-                out_dim: out_space.coords[out_dim].coords}
+            data = xr.DataArray(data, coords={
+                obs_dim: obs_space.coords[obs_dim].values,
+                state_dim: state_space.coords[state_dim].values}
             )
         else:
             raise TypeError("Data must be a 2D NumPy array or an xarray DataArray.")
 
         self.data = data
-        self._in_space = in_space
-        self._out_space = out_space
+        self._obs_space = obs_space
+        self._state_space = state_space
 
     def __repr__(self):
         """
@@ -361,8 +377,8 @@ class ForwardOperator:
         Returns the input and output spaces of the forward operator.
         """
         return {
-            self._in_space.name: self._in_space,
-            self._out_space.name: self._out_space,
+            self._obs_space.name: self._obs_space,
+            self._state_space.name: self._state_space,
         }
 
     @property
@@ -389,26 +405,36 @@ class ForwardOperator:
         """
         selected_data = self.data.sel(**kwargs)
         return self.__class__(data=selected_data,
-                              in_space=self._in_space.name,
-                              out_space=self._out_space.name,
-                              in_dims=self._in_space.dims,
-                              out_dims=self._out_space.dims)
+                              obs_space=self._obs_space.name,
+                              state_space=self._state_space.name,
+                              obs_dims=self._obs_space.dims,
+                              state_dims=self._state_space.dims)
 
-    def align(self, in_space: Space, out_space: Space) -> Self:
-        in_coords = in_space.coords
-        out_coords = out_space.coords
-        merged_coords_ds = in_coords.merge(out_coords)
+    def align(self, obs_space: Space, state_space: Space,
+              coord_decimals: int | None = None) -> Self:
+        obs_coords = obs_space.coords
+        state_coords = state_space.coords
+        merged_coords_ds = obs_coords.merge(state_coords)
 
-        aligned_data = xr.align(merged_coords_ds, self.data)
+        if coord_decimals is not None:
+            rounded_coords = round_coords(self.data.coords, decimals=coord_decimals)
+            data = self.data.assign_coords(rounded_coords)
+        else:
+            data = self.data
+
+        _, aligned_data = xr.align(merged_coords_ds, data)
 
         return self.__class__(data=aligned_data,
-                              in_space=in_space,
-                              out_space=out_space)
+                              obs_space=obs_space.name,
+                              state_space=state_space.name,
+                              obs_dims=obs_space.dims,
+                              state_dims=state_space.dims)
 
     @property
     def stacked(self) -> xr.DataArray:
-        # order is important here, we need to stack the input space first
-        return self.spaces[self._out_space.name].stack(self.spaces[self._in_space.name].stack(self.data))
+        # order is important here, we need to stack the obs space first
+        return self.spaces[self._state_space.name].stack(
+            self.spaces[self._obs_space.name].stack(self.data))
 
     @property
     def H(self) -> np.ndarray: 
@@ -426,7 +452,7 @@ class CovarianceMatrix:
         self._data = pd.DataFrame(data, index=self.index, columns=self.index)
 
     def __repr__(self):
-        return self._data.__repr__()
+        return repr(self._data)
 
     @property
     def data(self) -> np.ndarray:
@@ -459,7 +485,7 @@ class CovarianceMatrix:
 
         return CovarianceMatrix(data=selected_data.values, coords=sel_coords)
 
-    def align(self, space: Space) -> Self:
+    def align(self, space: Space, coord_decimals: int | None = None) -> Self:
         """
         Align the covariance matrix to the provided xarray coordinates.
         All coordinates must already exist in the covariance matrix.
@@ -467,11 +493,20 @@ class CovarianceMatrix:
         coords = space.coords
         target_index = coords.to_index()
 
-        if not target_index.isin(self.index).all():
-            missing = target_index[~target_index.isin(self.index)]
+        if coord_decimals is not None:
+            index = round_index(self.index, decimals=coord_decimals)
+            data = self._data.copy()
+            data.index = index
+            data.columns = index
+        else:
+            index = self.index
+            data = self._data
+
+        if not target_index.isin(index).all():
+            missing = target_index[~target_index.isin(index)]
             raise ValueError(f"Some coordinates to align to are missing in the covariance matrix: {missing}")
 
-        aligned_data = self._data.loc[target_index, target_index]
+        aligned_data = data.loc[target_index, target_index]
         return self.__class__(data=aligned_data.values, coords=coords)
 
     @property
@@ -493,60 +528,74 @@ class InverseProblem:
     def __init__(self,
                  project: str | Path,
                  estimator: str | type[Estimator],
-                 output_space: Space,
                  obs: Observation,
                  prior: State,
                  forward_operator: ForwardOperator,
                  prior_error: CovarianceMatrix,
                  modeldata_mismatch: CovarianceMatrix,
                  constant: float | Constant | None = None,
+                 state_space: Space | None = None,
                  estimator_kwargs: dict = {},
                  data_aggregation = None,
+                 coord_decimals: int = 6,
                  ) -> None:
 
         # Set project directory
         self.path = Path(project)
         self.project = self.path.name
-        self.path.mkdir(exist_ok=True, parents=True)  # create project directory if it doesn't exist
+        # self.path.mkdir(exist_ok=True, parents=True)  # create project directory if it doesn't exist
 
-        self._data_space_name = obs.space.name
-        self._model_space_name = output_space.name
+        if state_space is None:
+            state_space = forward_operator._state_space
+
+        obs_space_name = obs.space.name
+        state_space_name = state_space.name
 
         has_constant_class = isinstance(constant, Constant)
 
         # Validate inputs
-        assert all(name == self._model_space_name for name in
-                   [prior.space.name, forward_operator._out_space.name]), \
+        assert all(name == state_space_name for name in
+                   [prior.space.name, forward_operator._state_space.name]), \
             "Output space name must match prior and forward operator output space names."
-        assert obs.space.name == forward_operator._in_space.name, \
+        assert obs.space.name == forward_operator._obs_space.name, \
             "Observation space name must match forward operator input space name."
         if has_constant_class:
             assert constant.space.name == obs.space.name, \
                 "Constant space name must match observation space name."
 
-        # Define the data space as the intersection of the observation and forward operator data spaces
-        intersected_index = obs.coords.to_index().intersection(
-            forward_operator.spaces[forward_operator._in_space.name].coords.to_index())
+        # Define the obs space as the intersection of the observation and forward operator obs spaces
+        obs_index = obs.coords.to_index()
+        fo_obs_index = forward_operator.spaces[forward_operator._obs_space.name].coords.to_index()
+        if obs_index.names != fo_obs_index.names:
+            fo_obs_index = fo_obs_index.reorder_levels(obs_index.names)
+        intersected_index = obs_index.intersection(fo_obs_index)
         intersected_coords = intersected_index.to_series().to_xarray().coords
-        data_space = Space(name=self._data_space_name, coords=intersected_coords)
+        obs_space = Space(name=obs_space_name, coords=intersected_coords)
+
+        # Round coordinates to avoid floating point issues during alignment
+        state_space.coords = xr.Coordinates(round_coords(state_space.coords, decimals=coord_decimals))
+        obs_space.coords = xr.Coordinates(round_coords(obs_space.coords, decimals=coord_decimals))
 
         # Align inputs with problem spaces
-        self.obs = obs.align(data_space)
-        self.prior = prior.align(output_space)
-        self.forward_operator = forward_operator.align(in_space=data_space, out_space=output_space)
-        self.prior_error = prior_error.align(output_space)
-        self.modeldata_mismatch = modeldata_mismatch.align(data_space)
-        self.constant = constant.align(data_space) if has_constant_class else constant
+        self.obs = obs.align(obs_space, coord_decimals=coord_decimals)
+        self.prior = prior.align(state_space, coord_decimals=coord_decimals)
+        self.forward_operator = forward_operator.align(obs_space=obs_space, state_space=state_space,
+                                                       coord_decimals=coord_decimals)
+        self.prior_error = prior_error.align(state_space, coord_decimals=coord_decimals)
+        self.modeldata_mismatch = modeldata_mismatch.align(obs_space, coord_decimals=coord_decimals)
+        self.constant = constant.align(obs_space, coord_decimals=coord_decimals) if has_constant_class else constant
 
         # Store the problem spaces
+        self._obs_space = obs_space
+        self._state_space = state_space
         self.spaces = {
-            self._data_space_name: data_space,
-            self._model_space_name: output_space,
+            obs_space_name: obs_space,
+            state_space_name: state_space,
         }
 
-        # Set model and data dimensions
-        self.n_z = self.spaces[self._data_space_name].n
-        self.n_x = self.spaces[self._model_space_name].n
+        # Set state and data dimensions
+        self.n_z = self.spaces[obs_space_name].n
+        self.n_x = self.spaces[state_space_name].n
 
         # Initialize the estimator
         estimator_input = {
@@ -631,9 +680,9 @@ class InverseProblem:
         Posterior state estimate.
         """
         x_hat = self.estimator.x_hat
-        model_space = self.spaces[self._model_space_name]
-        posterior = State(xr.DataArray(x_hat, coords={model_space.name: model_space.index}, dims=[model_space.name]),
-                          space=model_space.name)
+        prior = self.prior.stacked
+        data = xr.DataArray(x_hat, dims=prior.dims, coords=prior.coords).unstack()
+        posterior = State(data, space=self.prior.space.name)
         return posterior
 
     @cached_property
@@ -642,8 +691,9 @@ class InverseProblem:
         Posterior data estimate.
         """
         y_hat = self.estimator.y_hat
-        data_space = self.spaces[self._data_space_name]
-        posterior_data = Data(data=y_hat, space=data_space)
+        obs = self.obs.stacked
+        data = xr.DataArray(y_hat, dims=obs.dims, coords=obs.coords).unstack()
+        posterior_data = Data(data, space=self.obs.space.name)
         return posterior_data
 
     @cached_property
@@ -652,6 +702,6 @@ class InverseProblem:
         Posterior error covariance matrix.
         """
         S_hat = self.estimator.S_hat
-        model_space = self.spaces[self._model_space_name]
-        posterior_error = CovarianceMatrix(S_hat, coords=model_space.coords)
+        coords = self.prior.stacked.coords
+        posterior_error = CovarianceMatrix(S_hat, coords=coords)
         return posterior_error
