@@ -2,20 +2,69 @@
 Geo-spatial utilities.
 """
 
+import copy
+from typing import Any, Literal, Sequence
+
 import cartopy.crs as ccrs
-from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
-                                LongitudeFormatter, LongitudeLocator)
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.typing import ArrayLike
+import numpy.typing as npt
 import pyproj
 import rasterio
 import rasterio.crs
-from shapely import Polygon
-from typing import Any, Sequence
-from xarray import DataArray, Dataset
+import rioxarray as rxr
 import xesmf as xe
+from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
+                                LongitudeFormatter, LongitudeLocator)
+from numpy.typing import ArrayLike
+from shapely import Polygon
+from typing import Iterable, Optional
+from typing_extensions import \
+    Self  # requires python 3.11 to import from typing
+from xarray import DataArray, Dataset
 
+# ----- BOUNDS ----- #
+
+def bbox2extent(bbox: list[float]) -> list[float]:
+    """
+    Bounding box to extent.
+
+    Parameters
+    ----------
+    bbox : list[minx, miny, maxx, maxy]
+        Bounding box
+
+    Returns
+    -------
+    list[minx, maxx, miny, maxy]
+        Extent
+    """
+    minx, miny, maxx, maxy = bbox
+    extent = [minx, maxx, miny, maxy]
+    return extent
+
+
+def extent2bbox(extent: list[float] | tuple[float, float, float, float]
+                ) -> list[float]:
+    """
+    Extent to bounding box.
+
+    Parameters
+    ----------
+    extent : list[minx, maxx, miny, maxy]
+        Extent
+
+    Returns
+    -------
+    list[minx, miny, maxx, maxy]
+        Bounding box
+    """
+    minx, maxx, miny, maxy = extent
+    bbox = [minx, miny, maxx, maxy]
+    return bbox
+
+
+# ----- COORDINATES ----- #
 
 PC = ccrs.PlateCarree()  # Plate Carree projection
 
@@ -46,7 +95,9 @@ class CRS:
 
     def __init__(self, crs: Any):
         # Convert input to pyproj.CRS
-        if isinstance(crs, int):
+        if isinstance(crs, CRS):
+            self.crs = crs.crs
+        elif isinstance(crs, int):
             self.crs = pyproj.CRS.from_epsg(crs)
         elif isinstance(crs, str) and crs.startswith('EPSG:'):
             epsg = int(crs.split(':')[1])
@@ -102,13 +153,6 @@ class CRS:
         return self.crs
 
 
-def write_rio_crs(data: DataArray | Dataset, crs: Any) -> None:
-    if isinstance(crs, CRS):
-        crs = crs.to_rasterio()
-    data.rio.write_crs(crs, inplace=True)
-    data.rio.write_coordinate_system(inplace=True)
-
-
 def dms2dd(d: float=0.0, m: float=0.0, s: float=0.0) -> float:
     """
     Degree-minute-second to decimal degree
@@ -139,114 +183,46 @@ def dms2dd(d: float=0.0, m: float=0.0, s: float=0.0) -> float:
         return np.nan
 
 
-def bbox2extent(bbox: list[float]) -> list[float]:
+def wrap_lons(
+    longitudes: npt.ArrayLike, base: float = -180.0, period: Optional[float] = 360.0
+) -> np.ndarray:
     """
-    Bounding box to extent.
+    Transform the longitude values to be within the closed interval
+    [base, base + period].
 
     Parameters
     ----------
-    bbox : list[minx, miny, maxx, maxy]
-        Bounding box
+    longitudes : ArrayLike
+        One or more longitude values (degrees) to be wrapped.
+    base : float, default=-180.0
+        The start limit (degrees) of the closed interval.
+    period : float, default=360.0
+        The end limit (degrees) of the closed interval expressed as a length
+        from the `base`.
 
     Returns
     -------
-    list[minx, maxx, miny, maxy]
-        Extent
+    ndarray
+        The transformed longitude values.
+
+    Notes
+    -----
+    .. copied from https://github.com/jamesp/geovista/blob/4850c519c7a37c4765befa06fbab933350637c93/lib/geovista/common.py#L274
+
     """
-    minx, miny, maxx, maxy = bbox
-    extent = [minx, maxx, miny, maxy]
-    return extent
+    #
+    # TODO: support radians
+    #
+    if not isinstance(longitudes, Iterable):
+        longitudes = [longitudes]
+
+    longitudes = np.asanyarray(longitudes)
+    result = ((longitudes.astype(np.float64) - base + period * 2) % period) + base
+
+    return result
 
 
-def extent2bbox(extent: list[float] | tuple[float, float, float, float]
-                ) -> list[float]:
-    """
-    Extent to bounding box.
-
-    Parameters
-    ----------
-    extent : list[minx, maxx, miny, maxy]
-        Extent
-
-    Returns
-    -------
-    list[minx, miny, maxx, maxy]
-        Bounding box
-    """
-    minx, maxx, miny, maxy = extent
-    bbox = [minx, miny, maxx, maxy]
-    return bbox
-
-
-def clip(data: DataArray | Dataset,
-         bbox: list[float] | tuple[float, float, float, float] | None = None,
-         extent: list[float] | tuple[float, float, float, float] | None = None,
-         geom: Polygon | list[Polygon] | None = None,
-         crs: Any='EPSG:4326',
-         **kwargs: Any
-         ) -> DataArray | Dataset:
-    """
-    Clip the data to the given bounds.
-
-    Input bounds must be in the same CRS as the data.
-
-    .. note::
-        The result can be slightly different between supplying a geom and a bbox/extent.
-        Clipping with a geom seems to be exclusive of the outer bounds,
-        while clipping with a bbox/extent seems to be inclusive of the outer bounds.
-
-    Parameters
-    ----------
-    data : xr.DataArray | xr.Dataset
-        The data to clip.
-    bbox : tuple[minx, miny, maxx, maxy]
-        The bounding box to clip the data to.
-    extent : tuple[minx, maxx, miny, maxy]
-        The extent to clip the data to.
-    geom : shapely.Polygon
-        The geometry or geometries to clip the data to.
-    crs : Any, optional
-        The CRS of the input geometries. Default is 'EPSG:4326'.
-    kwargs : Any
-        Additional keyword arguments to pass to the rioxarray clip method.
-
-    Returns
-    -------
-    xr.DataArray | xr.Dataset
-        The clipped data.
-    """
-    assert (bbox is not None) + (extent is not None) + (geom is not None) == 1, 'Only one of bbox, extent, or geom must be provided.'
-
-    if extent is not None:
-        # Convert extent to bbox
-        bbox = extent2bbox(extent)
-    if bbox is not None:
-        data = data.rio.clip_box(*bbox, crs=crs, **kwargs)
-    elif geom is not None:
-        if not isinstance(geom, Sequence):
-            geom = [geom]
-
-        data = data.rio.clip(geom, crs=crs, **kwargs)
-
-    return data
-
-
-def wrap_lons(lons: np.ndarray) -> ArrayLike:
-    '''
-    Wrap longitudes ranging from 0~360 to -180~180
-
-    Parameters
-    ----------
-    lons : np.ndarray
-        Longitudes
-
-    Returns
-    -------
-    array-like
-        Wrapped longitudes
-    '''
-    return (lons + 180) % 360 - 180
-
+# ----- PLOTTING UTILITIES ----- #
 
 def add_lat_ticks(ax: plt.Axes, ylims: list[float], labelsize: int | None=None, more_ticks: int=0) -> None:
     """
@@ -279,6 +255,8 @@ def add_lat_ticks(ax: plt.Axes, ylims: list[float], labelsize: int | None=None, 
 
     if labelsize is not None:
         ax.tick_params(axis='y', labelsize=labelsize)
+
+    return None
 
 
 def add_lon_ticks(ax: plt.Axes, xlims: list[float], rotation: int=0, labelsize: int | None=None, more_ticks: int=0) -> None:
@@ -319,6 +297,8 @@ def add_lon_ticks(ax: plt.Axes, xlims: list[float], rotation: int=0, labelsize: 
     if labelsize is not None:
         ax.tick_params(axis='x', labelsize=labelsize)
 
+    return None
+
 
 def add_latlon_ticks(ax: plt.Axes, extent: list[float], x_rotation: int=0, labelsize: int | None=None,
                      more_lon_ticks: int=0, more_lat_ticks: int=0) -> None:
@@ -351,176 +331,7 @@ def add_latlon_ticks(ax: plt.Axes, extent: list[float], x_rotation: int=0, label
     add_lon_ticks(ax, xlims, rotation=x_rotation, labelsize=labelsize,
                   more_ticks=more_lon_ticks)
 
-
-def cosine_weights(lats: np.ndarray) -> np.ndarray:
-    """
-    Calculate cosine weights from latitude.
-
-    Parameters
-    ----------
-    lats : np.ndarray
-        Latitude values
-
-    Returns
-    -------
-    np.ndarray
-        Cosine weighting
-
-    Examples
-    --------
-    >>> ds: xr.Dataset
-    >>> weights = cosine_weighting(ds.lat)
-    >>> ds_weighted = ds.weighted(weights)
-    """
-    return np.cos(np.deg2rad(lats))
-
-
-def gridcell_area(grid: DataArray | Dataset, R: float | ArrayLike | None = None
-                  ) -> DataArray:
-    """
-    Calculate the area of each grid cell in a grid.
-
-    .. note::
-        For lat-lon grids, `xesmf.utils.grid_area` is used to calculate the area,
-        which requires the radius of the earth in kilometers. If the radius of the
-        earth is not provided, it will be calculated based on the latitude.
-
-    Parameters
-    ----------
-    grid : xr.DataArray | xr.Dataset
-        Grid data. `rioxarray` coords must be set.
-    R : float, optional
-        Radius of earth in kilometers, by default calculated based on the latitude.
-
-    Returns
-    -------
-    np.ndarray | xr.DataArray
-        grid-cell area in square-kilometers
-    """
-
-    if grid.rio.crs == 'EPSG:4326':
-        R = R or earth_radius(grid['lat'])
-        area = xe.util.cell_area(grid, earth_radius=R)
-    elif grid.rio.crs.linear_units == 'metre':
-        bounds = grid.cf.add_bounds(['x', 'y'])
-        dx = bounds.x_bounds.diff('bounds').squeeze()
-        dy = bounds.y_bounds.diff('bounds').squeeze()
-        cell_area_m2 = dx * dy
-        area = cell_area_m2.pint.quantify('m2')\
-            .pint.to('km2')\
-            .pint.dequantify()
-    else:
-        raise ValueError('Only lat-lon and meter grids are supported.')
-    return area
-
-
-def gridcell_area_from_latlon(lat: ArrayLike, lon: ArrayLike,
-                              R: float | None = None) -> np.ndarray:
-    """
-    Calculate the area of each grid cell in a lat-lon grid.
-
-    Parameters
-    ----------
-    lat : ArrayLike
-        Latitude array
-    lon : ArrayLike
-        Longitude array
-
-    Returns
-    -------
-    np.ndarray
-        Grid-cell area in square-kilometers
-    """
-    lat, lon = np.array(lat), np.array(lon)
-    grid = DataArray(coords={'lat': lat, 'lon': lon},
-                     dims=['lat', 'lon'])
-    grid.rio.set_spatial_dims('lon', 'lat', inplace=True)
-    write_rio_crs(grid, crs='EPSG:4326')
-
-    area = gridcell_area(grid, R=R)
-    return area.values
-
-
-def earth_radius(lat: ArrayLike) -> ArrayLike:
-    '''
-    Calculate radius of Earth assuming oblate spheroid defined by WGS84
-
-    Parameters
-    ----------
-    lat : array-like
-        latitudes in degrees
-
-    Returns
-    -------
-    array-like
-        vector of radius in kilometers
-
-    Notes
-    -----
-     - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
-     - WGS84: https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
-    '''
-
-    # define oblate spheroid from WGS84
-    a = 6378137
-    b = 6356752.3142
-    e2 = 1 - (b**2 / a**2)
-
-    # convert from geodecic to geocentric
-    # see equation 3-110 in WGS84
-    lat = np.deg2rad(lat)
-    lat_gc = np.arctan((1-e2) * np.tan(lat))
-
-    # radius equation
-    # see equation 3-107 in WGS84
-    r = (
-        (a * (1 - e2)**0.5)
-        / (1 - (e2 * np.cos(lat_gc)**2))**0.5
-        )
-
-    r /= 1000  # convert to km
-    return r
-
-
-def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
-    # http://www.movable-type.co.uk/scripts/latlong.html
-    # TODO not sure this is completely correct
-
-    if deg:
-        lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
-
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-
-    a = np.sin((dlat) / 2)**2 + np.cos(lat1) \
-        * np.cos(lat2) * np.sin((dlon) / 2)**2
-    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
-    d = R * c
-    return d
-
-
-def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
-    # http://www.movable-type.co.uk/scripts/latlong.html
-    # TODO I dont think this works correctly
-
-    if deg:
-        lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
-
-    dlon = lon2 - lon1
-    y = np.sin(dlon) * np.cos(lat2)
-    x = np.cos(lat1) * np.sin(lat2) \
-        - np.sin(lat1) * np.cos(lat2) * np.cos(dlon)
-
-    # Inital bearing in degrees
-    brng = (np.rad2deg(np.arctan2(y, x))
-            + 360) % 360  # in [0,360)
-
-    if final:
-        # Final bearing in degrees
-        brng = (brng + 180) % 360
-
-    return brng
-
+    return None
 
 def add_extent_map(fig: 'matplotlib.figure.Figure', main_extent: list[float], main_extent_crs: ccrs.CRS,
                    extent_map_rect: list[float], extent_map_extent: list[float], extent_map_crs: ccrs.CRS,
@@ -584,3 +395,638 @@ def add_extent_map(fig: 'matplotlib.figure.Figure', main_extent: list[float], ma
                                  color=color, linewidth=linewidth)
 
     return extent_map_ax
+
+
+# ----- XARRAY UTILITIES ----- #
+
+XESMF_Regrid_Methods = Literal[
+        "bilinear",
+        "conservative",
+        "conservative_normed",
+        "nearest_s2d",
+        "nearest_d2s",
+        "patch",
+    ]
+
+
+class BaseGrid:
+    """
+    Base class for working with gridded data.
+    
+    This class is a wrapper around xarray DataArray and Dataset objects, with additional methods
+    for clipping, regridding, resampling, and reprojection. All operations are performed inplace,
+    but return the grid object for chaining.
+    """
+
+    def __init__(self, data, crs, **kwargs):
+        self.crs = CRS(crs)
+        self.data = write_rio_crs(data, self.crs)
+
+    def copy(self) -> Self:
+        """
+        Create a copy of the grid.
+
+        Returns
+        -------
+        BaseGrid
+            The copied grid.
+        """
+        return copy.deepcopy(self)
+
+    @property
+    def gridcell_area(self) -> DataArray:
+        """
+        Calculate the grid cell area in km^2.
+
+        Returns
+        -------
+        xr.DataArray
+            The grid cell area.
+        """
+        return gridcell_area(self.data)
+
+    def clip(self,
+             bbox: tuple[float, float, float, float] | None = None,
+             extent: tuple[float, float, float, float] | None = None,
+             geom: Polygon | None = None,
+             crs: Any = None,
+             **kwargs: Any) -> Self:
+        """
+        Clip the data to the given bounds. Mopdifies the data in place.
+        .. note::
+            The result can be slightly different between supplying a geom and a bbox/extent.
+            Clipping with a geom seems to be exclusive of the bounds,
+            while clipping with a bbox/extent seems to be inclusive of the bounds.
+
+        Parameters
+        ----------
+        bbox : tuple[minx, miny, maxx, maxy]
+            The bounding box to clip the data to.
+        extent : tuple[minx, maxx, miny, maxy]
+            The extent to clip the data to.
+        geom : shapely.Polygon
+            The geometry to clip the data to.
+        crs : Any
+            The CRS of the input geometries. If not provided, the CRS of the data is used.
+        inplace : bool, optional
+            Whether to modify the data in place, by default False.
+        kwargs : Any
+            Additional keyword arguments to pass to the rioxarray clip method.
+
+        Returns
+        -------
+        BaseGrid
+            The clipped grid
+        """
+        crs = crs or self.crs.to_rasterio()
+        self.data = clip(self.data, bbox=bbox, extent=extent, geom=geom, crs=crs, **kwargs)
+        return self
+
+    def regrid(self, out_grid: Dataset,
+               method: XESMF_Regrid_Methods = 'bilinear') -> Self:
+        """
+        Regrid the data to a new grid. Uses `xesmf` for regridding. Modifies the data in place.
+
+        .. note::
+            At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.
+            Possibly could use `xesmf.frontend.BaseRegridder` to regrid to a generic grid.
+
+        .. warning::
+            `xarray.Dataset.cf.add_bounds` is known to have issues, including near the 180th meridian.
+            Care should be taken when using this method, especially with global datasets.
+
+        Parameters
+        ----------
+        out_grid : xr.DataArray
+            The new grid to resample to. Must be a lat-lon grid.
+        method : str, optional
+            The regridding method, by default 'bilinear'.
+
+        Returns
+        -------
+        BaseGrid
+            The regridded grid
+        """
+        self.data = regrid(self.data, out_grid=out_grid, method=method)
+        return self
+
+    def resample(self, resolution: float | tuple[float, float],
+                 regrid_method: XESMF_Regrid_Methods = 'bilinear') -> Self:
+        """
+        Resample the data to a new resolution. Modifies the data in place.
+
+        Parameters
+        ----------
+        resolution : float | tuple[x_res, y_res]
+            The new resolution in degrees. If a single value is provided, the resolution
+            is assumed to be the same in both dimensions.
+        regrid_method : str, optional
+            The regridding method, by default 'bilinear'.
+
+        Returns
+        -------
+        BaseGrid
+            The resampled grid
+        """
+        self.data = resample(self.data, resolution=resolution, regrid_method=regrid_method)
+        return self
+
+    def reproject(self, resolution: float | tuple[float, float],
+                  regrid_method: XESMF_Regrid_Methods = 'bilinear') -> Self:
+        """
+        Reproject the data to a lat lon rectilinear grid.
+
+        Parameters
+        ----------
+        resolution : float | tuple[x_res, y_res]
+            The new resolution in degrees. If a single value is provided, the resolution
+            is assumed to be the same in both dimensions.
+        regrid_method : str, optional
+            The regridding method, by default 'bilinear'.
+
+        Returns
+        -------
+        BaseGrid
+            The reprojected grid
+        """
+        assert self.crs.epsg != 4326, 'Data is already in lat lon'
+
+        resampled_data = resample(self.data, resolution=resolution,
+                                  regrid_method=regrid_method)
+
+        self.crs = CRS('EPSG:4326')
+        self.data = write_rio_crs(resampled_data, self.crs)
+        return self
+
+
+def clip(data: DataArray | Dataset,
+         bbox: list[float] | tuple[float, float, float, float] | None = None,
+         extent: list[float] | tuple[float, float, float, float] | None = None,
+         geom: Polygon | list[Polygon] | None = None,
+         crs: Any='EPSG:4326',
+         **kwargs: Any
+         ) -> DataArray | Dataset:
+    """
+    Clip the data to the given bounds.
+
+    .. note::
+        The result can be slightly different between supplying a geom and a bbox/extent.
+        Clipping with a geom seems to be exclusive of the outer bounds,
+        while clipping with a bbox/extent seems to be inclusive of the outer bounds.
+
+    Parameters
+    ----------
+    data : xr.DataArray | xr.Dataset
+        The data to clip.
+    bbox : tuple[minx, miny, maxx, maxy]
+        The bounding box to clip the data to.
+    extent : tuple[minx, maxx, miny, maxy]
+        The extent to clip the data to.
+    geom : shapely.Polygon
+        The geometry or geometries to clip the data to.
+    crs : Any, optional
+        The CRS of the input geometries. Default is 'EPSG:4326'.
+    kwargs : Any
+        Additional keyword arguments to pass to the rioxarray clip method.
+
+    Returns
+    -------
+    xr.DataArray | xr.Dataset
+        The clipped data.
+    """
+    assert (bbox is not None) + (extent is not None) + (geom is not None) == 1, 'Only one of bbox, extent, or geom must be provided.'
+
+    if extent is not None:
+        # Convert extent to bbox
+        bbox = extent2bbox(extent)
+    if bbox is not None:
+        data = data.rio.clip_box(*bbox, crs=crs, **kwargs)
+    elif geom is not None:
+        if not isinstance(geom, Sequence):
+            geom = [geom]
+
+        data = data.rio.clip(geom, crs=crs, **kwargs)
+
+    return data
+
+
+def gridcell_area(grid: DataArray | Dataset, R: float | ArrayLike | None = None
+                  ) -> DataArray:
+    """
+    Calculate the area of each grid cell in a grid.
+
+    .. note::
+        For lat-lon grids, `xesmf.utils.grid_area` is used to calculate the area,
+        which requires the radius of the earth in kilometers. If the radius of the
+        earth is not provided, it will be calculated based on the latitude.
+
+    Parameters
+    ----------
+    grid : xr.DataArray | xr.Dataset
+        Grid data. `rioxarray` coords must be set.
+    R : float, optional
+        Radius of earth in kilometers, by default calculated based on the latitude.
+
+    Returns
+    -------
+    np.ndarray | xr.DataArray
+        grid-cell area in square-kilometers
+    """
+
+    if grid.rio.crs == 'EPSG:4326':
+        R = R or earth_radius(grid['lat'])
+        area = xe.util.cell_area(grid, earth_radius=R)
+    elif grid.rio.crs.linear_units == 'metre':
+        bounds = grid.cf.add_bounds(['x', 'y'])
+        dx = bounds.x_bounds.diff('bounds').squeeze()
+        dy = bounds.y_bounds.diff('bounds').squeeze()
+        cell_area_m2 = dx * dy
+        area = cell_area_m2.pint.quantify('m2')\
+            .pint.to('km2')\
+            .pint.dequantify()
+    else:
+        raise ValueError('Only lat-lon and meter grids are supported.')
+    return area
+
+
+def plot_grid(grid: DataArray | Dataset,
+              lw: float = 1,
+              ax: plt.Axes | None = None,
+              extent: list[float] | None = None,
+              crs: ccrs.CRS | None = None,
+              **kwargs: Any) -> plt.Axes:
+    """
+    Plot a grid.
+
+    Parameters
+    ----------
+    grid : xr.DataArray | xr.Dataset
+        The grid to plot.
+    ax : plt.Axes, optional
+        Axes object to plot to, by default None.
+    extent : list[minx, maxx, miny, maxy], optional
+        Extent of the plot, by default None.
+    crs : ccrs.CRS, optional
+        CRS of the plot, by default None.
+    kwargs : Any
+        Additional keyword arguments to pass to the pcol
+        or pcolormesh method.
+    
+    Returns
+    -------
+    plt.Axes
+        Axes object
+    """
+    if crs is None:
+        crs = PC
+    elif isinstance(crs, CRS):
+        crs = crs.to_cartopy()
+
+    if ax is None:
+        fig, ax = plt.subplots(subplot_kw={'projection': crs})
+
+    if extent is not None:
+        ax.set_extent(extent, crs=crs)
+
+    lat, lon = grid['lat'], grid['lon']
+    
+    grid = DataArray(np.zeros((len(lat), len(lon)), dtype=float),
+        coords={'lat': lat, 'lon': lon})
+
+    grid.plot(ax=ax, transform=PC,
+              facecolor='none', edgecolor='black',
+              linewidth=lw,
+              **kwargs)
+
+    return ax
+
+
+def generate_regular_grid(xmin: float, xmax: float, dx: float,
+                          ymin: float, ymax: float, dy: float,
+                          x_label='x', y_label='y',
+                          chunks: dict | None = None) -> DataArray:
+    """
+    Generate a regular grid. Grid points are cell centers.
+
+    Parameters
+    ----------
+    xmin : float
+        x value of the left edge of the grid
+    xmax : float
+        x value of the right edge of the grid
+    dx : float
+        x resolution
+    ymin : float
+        y value of the bottom edge of the grid
+    ymax : float
+        y value of the top edge of the grid
+    dy : float
+        y resolution
+    x_label : str, optional
+        Name of the x coordinate, by default 'x'
+    y_label : str, optional
+        Name of the y coordinate, by default 'y'
+
+    Returns
+    -------
+    xr.DataArray
+        The generated grid
+    """
+    x0 = xmin + dx / 2
+    y0 = ymin + dy / 2
+
+    # Determine number of decimal places to round to
+    x_deci = max(0, -int(np.floor(np.log10(dx))) + 1)
+    y_deci = max(0, -int(np.floor(np.log10(dy))) + 1)
+
+    x = np.round(np.arange(x0, xmax, dx), x_deci)
+    y = np.round(np.arange(y0, ymax, dy), y_deci)
+    zeros = np.zeros((len(y), len(x)))
+    return DataArray(zeros, coords={y_label: y, x_label: x})
+
+
+def regrid(data: DataArray | Dataset,
+           out_grid: Dataset,
+           method: XESMF_Regrid_Methods = 'bilinear') -> DataArray | Dataset:
+    """
+    Regrid data to a new grid. Uses `xesmf` for regridding.
+
+    .. note::
+        At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.
+        Possibly could use `xesmf.frontend.BaseRegridder` to regrid to a generic grid.
+
+    .. warning::
+        `xarray.Dataset.cf.add_bounds` is known to have issues, including near the 180th meridian.
+        Care should be taken when using this method, especially with global datasets.
+
+    Parameters
+    ----------
+    data : xr.DataArray | xr.Dataset
+        The data to regrid.
+    out_grid : xr.DataArray
+        The new grid to resample to. Must be a lat-lon grid.
+    method : str, optional
+        The regridding method, by default 'bilinear'.
+
+    Returns
+    -------
+    xr.DataArray | xr.Dataset
+        The regridded data.
+    """
+    out_crs = 'EPSG:4326'
+
+    # Use cf-xarray to calculate the bounds of the grid cells
+    data = data.cf.add_bounds(['lat', 'lon'])
+
+    # Regrid the data using `xesmf`
+    regridder = xe.Regridder(ds_in=data, ds_out=out_grid, method=method)
+    regridded = regridder(data, keep_attrs=True)
+
+    if len(regridded.lon.dims) == 2:
+        # New grid has 2D lat/lon, but lat is constant over x axis,
+        # and lon is constant over y axis.
+        # We need to convert to 1D lat/lon
+        lats = regridded.lat.isel(x=0).values
+        lons = regridded.lon.isel(y=0).values
+        regridded = regridded.drop_vars(['lat', 'lon'])\
+            .rename_dims({'x': 'lon', 'y': 'lat'})\
+            .assign_coords(lat=lats, lon=lons)
+
+    # Regridding drops rioxarray info - reattach
+    regridded.rio.set_spatial_dims(x_dim='lon', y_dim='lat', inplace=True)
+    regridded = write_rio_crs(regridded, out_crs)
+
+    return regridded
+
+
+def resample(data: DataArray | Dataset,
+             resolution: float | tuple[float, float],
+             regrid_method: XESMF_Regrid_Methods = 'bilinear') -> DataArray | Dataset:
+    """
+    Resample the data to a new resolution. Modifies the data in place.
+
+    Parameters
+    ----------
+    data : xr.DataArray | xr.Dataset
+        The data to resample.
+    resolution : float | tuple[x_res, y_res]
+        The new resolution in degrees. If a single value is provided, the resolution
+        is assumed to be the same in both dimensions.
+    regrid_method : str, optional
+        The regridding method, by default 'bilinear'. 
+
+    Returns
+    -------
+    xr.DataArray | xr.Dataset
+        The resampled data.
+    """
+    if isinstance(resolution, float):
+        resolution: tuple = (resolution, resolution)
+
+    # Calculate the new grid
+    bounds = data.cf.add_bounds(['lat', 'lon'])
+    xmin = bounds.lon_bounds.min()
+    xmax = bounds.lon_bounds.max()
+    ymin = bounds.lat_bounds.min()
+    ymax = bounds.lat_bounds.max()
+    dx = resolution[0]
+    dy = resolution[1]
+    if len(data.lon.dims) == 2:
+        out_grid = xe.util.grid_2d(xmin, xmax, dx,
+                                    ymin, ymax, dy)
+    else:
+        out_grid = generate_regular_grid(xmin=xmin, xmax=xmax, dx=dx,
+                                         ymin=ymin, ymax=ymax, dy=dy,
+                                         x_label='lon', y_label='lat')
+        out_grid.lat.attrs['units'] = 'degrees_north'
+        out_grid.lon.attrs['units'] = 'degrees_east'
+
+    return regrid(data, out_grid=out_grid, method=regrid_method)
+
+
+def round_latlon(data: DataArray | Dataset,
+                 lat_deci: int, lon_deci: int,
+                 lat_dim: str = 'lat', lon_dim: str = 'lon') -> Dataset:
+    """
+    Round latitude and longitude values to a specified number of decimal places.
+
+    Parameters
+    ----------
+    data : xr.DataArray | xr.Dataset
+        The data with lat/lon coordinates to round.
+    lat_deci : int
+        Number of decimal places to round latitude values to.
+    lon_deci : int
+        Number of decimal places to round longitude values to.
+    lat_dim : str, optional
+        Name of the latitude dimension, by default 'lat'.
+    lon_dim : str, optional
+        Name of the longitude dimension, by default 'lon'.
+
+    Returns
+    -------
+    xr.DataArray | xr.Dataset
+        The data with rounded lat/lon coordinates.
+    """
+    return data.assign_coords({
+        lat_dim: np.round(data[lat_dim], lat_deci),
+        lon_dim: np.round(data[lon_dim], lon_deci)
+    })
+
+
+def write_rio_crs(data: DataArray | Dataset, crs: Any) -> DataArray | Dataset:
+    """
+    Write the CRS and coordinate system to the rioxarray accessor.
+
+    Parameters
+    ----------
+    data : DataArray | Dataset
+        The data to write the CRS to.
+    crs : Any
+        The CRS to write to the data.
+
+    Returns
+    -------
+    DataArray | Dataset
+        The data with the CRS written to the rioxarray accessor.
+    """
+    if isinstance(crs, CRS):
+        crs = crs.to_rasterio()
+
+    data = data.rio.write_crs(crs)\
+        .rio.write_coordinate_system(inplace=True)
+
+    return data
+
+
+# ----- MISCELLANEOUS ----- #
+
+def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
+    # http://www.movable-type.co.uk/scripts/latlong.html
+    # TODO I dont think this works correctly
+
+    if deg:
+        lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
+
+    dlon = lon2 - lon1
+    y = np.sin(dlon) * np.cos(lat2)
+    x = np.cos(lat1) * np.sin(lat2) \
+        - np.sin(lat1) * np.cos(lat2) * np.cos(dlon)
+
+    # Inital bearing in degrees
+    brng = (np.rad2deg(np.arctan2(y, x))
+            + 360) % 360  # in [0,360)
+
+    if final:
+        # Final bearing in degrees
+        brng = (brng + 180) % 360
+
+    return brng
+
+
+def cosine_weights(lats: np.ndarray) -> np.ndarray:
+    """
+    Calculate cosine weights from latitude.
+
+    Parameters
+    ----------
+    lats : np.ndarray
+        Latitude values
+
+    Returns
+    -------
+    np.ndarray
+        Cosine weighting
+
+    Examples
+    --------
+    >>> ds: xr.Dataset
+    >>> weights = cosine_weighting(ds.lat)
+    >>> ds_weighted = ds.weighted(weights)
+    """
+    return np.cos(np.deg2rad(lats))
+
+
+def earth_radius(lat: ArrayLike) -> ArrayLike:
+    '''
+    Calculate radius of Earth assuming oblate spheroid defined by WGS84
+
+    Parameters
+    ----------
+    lat : array-like
+        latitudes in degrees
+
+    Returns
+    -------
+    array-like
+        vector of radius in kilometers
+
+    Notes
+    -----
+     - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
+     - WGS84: https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
+    '''
+
+    # define oblate spheroid from WGS84
+    a = 6378137
+    b = 6356752.3142
+    e2 = 1 - (b**2 / a**2)
+
+    # convert from geodecic to geocentric
+    # see equation 3-110 in WGS84
+    lat = np.deg2rad(lat)
+    lat_gc = np.arctan((1-e2) * np.tan(lat))
+
+    # radius equation
+    # see equation 3-107 in WGS84
+    r = (
+        (a * (1 - e2)**0.5)
+        / (1 - (e2 * np.cos(lat_gc)**2))**0.5
+        )
+
+    r /= 1000  # convert to km
+    return r
+
+
+def gridcell_area_from_latlon(lat: ArrayLike, lon: ArrayLike,
+                              R: float | None = None) -> np.ndarray:
+    """
+    Calculate the area of each grid cell in a lat-lon grid.
+
+    Parameters
+    ----------
+    lat : ArrayLike
+        Latitude array
+    lon : ArrayLike
+        Longitude array
+
+    Returns
+    -------
+    np.ndarray
+        Grid-cell area in square-kilometers
+    """
+    lat, lon = np.array(lat), np.array(lon)
+    grid = DataArray(coords={'lat': lat, 'lon': lon},
+                     dims=['lat', 'lon'])
+    grid.rio.set_spatial_dims('lon', 'lat', inplace=True)
+    grid = write_rio_crs(grid, crs='EPSG:4326')
+
+    area = gridcell_area(grid, R=R)
+    return area.values
+
+
+def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
+    # http://www.movable-type.co.uk/scripts/latlong.html
+    # TODO not sure this is completely correct
+
+    if deg:
+        lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = np.sin((dlat) / 2)**2 + np.cos(lat1) \
+        * np.cos(lat2) * np.sin((dlon) / 2)**2
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+    d = R * c
+    return d

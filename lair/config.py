@@ -39,7 +39,7 @@ STILT_DIR = os.getenv('STILT_DIR')
 # LAIR
 LAIR_DIR = os.path.dirname(__file__)
 
-#: User Cache Directory``
+#: User Cache Directory
 CACHE_DIR = os.getenv('LAIR_CACHE_DIR',
                       os.path.join(os.path.expanduser('~'), '.cache', 'lair'))
 if not os.path.exists(CACHE_DIR):
