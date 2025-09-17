@@ -17,6 +17,8 @@ UATAQ project.
    air <air>
    config <config>
    constants <constants>
+   inventories <inventories>
+   inversion <inversion>
    uataq <uataq/index>
    utils <utils>
    valley <valley>
@@ -42,6 +44,18 @@ UATAQ project.
       :link-type: doc
 
       Mathematical & scientific constants.
+
+   .. grid-item-card:: :octicon:`inbox` Inventories
+      :link: inventories
+      :link-type: doc
+
+      Spatiotemporal inventories of fluxes.
+
+   .. grid-item-card:: :octicon:`law` Inversion
+      :link: inversion
+      :link-type: doc
+
+      Estimate unknown model states from observed data.
 
    .. grid-item-card:: :octicon:`table` UATAQ
       :link: uataq/index
