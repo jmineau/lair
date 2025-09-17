@@ -9,6 +9,7 @@ dependencies:
   - dask
   - esmpy
   - fastkml
+  - f90nml
   - geopandas
   - jupyterlab
   - lxml
@@ -22,8 +23,11 @@ dependencies:
   - pint
   - pint-xarray
   - pydata-sphinx-theme
+  - pyarrow
+  - pydantic
   - pyproj
   - pytables
+  - pyyaml
   - rioxarray
   - s3fs
   - scipy
