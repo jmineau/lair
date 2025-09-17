@@ -57,6 +57,7 @@ autodoc_mock_imports = [
     'cartopy',
     'cf-xarray',
     'fastkml',
+    'f90nml',
     'geopandas',
     'matplotlib',
     'metpy',
@@ -65,7 +66,10 @@ autodoc_mock_imports = [
     'pandas',
     'pint',
     'pint-xarray',
+    'pyarrow',
+    'pydantic',
     'pyproj',
+    'pyyaml',
     'rioxarray',
     's3fs',
     'scipy',
@@ -75,7 +79,7 @@ autodoc_mock_imports = [
     'tables',
     'xarray',
     'xesmf',
-    'zarr'
+    'zarr',
 ]
 autodoc_typehints = "signature"
 
