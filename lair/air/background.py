@@ -4,10 +4,11 @@ Calculate background concentrations.
 
 import datetime as dt
 import pandas as pd
+from typing import Any
 
 from lair.config import verbose
 from lair.air._ccg_filter import ccgFilter  # make available to user
-from lair.utils.clock import AFTERNOON, dt2decimalDate
+from lair.utils.clock import AFTERNOON, dt2decimalDate, decimalDate2dt
 
 
 def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -> pd.Series | pd.DataFrame:
@@ -29,7 +30,8 @@ def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -
     return data[data.index.hour.isin(hours)].resample('1d').mean()
 
 
-def rolling_baseline(data: pd.Series, window: int=24, q: float=0.01
+def rolling_baseline(data: pd.Series, window: Any='24h', q: float=0.01,
+                     min_periods: int=1, center: bool=True
              ) -> pd.Series:
     """
     Calculate the baseline concentration as the {q} quantile of a rolling
@@ -39,19 +41,25 @@ def rolling_baseline(data: pd.Series, window: int=24, q: float=0.01
     ----------
     data : pd.Series
         Time series of data to calculate the baseline from.
-    window : int, optional
-        Size of the rolling window in hours.
+    window : Any, optional
+        Window size for the rolling calculation. Must be passable to
+        pd.Timedelta. Default is '24h'.
     q : float, optional
-        Quantile to calculate the baseline from.
+        Quantile to calculate the baseline from. Default is 0.01.
+    min_periods : int, optional
+        Minimum number of periods within each window required to have a value.
+        Default is 1.
+    center : bool, optional
+        Center the window on the timestamp. Default is True.
 
     Returns
     -------
     pd.Series
         Baseline concentration
     """
-    window = dt.timedelta(hours=window)
-    baseline = (data.rolling(window=window, center=True).quantile(q)
-                    .rolling(window=window, center=True).mean())
+    window = pd.Timedelta(window)
+    baseline = (data.rolling(window=window, center=center, min_periods=min_periods).quantile(q)
+                    .rolling(window=window, center=center, min_periods=min_periods).mean())
 
     return baseline
 
@@ -103,10 +111,42 @@ def phase_shift_corrected_baseline(data: pd.Series, n: int = 3600, q: float = 0.
     return pd.concat(b)
 
 
-def thonning(data: pd.Series, return_filt: bool=False, **kwargs
-             )-> ccgFilter | pd.Series:
+def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     """
-    Thonning curve fitting.
+    Create a Thoning filter object from a time series of data.
+
+    Parameters
+    ----------
+    data : pd.Series
+        Time series of data to be smoothed. Must have a datetime index.
+    **kwargs
+        Additional keyword arguments to pass to the ccgFilter class.
+
+    Returns
+    -------
+    ccgFilter
+        Thoning filter object.
+    """
+    if data.isna().any():
+        raise ValueError("Data contains NaN values.")
+
+    # Convert datetime index to decimal date
+    xp = data.index.to_series().apply(dt2decimalDate).values
+    yp = data.values
+
+    if not 'debug' in kwargs:
+        # Set debug level using lair's verbose setting
+        kwargs['debug'] = verbose
+
+    # Fit the Thoning curve
+    return ccgFilter(xp, yp, **kwargs)
+
+def thoning(data: pd.Series,
+            smooth_time: list[dt.datetime] | None = None,
+            **kwargs
+            )-> pd.Series:
+    """
+    Thoning curve fitting.
 
     Wraps code published by NOAA GML: https://gml.noaa.gov/ccgg/mbl/crvfit/crvfit.html
 
@@ -119,31 +159,30 @@ def thonning(data: pd.Series, return_filt: bool=False, **kwargs
     ----------
     data : pd.Series
         Time series of data to be smoothed. Must have a datetime index.
-    return_filt : bool, optional
-        Return the filter object instead of the smoothed data.
+    
     **kwargs
         Additional keyword arguments to pass to the ccgFilter class.
 
     Returns
     -------
-    ccgFilter | pd.Series
-        If return_filt is True, returns the filter object.
-        Otherwise, returns the smoothed data as a pandas series.
+    pd.Series
+        Smoothed data.
     """
-    if not 'debug' in kwargs:
-        # Set debug level using lair's verbose setting
-        kwargs['debug'] = verbose
-
-    # Convert datetime index to decimal date
+    # Drop nans (filter does not handle them)
+    orig_index = data.index.copy()  # however, we may want to return the original index
     data = data.dropna()
-    xp = data.index.to_series().apply(dt2decimalDate).values
-    yp = data.values
 
-    # Fit the Thonning curve
-    filt = ccgFilter(xp, yp, **kwargs)
-    if return_filt:
-        return filt  # Return the filter object
+    # Create a Thoning filter object
+    filt = thoning_filter(data, **kwargs)
+
+    # Get the times to return the smoothed data
+    if smooth_time is None:
+        # Use the original time series
+        smooth_time = orig_index
+        decimal_time = filt.xp
+    else:
+        decimal_time = [dt2decimalDate(t) for t in smooth_time]
 
     # Return the smoothed data
-    smooth = filt.getSmoothValue(xp)
-    return pd.Series(smooth, index=data.index)
+    smooth = filt.getSmoothValue(decimal_time)
+    return pd.Series(smooth, index=smooth_time, name=data.name)  # reassign index times to avoid issues with decimal rounding

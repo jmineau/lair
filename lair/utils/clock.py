@@ -11,6 +11,7 @@ import re
 import time
 from typing import Any, Callable, ClassVar, Dict, Literal, Optional, Union
 from zoneinfo import ZoneInfo
+import numpy as np
 
 AFTERNOON = [12, 13, 14, 15, 16] # HH Local Standard Time
 SEASONS = {1: 'DJF', 2: 'DJF', 3: 'MAM', 4: 'MAM', 5: 'MAM', 6: 'JJA',
@@ -107,6 +108,18 @@ class TimeRange:
     def __iter__(self):
         return iter([self.start, self.stop])
 
+    def __contains__(self, item):
+        if not any([self.start, self.stop]):
+            # Entire Period - True
+            return True
+        if not self.start:
+            # Before stop - True if item <= stop
+            return item <= self.stop
+        if not self.stop:
+            # After start - True if start <= item
+            return self.start <= item
+        return self.start <= item <= self.stop
+
     @property
     def start(self) -> dt.datetime | None:
         return self._start
@@ -117,6 +130,8 @@ class TimeRange:
             self._start = start
         elif isinstance(start, str):
             self._start = TimeRange.parse_iso(start)
+        elif isinstance(start, np.datetime64):
+            self._start = pd.to_datetime(start).to_pydatetime()
         else:
             raise ValueError("Invalid start time format")
 
@@ -130,6 +145,8 @@ class TimeRange:
             self._stop = stop
         elif isinstance(stop, str):
             self._stop = TimeRange.parse_iso(stop, inclusive=True)
+        elif isinstance(stop, np.datetime64):
+            self._stop = pd.to_datetime(stop).to_pydatetime()
         else:
             raise ValueError("Invalid stop time format")
 
@@ -267,6 +284,126 @@ def datetime_accessor(obj, accessor='dt'):
     if hasattr(obj, accessor):
         return getattr(obj, accessor)
     return obj
+
+
+def regular_times_to_intervals(times, time_step='monthly', closed='left') -> pd.IntervalIndex:
+    """
+    Convert an array of regular times to intervals of the specified length.
+
+    Parameters
+    ----------
+    times : np.array
+        A numpy array of datetime64 values indicating the start of each interval.
+    time_step : str, optional
+        The interval step ('hourly', 'daily', 'monthly', 'annual').
+        Determines the length of each interval. Default is 'monthly'.
+    closed : str, optional
+        Defines if the interval is closed on the 'left', 'right', 'both', or 'neither'. Default is 'left'.
+
+    Returns
+    -------
+    pd.IntervalIndex
+        An index with intervals covering the specified time range.
+
+    Raises
+    ------
+    ValueError
+        If `time_step` is not one of 'hourly', 'daily', 'monthly', or 'annual'.
+    """
+    # Convert the numpy array to pandas DatetimeIndex
+    start_times = pd.to_datetime(times)
+
+    # Define a dictionary mapping time_step to DateOffset
+    offsets = {
+        'hourly': pd.offsets.DateOffset(hours=1),
+        'daily': pd.offsets.DateOffset(days=1),
+        'monthly': pd.offsets.DateOffset(months=1),
+        'annual': pd.offsets.DateOffset(years=1)
+    }
+
+    # Get the offset from the dictionary or raise an error if the time_step is invalid
+    if time_step not in offsets:
+        raise ValueError("time_step must be 'hourly', 'daily', 'monthly', or 'annual'")
+    offset = offsets[time_step]
+
+    # Calculate the end times for each interval
+    stop_times = start_times + offset
+
+    # Create the IntervalIndex with specified closure
+    intervals = pd.IntervalIndex.from_arrays(start_times, stop_times, closed=closed)
+    return intervals
+
+
+def periodindex_to_binedges(periodindex: pd.PeriodIndex) -> list[pd.Timestamp]:
+    """
+    Convert a PeriodIndex to a list of bin edges.
+
+    Parameters
+    ----------
+    periodindex : pd.PeriodIndex
+        The PeriodIndex to convert.
+
+    Returns
+    -------
+    list[pd.Timestamp]
+        The bin edges.
+    """
+    start_times = [p.start_time for p in periodindex]
+    end_times = [p.end_time for p in periodindex]
+    return start_times + [end_times[-1]]
+
+
+def time_difference_matrix(times, absolute: bool = True) -> np.ndarray:
+    """
+    Calculate the time differences between each pair of times.
+
+    Parameters
+    ----------
+    times : list[dt.datetime]
+        The list of times to calculate the differences between.
+    absolute : bool, optional
+        If True, return the absolute differences. Default is True.
+
+    Returns
+    -------
+    np.ndarray
+        The matrix of time differences.
+    """
+    times = pd.DatetimeIndex(times)  # wrap in pandas DatetimeIndex as np.subtract.outer doesn't like pd.Series
+    diffs = np.subtract.outer(times, times)
+    if absolute:
+        diffs = np.abs(diffs)
+    return diffs
+
+
+def time_decay_matrix(times, decay: str | pd.Timedelta) -> np.ndarray:
+    """
+    Calculate the time decay matrix for the specified times and decay.
+
+    Parameters
+    ----------
+    times : list[dt.datetime]
+        The list of times to calculate the decay matrix for.
+    decay : str | pd.Timedelta
+        The decay to use for the exponential decay.
+
+    Returns
+    -------
+    np.ndarray
+        The matrix of time decay values.
+    """
+    # Calculate the time differences
+    diffs = time_difference_matrix(times, absolute=True)
+
+    # Wrap in pandas DataFrame to use pd.Timedelta functionality
+    diffs = pd.DataFrame(diffs)
+
+    # Get decay as a pd.Timedelta
+    decay = pd.Timedelta(decay)
+
+    # Calculate the decay matrix using an exponential decay
+    decay_matrix = np.exp(-diffs / decay).values  # values gets the numpy array
+    return decay_matrix
 
 
 # ----- Time Aggregation ----- #

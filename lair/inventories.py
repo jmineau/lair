@@ -8,26 +8,28 @@ pollutants, originating from all source categories in a certain
 geographical area and within a specified time span, usually a specific year.
 """
 
-from abc import ABCMeta
 import datetime as dt
-import matplotlib.pyplot as plt
-from molmass import Formula
-import numpy as np
 import os
-from pathlib import Path
-import pint
 import re
-from shapely import Polygon
+from abc import ABCMeta
+from pathlib import Path
 from typing import Any, Literal
-from typing_extensions import Self  # requires python 3.11 to import from typing
-import xarray as xr
-from xarray import DataArray, Dataset
-import xesmf as xe
 
-from lair.config import GROUP_DIR
+import matplotlib.pyplot as plt
+import numpy as np
+import pint
+import xarray as xr
+from molmass import Formula
+from shapely import Polygon
+from typing_extensions import \
+    Self  # requires python 3.11 to import from typing
+from xarray import DataArray, Dataset
+
 from lair import units
+from lair.config import GROUP_DIR
 from lair.utils.clock import TimeRange
-from lair.utils.geo import CRS, PC, clip, gridcell_area, wrap_lons, write_rio_crs
+from lair.utils.geo import (CRS, PC, BaseGrid, round_latlon, wrap_lons,
+                            write_rio_crs)
 
 xr.set_options(keep_attrs=True)
 
@@ -60,6 +62,43 @@ def molecular_weight(pollutant: str) -> pint.Quantity:
     return Formula(pollutant).mass * units('g/mol')
 
 
+def convert_units(data: DataArray | Dataset, pollutant: str, dst_units: Any,
+                  ) -> DataArray | Dataset:
+    """
+    Convert the units of a pint quantified data array or dataset.
+
+    Parameters
+    ----------
+    data : xr.DataArray | xr.Dataset
+        The data to convert. Must have pint units.
+    pollutant : str
+        The pollutant.
+    dst_units : Any
+        The destination units.
+
+    Returns
+    -------
+    xr.DataArray | xr.Dataset
+        The data with converted units.
+    """
+
+    # Calculate molecular weight of pollutant
+    mw = molecular_weight(pollutant)
+
+    # Use custom pint context to convert mass <--> substance
+    with units.context('mass_flux', mw=mw):
+        if isinstance(data, xr.Dataset):
+            for var in data.data_vars:
+                data[var] = data[var].pint.to(dst_units)
+                data[var].attrs['units'] = dst_units
+        elif isinstance(data, xr.DataArray):
+            data = data.pint.to(dst_units)
+            data.attrs['units'] = dst_units
+        else:
+            raise TypeError("data must be an xarray Dataset or DataArray")
+    return data
+
+
 def sum_sectors(data: Dataset) -> DataArray:
     """
     Sum emissions from all sectors in the dataset.
@@ -74,13 +113,14 @@ def sum_sectors(data: Dataset) -> DataArray:
     xr.DataArray
         The sum of emissions from all sectors.
     """
-    total = data.to_array().sum('variable')
+    total = data.to_array(dim='sector', name='emissions').sum('sector')
     total.attrs['long_name'] = 'Total Emissions'
+    total.attrs['units'] = data[list(data.data_vars)[0]].attrs['units']
 
     return total
 
 
-class Inventory:
+class Inventory(BaseGrid):
     """
     Base class for inventories.
     """
@@ -143,14 +183,13 @@ class Inventory:
         #   - all variables are emissions
         #   - all in the same units
         self.src_units: str | pint.registry.Unit = src_units
-        data = self._convert_units(self._quantify(data))
+        data = convert_units(self._quantify(data), pollutant=self.pollutant, dst_units=DST_UNITS)
 
         # Set the rioxarray CRS
-        write_rio_crs(data, self.crs)
+        data = write_rio_crs(data, self.crs)
 
         # Store the data
         self._data: Dataset = data
-        self._is_clipped: bool = False  # initially unclipped
 
     def get_standard_name(self) -> str:
         """
@@ -179,18 +218,6 @@ class Inventory:
             return [p]
         else :
             return list(p.glob('*.nc'))
-
-    @property
-    def gridcell_area(self) -> DataArray:
-        """
-        Calculate the grid cell area in km^2.
-
-        Returns
-        -------
-        xr.DataArray
-            The grid cell area.
-        """
-        return gridcell_area(self._data)
 
     @property
     def absolute_emissions(self) -> Dataset:
@@ -251,7 +278,19 @@ class Inventory:
         xr.DataArray
             The total emissions.
         """
-        return sum_sectors(self._data).pint.dequantify(DEFAULT_PINT_FMT)
+        return sum_sectors(self.data)
+
+    @property
+    def collapsed(self) -> DataArray:
+        """
+        Collapse the inventory data to a single variable.
+
+        Returns
+        -------
+        xr.DataArray
+            The collapsed data.
+        """
+        return self._data.to_dataarray(dim='sector', name='emissions').pint.dequantify(DEFAULT_PINT_FMT)
 
     @property
     def data(self) -> Dataset:
@@ -284,9 +323,9 @@ class Inventory:
         """
         return self._data
 
-    def convert_units(self, dst_units: Any) -> Self:
+    def convert_units(self, dst_units: str) -> Self:
         """
-        Convert the units of the data to the desired output units.
+        Convert the units of the data to the desired output units. Modifies the data in place.
 
         Parameters
         ----------
@@ -295,57 +334,29 @@ class Inventory:
 
         Returns
         -------
-        xr.Dataset
-            The data with the units converted.
+        None - modifies the data in place
         """
-        self._data = self._convert_units(self._data, dst_units)
+        self._data = convert_units(data=self._data, pollutant=self.pollutant, dst_units=dst_units)
 
         return self
 
-    def clip(self,
-             bbox: tuple[float, float, float, float] | None = None,
-             extent: tuple[float, float, float, float] | None = None,
-             geom: Polygon | None = None,
-             crs: Any = None,
-             **kwargs: Any) -> Self:
+    def integrate(self) -> DataArray:
         """
-        Clip the data to the given bounds. Modifies the data in place.
-
-        Input bounds must be in the same CRS as the data.
-
-        .. note::
-            The result can be slightly different between supplying a geom and a bbox/extent.
-            Clipping with a geom seems to be exclusive of the bounds,
-            while clipping with a bbox/extent seems to be inclusive of the bounds.
-
-        Parameters
-        ----------
-        bbox : tuple[minx, miny, maxx, maxy]
-            The bounding box to clip the data to.
-        extent : tuple[minx, maxx, miny, maxy]
-            The extent to clip the data to.
-        geom : shapely.Polygon
-            The geometry to clip the data to.
-        crs : Any
-            The CRS of the input geometries. If not provided, the CRS of the data is used.
-        kwargs : Any
-            Additional keyword arguments to pass to the rioxarray clip method.
+        Integrate the data over the spatial dimensions
+        to get the total emissions per time step.
 
         Returns
         -------
-        Inventory
-            The clipped inventory.
+        xr.DataArray
+            The integrated data.
         """
-        crs = crs or self.crs.to_rasterio()
-        self._data = clip(self._data, bbox=bbox, extent=extent, geom=geom, crs=crs, **kwargs)
-        self._is_clipped = True
-
-        return self
+        x_dim, y_dim = self.data.rio.x_dim, self.data.rio.y_dim
+        return sum_sectors(self.absolute_emissions.sum([x_dim, y_dim]))
 
     def regrid(self, out_grid: Dataset,
                method: Regrid_Methods = 'conservative') -> Self:
         """
-        Regrid the data to a new grid. Uses `xesmf` for regridding.
+        Regrid the data to a new grid. Uses `xesmf` for regridding. Modifies the data in place.
 
         .. note::
             At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.
@@ -369,36 +380,14 @@ class Inventory:
         Returns
         -------
         Inventory
-            The regridded inventory.
+            The regridded inventory
         """
-        # Use cf-xarray to calculate the bounds of the grid cells
-        data = self.data.cf.add_bounds(['lat', 'lon'])
-
-        # Regrid the data using a conservative regridder
-        regridder = xe.Regridder(ds_in=data, ds_out=out_grid, method=method)
-        regridded = regridder(data, keep_attrs=True)
-
-        if len(regridded.lon.dims) == 2:
-            # New grid has 2D lat/lon, but lat is constant over x axis,
-            # and lon is constant over y axis.
-            # We need to convert to 1D lat/lon
-            lats = regridded.lat.isel(x=0).values
-            lons = regridded.lon.isel(y=0).values
-            regridded = regridded.drop_vars(['lat', 'lon'])\
-                .rename_dims({'x': 'lon', 'y': 'lat'})\
-                .assign_coords(lat=lats, lon=lons)
-            
-        # Regridding drops rioxarray info - reattach
-        regridded.rio.set_spatial_dims(x_dim='lon', y_dim='lat', inplace=True)
-        write_rio_crs(regridded, 'EPSG:4326')
-
-        self.data = regridded  # setting on self.data will update self._data
-        return self
+        return super().regrid(out_grid, method)
 
     def resample(self, resolution: float | tuple[float, float],
                  regrid_method: Regrid_Methods = 'conservative') -> Self:
         """
-        Resample the data to a new resolution.
+        Resample the data to a new resolution. Modifies the data in place.
 
         Parameters
         ----------
@@ -410,29 +399,10 @@ class Inventory:
 
         Returns
         -------
-        Inventory
-            The resampled inventory.
+        BaseGrid
+            The resampled grid
         """
-        if isinstance(resolution, float):
-            resolution = (resolution, resolution)
-
-        # Calculate the new grid
-        bounds = self.data.cf.add_bounds(['lat', 'lon'])
-        xmin = bounds.lon_bounds.min()
-        xmax = bounds.lon_bounds.max()
-        ymin = bounds.lat_bounds.min()
-        ymax = bounds.lat_bounds.max()
-        dx = resolution[0]
-        dy = resolution[1]
-        if len(self.data.lon.dims) == 2:
-            out_grid = xe.util.grid_2d(xmin, xmax, dx,
-                                       ymin, ymax, dy)
-        else:
-            out_grid = xr.Dataset({
-                "lat": (["lat"], np.arange(ymin + dy/2, ymax - dy/2, dy), {"units": "degrees_north"}),
-                "lon": (["lon"], np.arange(xmin + dx/2, xmax - dx/2, dx), {"units": "degrees_east"}),
-                })
-        return self.regrid(out_grid=out_grid, method=regrid_method)
+        return super().resample(resolution, regrid_method)
 
     def reproject(self, resolution: float | tuple[float, float],
                   regrid_method: Regrid_Methods = 'conservative') -> Self:
@@ -449,27 +419,10 @@ class Inventory:
 
         Returns
         -------
-        Inventory
-            The reprojected inventory.
+        BaseGrid
+            The reprojected grid
         """
-        assert self.crs.epsg != 4326, 'Data is already in lat lon'
-        self = self.resample(resolution=resolution, regrid_method=regrid_method)
-        self.crs = CRS('EPSG:4326')
-        write_rio_crs(self._data, self.crs)
-        return self
-
-    def integrate(self) -> DataArray:
-        """
-        Integrate the data over the spatial dimensions
-        to get the total emissions per time step.
-
-        Returns
-        -------
-        xr.DataArray
-            The integrated data.
-        """
-        x_dim, y_dim = self.data.rio.x_dim, self.data.rio.y_dim
-        return sum_sectors(self.absolute_emissions.sum([x_dim, y_dim]))
+        return super().reproject(resolution, regrid_method)
 
     def plot(self, ax: plt.Axes | None = None,
              time: str | int = 'mean',
@@ -517,14 +470,6 @@ class Inventory:
         # Open the dataset, preprocessing if necessary
         return xr.open_mfdataset(files, preprocess=getattr(self, '_preprocess', None))
 
-    def _round_latlon(self, data: Dataset, x_deci: int, y_deci: int) -> Dataset:
-        # Round grid to nearest xres, yres
-        # Some grids are not perfectly aligned to multiples of 5
-
-        # This doesn't necessarily need to be a method, but I'm keeping it here for now
-        return data.assign_coords(lat=data.lat.astype(float).round(y_deci),
-                                  lon=data.lon.astype(float).round(x_deci))
-
     def _process(self, data) -> Dataset:
         # In the base case, we just return the data
         # This method can be overridden in the subclasses to process the data
@@ -535,19 +480,6 @@ class Inventory:
         # Quantify the data using `pint` units
         for var in data.data_vars:
             data[var] = data[var].pint.quantify(self.src_units)
-        return data
-
-    def _convert_units(self, data: Dataset, dst_units: Any = None) -> Dataset:
-        dst_units = dst_units or DST_UNITS
-
-        # Calculate molecular weight of pollutant
-        mw = molecular_weight(self.pollutant)
-
-        # Use custom pint context to convert mass <--> substance
-        with units.context('mass_flux', mw=mw):
-            for var in data.data_vars:
-                data[var] = data[var].pint.to(dst_units)
-                data[var].attrs['units'] = DST_UNITS  # FIXME
         return data
 
 
@@ -860,7 +792,7 @@ class EDGARv7(EDGAR):
 
         # Round grid to nearest 0.1 degrees
         # - cell coordinates are center-of-cell, so we actually need to round to nearest 0.05
-        data = self._round_latlon(data, 2, 2)
+        data = round_latlon(data, 2, 2)
         return data
 
 
@@ -933,6 +865,8 @@ class EPA(Inventory, metaclass=ABCMeta):
 
     _emissions_prefix: str
     _variable_pattern: str = r'{}(?:_Supp)?_([1-9][A-Z]?[1-9]?[a-z]*)_([A-Za-z_]*)'
+    _lat_deci = 2
+    _lon_deci = 2
 
     def _extract_ipcc_code_and_short_name(self, var_name, prefix):
         pattern = self._variable_pattern.format(prefix)
@@ -963,7 +897,7 @@ class EPA(Inventory, metaclass=ABCMeta):
 
         # Round grid to nearest 0.1 degrees
         # - cell coordinates are center-of-cell, so we actually need to round to nearest 0.05
-        data = self._round_latlon(data, 2, 2)
+        data = round_latlon(data, self._lat_deci, self._lon_deci)
         return data
 
 
@@ -1073,6 +1007,9 @@ class EPAv2(EPA):
         self.time_step = 'monthly'
         sf = self.get_monthly_scale_factors()
 
+        # Round grid coordinates due to floating point errors
+        sf = round_latlon(sf, self._lat_deci, self._lon_deci)
+
         # Filter to variables with strong interannual variability and 
         # expand time dimension by repeating Jan values
         monthly = data[list(sf.data_vars)].reindex(time=sf['time'], method='ffill')
@@ -1167,7 +1104,7 @@ class GFEI(Inventory, metaclass=ABCMeta):
 
         # Round grid to nearest 0.1 degrees
         # - cell coordinates are center-of-cell, so we actually need to round to nearest 0.05
-        data = self._round_latlon(data, 2, 2)
+        data = round_latlon(data, 2, 2)
         return data
 
 
@@ -1305,6 +1242,7 @@ class Vulcan(Inventory):
         path = os.path.join(self.vulcan_dir, self.version, 'data/native', time_step)
         super().__init__(path, self.pollutant,
                          src_units=src_units, time_step=time_step, crs=self.crs, version=self.version)
+        self._is_clipped = False
 
     def get_files(self, uncertainty='central') -> list[Path]:
         p = Path(self.path)
@@ -1318,9 +1256,46 @@ class Vulcan(Inventory):
         files = self.get_files(self._uncertainties[uncertainty])
         return xr.open_mfdataset(files)
 
+    def clip(self,
+             bbox: tuple[float, float, float, float] | None = None,
+             extent: tuple[float, float, float, float] | None = None,
+             geom: Polygon | None = None,
+             crs: Any = None,
+             **kwargs: Any) -> None:
+        """
+        Clip the data to the given bounds.
+
+        Input bounds must be in the same CRS as the data.
+
+        .. note::
+            The result can be slightly different between supplying a geom and a bbox/extent.
+            Clipping with a geom seems to be exclusive of the bounds,
+            while clipping with a bbox/extent seems to be inclusive of the bounds.
+
+        Parameters
+        ----------
+        bbox : tuple[minx, miny, maxx, maxy]
+            The bounding box to clip the data to.
+        extent : tuple[minx, maxx, miny, maxy]
+            The extent to clip the data to.
+        geom : shapely.Polygon
+            The geometry to clip the data to.
+        crs : Any
+            The CRS of the input geometries. If not provided, the CRS of the data is used.
+        kwargs : Any
+            Additional keyword arguments to pass to the rioxarray clip method.
+
+        Returns
+        -------
+        None - modifies the data in place
+        """
+        super().clip(bbox, extent, geom, crs, **kwargs)
+        self._is_clipped = True
+        return None
+
     def reproject(self, resolution: float | tuple[float, float] = 0.01,
                   regrid_method: Regrid_Methods = 'conservative',
-                  force: bool = False) -> Self:
+                  force: bool = False) -> None:
         """
         Reproject the data to a lat lon rectilinear grid.
         
@@ -1338,8 +1313,7 @@ class Vulcan(Inventory):
 
         Returns
         -------
-        Inventory
-            The reprojected inventory.
+        None - modifies the data in place
         """
         if not self._is_clipped and not force:
             raise ValueError('Data must be clipped before reprojecting! Set force=True to override')
@@ -1412,6 +1386,10 @@ class WetCHARTs(MultiModelInventory):
     def _process(self, data: Dataset) -> Dataset:
         # Drop unnecessary variables and dims
         data = data.drop_vars(['time_bnds', 'crs'])
+
+        # Set time to first day of month
+        data = data.assign_coords(time=[dt.datetime(int(year), int(month), 1)
+                                       for year, month in zip(data.time.dt.year, data.time.dt.month)])
 
         # Rename variables
         data = data.rename({'wetland_CH4_emissions': 'wetlands'})

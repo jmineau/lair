@@ -28,8 +28,8 @@ def unzip(zf: str, dir_path: str | None=None):
         zip_ref.extractall(dir_path or os.path.dirname(zf))
 
 
-def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = False, all_files: bool = False,
-               full_names: bool = False, recursive: bool = False) -> list[str]:
+def list_files(path: str | Path = '.', pattern: str|None = None, ignore_case: bool = False, all_files: bool = False,
+               full_names: bool = False, recursive: bool = False, followlinks: bool = False) -> list[str]:
     """
     Returns a list of files in the specified directory that match the specified pattern.
 
@@ -47,6 +47,8 @@ def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = Fa
         Whether to return the full path of each file. Defaults to False.
     recursive : bool, optional
         Whether to search for files recursively in subdirectories. Defaults to False.
+    followlinks : bool, optional
+        Whether to follow symbolic links. Defaults to False.
 
     Returns
     -------
@@ -57,7 +59,7 @@ def list_files(path: str = '.', pattern: str|None = None, ignore_case: bool = Fa
 
     result = []
     if recursive:
-        walk = os.walk(path)
+        walk = os.walk(path, followlinks=followlinks)
     else:
         walk = [(path, None, os.listdir(path))]
         
@@ -271,81 +273,6 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
 
     ftp.quit()
     return True
-
-
-def parallelize_file_parser(file_parser: Callable,
-                            num_processes: int | Literal['max'] = 1):
-    """
-    Parallelizes a file parser function to read multiple files in parallel.
-
-    Parameters
-    ----------
-    file_parser : function
-        The function to be parallelized. Must be picklable.
-    num_processes : int | 'max', optional
-        The number of processes to use for parallelization. Defaults to 1.
-
-    Returns
-    -------
-    function
-        A parallelized version of the file parser function.
-    """
-
-    import multiprocessing
-    from functools import partial
-
-    def parallelized_parser(files: list, **kwargs):
-        """
-        Parses multiple files in parallel using the file parser function.
-
-        Parameters
-        ----------
-        files : list[str]
-            A list of file to be parsed. Format is determined by the file parser function.
-        kwargs : dict
-            Additional keyword arguments to be passed to the file parser function.
-
-        Returns:
-            list: A list of datasets parsed from the input files.
-        """
-
-        # Determine the number of processes to use
-        cpu_count = multiprocessing.cpu_count()
-        if num_processes == 'max':
-            processes = cpu_count
-        elif num_processes > cpu_count:
-            vprint(f'Warning: {num_processes} processes requested, '
-                    f'but there are only {cpu_count} CPU(s) available.')
-            processes = cpu_count
-        else:
-            processes = num_processes
-
-        if processes > len(files):
-            vprint(f'Info: {num_processes} processes requested, '
-                   f'but there are only {len(files)} file(s) to parse.')
-            processes = len(files) 
-
-        # If only one process is requested, read files sequentially
-        if processes == 1:
-            vprint('Parsing files sequentially...')
-            datasets = [file_parser(file, **kwargs) for file in files]
-            return datasets
-
-        vprint(f'Parsing files in parallel with {processes} processes...')
-
-        # Create a multiprocessing Pool
-        pool = multiprocessing.Pool(processes=processes)
-
-        # Use the pool to parse the files in parallel
-        datasets = pool.map(partial(file_parser, **kwargs), files)
-
-        # Close the pool to free resources
-        pool.close()
-        pool.join()
-
-        return datasets
-
-    return parallelized_parser
 
 
 class Cacher:
