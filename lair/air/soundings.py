@@ -49,6 +49,10 @@ class Sounding:
     """
     _attrs = ['station', 'time', 'station_number', 'latitude', 'longitude', 'elevation', 'pw']
 
+    units = {'pressure': 'hPa', 'height': 'meter', 'temperature': 'degC', 'dewpoint': 'degC',
+             'direction': 'degrees', 'speed': 'knot', 'u_wind': 'knot', 'v_wind': 'knot', 
+             'latitude': 'degrees', 'longitude': 'degrees', 'elevation': 'meter', 'pw': 'millimeter'}
+
     def __init__(self, path: str):
         """
         Initialize a Sounding object.
