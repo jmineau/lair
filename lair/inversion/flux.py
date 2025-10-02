@@ -92,7 +92,8 @@ class StiltJacobianBuilder:
                           flux_times: pd.IntervalIndex,
                           resolution: str | None = None,
                           subset_hours: int | list[int] | None = None,
-                          num_processes: int | Literal['max'] = 1
+                          num_processes: int | Literal['max'] = 1,
+                          location_mapper: dict[str, str] | None = None,
                           ) -> Jacobian | dict[str, Jacobian]:
         """
         Build the Jacobian matrix H from specified coordinates (x, y) and flux time bins.
@@ -112,6 +113,8 @@ class StiltJacobianBuilder:
             Subset the simulations to specific hours of the day, by default None
         num_processes : int | Literal['max'], optional
             Number of processes to use for parallel computation, by default 1
+        location_mapper : dict[str, str] | None, optional
+            Optional mapping of observation location IDs to new IDs.
 
         Returns
         -------
@@ -150,6 +153,12 @@ class StiltJacobianBuilder:
             if rows:
                 print(f'Combining {len(rows)} rows for {key} jacobian...')
                 H = pd.concat(rows).fillna(0)
+
+                if location_mapper:
+                    h = H.reset_index()
+                    h['obs_location'] = h['obs_location'].map(location_mapper).fillna(h['obs_location'])
+                    H = h.set_index(['obs_location', 'obs_time'])
+
                 H = Jacobian(H)
                 H_dict[key] = H
 
@@ -281,7 +290,7 @@ class StiltJacobianBuilder:
             if isinstance(subset_hours, int):
                 subset_hours = [subset_hours]
 
-            if not sim.receptor.time.dt.hour.isin(subset_hours):
+            if not sim.receptor.time.hour in subset_hours:
                 return False
 
         return True
@@ -654,8 +663,10 @@ class _Plotter:
 
             fig, ax = plt.subplots()
 
-            df.plot(ax=ax, style='.', alpha=0.7, color=['black', 'red', 'blue'], legend=False)
-            df.rolling(window=max(1, int(len(df)/10)), center=True).mean().plot(ax=ax, linewidth=2, color=['black', 'red', 'blue'])
+            df.plot(ax=ax, style='.', alpha=0.6, color=['black', 'red', 'blue'], markeredgecolor='None', legend=False)
+            df.rolling(window=max(1, int(len(df)/10)), center=True).mean().plot(ax=ax, linewidth=2,
+                                                                                  color=['black', 'red', 'blue'],
+                                                                                  label=['Observed', 'Posterior', 'Prior'],)
             ax.set(title=f'Concentrations at {location}', ylabel='Concentration', xlabel='Time')
             fig.autofmt_xdate()
             axes.append(ax)
