@@ -32,6 +32,7 @@ DATA_DIR: str = os.path.join(MEASUREMENTS_DIR, 'data')
 with open(os.path.join(CONFIG_DIR, 'data_config.json')) as data_config_file:
     #: Data configuration.
     DATA_CONFIG: dict = json.load(data_config_file)
+    DATA_CONFIG['lgr_ugga_manual_cal'] = DATA_CONFIG['lgr_ugga']  # manual cal has same format
 
 site_config_path = os.path.join(CONFIG_DIR, 'site_config.csv')
 if not os.path.exists(site_config_path):
