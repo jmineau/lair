@@ -2,6 +2,7 @@
 Utility functions for inversion module.
 """
 
+import numpy as np
 import pandas as pd
 from pandas.api.types import is_float_dtype
 import xarray as xr
@@ -83,7 +84,7 @@ def round_index(index: pd.Index | pd.MultiIndex, decimals: int
         new_levels = []
         changed = False
         for i in range(index.nlevels):
-            level = index.levels[i]
+            level = index.get_level_values(i)
             if is_float_dtype(level):
                 # Round the level if it's a float type
                 new_levels.append(level.round(decimals))
@@ -93,10 +94,8 @@ def round_index(index: pd.Index | pd.MultiIndex, decimals: int
         
         if changed:
             # Reconstruct the MultiIndex with the new, rounded levels
-            return pd.MultiIndex.from_arrays(
-                [index.get_level_values(i) for i in range(index.nlevels)],
-                names=index.names
-            ).set_levels(new_levels)
+            return pd.MultiIndex.from_arrays(new_levels, names=index.names)
+            # return new_levels
         else:
             # Return original index if no levels were changed
             return index
