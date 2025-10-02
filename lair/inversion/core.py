@@ -500,7 +500,7 @@ def convolve(forward_operator: pd.DataFrame, state: pd.Series,
         if not isinstance(state.index, pd.MultiIndex):
             raise ValueError("If forward operator columns are a MultiIndex, state index must also be a MultiIndex.")
         state.index = state.index.reorder_levels(fo.columns.names)
-    common = fo.columns.union(state.index)
+    common = fo.columns.intersection(state.index)
     fo = fo.reindex(columns=common)
     state = state.reindex(index=common)
 
