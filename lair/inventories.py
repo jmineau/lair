@@ -132,6 +132,7 @@ class Inventory(BaseGrid):
                  time_step: str = 'annual',
                  crs: str = 'EPSG:4326',
                  version: str | None = None,
+                 standardize_units: bool = False,
                  ) -> None:
         """
         Initialize the inventory.
@@ -152,6 +153,10 @@ class Inventory(BaseGrid):
             The CRS of the data, by default 'EPSG:4326'.
         version : str, optional
             The version of the inventory, by default None.
+        standardize_units : bool, optional
+            Whether to standardize the units of all variables to the same units, by default False.
+            If True, all variables are assumed to be emissions and in the same units.
+            If False, the units of each variable are retained as-is.
         """
 
         self.pollutant: str = pollutant.upper()
@@ -167,9 +172,8 @@ class Inventory(BaseGrid):
 
             # Apply inventory-specific processing
             data = self._process(data)
-        elif  isinstance(data, Dataset):
+        elif isinstance(data, Dataset):
             self.path = None
-
             if src_units is None:
                 var = list(data.data_vars)[0]
                 src_units = data[var].attrs.get('units')
@@ -183,7 +187,12 @@ class Inventory(BaseGrid):
         #   - all variables are emissions
         #   - all in the same units
         self.src_units: str | pint.registry.Unit = src_units
-        data = convert_units(self._quantify(data), pollutant=self.pollutant, dst_units=DST_UNITS)
+        quantified = self._quantify(data)
+        if standardize_units:
+            data = convert_units(quantified, pollutant=self.pollutant, dst_units=DST_UNITS)
+        else:
+            # quantify using provided src_units
+            data = quantified
 
         # Set the rioxarray CRS
         data = write_rio_crs(data, self.crs)
@@ -257,6 +266,8 @@ class Inventory(BaseGrid):
         elif self.time_step == 'daily':
             seconds_per_step = [TimeRange(f'{year}-{month:02d}-{day:02d}').total_seconds
                                   for year, month, day in zip(years, months, days)]
+        elif self.time_step == 'hourly':
+            seconds_per_step = [3600] * len(absolute.time)
         else:
             raise ValueError(f'Time step {self.time_step} not supported')
         seconds_per_step = self._data.assign(sec_per_step=('time', seconds_per_step)).sec_per_step
@@ -323,22 +334,33 @@ class Inventory(BaseGrid):
         """
         return self._data
 
-    def convert_units(self, dst_units: str) -> Self:
+    def convert_units(self, dst_units: str, inplace: bool = False) -> Self:
         """
-        Convert the units of the data to the desired output units. Modifies the data in place.
+        Convert the units of the data to the desired output units.
 
         Parameters
         ----------
         dst_units : Any
             The destination units.
+        inplace : bool, optional
+            Whether to modify the data in place, by default False.
 
         Returns
         -------
-        None - modifies the data in place
+        Inventory
+            The inventory with converted units. If `inplace=True` returns `self`,
+            otherwise returns a new Inventory copy.
         """
-        self._data = convert_units(data=self._data, pollutant=self.pollutant, dst_units=dst_units)
-
-        return self
+        data = convert_units(data=self._data, pollutant=self.pollutant, dst_units=dst_units)
+        if inplace:
+            self._data = data
+            self.src_units = dst_units
+            return self
+        else:
+            new = self.copy()
+            new._data = data
+            new.src_units = dst_units
+            return new
 
     def integrate(self) -> DataArray:
         """
@@ -354,9 +376,9 @@ class Inventory(BaseGrid):
         return sum_sectors(self.absolute_emissions.sum([x_dim, y_dim]))
 
     def regrid(self, out_grid: Dataset,
-               method: Regrid_Methods = 'conservative') -> Self:
+               method: Regrid_Methods = 'conservative', inplace: bool = False) -> Self:
         """
-        Regrid the data to a new grid. Uses `xesmf` for regridding. Modifies the data in place.
+        Regrid the data to a new grid. Uses `xesmf` for regridding.
 
         .. note::
             At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.
@@ -376,18 +398,21 @@ class Inventory(BaseGrid):
             .. note::
                 Other `xesmf` regrid methods can be passed,
                 but it is **highly** encouraged to use a conservative method for fluxes.
+        inplace : bool, optional
+            Whether to modify the data in place, by default False.
 
         Returns
         -------
         Inventory
-            The regridded inventory
+            The regridded inventory. If `inplace=True` returns `self`,
+            otherwise returns a new Inventory copy.
         """
-        return super().regrid(out_grid, method)
+        return super().regrid(out_grid, method=method, inplace=inplace)
 
     def resample(self, resolution: float | tuple[float, float],
-                 regrid_method: Regrid_Methods = 'conservative') -> Self:
+                 regrid_method: Regrid_Methods = 'conservative', inplace: bool = False) -> Self:
         """
-        Resample the data to a new resolution. Modifies the data in place.
+        Resample the data to a new resolution.
 
         Parameters
         ----------
@@ -402,10 +427,10 @@ class Inventory(BaseGrid):
         BaseGrid
             The resampled grid
         """
-        return super().resample(resolution, regrid_method)
+        return super().resample(resolution, regrid_method, inplace=inplace)
 
     def reproject(self, resolution: float | tuple[float, float],
-                  regrid_method: Regrid_Methods = 'conservative') -> Self:
+                  regrid_method: Regrid_Methods = 'conservative', inplace: bool = False) -> Self:
         """
         Reproject the data to a lat lon rectilinear grid.
 
@@ -422,7 +447,7 @@ class Inventory(BaseGrid):
         BaseGrid
             The reprojected grid
         """
-        return super().reproject(resolution, regrid_method)
+        return super().reproject(resolution, regrid_method, inplace=inplace)
 
     def plot(self, ax: plt.Axes | None = None,
              time: str | int = 'mean',
