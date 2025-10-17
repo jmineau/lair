@@ -450,9 +450,11 @@ class BaseGrid:
              extent: tuple[float, float, float, float] | None = None,
              geom: Polygon | None = None,
              crs: Any = None,
+             inplace: bool = False,
              **kwargs: Any) -> Self:
         """
-        Clip the data to the given bounds. Mopdifies the data in place.
+        Clip the data to the given bounds.
+
         .. note::
             The result can be slightly different between supplying a geom and a bbox/extent.
             Clipping with a geom seems to be exclusive of the bounds,
@@ -468,8 +470,9 @@ class BaseGrid:
             The geometry to clip the data to.
         crs : Any
             The CRS of the input geometries. If not provided, the CRS of the data is used.
-        inplace : bool, optional
-            Whether to modify the data in place, by default False.
+            inplace : bool, optional
+                Whether to modify the data in place. Default is False (returns a
+                new copy with the clipped data).
         kwargs : Any
             Additional keyword arguments to pass to the rioxarray clip method.
 
@@ -479,13 +482,19 @@ class BaseGrid:
             The clipped grid
         """
         crs = crs or self.crs.to_rasterio()
-        self.data = clip(self.data, bbox=bbox, extent=extent, geom=geom, crs=crs, **kwargs)
-        return self
+        data = clip(self.data, bbox=bbox, extent=extent, geom=geom, crs=crs, **kwargs)
+        if inplace:
+            self.data = data
+            return self
+        else:
+            new = self.copy()
+            new.data = data
+            return new
 
     def regrid(self, out_grid: Dataset,
-               method: XESMF_Regrid_Methods = 'bilinear') -> Self:
+               method: XESMF_Regrid_Methods = 'bilinear', inplace: bool = False) -> Self:
         """
-        Regrid the data to a new grid. Uses `xesmf` for regridding. Modifies the data in place.
+        Regrid the data to a new grid. Uses `xesmf` for regridding.
 
         .. note::
             At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.
@@ -501,19 +510,28 @@ class BaseGrid:
             The new grid to resample to. Must be a lat-lon grid.
         method : str, optional
             The regridding method, by default 'bilinear'.
+        inplace : bool, optional
+            Whether to modify the object in-place. Default is False.
 
         Returns
         -------
         BaseGrid
             The regridded grid
         """
-        self.data = regrid(self.data, out_grid=out_grid, method=method)
-        return self
+        # default behavior: modify in place for backward compatibility
+        data = regrid(self.data, out_grid=out_grid, method=method)
+        if inplace:
+            self.data = data
+            return self
+        else:
+            new = self.copy()
+            new.data = data
+            return new
 
     def resample(self, resolution: float | tuple[float, float],
-                 regrid_method: XESMF_Regrid_Methods = 'bilinear') -> Self:
+                 regrid_method: XESMF_Regrid_Methods = 'bilinear', inplace: bool = False) -> Self:
         """
-        Resample the data to a new resolution. Modifies the data in place.
+        Resample the data to a new resolution.
 
         Parameters
         ----------
@@ -522,17 +540,25 @@ class BaseGrid:
             is assumed to be the same in both dimensions.
         regrid_method : str, optional
             The regridding method, by default 'bilinear'.
+        inplace : bool, optional
+            Whether to modify the object in-place. Default is False.
 
         Returns
         -------
         BaseGrid
             The resampled grid
         """
-        self.data = resample(self.data, resolution=resolution, regrid_method=regrid_method)
-        return self
+        data = resample(self.data, resolution=resolution, regrid_method=regrid_method)
+        if inplace:
+            self.data = data
+            return self
+        else:
+            new = self.copy()
+            new.data = data
+            return new
 
     def reproject(self, resolution: float | tuple[float, float],
-                  regrid_method: XESMF_Regrid_Methods = 'bilinear') -> Self:
+                  regrid_method: XESMF_Regrid_Methods = 'bilinear', inplace: bool = False) -> Self:
         """
         Reproject the data to a lat lon rectilinear grid.
 
@@ -543,6 +569,8 @@ class BaseGrid:
             is assumed to be the same in both dimensions.
         regrid_method : str, optional
             The regridding method, by default 'bilinear'.
+        inplace : bool, optional
+            Whether to modify the object in-place. Default is False.
 
         Returns
         -------
@@ -554,9 +582,15 @@ class BaseGrid:
         resampled_data = resample(self.data, resolution=resolution,
                                   regrid_method=regrid_method)
 
-        self.crs = CRS('EPSG:4326')
-        self.data = write_rio_crs(resampled_data, self.crs)
-        return self
+        if inplace:
+            self.crs = CRS('EPSG:4326')
+            self.data = write_rio_crs(resampled_data, self.crs)
+            return self
+        else:
+            new = self.copy()
+            new.crs = CRS('EPSG:4326')
+            new.data = write_rio_crs(resampled_data, new.crs)
+            return new
 
 
 def clip(data: DataArray | Dataset,
