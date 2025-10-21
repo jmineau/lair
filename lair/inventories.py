@@ -81,6 +81,7 @@ def convert_units(data: DataArray | Dataset, pollutant: str, dst_units: Any,
     xr.DataArray | xr.Dataset
         The data with converted units.
     """
+    data = data.copy()
 
     # Calculate molecular weight of pollutant
     mw = molecular_weight(pollutant)
