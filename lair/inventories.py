@@ -27,7 +27,6 @@ from xarray import DataArray, Dataset
 
 from lair import units
 from lair.config import GROUP_DIR
-from lair.utils.clock import TimeRange
 from lair.utils.geo import (CRS, PC, BaseGrid, round_latlon, wrap_lons,
                             write_rio_crs)
 
@@ -273,20 +272,15 @@ class Inventory(BaseGrid):
         # - I am calculating the exact number of seconds in each time step.
         #   Inventory providers may have used a simpler method of avg secs per time step.
         #   However, its probably close enough to not matter  TODO check this
-        years = absolute.time.dt.year.values
-        months = absolute.time.dt.month.values
-        days = absolute.time.dt.day.values
+        time = self._data.time
         if self.time_step == 'annual':
-            seconds_per_step = [TimeRange(str(year)).total_seconds
-                                for year in years]
+            seconds_per_step = (time.dt.is_leap_year * 366 + (~time.dt.is_leap_year) * 365) * 24 * 3600
         elif self.time_step == 'monthly':
-            seconds_per_step = [TimeRange(f'{year}-{month:02d}').total_seconds
-                                  for year, month in zip(years, months)]
+            seconds_per_step = time.dt.days_in_month * 24 * 3600
         elif self.time_step == 'daily':
-            seconds_per_step = [TimeRange(f'{year}-{month:02d}-{day:02d}').total_seconds
-                                  for year, month, day in zip(years, months, days)]
+            seconds_per_step = 24 * 3600
         elif self.time_step == 'hourly':
-            seconds_per_step = [3600] * len(absolute.time)
+            seconds_per_step = 3600
         else:
             raise ValueError(f'Time step {self.time_step} not supported')
         seconds_per_step = self._data.assign(sec_per_step=('time', seconds_per_step)).sec_per_step
