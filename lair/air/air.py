@@ -148,7 +148,7 @@ def wind_direction(u, v):
 
 def rotate_winds(u, v, lon) -> tuple[Any, Any]:
     """
-    Rotate winds from grid to earth coordinates.
+    Rotate HRRR winds from grid to earth coordinates.
 
     .. note::
         Based on https://rapidrefresh.noaa.gov/faq/HRRR.faq.html
