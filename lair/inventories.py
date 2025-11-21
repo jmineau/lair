@@ -229,6 +229,30 @@ class Inventory(BaseGrid):
         else :
             return list(p.glob('*.nc'))
 
+    def get_units(self, pint: bool = False) -> tuple[Any, Any, Any]:
+        """
+        Get the quantity, area, and time units of the inventory data.
+
+        Parameters
+        ----------
+        pint : bool, optional
+            Whether to return `pint` units, by default False.
+
+        Returns
+        -------
+        tuple[Any, Any, Any]
+            The quantity, area, and time units.
+        """
+        # All variables should be in the same units
+        var = list(self._data.data_vars)[0]
+        data_units = f'{self._data[var].pint.units: ~C}'  # compact symbols like "kg/km**2/day"
+        quantity_unit, area_unit, time_unit = data_units.split('/')
+
+        if pint:
+            return units(quantity_unit), units(area_unit), units(time_unit)
+        else:
+            return quantity_unit, area_unit, time_unit
+
     @property
     def absolute_emissions(self) -> Dataset:
         """
@@ -239,14 +263,8 @@ class Inventory(BaseGrid):
         xr.DataArray
             The absolute emissions.
         """
-
         # Extract current unit information
-        #  - dimension order of str(pint.Unit) is set here: https://github.com/hgrecco/pint/blob/master/pint/delegates/formatter/full.py#L54
-        #    - units.formatter.default_sort_func was set in lair.__init__
-        #  - for mass fluxes, the order will always be [substance | mass] / [area] / [time]
-        var = list(self._data.data_vars)[0]  # all variables should be in the same units
-        data_units = f'{self._data[var].pint.units: ~C}'  # compact symbols
-        _, area_unit, time_unit = data_units.split('/')
+        _, area_unit, time_unit = self.get_units(pint=False)
 
         # Multiply by the gridcell area to get mass|substance per time per time step
         absolute = self._data * (self.gridcell_area * units('km**2')).pint.to(area_unit)
