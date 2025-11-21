@@ -143,8 +143,9 @@ def merge(soundings: list) -> pd.DataFrame:
     dfs = []
     for sounding in soundings:
         df = sounding.data.copy()
-        df['time'] = sounding.time
-        df['pw'] = sounding.pw
+        for attr in sounding._attrs:
+            if hasattr(sounding, attr):
+                df[attr] = getattr(sounding, attr)
         dfs.append(df)
 
     return pd.concat(dfs)
