@@ -23,4 +23,4 @@ from . import air
 from . import utils
 
 
-__version__ = '2025.12.5'
+__version__ = '2025.12.6'
