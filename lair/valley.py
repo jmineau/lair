@@ -334,7 +334,6 @@ class SaltLake:
                          transform=ccrs.PlateCarree(),
                          lw=line_dict[line]['lw'], zorder=line_dict[line]['z'])
 
-        # from uataq.mobile import trax
         # TODO add plot method to trax class
 
         return 'TRAX'

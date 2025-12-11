@@ -18,4 +18,3 @@ The `air` subpackage contains modules for working with various atmospheric data.
    meteorology
    noaa
    soundings
-   stilt

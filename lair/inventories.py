@@ -283,6 +283,8 @@ class Inventory(BaseGrid):
             seconds_per_step = 3600
         else:
             raise ValueError(f'Time step {self.time_step} not supported')
+        if isinstance(seconds_per_step, xr.DataArray):
+            seconds_per_step = seconds_per_step.data
         seconds_per_step = self._data.assign(sec_per_step=('time', seconds_per_step)).sec_per_step
 
         # Then multiply by the time in the time step to get mass|substance per gridcell
