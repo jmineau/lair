@@ -11,7 +11,7 @@
 
 </div>
 
-`lair` is a collection of tools that I have developed/acquired for my research regarding land-air interactions. I spent a lot of time developing the `uataq` subpackage which provides a simple interface for reading in data from the Utah Atmospheric Trace Gas and Air Quality (UATAQ) project - the idea being that we as scientists spend too much time on data wrangling and not enough time on analysis. The `lair` package is designed to make it easier to work with atmospheric data, particularly data from the UATAQ project.
+`lair` is a collection of tools that I have developed/acquired for my research regarding land-air interactions. The `lair` package is designed to make it easier to work with atmospheric data.
 
 # Installation
 
@@ -47,31 +47,6 @@ or by cloning the repository and installing it as an editable package:
 git clone https://github.com/jmineau/lair.git
 cd lair
 pip install -e .
-```
-
-## Optional Dependencies
-
-`lair` is a rather dependecy-heavy package, however, many are common in the field of atmospheric science. To keep `lair` as lightweight as possible, some dependencies related to meteorology are currently optional. These include:
- - `boto3`
- - `metpy`
- - `s3fs`
- - `siphon`
- - `synopticpy`
- - `zarr`
-
-The following modules are impacted:
- - `lair.air.hrrr`
- - `lair.air.soundings`
-
-To install the optional dependencies, use the following command:
-
-```bash
-# via conda (preferred on CHPC)
-conda activate <lair-env>  # activate your lair environment
-conda install -c conda-forge boto3 metpy s3fs siphon synopticpy zarr
-
-# via pip
-pip install git+https://github.com/jmineau/lair.git[met]
 ```
 
 # Verbosity

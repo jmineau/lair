@@ -4,38 +4,37 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lair"
-description = "Python package for land-air interactions research, including reading UATAQ data."
+description = "Python package for land-air interactions research."
 authors = [
     {name = "James Mineau", email = "James.Mineau@utah.edu"},
 ]
 readme = "README.md"
-keywords = ["land-air interactions", "research", "uataq", "pollution", "atmospheric science"]
+keywords = ["land-air interactions", "research", "pollution", "atmospheric science"]
 requires-python = ">=3.10"
 dependencies = [
+  "boto3",
   "cartopy",
   "cf_xarray",
   "dask",
   "fastkml",
-  "f90nml",
   "geopandas",
   "lxml",  # speeds up fastkml
   "matplotlib",
   "molmass",
   "netcdf4",
-  "numpy<2",  # numpy 2.0 breaks pytables
+  "numpy",
   "pandas",
   "pint-xarray",
-  "pyarrow",
-  "pydantic",
   "pyproj",
-  "pyyaml",
   "rioxarray",
+  "s3fs",
   "scipy",
   "shapely",
-  "tables",
+  "siphon",
   "typing-extensions",  # needed to import Self before 3.11
   "xarray",
   "xesmf",
+  "zarr",
 ]
 license = {file = "LICENSE"}
 classifiers = [
@@ -47,16 +46,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
 dynamic = ["version"]
-
-[project.optional-dependencies]
-met = [
-  "boto3",
-  "metpy",
-  "s3fs",
-  "siphon",
-  "synopticpy",
-  "zarr",
-  ]
 
 [project.urls]
 Repository = "https://github.com/jmineau/lair.git"

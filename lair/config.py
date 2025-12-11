@@ -26,16 +26,6 @@ MET_DIR = os.path.join(GROUP_DIR, 'NOAA-ARL_formatted_metfields')
 #: Lin Group Spatial File Directory
 SPATIAL_DIR = os.path.join(GROUP_DIR, 'spatial')
 
-# -- HOREL GROUP -- #
-#: Horel Group Directory
-HOREL_DIR = os.path.join(HOME, 'horel-group')
-
-#: MesoWest Directory
-MESOWEST_DIR = os.path.join(HOREL_DIR, 'oper/mesowest')
-
-#: User STILT Directory
-STILT_DIR = os.getenv('STILT_DIR')
-
 # LAIR
 LAIR_DIR = os.path.dirname(__file__)
 

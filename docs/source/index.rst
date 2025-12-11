@@ -2,13 +2,7 @@ Welcome to LAIR's documentation!
 ================================
 
 :code:`lair` is a collection of tools that I have developed/acquired for my
-research regarding land-air interactions. I spent a lot of time developing
-the :code:`uataq` subpackage which provides a simple interface for reading
-in data from the Utah Atmospheric Trace Gas and Air Quality (UATAQ)
-project - the idea being that we as scientists spend too much time on data
-wrangling and not enough time on analysis. The :code:`lair` package is designed
-to make it easier to work with atmospheric data, particularly data from the
-UATAQ project.
+research regarding land-air interactions. The `lair` package is designed to make it easier to work with atmospheric data.
 
 .. toctree::
    :maxdepth: 1
@@ -18,8 +12,6 @@ UATAQ project.
    config <config>
    constants <constants>
    inventories <inventories>
-   inversion <inversion>
-   uataq <uataq/index>
    utils <utils>
    valley <valley>
 
@@ -50,18 +42,6 @@ UATAQ project.
       :link-type: doc
 
       Spatiotemporal inventories of fluxes.
-
-   .. grid-item-card:: :octicon:`law` Inversion
-      :link: inversion
-      :link-type: doc
-
-      Estimate unknown model states from observed data.
-
-   .. grid-item-card:: :octicon:`table` UATAQ
-      :link: uataq/index
-      :link-type: doc
-
-      Utah Atmospheric Trace-gas & Air Quality data.
 
    .. grid-item-card:: :fas:`screwdriver-wrench` Utils
       :link: utils
@@ -115,34 +95,6 @@ or by cloning the repository and installing it as an editable package:
    git clone https://github.com/jmineau/lair.git
    cd lair
    pip install -e .
-
-Optional Dependencies
----------------------
-
-``lair`` is a rather dependecy-heavy package, however, many are common in the field of atmospheric science. To keep ``lair`` as lightweight as possible, some dependencies related to meteorology are currently optional. These include:
-
-- ``boto3``
-- ``metpy``
-- ``s3fs``
-- ``siphon``
-- ``synopticpy``
-- ``zarr``
-
-The following modules are impacted:
-
-- ``lair.air.hrrr``
-- ``lair.air.soundings``
-
-To install the optional dependencies, use the following command:
-
-.. code-block:: bash
-
-   # via conda (preferred on CHPC)
-   conda activate <lair-env>  # activate your lair environment
-   conda install -c conda-forge boto3 metpy s3fs siphon synopticpy zarr
-
-   # via pip
-   pip install git+https://github.com/jmineau/lair.git[met]
 
 Verbosity
 =========
