@@ -15,45 +15,40 @@ research regarding land-air interactions. The `lair` package is designed to make
    utils <utils>
    valley <valley>
 
-.. grid:: 1 2 3 4
-   :margin: 4 4 0 0
-   :gutter: 1
+Modules
+=======
 
-   .. grid-item-card:: :fas:`wind` Air
-      :link: air
-      :link-type: doc
+The `lair` package includes the following module categories:
 
-      Various modules for working with atmospheric data.
+**:fas:`wind` Air**
+  Modules for working with atmospheric data including background concentrations, HRRR data, MesoWest observations, meteorological calculations, NOAA data, and soundings.
+  
+  See: :doc:`air`
 
-   .. grid-item-card:: :fas:`gear` Config
-      :link: config
-      :link-type: doc
+**:fas:`screwdriver-wrench` Utils**
+  Utility modules including clock/time functions, development tools, geospatial operations, parallel processing, plotting utilities, and data records.
+  
+  See: :doc:`utils`
 
-      Configuration settings for the package.
+**:fas:`gear` Config**
+  Configuration settings for the package.
+  
+  See: :doc:`config`
 
-   .. grid-item-card:: :math:`\pi` Constants
-      :link: constants
-      :link-type: doc
+**:math:`\pi` Constants**
+  Mathematical & scientific constants.
+  
+  See: :doc:`constants`
 
-      Mathematical & scientific constants.
+**:octicon:`inbox` Inventories**
+  Spatiotemporal inventories of fluxes.
+  
+  See: :doc:`inventories`
 
-   .. grid-item-card:: :octicon:`inbox` Inventories
-      :link: inventories
-      :link-type: doc
-
-      Spatiotemporal inventories of fluxes.
-
-   .. grid-item-card:: :fas:`screwdriver-wrench` Utils
-      :link: utils
-      :link-type: doc
-
-      Utility classes & functions.
-
-   .. grid-item-card:: :fas:`map` Valley
-      :link: valley
-      :link-type: doc
-
-      Salt Lake Valley measurements map.
+**:fas:`map` Valley**
+  Salt Lake Valley measurements map.
+  
+  See: :doc:`valley`
 
 Installation
 ============

@@ -1,16 +1,16 @@
-.. currentmodule:: lair.utils
-
 Utilities
 =========
+
+Utility modules and functions.
 
 .. autosummary::
    :toctree: api
    :recursive:
 
-   clock
-   dev
-   geo
-   plotter
-   records
-
-   .. some utils.__init__ funcs - not sure if id like that
+   lair.clock
+   lair.dev
+   lair.geo
+   lair.parallel
+   lair.plotter
+   lair.records
+   lair.utils

@@ -1,20 +1,16 @@
-.. currentmodule:: lair.air
-
 Air
 ===
 
-The `air` subpackage contains modules for working with various atmospheric data.
-
-.. rubric:: Modules
+Modules for working with various atmospheric data.
 
 .. autosummary::
    :toctree: api
    :recursive:
 
-   air
-   background
-   hrrr
-   mesowest
-   meteorology
-   noaa
-   soundings
+   lair.air
+   lair.background
+   lair.hrrr
+   lair.mesowest
+   lair.meteorology
+   lair.noaa
+   lair.soundings
