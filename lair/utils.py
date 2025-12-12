@@ -1,4 +1,17 @@
+"""
+General utility functions and classes.
+"""
+
+
 def updating_print(msg):
+    """
+    Print a message that updates in place.
+    
+    Parameters
+    ----------
+    msg : str
+        Message to print.
+    """
     print(f'\r{msg}', end='')
 
 
