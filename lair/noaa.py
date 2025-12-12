@@ -11,7 +11,7 @@ from typing import Literal, Union
 import xarray as xr
 
 from lair.config import GROUP_DIR
-from lair.utils.records import ftp_download, list_files, Cacher
+from lair.records import ftp_download, list_files, Cacher
 
 #: CarbonTracker data directory
 CARBONTRACKER_DIR = os.path.join(GROUP_DIR, 'carbontracker')

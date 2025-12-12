@@ -4,7 +4,7 @@ Utilities for working with files and directories.
 
 import os
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Callable
 
 from fastkml import KML
 

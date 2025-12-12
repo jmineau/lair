@@ -18,7 +18,7 @@ import xarray as xr
 from lair.config import vprint, GROUP_DIR
 from lair import units
 from lair.constants import Rd, cp
-from lair.air.meteorology import ideal_gas_law, hypsometric, poisson
+from lair.meteorology import ideal_gas_law, hypsometric, poisson
 
 
 #: Sounding data directory
