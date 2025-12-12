@@ -29,7 +29,7 @@ import pandas as pd
 from typing import Literal, Tuple
 import xarray as xr
 
-from lair.air.air import wind_direction, rotate_winds
+from lair.air import wind_direction, rotate_winds
 
 
 #: HRRR Projection

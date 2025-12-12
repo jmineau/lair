@@ -27,7 +27,7 @@ from xarray import DataArray, Dataset
 
 from lair import units
 from lair.config import GROUP_DIR
-from lair.utils.geo import (CRS, PC, BaseGrid, round_latlon, wrap_lons,
+from lair.geo import (CRS, PC, BaseGrid, round_latlon, wrap_lons,
                             write_rio_crs)
 
 xr.set_options(keep_attrs=True)

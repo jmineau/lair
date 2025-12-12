@@ -7,8 +7,8 @@ import pandas as pd
 from typing import Any
 
 from lair.config import verbose
-from lair.air._ccg_filter import ccgFilter  # make available to user
-from lair.utils.clock import AFTERNOON, dt2decimalDate, decimalDate2dt
+from lair._ccg_filter import ccgFilter  # make available to user
+from lair.clock import AFTERNOON, dt2decimalDate, decimalDate2dt
 
 
 def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -> pd.Series | pd.DataFrame:

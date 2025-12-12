@@ -6,19 +6,18 @@ Hopefully will add more functionality in the future.
 
 import os
 import pandas as pd
-import tables as pytbls
 import xarray as xr
 
-from lair.config import MESOWEST_DIR
-from lair.uataq.filesystem import DataFile, filter_datafiles  # this probably shouldn't be here
+
+# from lair.uataq.filesystem import DataFile, filter_datafiles  # this probably shouldn't be here
 
 
-class SodarFile(DataFile):
-    # TODO
-    pass
+# class SodarFile(DataFile):
+#     # TODO
+#     pass
 
-    def parse(self):
-        pass
+#     def parse(self):
+#         pass
 
 
 class Sodar:
