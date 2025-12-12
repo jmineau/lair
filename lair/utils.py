@@ -1,4 +1,30 @@
+"""
+General utility functions and classes.
+"""
+
+
 def updating_print(msg):
+    """
+    Print a message that updates in place by overwriting the previous line.
+    
+    Uses carriage return to move cursor to beginning of line without newline.
+    Useful for showing progress updates without cluttering the terminal.
+    
+    Parameters
+    ----------
+    msg : str
+        Message to print.
+        
+    Examples
+    --------
+    >>> for i in range(100):
+    ...     updating_print(f"Processing: {i}%")
+    ...     time.sleep(0.1)
+    
+    Note
+    ----
+    Terminal compatibility may vary. Works best in standard terminals.
+    """
     print(f'\r{msg}', end='')
 
 

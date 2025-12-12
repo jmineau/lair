@@ -4,56 +4,31 @@ Welcome to LAIR's documentation!
 :code:`lair` is a collection of tools that I have developed/acquired for my
 research regarding land-air interactions. The `lair` package is designed to make it easier to work with atmospheric data.
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
+Modules
+=======
 
-   air <air>
-   config <config>
-   constants <constants>
-   inventories <inventories>
-   utils <utils>
-   valley <valley>
+.. autosummary::
+   :toctree: api
+   :recursive:
 
-.. grid:: 1 2 3 4
-   :margin: 4 4 0 0
-   :gutter: 1
-
-   .. grid-item-card:: :fas:`wind` Air
-      :link: air
-      :link-type: doc
-
-      Various modules for working with atmospheric data.
-
-   .. grid-item-card:: :fas:`gear` Config
-      :link: config
-      :link-type: doc
-
-      Configuration settings for the package.
-
-   .. grid-item-card:: :math:`\pi` Constants
-      :link: constants
-      :link-type: doc
-
-      Mathematical & scientific constants.
-
-   .. grid-item-card:: :octicon:`inbox` Inventories
-      :link: inventories
-      :link-type: doc
-
-      Spatiotemporal inventories of fluxes.
-
-   .. grid-item-card:: :fas:`screwdriver-wrench` Utils
-      :link: utils
-      :link-type: doc
-
-      Utility classes & functions.
-
-   .. grid-item-card:: :fas:`map` Valley
-      :link: valley
-      :link-type: doc
-
-      Salt Lake Valley measurements map.
+   lair.air
+   lair.background
+   lair.clock
+   lair.config
+   lair.constants
+   lair.dev
+   lair.geo
+   lair.hrrr
+   lair.inventories
+   lair.mesowest
+   lair.meteorology
+   lair.noaa
+   lair.parallel
+   lair.plotter
+   lair.records
+   lair.soundings
+   lair.utils
+   lair.valley
 
 Installation
 ============
