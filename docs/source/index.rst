@@ -8,47 +8,36 @@ research regarding land-air interactions. The `lair` package is designed to make
    :maxdepth: 1
    :hidden:
 
-   air <air>
    config <config>
    constants <constants>
    inventories <inventories>
-   utils <utils>
    valley <valley>
 
 Modules
 =======
 
-The `lair` package includes the following module categories:
+.. autosummary::
+   :toctree: api
+   :recursive:
 
-**:fas:`wind` Air**
-  Modules for working with atmospheric data including background concentrations, HRRR data, MesoWest observations, meteorological calculations, NOAA data, and soundings.
-  
-  See: :doc:`air`
-
-**:fas:`screwdriver-wrench` Utils**
-  Utility modules including clock/time functions, development tools, geospatial operations, parallel processing, plotting utilities, and data records.
-  
-  See: :doc:`utils`
-
-**:fas:`gear` Config**
-  Configuration settings for the package.
-  
-  See: :doc:`config`
-
-**:math:`\pi` Constants**
-  Mathematical & scientific constants.
-  
-  See: :doc:`constants`
-
-**:octicon:`inbox` Inventories**
-  Spatiotemporal inventories of fluxes.
-  
-  See: :doc:`inventories`
-
-**:fas:`map` Valley**
-  Salt Lake Valley measurements map.
-  
-  See: :doc:`valley`
+   lair.air
+   lair.background
+   lair.clock
+   lair.config
+   lair.constants
+   lair.dev
+   lair.geo
+   lair.hrrr
+   lair.inventories
+   lair.mesowest
+   lair.meteorology
+   lair.noaa
+   lair.parallel
+   lair.plotter
+   lair.records
+   lair.soundings
+   lair.utils
+   lair.valley
 
 Installation
 ============
