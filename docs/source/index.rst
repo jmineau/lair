@@ -4,15 +4,6 @@ Welcome to LAIR's documentation!
 :code:`lair` is a collection of tools that I have developed/acquired for my
 research regarding land-air interactions. The `lair` package is designed to make it easier to work with atmospheric data.
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-
-   config <config>
-   constants <constants>
-   inventories <inventories>
-   valley <valley>
-
 Modules
 =======
 
