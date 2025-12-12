@@ -57,4 +57,4 @@ def setup_ccg_filter():
 setup_ccg_filter()
 
 
-__version__ = '2025.12.6'
+__version__ = '2025.12.7'
