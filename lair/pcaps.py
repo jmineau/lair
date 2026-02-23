@@ -107,3 +107,62 @@ def determine_pcap_events(vhd: pd.Series, threshold: float, min_periods: int = 3
     pcap_events.index.name = 'event_id'
 
     return pcap_events
+
+
+def build_pcap_mask(index: pd.DatetimeIndex, events: pd.DataFrame) -> pd.Series:
+    """
+    Build a boolean mask for PCAP events.
+
+    Parameters
+    ----------
+    index : pd.DatetimeIndex
+        The index to build the mask for.
+    events : pd.DataFrame
+        The DataFrame of PCAP events.
+    Returns
+    -------
+    pd.Series
+        A boolean mask where True indicates a time within a PCAP event.
+    """
+    # Ensure we can compare the index values to the event timestamps.
+    # Use pd.to_datetime so the function is robust to Index types that
+    # are datetime-like but not necessarily a DatetimeIndex object.
+    idx = pd.to_datetime(index)
+
+    mask = pd.Series(False, index=index)
+
+    for _, event in events.iterrows():
+        start = event['start']
+        end = event['end']
+        # Build boolean selection using vectorized comparisons. This
+        # avoids label-based slicing (mask.loc[start: end]) which can
+        # raise KeyError for non-monotonic indexes or when exact labels
+        # are not present in the index.
+        sel = (idx >= start) & (idx <= end)
+        if sel.any():
+            mask.loc[sel] = True
+
+    return mask
+
+
+def filter_pcap_events(data: pd.DataFrame, events: pd.DataFrame, level=None) -> pd.DataFrame:
+    """
+    Filter a DataFrame to only include rows within PCAP events.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The DataFrame to filter.
+    events : pd.DataFrame
+        The DataFrame of PCAP events.
+    level : str, optional
+        If the DataFrame has a MultiIndex, the level to apply the mask to.
+
+    Returns
+    -------
+    pd.DataFrame
+        The filtered DataFrame.
+    """
+    index = data.index.get_level_values(level) if level is not None else data.index
+    mask = build_pcap_mask(index, events)
+    return data[~mask.values].copy()
