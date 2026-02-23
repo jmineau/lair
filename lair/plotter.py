@@ -251,7 +251,7 @@ def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt
               'MAM': '#1b9e77', 
               'JJA': '#d95f02', 
               'SON': '#7570b3'}
-    from lair.utils.clock import seasonal
+    from lair.clock import seasonal
     
     # Calculate seasonal cycle
     agg = seasonal(data, ['mean', 'std'])[param].unstack(level=0)

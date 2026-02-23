@@ -15,10 +15,7 @@ import requests
 from time import sleep
 import xarray as xr
 
-from lair.config import vprint, GROUP_DIR
-from lair import units
-from lair.constants import Rd, cp
-from lair.meteorology import ideal_gas_law, hypsometric, poisson
+from lair.config import GROUP_DIR
 
 
 #: Sounding data directory
@@ -292,59 +289,3 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
 
     return data
 
-
-def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray:
-    """
-    Calculate the valley heat deficit.
-
-    Whiteman, C. David, et al. “Relationship between Particulate Air Pollution
-    and Meteorological Variables in Utah's Salt Lake Valley.”
-    Atmospheric Environment, vol. 94, Sept. 2014, pp. 742-53.
-    DOI.org (Crossref), https://doi.org/10.1016/j.atmosenv.2014.06.012.
-
-    Parameters
-    ----------
-    data : xr.DataSet
-        The sounding data.
-    integration_height : int
-        The height to integrate to [m].
-    
-    Returns
-    -------
-    xr.DataArray
-        The valley heat deficit [MJ/m^2].
-    """
-    h0 = data.elevation
-
-    # Subset to the heights between the surface and the integration height
-    data = data.sel(height=slice(h0, integration_height))
-    
-    T = data.temperature.pint.quantify('degC').pint.to('degK')
-    p = data.pressure.pint.quantify('hPa').pint.to('Pa')
-
-    # Calculate potential temperature using poisson's equation
-    theta = poisson(T=T, p=p, p0=1e5 * units('Pa'))
-    theta_h = theta.sel(height=integration_height, method='nearest')
-
-    # Calculate virtual temperature to account for water vapor
-    Tv = hypsometric(p1=p.isel(height=slice(0, -1)).values,
-                     p2=p.isel(height=slice(1, None)).values,
-                     deltaz=data.interpolation_interval * units('m'))
-    layer_heights = T.height.values[:-1] + data.interpolation_interval / 2
-    Tv = xr.DataArray(Tv, coords=[data.time, layer_heights],
-                      dims=['time', 'height'])\
-            .interp_like(T, method='linear')\
-            .pint.quantify('degK')
-
-    # Calculate the density using the ideal gas law
-    rho = ideal_gas_law(solve_for='rho', p=p, T=Tv, R=Rd)
-    # Set pint units - Setting units to kg/m3 doesnt change the numbers
-    # pint-xarray hasnt implemented .to_base_units() yet
-    # when they do, we can change this to .pint.to_base_units()
-    rho = rho.pint.to('kg/m^3')
-
-    # Calculate the heat deficit by integrating using the trapezoid method
-    heat_deficit = (cp * rho * (theta_h - theta)).dropna('height', how='all')\
-        .integrate('height') * (1 * units('m'))  # J/m2
-
-    return heat_deficit.pint.to('MJ/m^2').pint.dequantify()
