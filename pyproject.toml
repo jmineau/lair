@@ -10,7 +10,7 @@ authors = [
 ]
 readme = "README.md"
 keywords = ["land-air interactions", "research", "pollution", "atmospheric science"]
-version = "2026.05.5"
+version = "2026.05.6"
 requires-python = ">=3.10"
 dependencies = [
   "cartopy",
