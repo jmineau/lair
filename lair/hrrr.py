@@ -4,23 +4,6 @@ HRRR winds at a point.
 Documentation: https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.html
 """
 
-# Optional dependencies
-try:
-    import boto3
-    from botocore import UNSIGNED
-    from botocore.config import Config
-except ImportError:
-    print("boto3 not installed. Please install boto3 to use the hrrr module.")
-try:
-    import s3fs
-except ImportError:
-    print("s3fs not installed. Please install s3fs to use the hrrr module.")
-try:
-    import numcodecs as ncd
-    import zarr
-except ImportError:
-    print("zarr not installed. Please install zarr to use the hrrr module.")
-
 import cartopy.crs as ccrs
 import dataclasses
 import datetime as dt
@@ -30,6 +13,17 @@ from typing import Literal, Tuple
 import xarray as xr
 
 from lair.air import wind_direction, rotate_winds
+from lair._optional import import_optional_dependency
+
+# Optional dependencies
+boto3 = import_optional_dependency("boto3")
+s3fs = import_optional_dependency("s3fs")
+zarr = import_optional_dependency("zarr")
+
+# Import submodules after main imports
+from botocore import UNSIGNED
+from botocore.config import Config
+import numcodecs as ncd
 
 
 #: HRRR Projection

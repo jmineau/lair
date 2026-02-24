@@ -6,9 +6,12 @@ import os
 from pathlib import Path
 from typing import Callable
 
-from fastkml import KML
-
 from lair.config import vprint
+from lair._optional import import_optional_dependency
+
+# Optional dependency for KML file support
+fastkml = import_optional_dependency("fastkml")
+from fastkml import KML
 
 
 def unzip(zf: str, dir_path: str | None=None):

@@ -2,11 +2,6 @@
 Upper air sounding data.
 """
 
-try:
-    from siphon.simplewebservice.wyoming import WyomingUpperAir
-except ImportError:
-    print('siphon not installed. Please install siphon to use the soundings module.')
-
 from collections import deque
 import datetime as dt
 import os
@@ -16,6 +11,11 @@ from time import sleep
 import xarray as xr
 
 from lair.config import GROUP_DIR
+from lair._optional import import_optional_dependency
+
+# Optional dependency
+siphon = import_optional_dependency("siphon")
+from siphon.simplewebservice.wyoming import WyomingUpperAir
 
 
 #: Sounding data directory

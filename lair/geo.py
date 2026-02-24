@@ -13,7 +13,6 @@ import pyproj
 import rasterio
 import rasterio.crs
 import rioxarray as rxr
-import xesmf as xe
 from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
                                 LongitudeFormatter, LongitudeLocator)
 from numpy.typing import ArrayLike
@@ -22,6 +21,11 @@ from typing import Iterable, Optional
 from typing_extensions import \
     Self  # requires python 3.11 to import from typing
 from xarray import DataArray, Dataset
+
+from lair._optional import import_optional_dependency
+
+# Optional dependency for advanced regridding
+xe = import_optional_dependency("xesmf")
 
 # ----- BOUNDS ----- #
 

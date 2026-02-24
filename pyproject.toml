@@ -12,29 +12,57 @@ readme = "README.md"
 keywords = ["land-air interactions", "research", "pollution", "atmospheric science"]
 requires-python = ">=3.10"
 dependencies = [
-  "boto3",
   "cartopy",
   "cf_xarray",
   "dask",
-  "fastkml",
   "geopandas",
-  "lxml",  # speeds up fastkml
   "matplotlib",
-  "molmass",
   "netcdf4",
   "numpy",
   "pandas",
+  "pint",
   "pint-xarray",
   "pyproj",
+  "rasterio",
   "rioxarray",
-  "s3fs",
-  "scipy",
   "shapely",
-  "siphon",
   "typing-extensions",  # needed to import Self before 3.11
   "xarray",
-  "xesmf",
+]
+
+[project.optional-dependencies]
+# Remote data access (AWS S3, soundings)
+requests = [
+  "boto3",
+  "s3fs",
+  "siphon",
+]
+
+# Alternative data formats (Zarr, KML)
+formats = [
   "zarr",
+  "numcodecs",
+  "fastkml",
+  "lxml",  # speeds up fastkml
+]
+
+# Scientific computing (chemistry, CCG filter)
+science = [
+  "molmass",
+  "scipy",
+]
+
+# Advanced regridding
+regridding = [
+  "xesmf",
+]
+
+# Complete installation with all optional dependencies
+complete = [
+  "lair[requests]",
+  "lair[formats]",
+  "lair[science]",
+  "lair[regridding]",
 ]
 license = {file = "LICENSE"}
 classifiers = [

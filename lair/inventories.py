@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pint
 import xarray as xr
-from molmass import Formula
 from shapely import Polygon
 from typing_extensions import \
     Self  # requires python 3.11 to import from typing
@@ -29,6 +28,11 @@ from lair import units
 from lair.config import GROUP_DIR
 from lair.geo import (CRS, PC, BaseGrid, round_latlon, wrap_lons,
                             write_rio_crs)
+from lair._optional import import_optional_dependency
+
+# Optional dependency for chemistry calculations
+molmass = import_optional_dependency("molmass")
+from molmass import Formula
 
 xr.set_options(keep_attrs=True)
 
