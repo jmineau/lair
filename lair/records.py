@@ -9,10 +9,6 @@ from typing import Callable
 from lair.config import vprint
 from lair._optional import import_optional_dependency
 
-# Optional dependency for KML file support
-fastkml = import_optional_dependency("fastkml")
-from fastkml import KML
-
 
 def unzip(zf: str, dir_path: str | None=None):
     '''
@@ -81,7 +77,7 @@ def list_files(path: str | Path = '.', pattern: str|None = None, ignore_case: bo
     return result
 
 
-def read_kml(path: str) -> KML:
+def read_kml(path: str) -> "KML":
     """
     Read kml file from path
 
@@ -95,6 +91,8 @@ def read_kml(path: str) -> KML:
     KML
         The KML object.
     """
+    # Optional dependency for KML file support
+    import_optional_dependency("fastkml")
     from fastkml import kml
 
     with open(path, 'rt') as KML:

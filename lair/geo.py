@@ -24,8 +24,6 @@ from xarray import DataArray, Dataset
 
 from lair._optional import import_optional_dependency
 
-# Optional dependency for advanced regridding
-xe = import_optional_dependency("xesmf")
 
 # ----- BOUNDS ----- #
 
@@ -670,6 +668,8 @@ def gridcell_area(grid: DataArray | Dataset, R: float | ArrayLike | None = None
     np.ndarray | xr.DataArray
         grid-cell area in square-kilometers
     """
+    # Optional dependency for advanced regridding
+    xe = import_optional_dependency("xesmf")
 
     if grid.rio.crs == 'EPSG:4326':
         R = R or earth_radius(grid['lat'])
@@ -811,6 +811,9 @@ def regrid(data: DataArray | Dataset,
     xr.DataArray | xr.Dataset
         The regridded data.
     """
+    # Optional dependency for advanced regridding
+    xe = import_optional_dependency("xesmf")
+    
     out_crs = 'EPSG:4326'
 
     # Use cf-xarray to calculate the bounds of the grid cells
@@ -858,6 +861,9 @@ def resample(data: DataArray | Dataset,
     xr.DataArray | xr.Dataset
         The resampled data.
     """
+    # Optional dependency for advanced regridding
+    xe = import_optional_dependency("xesmf")
+    
     if isinstance(resolution, float):
         resolution: tuple = (resolution, resolution)
 
