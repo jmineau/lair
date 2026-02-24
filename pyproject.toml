@@ -30,6 +30,15 @@ dependencies = [
   "typing-extensions",  # needed to import Self before 3.11
   "xarray",
 ]
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Atmospheric Science"
+]
 
 [project.optional-dependencies]
 # Remote data access (AWS S3, soundings)
@@ -64,15 +73,6 @@ complete = [
   "lair[formats]",
   "lair[science]",
   "lair[regridding]",
-]
-license = {file = "LICENSE"}
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
 
 [project.urls]
