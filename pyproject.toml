@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64", "setuptools_scm>=8"]
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,6 +10,7 @@ authors = [
 ]
 readme = "README.md"
 keywords = ["land-air interactions", "research", "pollution", "atmospheric science"]
+version = "2026.05.5"
 requires-python = ">=3.10"
 dependencies = [
   "cartopy",
@@ -73,7 +74,6 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
-dynamic = ["version"]
 
 [project.urls]
 Repository = "https://github.com/jmineau/lair.git"
@@ -81,9 +81,6 @@ Issues = "https://github.com/jmineau/lair/issues"
 
 [tool.setuptools]
 include-package-data = true
-
-[tool.setuptools.dynamic]
-version = {attr = "lair.__version__"}
 
 [tool.setuptools.packages.find]
 include = ["lair*"]

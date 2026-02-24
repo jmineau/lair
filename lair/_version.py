@@ -9,12 +9,12 @@ import datetime
 import os
 import re
 
-init_file = os.path.join(os.path.dirname(__file__), '__init__.py')
+pyproject_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'pyproject.toml')
 
 # Get the current version
-with open(init_file, 'r') as f:
-    current_version = re.search(r'__version__ = [\'\"](\d{4}\.\d{2}\.\d+)[\'\"]',
-                                f.read()).group(1)
+with open(pyproject_file, 'r') as f:
+    content = f.read()
+    current_version = re.search(r'version = \"(\d{4}\.\d{2}\.\d+)\"', content).group(1)
 cur_year, cur_month, cur_patch = current_version.split('.')
 
 is_major_change = False
@@ -43,18 +43,18 @@ def get_version() -> str:
 
 
 def update(version: str):
-    with open(init_file, 'r') as f:
-        lines = f.readlines()
+    with open(pyproject_file, 'r') as f:
+        content = f.read()
 
-    updated_lines = []
-    for line in lines:
-        if line.startswith('__version__'):
-            updated_lines.append(f"__version__ = '{version}'\n")
-        else:
-            updated_lines.append(line)
+    # Update the version line in pyproject.toml
+    updated_content = re.sub(
+        r'version = \"\d{4}\.\d{2}\.\d+\"',
+        f'version = "{version}"',
+        content
+    )
 
-    with open(init_file, 'w') as f:
-        f.writelines(updated_lines)
+    with open(pyproject_file, 'w') as f:
+        f.write(updated_content)
 
 
 if __name__ == "__main__":
