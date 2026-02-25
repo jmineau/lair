@@ -92,8 +92,8 @@ def convert_units(data: DataArray | Dataset, pollutant: str, dst_units: Any,
     # Use custom pint context to convert mass <--> substance
     with units.context('mass_flux', mw=mw):
         if isinstance(data, xr.Dataset):
+            data = data.pint.to(dst_units)
             for var in data.data_vars:
-                data[var] = data[var].pint.to(dst_units)
                 data[var].attrs['units'] = dst_units
         elif isinstance(data, xr.DataArray):
             data = data.pint.to(dst_units)
@@ -199,6 +199,7 @@ class Inventory(BaseGrid):
             data = quantified
 
         # Set the rioxarray CRS
+        data = data.rio.set_spatial_dims(x_dim='lon', y_dim='lat')
         data = write_rio_crs(data, self.crs)
 
         # Store the data
@@ -521,10 +522,9 @@ class Inventory(BaseGrid):
         return data
 
     def _quantify(self, data: Dataset) -> Dataset:
-        # Quantify the data using `pint` units
-        for var in data.data_vars:
-            data[var] = data[var].pint.quantify(self.src_units)
-        return data
+        # Quantify the entire dataset at once to keep coord indexes consistent.
+        units_map = {var: self.src_units for var in data.data_vars}
+        return data.pint.quantify(units_map)
 
 
 class MultiModelInventory(Inventory):
