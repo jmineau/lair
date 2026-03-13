@@ -5,7 +5,7 @@ NOAA greenhouse gas data.
 from abc import ABCMeta
 import datetime as dt
 from functools import cached_property
-import os
+from pathlib import Path
 import pandas as pd
 from typing import Literal, Union
 import xarray as xr
@@ -14,10 +14,10 @@ from lair.config import GROUP_DIR
 from lair.records import ftp_download, list_files, Cacher
 
 #: CarbonTracker data directory
-CARBONTRACKER_DIR = os.path.join(GROUP_DIR, 'carbontracker')
+CARBONTRACKER_DIR = Path(GROUP_DIR) / 'carbontracker'
 
 #: NOAA GML data directory
-GML_DIR = os.path.join(GROUP_DIR, 'gml')
+GML_DIR = Path(GROUP_DIR) / 'gml'
 
 
 class CarbonTracker(metaclass=ABCMeta):
@@ -46,7 +46,7 @@ class CarbonTracker(metaclass=ABCMeta):
     """
     specie: Literal['ch4', 'co2']
 
-    def __init__(self, version: str, carbon_tracker_directory: str | None=None,
+    def __init__(self, version: str, carbon_tracker_directory: str | Path | None=None,
                  cache: bool=True):
         """
         Initialize a CarbonTracker object.
@@ -63,8 +63,8 @@ class CarbonTracker(metaclass=ABCMeta):
         """
         self.version = version
 
-        carbon_tracker_directory = carbon_tracker_directory or CARBONTRACKER_DIR
-        self.directory = os.path.join(carbon_tracker_directory, self.specie, version)
+        carbon_tracker_directory = Path(carbon_tracker_directory or CARBONTRACKER_DIR)
+        self.directory = carbon_tracker_directory / self.specie / version
 
         self.cache = cache
 
@@ -139,7 +139,7 @@ class CarbonTracker(metaclass=ABCMeta):
         paths = [f'{path}/{sub_dir}' for sub_dir in sub_dirs]
 
         # Download the data
-        ftp_download(host, paths, self.directory, prefix=path, pattern=pattern)
+        ftp_download(host, paths, str(self.directory), prefix=path, pattern=pattern)
         return None
 
 
@@ -177,14 +177,14 @@ class CarbonTrackerCH4(CarbonTracker):
     @cached_property
     def molefractions(self) -> xr.Dataset:
         'Molefractions Dataset. Cached property.'
-        path = os.path.join(self.directory, 'molefractions')
+        path = self.directory / 'molefractions'
 
-        files = list_files(path, '*nc', full_names=True, recursive=True)
+        files = list_files(str(path), '*nc', full_names=True, recursive=True)
 
         if self.cache:
             from lair.config import CACHE_DIR
-            cache_file = os.path.join(CACHE_DIR, 'carbontracker', self.specie, self.version, 'molefractions.pkl')
-            open_mfdataset = Cacher(xr.open_mfdataset, cache_file)
+            cache_file = Path(CACHE_DIR) / 'carbontracker' / self.specie / self.version / 'molefractions.pkl'
+            open_mfdataset = Cacher(xr.open_mfdataset, str(cache_file))
         else:
             open_mfdataset = xr.open_mfdataset
         ds = open_mfdataset(files, preprocess=CarbonTrackerCH4._preprocess_molefractions, 
@@ -262,7 +262,7 @@ class Flask:
                  measurement_group: Literal['ccgg', 'sil']='ccgg',
                  frequency: Literal['event', 'month']='event',
                  driver: Literal['pandas', 'xarray']='pandas',
-                 gml_dir: str|None=None):
+                 gml_dir: str | Path | None=None):
         """
         Initialize a Flask object.
         
@@ -293,10 +293,10 @@ class Flask:
         self.frequency = frequency
         self.driver = driver
         self.ext = self.driver_ext[driver]
-        self.gml_dir = gml_dir or GML_DIR
-        self.directory = os.path.join(self.gml_dir, specie, 'flask')
+        self.gml_dir = Path(gml_dir or GML_DIR)
+        self.directory = self.gml_dir / specie / 'flask'
         self.filename = self.file_template.format(**self.__dict__)
-        self.filepath = os.path.join(self.directory, self.filename)
+        self.filepath = self.directory / self.filename
 
     def __repr__(self):
         return f'Flask(specie={self.specie}, site={self.site}, platform={self.platform}, lab_id={self.lab_id}, measurement_group={self.measurement_group}, frequency={self.frequency}, driver={self.driver})'
@@ -307,8 +307,8 @@ class Flask:
     def download(self):
         host = 'ftp.gml.noaa.gov'
         path = f'/data/trace_gases/{self.specie}/flask/surface/{self.ext}/{self.filename}'
-        ftp_download(host, path, self.directory)
-        return self.filepath
+        ftp_download(host, path, str(self.directory))
+        return str(self.filepath)
 
     @cached_property
     def data(self):
