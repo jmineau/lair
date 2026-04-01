@@ -214,9 +214,9 @@ class CarbonTrackerCH4(CarbonTracker):
         return molefractions
 
 
-class Flask:
+class GMLData:
     """
-    NOAA GML Flask
+    NOAA GML Data
 
     Attributes
     ----------
@@ -237,19 +237,19 @@ class Flask:
     gml_dir : str, optional
         The NOAA GML directory to download the data to, by default GML_DIR.
     directory : str
-        The directory for the Flask data.
+        The directory for the data.
     filename : str
-        The filename for the Flask data.
+        The filename for the data.
     filepath : str
-        The filepath for the Flask data.
+        The filepath for the data.
     data : pd.DataFrame | xr.Dataset
-        The Flask data.
+        The data.
     file_template : str
-        The template for the Flask filename.
+        The template for the filename.
     driver_ext : dict
         The driver extensions.
     """
-    file_template = '{specie}_{site}_{platform}-flask_{lab_id}_{measurement_group}_{frequency}.{ext}'
+    file_template = '{specie}_{site}_{platform}-{sample_type}_{lab_id}_{measurement_group}_{frequency}.{ext}'
 
     driver_ext = {
         'pandas': 'txt',
@@ -258,14 +258,15 @@ class Flask:
 
     def __init__(self, specie: str, site: str,
                  platform: Literal['surface', 'shipboard']='surface',
+                 sample_type: Literal['flask', 'pfp']='flask',
                  lab_id: int=1,
                  measurement_group: Literal['ccgg', 'sil']='ccgg',
                  frequency: Literal['event', 'month']='event',
                  driver: Literal['pandas', 'xarray']='pandas',
                  gml_dir: str | Path | None=None):
         """
-        Initialize a Flask object.
-        
+        Initialize a GMLData object.
+
         Parameters
         ----------
         specie : str
@@ -274,6 +275,9 @@ class Flask:
             The site where the flask samples were collected.
         platform : str, optional
             The platform where the flask samples were collected, by default 'surface'.
+        sample_type : str, optional
+            The sample type, by default 'flask'. Use 'pfp' for Portable Flask
+            Package data.
         lab_id : int, optional
             The lab ID, by default 1.
         measurement_group : str, optional
@@ -288,25 +292,26 @@ class Flask:
         self.specie = specie
         self.site = site
         self.platform = platform
+        self.sample_type = sample_type
         self.lab_id = lab_id
         self.measurement_group = measurement_group
         self.frequency = frequency
         self.driver = driver
         self.ext = self.driver_ext[driver]
         self.gml_dir = Path(gml_dir or GML_DIR)
-        self.directory = self.gml_dir / specie / 'flask'
+        self.directory = self.gml_dir / specie / sample_type
         self.filename = self.file_template.format(**self.__dict__)
         self.filepath = self.directory / self.filename
 
     def __repr__(self):
-        return f'Flask(specie={self.specie}, site={self.site}, platform={self.platform}, lab_id={self.lab_id}, measurement_group={self.measurement_group}, frequency={self.frequency}, driver={self.driver})'
+        return f'GMLData(specie={self.specie}, site={self.site}, platform={self.platform}, sample_type={self.sample_type}, lab_id={self.lab_id}, measurement_group={self.measurement_group}, frequency={self.frequency}, driver={self.driver})'
 
     def __str__(self):
-        return f'NOAA GML Flask({self.specie}, {self.site})'
+        return f'NOAA GML Data({self.specie}, {self.site}, {self.sample_type})'
 
     def download(self):
         host = 'ftp.gml.noaa.gov'
-        path = f'/data/trace_gases/{self.specie}/flask/surface/{self.ext}/{self.filename}'
+        path = f'/data/trace_gases/{self.specie}/{self.sample_type}/{self.platform}/{self.ext}/{self.filename}'
         ftp_download(host, path, str(self.directory))
         return str(self.filepath)
 
@@ -330,12 +335,12 @@ class Flask:
     def apply_qaqc(data: Union[pd.DataFrame, xr.Dataset], flags: None | str | list[str]=None,
                    driver: str='pandas'):
         """
-        Apply QA/QC to the Flask data.
+        Apply QA/QC filtering.
 
         Parameters
         ----------
         data : pd.DataFrame | xr.Dataset
-            The Flask data.
+            The data.
         flags : None | str | list of str, optional
             The allowed QA/QC flags. If None, only keep good data (qcflag == '...').
             By default None.
@@ -345,7 +350,7 @@ class Flask:
         Returns
         -------
         pd.DataFrame | xr.Dataset
-            The Flask data with QA/QC applied.
+            The filtered data.
         """
         allowed_flags = ['...']
         if flags is not None:
