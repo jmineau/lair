@@ -1082,15 +1082,29 @@ def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
     return d
 
 
-def points_along_line(multiline: LineString | MultiLineString, spacing: float, resolution_factor: float = 0.1) -> list[Point]:
+def points_along_line(multiline: LineString | MultiLineString, spacing: float,
+                      resolution_factor: float | None = None) -> list[Point]:
     """
     Generates Euclidean spaced points covering a single Line or a MultiLineString network.
 
     The algorithm works as follows:
-    1. **Topology Fixing**: The input MultiLineString is processed to ensure that all intersections are properly represented as nodes in the graph. This is done using `unary_union` to split lines at intersections, followed by `linemerge` to stitch simple paths back together.
-    2. **Graph Construction**: A high-resolution graph is built from the cleaned geometry. Each line is segmentized into small segments based on the `resolution_factor`, and edges are added to the graph with weights corresponding to the Euclidean distance between nodes.
-    3. **Point Generation**: A breadth-first search (BFS) is performed on the graph to generate points. The BFS ensures that points are placed at least `spacing` distance apart. When a point is placed, it becomes the "origin" for measuring distance to subsequent points. If a candidate point is too close to any previously placed point (not just the parent), it is skipped, but the BFS continues to explore neighbors to find valid locations further along the network.
-    4. **Global State Management**: The function maintains a global list of placed points to enforce the spacing constraint across the entire network, even between disconnected components.
+    1. **Topology Fixing**: The input MultiLineString is processed to ensure that all
+       intersections are properly represented as nodes in the graph. This is done using
+       `unary_union` to split lines at intersections, followed by `linemerge` to stitch
+       simple paths back together.
+    2. **Graph Construction**: A high-resolution graph is built from the cleaned geometry.
+       Each line is segmentized into small segments based on the `resolution_factor`, and
+       edges are added to the graph with weights corresponding to the Euclidean distance
+       between nodes.
+    3. **Point Generation**: A breadth-first search (BFS) is performed on the graph to
+       generate points. The BFS ensures that points are placed at least `spacing` distance
+       apart. When a point is placed, it becomes the "origin" for measuring distance to
+       subsequent points. If a candidate point is too close to any previously placed point
+       (not just the parent), it is skipped, but the BFS continues to explore neighbors to
+       find valid locations further along the network.
+    4. **Global State Management**: The function maintains a global list of placed points to
+       enforce the spacing constraint across the entire network, even between disconnected
+       components.
 
     Parameters
     ----------
@@ -1110,6 +1124,9 @@ def points_along_line(multiline: LineString | MultiLineString, spacing: float, r
     import_optional_dependency("networkx")
     import networkx as nx
     from shapely import line_merge, segmentize, union_all
+
+    if resolution_factor is None:
+        resolution_factor = 0.1
 
     # --- Topology Fixing ---
     # unary_union splits lines at intersections, creating nodes where lines cross.

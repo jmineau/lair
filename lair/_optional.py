@@ -27,4 +27,4 @@ def import_optional_dependency(name: str):
     try:
         return importlib.import_module(name)
     except ImportError:
-        raise ImportError(f"Optional dependency '{name}' not found.")
+        raise ImportError(f"Optional `lair` dependency '{name}' not found.")
