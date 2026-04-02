@@ -24,5 +24,7 @@ def import_optional_dependency(name: str):
     ImportError
         When the module is not found.
     """
-    return importlib.import_module(name)
-
+    try:
+        return importlib.import_module(name)
+    except ImportError:
+        raise ImportError(f"Optional dependency '{name}' not found.")

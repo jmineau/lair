@@ -13,20 +13,14 @@ keywords = ["land-air interactions", "research", "pollution", "atmospheric scien
 version = "2026.05.9"
 requires-python = ">=3.10"
 dependencies = [
-  "cartopy",
   "cf_xarray",
   "dask",
-  "geopandas",
   "matplotlib",
   "netcdf4",
   "numpy",
   "pandas",
   "pint",
   "pint-xarray",
-  "pyproj",
-  "rasterio",
-  "rioxarray",
-  "shapely",
   "typing-extensions",  # needed to import Self before 3.11
   "xarray",
 ]
@@ -56,6 +50,16 @@ formats = [
   "lxml",  # speeds up fastkml
 ]
 
+# Geographic data processing
+geo = [
+  "cartopy",
+  "networkx",
+  "pyproj",
+  "rasterio",
+  "rioxarray",
+  "shapely",
+]
+
 # Scientific computing (chemistry, CCG filter)
 science = [
   "molmass",
@@ -71,6 +75,7 @@ regridding = [
 complete = [
   "lair[requests]",
   "lair[formats]",
+  "lair[geo]",
   "lair[science]",
   "lair[regridding]",
 ]

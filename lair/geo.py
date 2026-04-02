@@ -5,24 +5,30 @@ Geo-spatial utilities.
 import copy
 from typing import Any, Literal, Sequence
 
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-import pyproj
-import rasterio
-import rasterio.crs
-import rioxarray as rxr
-from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
-                                LongitudeFormatter, LongitudeLocator)
 from numpy.typing import ArrayLike
-from shapely import Polygon
 from typing import Iterable, Optional
 from typing_extensions import \
     Self  # requires python 3.11 to import from typing
 from xarray import DataArray, Dataset
 
 from lair._optional import import_optional_dependency
+
+cartopy = import_optional_dependency("cartopy")
+pyproj = import_optional_dependency("pyproj")
+rasterio = import_optional_dependency("rasterio")
+rioxarray = import_optional_dependency("rioxarray")
+shapely = import_optional_dependency("shapely")
+
+import cartopy.crs as ccrs  # noqa: E402
+import rasterio.crs  # noqa: E402
+import rioxarray as rxr  # noqa: E402 F401
+from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,  # noqa: E402
+                                LongitudeFormatter, LongitudeLocator)
+from shapely import LineString, Point, Polygon, MultiLineString  # noqa: E402
+
 
 
 # ----- BOUNDS ----- #
@@ -1074,3 +1080,150 @@ def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
     d = R * c
     return d
+
+
+def points_along_line(multiline: LineString | MultiLineString, spacing: float, resolution_factor: float = 0.1) -> list[Point]:
+    """
+    Generates Euclidean spaced points covering a single Line or a MultiLineString network.
+
+    The algorithm works as follows:
+    1. **Topology Fixing**: The input MultiLineString is processed to ensure that all intersections are properly represented as nodes in the graph. This is done using `unary_union` to split lines at intersections, followed by `linemerge` to stitch simple paths back together.
+    2. **Graph Construction**: A high-resolution graph is built from the cleaned geometry. Each line is segmentized into small segments based on the `resolution_factor`, and edges are added to the graph with weights corresponding to the Euclidean distance between nodes.
+    3. **Point Generation**: A breadth-first search (BFS) is performed on the graph to generate points. The BFS ensures that points are placed at least `spacing` distance apart. When a point is placed, it becomes the "origin" for measuring distance to subsequent points. If a candidate point is too close to any previously placed point (not just the parent), it is skipped, but the BFS continues to explore neighbors to find valid locations further along the network.
+    4. **Global State Management**: The function maintains a global list of placed points to enforce the spacing constraint across the entire network, even between disconnected components.
+
+    Parameters
+    ----------
+    multiline : shapely.geometry.MultiLineString
+        The input MultiLineString geometry representing the network.
+    spacing : float
+        The minimum Euclidean distance between generated points.
+    resolution_factor : float, optional
+        A factor to control the density of the underlying graph.
+        Smaller values create a denser graph, which can better capture curves but may be slower to process. Default is 0.1.
+
+    Returns
+    -------
+    list[shapely.geometry.Point]
+        A list of Points generated along the MultiLineString network, spaced at least `spacing` distance apart.
+    """
+    import_optional_dependency("networkx")
+    import networkx as nx
+    from shapely import line_merge, segmentize, union_all
+
+    # --- Topology Fixing ---
+    # unary_union splits lines at intersections, creating nodes where lines cross.
+    # linemerge then stitches simple paths back together where possible.
+    cleaned_geom = line_merge(union_all(multiline))
+    
+    if hasattr(cleaned_geom, 'geoms'):
+        lines = list(cleaned_geom.geoms)
+    else:
+        lines = [cleaned_geom]
+        
+    # --- Build High-Res Graph ---
+    G = nx.Graph()
+    step_size = spacing * resolution_factor
+    
+    # We round coordinates to 5 decimal places to "snap" microscopic gaps
+    def round_coord(c):
+        return (round(c[0], 5), round(c[1], 5))
+
+    for line in lines:
+        # Segmentize to ensure we can measure distance around curves
+        dense_line = segmentize(line, step_size)
+        coords = list(dense_line.coords)
+        
+        for i in range(len(coords) - 1):
+            u = round_coord(coords[i])
+            v = round_coord(coords[i+1])
+            
+            # Add edge with Euclidean weight
+            dist = np.sqrt((u[0]-v[0])**2 + (u[1]-v[1])**2)
+            G.add_edge(u, v, weight=dist)
+
+    # --- Global State ---
+    final_points = []
+    # We maintain a simple list of accepted coordinates for checking distances
+    placed_coords = [] 
+
+    # --- Process Every Component ---
+    # This loop ensures we jump to the top line even if it's disconnected
+    for component_nodes in nx.connected_components(G):
+        subgraph = G.subgraph(component_nodes)
+        
+        # Pick a start node for this component (preferably an endpoint)
+        degrees = dict(subgraph.degree())
+        start_node = next((n for n, d in degrees.items() if d == 1), list(subgraph.nodes)[0])
+        
+        # Check if we should place a point at the start_node (might be too close to a different component)
+        start_ok = True
+        for p in placed_coords:
+            d_check = np.sqrt((start_node[0]-p[0])**2 + (start_node[1]-p[1])**2)
+            if d_check < spacing:
+                start_ok = False
+                break
+        
+        queue = []
+        visited_state = set()
+        
+        if start_ok:
+            final_points.append(Point(start_node))
+            placed_coords.append(start_node)
+            # (current_node, index_of_last_valid_point_in_placed_coords)
+            queue.append((start_node, len(placed_coords) - 1))
+        else:
+            # If start is blocked, treat it as if we are searching for the first point
+            # We use -1 to indicate "no parent yet"
+            queue.append((start_node, -1))
+
+        # BFS Walker
+        while queue:
+            current_node, origin_idx = queue.pop(0)
+            
+            # State tracking: (Node, Which Point is the Parent)
+            state = (current_node, origin_idx)
+            if state in visited_state:
+                continue
+            visited_state.add(state)
+            
+            # Determine reference point
+            if origin_idx == -1:
+                # We haven't placed a point on this component yet
+                dist = 0 # Arbitrary, effectively we are just walking until we find a clear spot
+            else:
+                origin_coord = placed_coords[origin_idx]
+                dist = np.sqrt((current_node[0]-origin_coord[0])**2 + (current_node[1]-origin_coord[1])**2)
+
+            next_origin_idx = origin_idx
+
+            # Attempt to place point
+            if (origin_idx != -1 and dist >= spacing) or (origin_idx == -1):
+                
+                # HARD CONSTRAINT: Check against ALL global points
+                is_safe = True
+                for i, p in enumerate(placed_coords):
+                    # Don't check against our own parent (we know it's valid)
+                    if i == origin_idx: continue
+                    
+                    d_global = np.sqrt((current_node[0]-p[0])**2 + (current_node[1]-p[1])**2)
+                    if d_global < spacing:
+                        is_safe = False
+                        break
+                
+                if is_safe:
+                    # Place the point!
+                    final_points.append(Point(current_node))
+                    placed_coords.append(current_node)
+                    next_origin_idx = len(placed_coords) - 1
+                else:
+                    # Logic: If we are blocked by a neighbor, we KEEP WALKING
+                    # but we keep the OLD origin (we are still measuring from the previous valid point)
+                    pass
+
+            # Propagate
+            for neighbor in subgraph.neighbors(current_node):
+                if (neighbor, next_origin_idx) not in visited_state:
+                    queue.append((neighbor, next_origin_idx))
+
+    return final_points

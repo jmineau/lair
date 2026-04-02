@@ -4,7 +4,6 @@ HRRR winds at a point.
 Documentation: https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.html
 """
 
-import cartopy.crs as ccrs
 import dataclasses
 import datetime as dt
 import numpy as np
@@ -17,13 +16,14 @@ from lair._optional import import_optional_dependency
 
 # Optional dependencies
 boto3 = import_optional_dependency("boto3")
+cartopy = import_optional_dependency("cartopy")
 s3fs = import_optional_dependency("s3fs")
 zarr = import_optional_dependency("zarr")
 
-# Import submodules after main imports
-from botocore import UNSIGNED
-from botocore.config import Config
-import numcodecs as ncd
+from botocore import UNSIGNED  # noqa: E402
+import cartopy.crs as ccrs  # noqa: E402
+from botocore.config import Config  # noqa: E402
+import numcodecs as ncd  # noqa: E402
 
 
 #: HRRR Projection

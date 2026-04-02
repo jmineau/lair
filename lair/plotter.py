@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
-from cartopy.io.img_tiles import GoogleWTS
 from matplotlib.legend_handler import HandlerLineCollection
 
 

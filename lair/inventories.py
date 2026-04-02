@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pint
 import xarray as xr
-from shapely import Polygon
 from typing_extensions import \
     Self  # requires python 3.11 to import from typing
 from xarray import DataArray, Dataset
@@ -32,7 +31,9 @@ from lair._optional import import_optional_dependency
 
 # Optional dependency for chemistry calculations
 molmass = import_optional_dependency("molmass")
-from molmass import Formula
+shapely = import_optional_dependency("shapely")
+from molmass import Formula  # noqa: E402
+from shapely import Polygon  # noqa: E402
 
 xr.set_options(keep_attrs=True)
 
