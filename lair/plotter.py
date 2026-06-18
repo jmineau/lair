@@ -349,9 +349,9 @@ def polarPlot(data: pd.DataFrame, param: str='CH4', x: str='ws', wd: str='wd',
     plt.Axes
         Axis with the plot
     """
-    from lair.air.air import bin_polar, circularize_radial_data
+    from lair.air import bin_polar, circularize_radial_data
 
-    binned_data = bin_polar(data, wd, x, xbins)
+    binned_data = bin_polar(data, x=x, wd=wd, xbins=xbins)
 
     agg = binned_data[[param, 'radian_bin', 'x_bin']]\
         .groupby(['radian_bin', 'x_bin']).agg([statistic, 'count'])[param]\
@@ -398,18 +398,21 @@ def polarFreq(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30,
     plt.Axes
         Axis with the plot
     """
+    from lair.air import bin_polar, circularize_radial_data
 
-    binned_data = bin_polar(data, wd, x, xbins)
+    binned_data = bin_polar(data, x=x, wd=wd, xbins=xbins)
 
     binned_data['count'] = 1
     counts = binned_data[['count', 'radian_bin', 'x_bin']]\
         .groupby(['radian_bin', 'x_bin'])['count'].sum()\
         .unstack()
 
-    theta, r, c = circularize_contour_data(counts)
+    theta, r, c = circularize_radial_data(counts)
 
-    # Convert to percent and set 0 to nan
-    c = c / c.sum() * 100
+    # Convert to percent and set 0 to nan. Use nansum: empty (direction, speed)
+    # bins are NaN after the unstack, and a plain c.sum() over them is NaN,
+    # which would blank the whole plot.
+    c = c / np.nansum(c) * 100
     c[c == 0] = np.nan
 
     ax = create_polar_ax()
@@ -449,7 +452,7 @@ def windvectorPlot(data: pd.DataFrame, wd: str='WD', ws: str='WS',
     plt.Axes
         Axis with the plot
     """
-    from lair.air.air import wind_components
+    from lair.air import wind_components
     if ax is None:
         fig, ax = plt.subplots()
 
