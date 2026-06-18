@@ -477,7 +477,7 @@ def dt2decimalDate(datetime: dt.datetime) -> float:
     float
         The decimal date.
     """
-    this_year = dt.datetime(datetime.year, 1, 1)
+    this_year = dt.datetime(datetime.year, 1, 1, tzinfo=getattr(datetime, 'tzinfo', None))
     total_seconds = (datetime - this_year).total_seconds()
     total_seconds_year = TimeRange(str(datetime.year)).total_seconds
     return datetime.year + (total_seconds / total_seconds_year)
