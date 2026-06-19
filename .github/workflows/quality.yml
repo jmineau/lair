@@ -1,0 +1,39 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  LAIR_SKIP_CCG_DOWNLOAD: "1"
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        version: "0.10.4"
+        enable-cache: true
+        python-version: '3.10'
+
+    - name: Sync dependencies (lean dev group)
+      run: uv sync --frozen
+
+    # Enforced gate.
+    - name: Lint with ruff
+      run: uv run --no-sync ruff check --output-format=github lair tests
+
+    # ADVISORY while lair is being annotated: surfaces type errors without
+    # failing the build. Flip to a hard gate (drop continue-on-error) once
+    # pyrefly passes cleanly. See [tool.pyrefly] in pyproject.toml.
+    - name: Type check with pyrefly (advisory)
+      if: ${{ !cancelled() }}
+      continue-on-error: true
+      run: uv run --no-sync pyrefly check

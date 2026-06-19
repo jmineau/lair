@@ -7,3 +7,15 @@ docs/source/savefig/
 docs/source/api
 
 lair/_ccg_filter.py
+
+# Environments
+.venv/
+
+# Test / lint / type caches and reports
+.pytest_cache/
+.ruff_cache/
+.pyrefly_cache/
+.coverage
+coverage.xml
+junit.xml
+htmlcov/

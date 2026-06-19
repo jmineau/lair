@@ -84,8 +84,116 @@ complete = [
 Repository = "https://github.com/jmineau/lair.git"
 Issues = "https://github.com/jmineau/lair/issues"
 
+[dependency-groups]
+# Lean tooling-only group so `uv sync` is fast and reliable on any Python.
+# It does NOT install the optional-dependency extras (geo/formats/regridding
+# need conda-built ESMF / heavy binary wheels) — tests for those modules
+# `importorskip` and are skipped here. For full optional-dependency coverage,
+# use the conda `lair-dev` env (see env-dev.yml) and run `pytest` there.
+dev = [
+  "pre-commit>=3.0.0",
+  "pyrefly>=1.0.0",
+  "pytest>=7.0.0",
+  "pytest-cov>=4.0.0",
+  "ruff>=0.1.0",
+  "rust-just>=1.42.4",
+]
+
+[tool.uv]
+required-version = ">=0.10.4"
+
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ["lair*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: requires live network access to external services (NOAA GML/FTP, AWS S3, MesoWest, soundings)",
+    "slow: expensive runtime, bandwidth, or disk usage; excluded from default test runs",
+    "chpc: requires CHPC filesystem paths or group data; not runnable off-cluster",
+]
+
+[tool.coverage.run]
+source = ["lair"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "lair/_ccg_filter.py",  # vendored from NOAA GML, not authored here
+    "lair/_version.py",     # version-bump script run by pre-commit, not at runtime
+]
+
+[tool.coverage.report]
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc\\.)?abstractmethod",
+    ]
+
+[tool.pyrefly]
+# Lenient baseline: lair is a loosely-typed grab-bag. Type checking is currently
+# ADVISORY (non-blocking in CI) — run it with `just type-check`. Tighten over
+# time (drop the excludes, then raise to `preset = "strict"`) as modules get
+# annotated, and flip the CI step to a hard gate once it's clean.
+project-includes = ["lair"]
+project-excludes = [
+    "lair/_ccg_filter.py",  # vendored from NOAA GML
+    "lair/noaa.py",         # WIP
+    "**/__pycache__",
+]
+
+[tool.ruff]
+target-version = "py310"
+# WIP / generated / non-runtime modules are not linted. Remove from this list
+# as each is finished or fixed (see per-file-ignores for the legacy baseline).
+extend-exclude = [
+    "lair/noaa.py",        # WIP
+    "lair/_ccg_filter.py", # vendored from NOAA GML
+    "lair/_version.py",    # version-bump script, run by pre-commit
+]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+# Conservative baseline to avoid churn on existing code (see AGENTS.md).
+# Start with the high-signal pyflakes/pycodestyle-error rules; broaden
+# (UP, B, SIM, I, ...) as modules get cleaned up.
+select = [
+    "E",  # pycodestyle errors
+    "F",  # Pyflakes
+]
+ignore = [
+    "E501",  # line too long, handled by formatter
+    "E741",  # ambiguous variable names (l, I, O) — common in science code
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["lair"]
+
+[tool.ruff.lint.per-file-ignores]
+# --- Legacy baseline -------------------------------------------------------
+# Pre-existing violations recorded here so the lint gate is green today without
+# reformatting existing code (the package is alpha; see AGENTS.md). Chip away at
+# these by fixing the code and removing the entry — DO NOT add new ones.
+"lair/__init__.py" = ["F401"]      # cf_xarray.units / pint_xarray / config: side-effect & re-export imports
+"lair/background.py" = ["F401", "E713"]
+"lair/geo.py" = ["F811", "F821", "E701"]
+"lair/inventories.py" = ["E713"]
+"lair/meteorology.py" = ["F401"]   # constants.Na re-exported for convenience
+"lair/plotter.py" = ["F841"]
+"lair/records.py" = ["F821"]       # forward ref to optional `KML` type
+"lair/soundings.py" = ["E402"]     # import after optional-dependency check (intentional)

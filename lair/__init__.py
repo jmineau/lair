@@ -41,6 +41,10 @@ def setup_ccg_filter():
     """
     Setup the CCG filter module from NOAA GML.
     Downloads the necessary files from the FTP server and unzip them if not already present.
+
+    Set the environment variable ``LAIR_SKIP_CCG_DOWNLOAD`` to skip the network
+    download (e.g. for testing, CI, or read-only/offline environments). When
+    skipped and the file is absent, ``lair.background`` will not be importable.
     """
     # Define the path for the CCG filter file
     lair_dir = os.path.dirname(__file__)
@@ -48,6 +52,10 @@ def setup_ccg_filter():
 
     # Check if the CCG filter file already exists
     if not os.path.exists(ccg_filter_file):
+
+        if os.getenv('LAIR_SKIP_CCG_DOWNLOAD'):
+            # Offline/CI/read-only: skip the FTP download (see docstring)
+            return
 
         remote_zf = 'user/thoning/ccgcrv/ccg_filter.zip'
         zf = os.path.join(lair_dir, 'ccg_filter.zip')

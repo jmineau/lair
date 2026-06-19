@@ -1,0 +1,44 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  # Never reach for the NOAA GML FTP download at import time in CI; the CCG
+  # filter is not vendored in the repo (see lair/__init__.py).
+  LAIR_SKIP_CCG_DOWNLOAD: "1"
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        version: "0.10.4"
+        enable-cache: true
+        python-version: ${{ matrix.python-version }}
+
+    - name: Sync dependencies (lean dev group)
+      run: uv sync --frozen
+
+    # The lean dev group does not install the optional extras, so modules behind
+    # geo/formats/regridding/requests/science skip (importorskip). The hermetic
+    # marker set excludes network, slow, and CHPC-only tests.
+    - name: Run hermetic tests with pytest
+      run: >-
+        uv run --no-sync pytest -v
+        -m "not network and not slow and not chpc"
+        --cov=lair --cov-report=xml --junitxml=junit.xml -o junit_family=legacy

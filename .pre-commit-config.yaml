@@ -1,0 +1,28 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.18
+    hooks:
+      # Lint (autofix). Scoped to lair + tests so unrelated files aren't touched.
+      - id: ruff-check
+        args: [--fix]
+        files: ^(lair|tests)/
+      # Format. NOTE: this will reformat existing code on first run — review the
+      # diff. Remove this hook if you want to defer formatting churn.
+      - id: ruff-format
+        files: ^(lair|tests)/
+
+  # pyrefly is intentionally NOT a pre-commit hook yet: type checking is
+  # advisory while lair is being annotated (run `just type-check`). Add it here
+  # once the codebase passes cleanly.
