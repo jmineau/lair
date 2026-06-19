@@ -8,6 +8,8 @@ from functools import cached_property
 from pathlib import Path
 import pandas as pd
 from typing import Literal, Union
+
+import numpy as np
 import xarray as xr
 
 from lair.config import GROUP_DIR
@@ -142,6 +144,105 @@ class CarbonTracker(metaclass=ABCMeta):
         ftp_download(host, paths, str(self.directory), prefix=path, pattern=pattern)
         return None
 
+    # --- sampling the concentration field at trajectory points ---------------
+
+    @property
+    def molefractions_dir(self) -> Path:
+        """Directory of the molefraction (concentration-field) files."""
+        return self.directory / 'molefractions'
+
+    @staticmethod
+    def _preprocess_molefractions(ds: xr.Dataset) -> xr.Dataset:
+        """Normalize a molefraction dataset on open. Overridden per specie."""
+        return ds
+
+    def _molefraction_file_for_date(self, date) -> Path | None:
+        """Molefraction file covering a UTC ``date`` (newest match), if present."""
+        date = pd.Timestamp(date).date()
+        month_dir = self.molefractions_dir / f'{date.year}' / f'{date.month:02d}'
+        matches = sorted(month_dir.glob(f'*molefrac*_{date}.nc'))
+        return matches[-1] if matches else None
+
+    @staticmethod
+    def _sample_field(points: pd.DataFrame, ds: xr.Dataset, variable: str) -> pd.DataFrame:
+        """Evaluate ``ds[variable]`` at each row's (time, lati, long, zagl).
+
+        Vertical placement uses the geopotential-height (``gph``) layer bounds:
+        the particle's height-above-ground is added to the surface gph and the
+        enclosing model level selected. Returns the input rows (index reset) with
+        ``ct_<variable>_ppb`` plus the CT cell/level actually used.
+        """
+        dim = 'points'
+        t = pd.DatetimeIndex(pd.to_datetime(points['time'], utc=True)).tz_convert(None).values
+        sel = ds.sel(
+            time=xr.DataArray(t, dims=dim),
+            latitude=xr.DataArray(points['lati'].to_numpy(), dims=dim),
+            longitude=xr.DataArray(points['long'].to_numpy(), dims=dim),
+            method='nearest',
+        )
+        zagl = xr.DataArray(points['zagl'].to_numpy(), dims=dim)
+        gph = sel['gph']
+        gph_lo = gph.isel(boundary=slice(None, -1)).rename({'boundary': 'level'}).assign_coords(level=ds['level'].values)
+        gph_hi = gph.isel(boundary=slice(1, None)).rename({'boundary': 'level'}).assign_coords(level=ds['level'].values)
+        z_asl = zagl + gph_lo.isel(level=0)
+        mask = (z_asl >= gph_lo) & (z_asl < gph_hi)
+        has_layer = mask.any(dim='level')
+        values = sel[variable].where(mask).max(dim='level', skipna=True).where(has_layer)
+        level_idx = mask.argmax(dim='level')
+        used_level = xr.DataArray(ds['level'].values, dims='level').isel(level=level_idx).where(has_layer)
+
+        out = points.reset_index(drop=True).copy()
+        out[f'ct_{variable}_ppb'] = values.load().to_numpy()
+        out['ct_time'] = pd.to_datetime(sel['time'].load().to_numpy())
+        out['ct_latitude'] = sel['latitude'].load().to_numpy()
+        out['ct_longitude'] = sel['longitude'].load().to_numpy()
+        out['ct_level'] = used_level.load().to_numpy()
+        return out
+
+    def sample(self, points: pd.DataFrame) -> pd.DataFrame:
+        """Sample the molefraction field at ``points``.
+
+        ``points`` is a DataFrame with columns ``time`` (UTC sample time),
+        ``lati``, ``long``, ``zagl``; any other columns (e.g. ``indx``,
+        ``run_time``) are carried through for downstream grouping. Returns one row
+        per input point with ``ct_<specie>_ppb`` and the CT cell/level used.
+        Points whose UTC date has no molefraction file are dropped.
+        """
+        points = points.reset_index(drop=True)
+        if points.empty:
+            return points
+        dates = pd.DatetimeIndex(pd.to_datetime(points['time'], utc=True)).normalize()
+        file_for = {d: self._molefraction_file_for_date(d) for d in dates.unique()}
+        keep = dates.map(lambda d: file_for[d] is not None).to_numpy()
+        points = points.loc[keep].reset_index(drop=True)
+        files = sorted({f for f in file_for.values() if f is not None})
+        if points.empty or not files:
+            return points
+        with xr.open_mfdataset(
+            files, preprocess=self._preprocess_molefractions,
+            data_vars='all', combine='by_coords',
+        ) as ds:
+            return self._sample_field(points, ds, self.specie)
+
+    def background(self, points: pd.DataFrame, by: str | None = None) -> pd.DataFrame:
+        """Background mole fraction [ppm]: mean of the sampled field over ``points``.
+
+        Samples the field at every point (e.g. trajectory endpoints) and averages
+        over them. With ``by`` (e.g. ``'run_time'``) the mean and 1-sigma spread
+        are returned per group; otherwise a single-row summary. Output is ppm
+        (CarbonTracker mole fractions are stored in ppb).
+        """
+        sampled = self.sample(points)
+        ppm = sampled[f'ct_{self.specie}_ppb'] / 1000.0
+        if by is None:
+            return pd.DataFrame({'background_ppm': [ppm.mean()],
+                                 'sigma_ppm': [ppm.std()],
+                                 'n_endpoints': [int(ppm.notna().sum())]})
+        grouped = ppm.groupby(sampled[by].to_numpy())
+        return pd.DataFrame({'background_ppm': grouped.mean(),
+                             'sigma_ppm': grouped.std(),
+                             'n_endpoints': grouped.count()})
+
 
 class CarbonTrackerCH4(CarbonTracker):
     """
@@ -159,19 +260,20 @@ class CarbonTrackerCH4(CarbonTracker):
     """
     specie = 'ch4'
 
-    def __init__(self, version='CT-CH4-2023', carbon_tracker_directory=None, cache=True,
+    def __init__(self, version='CT-CH4-2025', carbon_tracker_directory=None, cache=True,
                  parallel_parse=True):
         super().__init__(version, carbon_tracker_directory, cache)
         self.parallel_parse = parallel_parse
 
     @staticmethod
     def _preprocess_molefractions(ds):
-        time_components = ds['time_components'].values
-        time = [dt.datetime(*row) for row in time_components]
-
-        ds = ds.assign_coords(time=time)
-        ds = ds.drop_vars('time_components')
-
+        # CT-CH4-2025+ ships with a proper datetime64 time coordinate already;
+        # older versions (CT-CH4-2023) encode time in a `time_components` variable.
+        if not np.issubdtype(ds['time'].dtype, np.datetime64):
+            time_components = ds['time_components'].values
+            time = [dt.datetime(*row) for row in time_components]
+            ds = ds.assign_coords(time=time)
+        ds = ds.drop_vars('time_components', errors='ignore')
         return ds
 
     @cached_property
