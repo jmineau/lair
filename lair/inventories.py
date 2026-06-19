@@ -1116,7 +1116,7 @@ class GFEI(Inventory, metaclass=ABCMeta):
     def get_files(self) -> list[Path]:
         p = Path(self.path)
         return [f for f in p.glob('*.nc')
-                if not f.stem.split('_')[-1] in ['All', 'gsd', 'rsd']]
+                if f.stem.split('_')[-1] not in ['All', 'gsd', 'rsd']]
 
     def _strip_var_names(self, ds: Dataset, suffix: str=''):
         filename = ds.encoding['source']

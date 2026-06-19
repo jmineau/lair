@@ -8,7 +8,7 @@ from typing import Any
 
 from lair.config import verbose
 from lair._ccg_filter import ccgFilter  # make available to user
-from lair.clock import AFTERNOON, dt2decimalDate, decimalDate2dt
+from lair.clock import AFTERNOON, dt2decimalDate
 
 
 def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -> pd.Series | pd.DataFrame:
@@ -134,7 +134,7 @@ def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     xp = data.index.to_series().apply(dt2decimalDate).values
     yp = data.values
 
-    if not 'debug' in kwargs:
+    if 'debug' not in kwargs:
         # Set debug level using lair's verbose setting
         kwargs['debug'] = verbose
 

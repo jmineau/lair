@@ -259,7 +259,7 @@ def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt
     if ax is None:
         fig, ax = plt.subplots()
 
-    mean = agg['mean'].plot(ax=ax, style=colors, lw=4)
+    agg['mean'].plot(ax=ax, style=colors, lw=4)
     
     for season in agg.columns.levels[1]:
         ax.fill_between(agg.index, agg['mean', season] - agg['std', season],

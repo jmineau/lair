@@ -23,7 +23,7 @@ rioxarray = import_optional_dependency("rioxarray")
 shapely = import_optional_dependency("shapely")
 
 import cartopy.crs as ccrs  # noqa: E402
-import rasterio.crs  # noqa: E402
+import rasterio.crs  # noqa: E402 F811
 import rioxarray as rxr  # noqa: E402 F401
 from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,  # noqa: E402
                                 LongitudeFormatter, LongitudeLocator)
@@ -341,7 +341,7 @@ def add_latlon_ticks(ax: plt.Axes, extent: list[float], x_rotation: int=0, label
 
     return None
 
-def add_extent_map(fig: 'matplotlib.figure.Figure', main_extent: list[float], main_extent_crs: ccrs.CRS,
+def add_extent_map(fig: 'plt.Figure', main_extent: list[float], main_extent_crs: ccrs.CRS,
                    extent_map_rect: list[float], extent_map_extent: list[float], extent_map_crs: ccrs.CRS,
                    color: str, linewidth: int, zorder: int | None=None) -> plt.Axes:
     """
@@ -1221,7 +1221,8 @@ def points_along_line(multiline: LineString | MultiLineString, spacing: float,
                 is_safe = True
                 for i, p in enumerate(placed_coords):
                     # Don't check against our own parent (we know it's valid)
-                    if i == origin_idx: continue
+                    if i == origin_idx:
+                        continue
                     
                     d_global = np.sqrt((current_node[0]-p[0])**2 + (current_node[1]-p[1])**2)
                     if d_global < spacing:

@@ -12,7 +12,7 @@ Inspired by AOS 330 at UW-Madison with Grant Petty.
 
 import numpy as np
 
-from lair.constants import Rstar, Rd, kb, Na, cp, g, epsilon
+from lair.constants import Rstar, Rd, kb, cp, g, epsilon
 from lair import units
 
 
