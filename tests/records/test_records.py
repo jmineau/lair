@@ -62,3 +62,55 @@ class TestListFiles:
         found = records.list_files(tree, pattern="*.txt", recursive=True, full_names=True)
         base = {os.path.basename(f) for f in found}
         assert base == {"a.txt", "c.txt"}
+
+
+class TestCacher:
+    def test_caches_and_reuses_result(self, tmp_path):
+        calls = {"n": 0}
+
+        def square(x):
+            calls["n"] += 1
+            return x * x
+
+        cache_file = str(tmp_path / "cache.pkl")
+        cached = records.Cacher(square, cache_file)
+
+        assert cached(3) == 9
+        assert calls["n"] == 1
+        # Second call with the same args hits the cache (func not re-run).
+        assert cached(3) == 9
+        assert calls["n"] == 1
+        # Different args -> function runs again.
+        assert cached(4) == 16
+        assert calls["n"] == 2
+
+    def test_persists_across_instances(self, tmp_path):
+        calls = {"n": 0}
+
+        def square(x):
+            calls["n"] += 1
+            return x * x
+
+        cache_file = str(tmp_path / "cache.pkl")
+        records.Cacher(square, cache_file)(5)
+        assert calls["n"] == 1
+        # A fresh Cacher over the same file reloads the index and reuses results.
+        assert records.Cacher(square, cache_file)(5) == 25
+        assert calls["n"] == 1
+
+    def test_requires_pkl_extension(self, tmp_path):
+        with pytest.raises(AssertionError):
+            records.Cacher(lambda x: x, str(tmp_path / "cache.txt"))
+
+
+def test_read_kml(tmp_path):
+    # Requires the optional fastkml dependency (formats extra).
+    pytest.importorskip("fastkml")
+    kml_path = tmp_path / "t.kml"
+    kml_path.write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<kml xmlns="http://www.opengis.net/kml/2.2">'
+        "<Document><name>t</name></Document></kml>"
+    )
+    k = records.read_kml(str(kml_path))
+    assert k is not None

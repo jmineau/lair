@@ -80,6 +80,41 @@ class TestIdealGasLaw:
         with pytest.raises(ValueError):
             met.ideal_gas_law("entropy", p=1e5, T=300.0)
 
+    def test_mass_form(self):
+        # m = p V / (R T)
+        m = met.ideal_gas_law("mass", p=1e5, V=1.0, R=287.05, T=300.0)
+        assert _mag(m) == pytest.approx(1e5 / (287.05 * 300.0))
+
+    def test_moles_form(self):
+        # n = p V / (R* T)
+        from lair.constants import Rstar
+
+        n = met.ideal_gas_law("moles", p=1e5, V=1.0, T=300.0)
+        assert _mag(n) == pytest.approx(1e5 / (_mag(Rstar) * 300.0))
+
+    def test_number_form(self):
+        # N = p V / (kb T)
+        from lair.constants import kb
+
+        N = met.ideal_gas_law("number", p=1e5, V=1.0, T=300.0)
+        assert _mag(N) == pytest.approx(1e5 / (_mag(kb) * 300.0))
+
+    def test_volume_from_moles(self):
+        from lair.constants import Rstar
+
+        V = met.ideal_gas_law("volume", p=1e5, n=1.0, T=300.0)
+        assert _mag(V) == pytest.approx(_mag(Rstar) * 300.0 / 1e5)
+
+    def test_volume_from_mass(self):
+        V = met.ideal_gas_law("volume", p=1e5, m=1.0, R=287.05, T=300.0)
+        assert _mag(V) == pytest.approx(287.05 / 1e5)
+
+    def test_temperature_from_volume_and_moles(self):
+        from lair.constants import Rstar
+
+        T = met.ideal_gas_law("temperature", p=1e5, V=1.0, n=1.0)
+        assert _mag(T) == pytest.approx(1e5 / _mag(Rstar))
+
 
 class TestHypsometric:
     def test_thickness_positive_for_decreasing_pressure(self):

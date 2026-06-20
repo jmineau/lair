@@ -22,6 +22,11 @@ dependencies:
   - pint-xarray
   - pydata-sphinx-theme
   - pyproj
+  # test tooling — full-dependency coverage runs in this env
+  # (the lean uv dev group covers the hermetic CI subset)
+  - pytest
+  - pytest-cov
+  - ruff
   - rioxarray
   - s3fs
   - scipy

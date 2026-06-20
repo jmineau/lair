@@ -1,23 +1,98 @@
 """Tests for lair.plotter.
 
-Scaffold only — gives lair.plotter its own self-contained test directory (see
-tests/README.md). Use a non-interactive backend for any real plotting tests.
+Plotting functions are smoke-exercised on a headless (Agg) backend: they build
+a figure on synthetic data and we assert they return an Axes without error.
+NCL_cmap (network) and the HandlerDashedLines legend artist are not covered.
 """
 
 import matplotlib
 
 matplotlib.use("Agg")  # headless backend; no display required
 
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
 import pytest  # noqa: E402
 
 plotter = pytest.importorskip("lair.plotter")
 
 
-def test_importable():
-    """lair.plotter imports (guards against import-time regressions)."""
-    assert plotter is not None
+@pytest.fixture(autouse=True)
+def _close_figures():
+    yield
+    plt.close("all")
 
 
-# TODO: add behavior tests for lair.plotter, e.g.:
-#   - log formatter tick labels
-#   - custom legend handlers render without error
+@pytest.fixture
+def rng():
+    return np.random.default_rng(0)
+
+
+class TestColormapsAndFormatters:
+    def test_log10formatter(self):
+        assert plotter.log10formatter(2, None) == r"$10^{2}$"
+        assert plotter.log10formatter(2.5, None, deci=1) == r"$10^{2.5}$"
+
+    def test_truncate_colormap_from_name(self):
+        cmap = plotter.truncate_colormap("viridis", 0.2, 0.8)
+        assert isinstance(cmap, matplotlib.colors.LinearSegmentedColormap)
+
+    def test_truncate_colormap_from_object(self):
+        base = plt.get_cmap("plasma")
+        cmap = plotter.truncate_colormap(base, 0.1, 0.9)
+        assert isinstance(cmap, matplotlib.colors.LinearSegmentedColormap)
+
+    def test_terrain_cmap(self):
+        assert isinstance(plotter.terrain_cmap(), matplotlib.colors.LinearSegmentedColormap)
+
+
+class TestPolarHelpers:
+    def test_create_polar_ax(self):
+        ax = plotter.create_polar_ax()
+        assert ax.name == "polar"
+
+
+class TestPlots:
+    def test_diurnal_plot(self, rng):
+        df = pd.DataFrame(
+            {"CH4": rng.normal(2, 0.3, 240)},
+            index=pd.date_range("2024-01-01", periods=240, freq="h"),
+        )
+        # Pass freq explicitly: the function's default '1H' (uppercase) is
+        # rejected by pandas >= 3.0 (a latent deprecation in the source).
+        ax = plotter.diurnalPlot(df, "CH4", freq="1h")
+        assert ax.has_data()
+
+    def test_seasonal_plot(self, rng):
+        df = pd.DataFrame(
+            {"CH4": rng.normal(2, 0.2, 36)},
+            index=pd.date_range("2022-01-31", periods=36, freq="ME"),
+        )
+        ax = plotter.seasonalPlot(df, "CH4")
+        assert ax is not None
+
+    def test_polar_plot(self, rng):
+        df = pd.DataFrame(
+            {
+                "ws": rng.uniform(0, 10, 500),
+                "wd": rng.uniform(0, 360, 500),
+                "CH4": rng.normal(2, 0.3, 500),
+            }
+        )
+        ax = plotter.polarPlot(df, "CH4")
+        assert ax.name == "polar"
+
+    def test_polar_freq(self, rng):
+        df = pd.DataFrame(
+            {"ws": rng.uniform(0, 10, 500), "wd": rng.uniform(0, 360, 500)}
+        )
+        ax = plotter.polarFreq(df)
+        assert ax.name == "polar"
+
+    def test_windvector_plot(self, rng):
+        df = pd.DataFrame(
+            {"WD": rng.uniform(0, 360, 24), "WS": rng.uniform(0, 10, 24)},
+            index=pd.date_range("2024-01-01", periods=24, freq="h"),
+        )
+        ax = plotter.windvectorPlot(df)
+        assert ax.has_data()

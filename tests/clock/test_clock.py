@@ -150,3 +150,63 @@ class TestIntervalHelpers:
         # n periods -> n+1 edges.
         assert len(edges) == len(pi) + 1
         assert edges[0] == pd.Timestamp("2024-01-01")
+
+
+class TestConvertTimezonesPandas:
+    def test_dataframe_index_converted(self):
+        df = pd.DataFrame(
+            {"v": [1, 2]},
+            index=pd.to_datetime(["2024-01-01 18:00", "2024-01-01 19:00"]),
+        )
+        out = clock.convert_timezones(df, totz="MST", fromtz="UTC", driver="pandas")
+        assert list(out.index.hour) == [11, 12]  # UTC-7
+        assert str(out.index.tz) == "MST"
+
+    def test_series_of_datetimes_converted(self):
+        s = pd.Series(pd.to_datetime(["2024-01-01 18:00", "2024-01-01 19:00"]))
+        out = clock.convert_timezones(s, totz="MST", fromtz="UTC", driver="pandas")
+        assert list(out.dt.hour) == [11, 12]
+
+    def test_localize_drops_tz(self):
+        df = pd.DataFrame(
+            {"v": [1]}, index=pd.to_datetime(["2024-01-01 18:00"])
+        )
+        out = clock.convert_timezones(
+            df, totz="MST", fromtz="UTC", localize=True, driver="pandas"
+        )
+        assert out.index.tz is None
+
+    def test_invalid_driver_raises(self):
+        with pytest.raises(ValueError):
+            clock.convert_timezones([], totz="MST", driver="bogus")
+
+
+class TestAggregation:
+    def test_diurnal_collapses_to_hours(self):
+        df = pd.DataFrame(
+            {"v": range(48)}, index=pd.date_range("2024-01-01", periods=48, freq="h")
+        )
+        out = clock.diurnal(df, freq="1h")
+        assert len(out) == 24  # two days collapse onto 24 unique hours
+
+    def test_seasonal_indexes_by_season_and_year(self):
+        df = pd.DataFrame(
+            {"v": range(12)}, index=pd.date_range("2024-01-31", periods=12, freq="ME")
+        )
+        out = clock.seasonal(df)
+        assert "season" in out.index.names
+
+
+class TestTimerAccumulation:
+    def test_named_timer_accumulates(self):
+        clock.Timer(name="acc", logger=None).reset_timers()
+        with clock.Timer(name="acc", logger=None):
+            pass
+        assert "acc" in clock.Timer.timers
+        assert clock.Timer.timers["acc"] >= 0.0
+
+
+def test_datetime_accessor_passthrough_without_dt():
+    # A plain list has no `.dt` accessor -> returned unchanged.
+    obj = [1, 2, 3]
+    assert clock.datetime_accessor(obj) is obj

@@ -76,3 +76,31 @@ def test_bin_polar_adds_expected_columns():
         assert col in out.columns
     # Direction bins map onto the 16 compass sectors (N..NNW), no 'N2' leakage.
     assert "N2" not in set(out["wd_bin"].dropna().unique())
+
+
+def test_bin_polar_explicit_bin_edges():
+    df = pd.DataFrame({"ws": [1, 2, 3, 4], "wd": [10, 100, 190, 280]})
+    out = air.bin_polar(df, xbins=[0, 2, 4])
+    # Compass sectors for the four cardinal-ish directions.
+    assert out["wd_bin"].tolist() == ["N", "E", "S", "W"]
+    # Speeds binned to the right edge of each explicit interval.
+    assert out["x_bin"].tolist() == [2, 2, 4, 4]
+
+
+def test_bin_polar_invalid_xbins_raises():
+    df = pd.DataFrame({"ws": [1.0], "wd": [10.0]})
+    with pytest.raises(ValueError):
+        air.bin_polar(df, xbins="not-valid")
+
+
+def test_circularize_radial_data_wraps_around():
+    # 3 theta rows x 2 radius columns -> meshgrid gains a wraparound row.
+    agg = pd.DataFrame(
+        np.arange(6).reshape(3, 2), index=[0.0, 1.0, 2.0], columns=[10, 20]
+    )
+    theta, r, c = air.circularize_radial_data(agg)
+    assert theta.shape == (4, 2)
+    assert r.shape == (4, 2)
+    assert c.shape == (4, 2)
+    # The appended row closes the circle by repeating the first data row.
+    assert np.array_equal(c[-1], c[0])
