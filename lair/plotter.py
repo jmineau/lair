@@ -157,7 +157,7 @@ def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str]=['std', '
     """
     import datetime as dt
     import matplotlib.dates as mdates
-    from lair.utils.clock import diurnal
+    from lair.clock import diurnal
 
     # Check for count in stats
     if 'count' in stats:
