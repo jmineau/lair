@@ -287,6 +287,8 @@ class Inventory(BaseGrid):
         elif self.time_step == 'quarterly':
             t = time.to_index()  # days in each 3-month quarter starting at `time`
             seconds_per_step = ((t + pd.DateOffset(months=3)) - t).days.to_numpy() * 24 * 3600
+        elif self.time_step == 'biweekly':
+            seconds_per_step = np.full(time.size, 14 * 24 * 3600)
         elif self.time_step == 'daily':
             seconds_per_step = 24 * 3600
         elif self.time_step == 'hourly':
