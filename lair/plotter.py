@@ -9,6 +9,13 @@ import pandas as pd
 from matplotlib.legend_handler import HandlerLineCollection
 
 
+#: Season colors (ColorBrewer Dark2) used for all season-keyed plots.
+SEASON_COLORS = {'DJF': '#e7298a',
+                 'MAM': '#1b9e77',
+                 'JJA': '#d95f02',
+                 'SON': '#7570b3'}
+
+
 def log10formatter(x, pos, deci=0) -> str:
     """
     Format ticks to log 10 format with deci number of decimals.
@@ -246,10 +253,7 @@ def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt
         Axis with the plot
     """
     # TODO need to add a year or int x formatter
-    colors = {'DJF': '#e7298a', 
-              'MAM': '#1b9e77', 
-              'JJA': '#d95f02', 
-              'SON': '#7570b3'}
+    colors = SEASON_COLORS
     from lair.clock import seasonal
     
     # Calculate seasonal cycle
