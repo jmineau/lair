@@ -29,6 +29,8 @@ __all__ = [
     "transit_times",
     "profile",
     "along_route_distance",
+    "merge_route_points",
+    "pool_routes",
 ]
 
 
@@ -137,3 +139,48 @@ def along_route_distance(lon: np.ndarray, lat: np.ndarray) -> np.ndarray:
 
     seg = Geod(ellps="WGS84").line_lengths(np.asarray(lon), np.asarray(lat))
     return np.concatenate([[0.0], np.cumsum(seg)]) / 1000.0
+
+
+def merge_route_points(
+    routes_xy: list[np.ndarray], tol: float
+) -> tuple[np.ndarray, list[np.ndarray]]:
+    """Merge the fixed points of several routes into one network point set.
+
+    ``routes_xy`` are ``(n_i, 2)`` arrays of projected coordinates (metres). Points of the
+    first route are kept; a point of a later route is added only if it is farther than
+    ``tol`` from every point already in the set, otherwise it is snapped to the nearest
+    existing one. Returns ``(network_xy, index)`` where ``index[i][k]`` is the network
+    point of route ``i``'s point ``k``. Shared track thus maps to shared network points.
+    """
+    from scipy.spatial import cKDTree
+
+    network = np.asarray(routes_xy[0], dtype=float).copy()
+    index = [np.arange(len(network))]
+    for xy in routes_xy[1:]:
+        xy = np.asarray(xy, dtype=float)
+        d, near = cKDTree(network).query(xy)
+        new = d > tol
+        idx = near.copy()
+        idx[new] = len(network) + np.arange(new.sum())
+        network = np.vstack([network, xy[new]])
+        index.append(idx)
+    return network, index
+
+
+def pool_routes(
+    matrices: list[np.ndarray], index: list[np.ndarray], n_network: int
+) -> np.ndarray:
+    """Stack per-route ``[transit, point]`` matrices onto the network points.
+
+    Returns a ``[sum of transits, n_network]`` matrix, NaN where a route has no point
+    (or no data) at a network point. Where two route points of one route snap to the
+    same network point, the last one wins.
+    """
+    rows = sum(m.shape[0] for m in matrices)
+    out = np.full((rows, n_network), np.nan)
+    r0 = 0
+    for m, idx in zip(matrices, index, strict=True):
+        m = np.asarray(m, dtype=float)
+        out[r0 : r0 + m.shape[0], idx] = m
+        r0 += m.shape[0]
+    return out

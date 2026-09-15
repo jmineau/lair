@@ -64,3 +64,22 @@ def test_along_route_distance():
     pytest.importorskip("pyproj")
     d = transects.along_route_distance(np.array([-111.9, -111.9]), np.array([40.7, 40.709]))
     assert d[0] == 0.0 and d[1] == pytest.approx(1.0, abs=0.01)
+
+
+def test_merge_and_pool_routes():
+    pytest.importorskip("scipy")
+    # route A: 5 points on a line; route B shares A's points 2-3 (within 5 m) and adds 2 new ones
+    a = np.c_[np.arange(5) * 100.0, np.zeros(5)]
+    b = np.array([[201.0, 2.0], [303.0, -1.0], [400.0, 300.0], [400.0, 400.0]])
+    net, idx = transects.merge_route_points([a, b], tol=10.0)
+    assert len(net) == 7
+    assert list(idx[0]) == [0, 1, 2, 3, 4]
+    assert list(idx[1]) == [2, 3, 5, 6]
+    ma = np.arange(10, dtype=float).reshape(2, 5)          # 2 transits on A
+    mb = np.array([[1.0, 2.0, 3.0, 4.0]])                  # 1 transit on B
+    pooled = transects.pool_routes([ma, mb], idx, len(net))
+    assert pooled.shape == (3, 7)
+    assert pooled[0, 2] == 2.0 and pooled[2, 2] == 1.0 and pooled[2, 5] == 3.0
+    assert np.isnan(pooled[0, 5]) and np.isnan(pooled[2, 0])
+    # shared network point 2 now has three transits: two from A, one from B
+    assert np.isfinite(pooled[:, 2]).sum() == 3
