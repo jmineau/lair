@@ -24,6 +24,7 @@ import pandas as pd
 
 __all__ = [
     "enhancement",
+    "robust_z",
     "detection_frequency",
     "magnitude",
     "transit_times",
@@ -44,6 +45,28 @@ def enhancement(obs: np.ndarray, baseline_q: float = 5.0) -> np.ndarray:
     base = np.full((obs.shape[0], 1), np.nan)
     base[ok, 0] = np.nanpercentile(obs[ok], baseline_q, axis=1)
     return obs - base
+
+
+def robust_z(enh: np.ndarray, min_points: int = 20) -> np.ndarray:
+    """Per-transit robust z-score of the enhancement: ``(enh - median) / (1.4826 * MAD)``,
+    median and MAD taken along each transit's route points.
+
+    A point is then judged against the rest of *its own transit*, so a night with the whole
+    route elevated does not read as detections everywhere. Transits with fewer than
+    ``min_points`` finite points, or zero MAD, return NaN.
+    """
+    enh = np.asarray(enh, dtype=float)
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        med = np.nanmedian(enh, axis=1, keepdims=True)
+        mad = np.nanmedian(np.abs(enh - med), axis=1, keepdims=True) * 1.4826
+    n = np.isfinite(enh).sum(axis=1, keepdims=True)
+    ok = (n >= min_points) & (mad > 0)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        z = (enh - med) / mad
+    return np.where(ok, z, np.nan)
 
 
 def detection_frequency(

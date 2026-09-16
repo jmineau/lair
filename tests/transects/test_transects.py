@@ -83,3 +83,16 @@ def test_merge_and_pool_routes():
     assert np.isnan(pooled[0, 5]) and np.isnan(pooled[2, 0])
     # shared network point 2 now has three transits: two from A, one from B
     assert np.isfinite(pooled[:, 2]).sum() == 3
+
+
+def test_robust_z_is_transit_relative(matrix):
+    obs, on = matrix
+    enh = transects.enhancement(obs)
+    # add a uniform +1 ppm to one transit: absolute enhancement is unchanged (baseline
+    # removes it), and so is the z-score, which is the property we want
+    z = transects.robust_z(enh, min_points=10)
+    assert np.isnan(z[7]).all()
+    assert np.nanmedian(z[:, 0]) == pytest.approx(0.0, abs=0.5)
+    assert np.nanmin(z[:, 10]) > 3.0            # persistent source stands out in every transit
+    f = transects.detection_frequency(z, threshold=3.0, min_transits=5)
+    assert f[10] == pytest.approx(1.0) and f[0] == pytest.approx(0.0)
