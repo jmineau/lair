@@ -2,9 +2,20 @@ import os
 
 import cf_xarray.units  # must be imported before pint_xarray
 import pint
-from pint.delegates.formatter._compound_unit_helpers import sort_by_dimensionality
 import pint_xarray
 from pint_xarray import unit_registry as units
+
+# sort_by_dimensionality is private pint API and it moves between releases:
+# pint >= 0.26 keeps it in `sorting`, pint <= 0.25 in `_compound_unit_helpers`.
+try:
+    from pint.delegates.formatter.sorting import sort_by_dimensionality
+except ImportError:
+    try:
+        from pint.delegates.formatter._compound_unit_helpers import (
+            sort_by_dimensionality,
+        )
+    except ImportError:
+        sort_by_dimensionality = None
 
 from . import config
 from .records import ftp_download, unzip
@@ -20,8 +31,10 @@ mass_flux.add_transformation('[mass] / [area] / [time]',
                         lambda units, mass, mw: mass / mw)
 units.add_context(mass_flux)
 
-# Set default pint sorting function to sort by dimensionality
-units.formatter.default_sort_func = sort_by_dimensionality
+# Set default pint sorting function to sort by dimensionality.
+# Cosmetic only: if pint moves the helper again, keep pint's own order.
+if sort_by_dimensionality is not None:
+    units.formatter.default_sort_func = sort_by_dimensionality
 
 
 def setup_ccg_filter():
