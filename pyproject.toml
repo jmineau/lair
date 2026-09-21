@@ -43,13 +43,12 @@ requests = [
   "siphon",
 ]
 
-# Alternative data formats (Zarr, KML, HDF5)
+# Alternative data formats (Zarr, KML)
 formats = [
   "zarr",
   "numcodecs",
   "fastkml",
   "lxml",  # speeds up fastkml
-  "tables",  # HDF5 (MesoWest SODAR archive)
 ]
 
 # Geographic data processing
@@ -163,7 +162,7 @@ project-excludes = [
 replace-imports-with-any = [
     "boto3.*", "botocore.*", "cartopy.*", "fastkml.*", "molmass.*",
     "networkx.*", "numcodecs.*", "pyproj.*", "rasterio.*", "requests.*",
-    "rioxarray.*", "s3fs.*", "scipy.*", "shapely.*", "siphon.*", "tables.*",
+    "rioxarray.*", "s3fs.*", "scipy.*", "shapely.*", "siphon.*",
     "xesmf.*", "zarr.*",
 ]
 
