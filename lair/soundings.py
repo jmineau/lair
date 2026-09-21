@@ -241,19 +241,27 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
     ----------
     station : str
         The 4-letter station identifier.
-    start : datetime
-        The start date and time.
-    end : datetime
-        The end date and time.
+    start : datetime | str, optional
+        The start date and time (inclusive).
+    end : datetime | str, optional
+        The end date and time (inclusive).
     sounding_dir : str
         The directory containing the station's sounding files. Defaults to
         ``$LAIR_SOUNDING_DIR/<station>``.
+    months : list[int], optional
+        Only use (and download) soundings from these months.
+    driver : {'xarray', 'pandas'}, optional
+        Return interpolated profiles as an xarray Dataset (default), or the
+        merged raw soundings as a pandas DataFrame.
 
     Returns
     -------
-    pd.DataFrame
+    xr.Dataset | pd.DataFrame
         The sounding data.
     """
+    start = pd.Timestamp(start).to_pydatetime() if start is not None else None
+    end = pd.Timestamp(end).to_pydatetime() if end is not None else None
+
     if sounding_dir is None:
         sounding_dir = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)
 
@@ -281,6 +289,8 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
         if end:
             if date > end:
                 continue
+        if months and date.month not in months:
+            continue
 
         path = os.path.join(sounding_dir, file)
         try:

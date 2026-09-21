@@ -67,6 +67,19 @@ class TestGetSoundings:
                                      sounding_dir=str(tmp_path))
         assert ds.sizes["time"] == 3
 
+    def test_months_filter_applies_to_existing_files(self, tmp_path):
+        for t in ["2024-01-15 00:00", "2024-02-15 00:00", "2024-03-15 00:00"]:
+            _write_sounding(tmp_path, "SLC", pd.Timestamp(t))
+        ds = soundings.get_soundings("SLC", sounding_dir=str(tmp_path), months=[1, 3])
+        assert sorted(pd.DatetimeIndex(ds.time.values).month) == [1, 3]
+
+    def test_string_start_end(self, tmp_path):
+        for t in pd.date_range("2024-01-01 00:00", periods=3, freq="12h"):
+            _write_sounding(tmp_path, "SLC", t)
+        ds = soundings.get_soundings("SLC", start="2024-01-01 12:00", end="2024-01-02",
+                                     sounding_dir=str(tmp_path))
+        assert ds.sizes["time"] == 2
+
     def test_missing_dir_without_dates_raises(self, tmp_path):
         with pytest.raises(ValueError, match="start and end"):
             soundings.get_soundings("SLC", sounding_dir=str(tmp_path / "missing"))
