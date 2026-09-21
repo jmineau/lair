@@ -135,7 +135,8 @@ class CarbonTracker(metaclass=ABCMeta):
             The subdirectories to download data from, by default ['fluxes', 'molefractions'].
             If None, download the entire version data.
         pattern : str, optional
-            The pattern to match against the files, by default None
+            Only download matching files: a glob against the remote path if it
+            has wildcards (e.g. ``'*2015-06*'``), else a substring. By default None.
         """
         host = 'ftp.gml.noaa.gov'
         parent = '/products/carbontracker'

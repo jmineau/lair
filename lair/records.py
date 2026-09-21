@@ -2,6 +2,7 @@
 Utilities for working with files and directories.
 """
 
+import fnmatch
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
@@ -57,7 +58,6 @@ def list_files(path: str | Path = '.', pattern: str|None = None, ignore_case: bo
     List[str]
         A list of file names or full paths that match the specified pattern.
     """
-    import fnmatch
 
     result = []
     if recursive:
@@ -185,6 +185,13 @@ def wget_download(urls: str | list[str],
         list(executor.map(download_file, urls))
 
 
+def _path_matches(path: str, pattern: str) -> bool:
+    """Glob match on the full path if ``pattern`` has wildcards, else a substring match."""
+    if any(char in pattern for char in '*?['):
+        return fnmatch.fnmatch(path, pattern)
+    return pattern in path
+
+
 def ftp_download(host: str, paths: str | list[str], download_dir: str,
                  username: str='anonymous', password: str='',
                  prefix: str | None=None,
@@ -207,7 +214,10 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
     prefix : str, optional
         The common prefix to use for the local directory structure. Defaults to None.
     pattern : str, optional
-        The pattern to match against file names. Defaults to None.
+        Only download files whose remote path matches. With wildcards (``*``,
+        ``?``, ``[``) it is a glob against the full remote path (e.g.
+        ``'*2015-06*.nc'``); otherwise any path containing it matches.
+        Defaults to None (all files).
 
     Returns
     -------
@@ -243,7 +253,7 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
                     raise
                 # If it's not a directory, download the file
 
-                if pattern is not None and pattern not in path:
+                if pattern is not None and not _path_matches(path, pattern):
                     # Exit if pattern is not in path
                     vprint(f'Skipping {path} - pattern does not match')
                     return None

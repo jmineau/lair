@@ -152,3 +152,13 @@ class TestWgetDownload:
         monkeypatch.setattr(subprocess, "run", fake_run)
         with pytest.raises(subprocess.CalledProcessError):
             records.wget_download(["https://example.com/a.zip"], str(tmp_path))
+
+
+class TestPathMatches:
+    def test_plain_string_is_substring(self):
+        assert records._path_matches("/ct/2015/06/CT.molefrac_2015-06-01.nc", "2015-06")
+        assert not records._path_matches("/ct/2016/01/CT.molefrac_2016-01-01.nc", "2015")
+
+    def test_wildcards_glob_the_full_path(self):
+        assert records._path_matches("/ct/2015/06/CT.molefrac_2015-06-01.nc", "*2015-06*.nc")
+        assert not records._path_matches("/ct/2015/06/CT.molefrac_2015-06-01.nc", "*.txt")
