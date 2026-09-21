@@ -5,9 +5,10 @@ Geo-spatial utilities.
 from __future__ import annotations  # keep optional-dep annotations (e.g. shapely Polygon) lazy
 
 import copy
-from typing import Any, Literal, Sequence
+from typing import Any, Literal, Sequence, TypeVar, cast
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import numpy as np
 import numpy.typing as npt
 from numpy.typing import ArrayLike
@@ -18,6 +19,9 @@ from xarray import DataArray, Dataset
 
 from lair._optional import import_optional_dependency
 
+#: An xarray object; functions annotated with it return the type they're given
+_XarrayT = TypeVar('_XarrayT', bound=DataArray | Dataset)
+
 cartopy = import_optional_dependency("cartopy")
 pyproj = import_optional_dependency("pyproj")
 rasterio = import_optional_dependency("rasterio")
@@ -25,6 +29,7 @@ rioxarray = import_optional_dependency("rioxarray")
 shapely = import_optional_dependency("shapely")
 
 import cartopy.crs as ccrs  # noqa: E402
+from cartopy.mpl.geoaxes import GeoAxes  # noqa: E402
 import rasterio.crs  # noqa: E402 F811
 import rioxarray as rxr  # noqa: E402 F401
 from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,  # noqa: E402
@@ -223,11 +228,8 @@ def wrap_lons(
     #
     # TODO: support radians
     #
-    if not isinstance(longitudes, Iterable):
-        longitudes = [longitudes]
-
-    longitudes = np.asanyarray(longitudes)
-    result = ((longitudes.astype(np.float64) - base + period * 2) % period) + base
+    lons = np.asanyarray(longitudes if isinstance(longitudes, Iterable) else [longitudes])
+    result = ((lons.astype(np.float64) - base + period * 2) % period) + base
 
     return result
 
@@ -253,7 +255,7 @@ def add_lat_ticks(ax: plt.Axes, ylims: list[float], labelsize: int | None=None, 
     -------
     None
     """
-    fig = ax.figure
+    fig = cast(Figure, ax.figure)
     bins = (fig.get_size_inches()[1] * fig.dpi / 100).astype(int) + 1
 
     y_ticks = LatitudeLocator(nbins=bins + more_ticks, prune='both')\
@@ -290,7 +292,7 @@ def add_lon_ticks(ax: plt.Axes, xlims: list[float], rotation: int=0, labelsize: 
     -------
     None
     """
-    fig = ax.figure
+    fig = cast(Figure, ax.figure)
     bins = (fig.get_size_inches()[0] * fig.dpi / 100).astype(int) + 1
 
     x_ticks = LongitudeLocator(nbins=bins + more_ticks, prune='both')\
@@ -344,7 +346,8 @@ def add_latlon_ticks(ax: plt.Axes, extent: list[float], x_rotation: int=0, label
     return None
 
 def add_extent_map(fig: 'plt.Figure', main_extent: list[float], main_extent_crs: ccrs.CRS,
-                   extent_map_rect: list[float], extent_map_extent: list[float], extent_map_crs: ccrs.CRS,
+                   extent_map_rect: tuple[float, float, float, float], extent_map_extent: list[float],
+                   extent_map_crs: ccrs.CRS,
                    color: str, linewidth: int, zorder: int | None=None) -> plt.Axes:
     """
     Add an extent map to the figure.
@@ -359,7 +362,7 @@ def add_extent_map(fig: 'plt.Figure', main_extent: list[float], main_extent_crs:
         Extent of the main map
     main_extent_crs : ccrs.CRS
         CRS of the main extent
-    extent_map_rect : list[float]
+    extent_map_rect : tuple[left, bottom, width, height]
         Rectangle of the extent map
     extent_map_extent : list[float]
         Extent of the extent map
@@ -380,8 +383,8 @@ def add_extent_map(fig: 'plt.Figure', main_extent: list[float], main_extent_crs:
     import cartopy.feature as cfeature
     from shapely.geometry import box
 
-    extent_map_ax = fig.add_axes(extent_map_rect,
-                                 projection=extent_map_crs, zorder=zorder)
+    extent_map_ax: GeoAxes = fig.add_axes(extent_map_rect,
+                                          projection=extent_map_crs, zorder=zorder)
     extent_map_ax.set_extent(extent_map_extent)
 
     extent_map_ax.add_feature(cfeature.LAND)
@@ -730,6 +733,7 @@ def plot_grid(grid: DataArray | Dataset,
 
     if ax is None:
         fig, ax = plt.subplots(subplot_kw={'projection': crs})
+    ax = cast(GeoAxes, ax)
 
     if extent is not None:
         ax.set_extent(extent, crs=crs)
@@ -792,7 +796,7 @@ def generate_regular_grid(xmin: float, xmax: float, dx: float,
 
 
 def regrid(data: DataArray | Dataset,
-           out_grid: Dataset,
+           out_grid: DataArray | Dataset,
            method: XESMF_Regrid_Methods = 'bilinear') -> DataArray | Dataset:
     """
     Regrid data to a new grid. Uses `xesmf` for regridding.
@@ -896,9 +900,9 @@ def resample(data: DataArray | Dataset,
     return regrid(data, out_grid=out_grid, method=regrid_method)
 
 
-def round_latlon(data: DataArray | Dataset,
+def round_latlon(data: _XarrayT,
                  lat_deci: int, lon_deci: int,
-                 lat_dim: str = 'lat', lon_dim: str = 'lon') -> Dataset:
+                 lat_dim: str = 'lat', lon_dim: str = 'lon') -> _XarrayT:
     """
     Round latitude and longitude values to a specified number of decimal places.
 
@@ -926,7 +930,7 @@ def round_latlon(data: DataArray | Dataset,
     })
 
 
-def write_rio_crs(data: DataArray | Dataset, crs: Any) -> DataArray | Dataset:
+def write_rio_crs(data: _XarrayT, crs: Any) -> _XarrayT:
     """
     Write the CRS and coordinate system to the rioxarray accessor.
 

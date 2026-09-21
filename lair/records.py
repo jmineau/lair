@@ -110,7 +110,7 @@ def read_kml(path: str) -> "KML":
 
 
 def wget_download(urls: str | list[str],
-                  download_dir: str | None,
+                  download_dir: str,
                   prefix: str | None = None, num_threads: int = 1,
                   unzip: bool = True):
     """

@@ -32,10 +32,8 @@ jobs:
     - name: Lint with ruff
       run: uv run --no-sync ruff check --output-format=github lair tests
 
-    # ADVISORY while lair is being annotated: surfaces type errors without
-    # failing the build. Flip to a hard gate (drop continue-on-error) once
-    # pyrefly passes cleanly. See [tool.pyrefly] in pyproject.toml.
-    - name: Type check with pyrefly (advisory)
+    # Enforced gate: pyrefly passes cleanly (suppressions are inline, with a
+    # reason). See [tool.pyrefly] in pyproject.toml.
+    - name: Type check with pyrefly
       if: ${{ !cancelled() }}
-      continue-on-error: true
       run: uv run --no-sync pyrefly check

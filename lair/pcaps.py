@@ -96,12 +96,8 @@ def determine_pcap_events(vhd: pd.Series, threshold: float, min_periods: int = 3
     pcap_vhd['event_id'] = groups.loc[pcap_vhd.index].values
     
     # Group by event_id and determine the start and end time of each event
-    pcap_events = (
-        pcap_vhd.index.to_series()
-        .groupby(pcap_vhd['event_id'].to_numpy())
-        .agg(start='min', end='max')
-        .reset_index(drop=True)
-    )
+    times = pcap_vhd.index.to_series().groupby(pcap_vhd['event_id'].to_numpy())
+    pcap_events = pd.DataFrame({'start': times.min(), 'end': times.max()}).reset_index(drop=True)
     # inclusive of following 12 hours (VHD is 12-hourly)
     pcap_events['end'] += pd.Timedelta(hours=11, minutes=59, seconds=59)
     pcap_events.index.name = 'event_id'
@@ -114,14 +110,14 @@ def _naive_utc(t):
     return t.tz_convert('UTC').tz_localize(None) if t.tz is not None else t
 
 
-def build_pcap_mask(index: pd.DatetimeIndex, events: pd.DataFrame) -> pd.Series:
+def build_pcap_mask(index: pd.Index, events: pd.DataFrame) -> pd.Series:
     """
     Build a boolean mask for PCAP events.
 
     Parameters
     ----------
-    index : pd.DatetimeIndex
-        The index to build the mask for. Naive times are taken as UTC;
+    index : pd.Index
+        The datetime-like index to build the mask for. Naive times are taken as UTC;
         tz-aware times are converted.
     events : pd.DataFrame
         The DataFrame of PCAP events (naive UTC or tz-aware start/end).
@@ -174,4 +170,4 @@ def filter_pcap_events(data: pd.DataFrame, events: pd.DataFrame, level=None) -> 
     """
     index = data.index.get_level_values(level) if level is not None else data.index
     mask = build_pcap_mask(index, events)
-    return data[~mask.values].copy()
+    return data[~mask.to_numpy(dtype=bool)].copy()

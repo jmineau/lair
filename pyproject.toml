@@ -154,10 +154,10 @@ exclude_also = [
     ]
 
 [tool.pyrefly]
-# Lenient baseline: lair is a loosely-typed grab-bag. Type checking is currently
-# ADVISORY (non-blocking in CI) — run it with `just type-check`. Tighten over
-# time (drop the excludes, then raise to `preset = "strict"`) as modules get
-# annotated, and flip the CI step to a hard gate once it's clean.
+# Enforced gate (CI + pre-commit): `just type-check` must pass. Where the
+# library stubs are wrong or too narrow, suppress inline on that line with a
+# reason, e.g. `# pyrefly: ignore[no-matching-overload]`, rather than loosening
+# the config. Tighten over time (drop the WIP excludes, then `preset = "strict"`).
 project-includes = ["lair"]
 project-excludes = [
     "lair/_ccg_filter.py",  # vendored from NOAA GML
@@ -167,6 +167,9 @@ project-excludes = [
 # Optional extras (and their transitive helpers) are typed as Any so the result
 # is the same in the lean uv env (extras absent) and the conda lair-dev env
 # (extras installed). Core deps (numpy/pandas/xarray/matplotlib/pint) stay typed.
+# Subclasses pin class constants (e.g. `version: str = 'v8'`) over base-class
+# attributes typed more loosely (`str | None`); that's intended here.
+errors = { bad-override-mutable-attribute = false }
 replace-imports-with-any = [
     "boto3.*", "botocore.*", "cartopy.*", "fastkml.*", "molmass.*",
     "networkx.*", "numcodecs.*", "pyproj.*", "rasterio.*", "requests.*",

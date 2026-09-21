@@ -9,10 +9,10 @@ from pint_xarray import unit_registry as units
 # sort_by_dimensionality is private pint API and it moves between releases:
 # pint >= 0.26 keeps it in `sorting`, pint <= 0.25 in `_compound_unit_helpers`.
 try:
-    from pint.delegates.formatter.sorting import sort_by_dimensionality
+    from pint.delegates.formatter.sorting import sort_by_dimensionality  # pyrefly: ignore[missing-import]
 except ImportError:
     try:
-        from pint.delegates.formatter._compound_unit_helpers import (
+        from pint.delegates.formatter._compound_unit_helpers import (  # pyrefly: ignore[missing-import]
             sort_by_dimensionality,
         )
     except ImportError:
@@ -31,10 +31,10 @@ except PackageNotFoundError:  # running from a source tree that isn't installed
 mass_flux = pint.Context('mass_flux')
 mass_flux.add_transformation('[substance] / [area] / [time]',
                              '[mass] / [area] / [time]',
-                        lambda units, substance, mw: substance * mw)
+                        lambda units, substance, mw: substance * mw)  # pyrefly: ignore[bad-argument-type]
 mass_flux.add_transformation('[mass] / [area] / [time]',
                              '[substance] / [area] / [time]',
-                        lambda units, mass, mw: mass / mw)
+                        lambda units, mass, mw: mass / mw)  # pyrefly: ignore[bad-argument-type]
 units.add_context(mass_flux)
 
 # Set default pint sorting function to sort by dimensionality.

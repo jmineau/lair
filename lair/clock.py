@@ -152,7 +152,7 @@ class TimeRange:
 
     @property
     def total_seconds(self) -> float:
-        if not all([self.start, self.stop]):
+        if self.start is None or self.stop is None:
             raise ValueError("Both start and stop times must be specified")
         return (self.stop - self.start).total_seconds()
 
@@ -286,7 +286,9 @@ def datetime_accessor(obj, accessor='dt'):
     return obj
 
 
-def regular_times_to_intervals(times, time_step='monthly', closed='left') -> pd.IntervalIndex:
+def regular_times_to_intervals(times, time_step='monthly',
+                               closed: Literal['left', 'right', 'both', 'neither'] = 'left'
+                               ) -> pd.IntervalIndex:
     """
     Convert an array of regular times to intervals of the specified length.
 
@@ -392,18 +394,9 @@ def time_decay_matrix(times, decay: str | pd.Timedelta) -> np.ndarray:
     np.ndarray
         The matrix of time decay values.
     """
-    # Calculate the time differences
+    # Time differences (timedelta64) over the decay time scale -> exponential decay
     diffs = time_difference_matrix(times, absolute=True)
-
-    # Wrap in pandas DataFrame to use pd.Timedelta functionality
-    diffs = pd.DataFrame(diffs)
-
-    # Get decay as a pd.Timedelta
-    decay = pd.Timedelta(decay)
-
-    # Calculate the decay matrix using an exponential decay
-    decay_matrix = np.exp(-diffs / decay).values  # values gets the numpy array
-    return decay_matrix
+    return np.exp(-(diffs / pd.Timedelta(decay).to_timedelta64()))
 
 
 # ----- Time Aggregation ----- #
@@ -435,7 +428,7 @@ def diurnal(data: pd.DataFrame, freq: str='1h', statistic: str | list[str]='mean
     return agg
 
 
-def seasonal(data: pd.DataFrame, statistic: str='mean') -> pd.DataFrame:
+def seasonal(data: pd.DataFrame, statistic: str | list[str]='mean') -> pd.DataFrame:
     """
     Aggregate data by season and year.
 
@@ -452,11 +445,12 @@ def seasonal(data: pd.DataFrame, statistic: str='mean') -> pd.DataFrame:
         The aggregated data.
     """
     # Resample the data to the start of quarters and group by year
-    df = data.resample('QS-DEC').agg(statistic)
-    df['season'] = df.index.month.map(SEASONS)
+    df = data.resample('QS-DEC').agg(statistic)  # pyrefly: ignore[no-matching-overload]
+    index = pd.DatetimeIndex(df.index)
+    df['season'] = index.month.map(SEASONS)
 
     # doesnt actually take the mean, just regroups them into season:year
-    df = df.set_index(['season', df.index.year]) 
+    df = df.set_index(['season', index.year])
 
     return df
 

@@ -10,10 +10,17 @@ Inspired by AOS 330 at UW-Madison with Grant Petty.
     For now, we will assume all inputs are in SI units.
 """
 
+from typing import Any
+
 import numpy as np
 
 from lair.constants import Rstar, Rd, kb, cp, g, epsilon
 from lair import units
+
+
+#: Inputs/outputs: scalars, numpy arrays, xarray DataArrays or pint Quantities,
+#: in SI units
+Numeric = Any
 
 
 #: Standard Atmosphere
@@ -28,9 +35,9 @@ standard: dict[str, float] = {
 # Functions #
 #############
 
-def ideal_gas_law(solve_for, p=None, V=None, T=None, 
-                  m=None, n=None, N=None,
-                  rho=None, alpha=None, R=None):
+def ideal_gas_law(solve_for: str, p: Numeric = None, V: Numeric = None, T: Numeric = None,
+                  m: Numeric = None, n: Numeric = None, N: Numeric = None,
+                  rho: Numeric = None, alpha: Numeric = None, R: Numeric = None) -> Numeric:
     """
     Ideal gas law equation solver.
     Solver attempts to solve for the specified variable using the following
@@ -102,8 +109,8 @@ def ideal_gas_law(solve_for, p=None, V=None, T=None,
     return x
 
 
-def hypsometric(Tv=None, p1=None, p2=None,
-                Z1=None, Z2=None, deltaz=None):
+def hypsometric(Tv: Numeric = None, p1: Numeric = None, p2: Numeric = None,
+                Z1: Numeric = None, Z2: Numeric = None, deltaz: Numeric = None) -> Numeric:
     """
     Hyposometric equation solver.
 
@@ -144,7 +151,7 @@ def hypsometric(Tv=None, p1=None, p2=None,
     raise ValueError('Invalid input combination')
 
 
-def virt_T(T: float, q: float) -> float:
+def virt_T(T: Numeric, q: Numeric) -> Numeric:
     """
     Calculate the virtual temperature.
 
@@ -163,7 +170,7 @@ def virt_T(T: float, q: float) -> float:
     return T * (1 + 0.61 * q)
 
 
-def poisson(T: float, p: float, p0: float = 1e5) -> float:
+def poisson(T: Numeric, p: Numeric, p0: Numeric = 1e5) -> Numeric:
     """
     Calculate the potential temperature. (Poission's equation)
 
@@ -184,7 +191,7 @@ def poisson(T: float, p: float, p0: float = 1e5) -> float:
     return T * (p0/p)**(Rd/cp)
 
 
-def inv_poisson(p: float, theta: float, p0: float = 1e5) -> float:
+def inv_poisson(p: Numeric, theta: Numeric, p0: Numeric = 1e5) -> Numeric:
     """
     Calculate the temperature from potential temperature. (Inverse Poission's equation)
 
@@ -205,7 +212,7 @@ def inv_poisson(p: float, theta: float, p0: float = 1e5) -> float:
     return theta * (p/p0)**(Rd/cp)
 
 
-def sat_vapor_pres(T: float) -> float:
+def sat_vapor_pres(T: Numeric) -> Numeric:
     """
     Calculate the saturation vapor pressure.
 
@@ -222,7 +229,7 @@ def sat_vapor_pres(T: float) -> float:
     return 2.53e11 * np.exp(-5420/T)
 
 
-def sat_vapor_pres_ice(T: float) -> float:
+def sat_vapor_pres_ice(T: Numeric) -> Numeric:
     """
     Calculate the saturation vapor pressure over ice.
 
@@ -239,7 +246,7 @@ def sat_vapor_pres_ice(T: float) -> float:
     return 3.41e11 * np.exp(-6130/T)
 
 
-def mixing_ratio(e: float, p: float) -> float:
+def mixing_ratio(e: Numeric, p: Numeric) -> Numeric:
     """
     Calculate the mixing ratio.
 
@@ -258,7 +265,7 @@ def mixing_ratio(e: float, p: float) -> float:
     return epsilon * e / p
 
 
-def T_from_e(e: float) -> float: #Pa
+def T_from_e(e: Numeric) -> Numeric: #Pa
     """
     Calculate the temperature from vapor pressure.
 

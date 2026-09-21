@@ -2,11 +2,15 @@
 This module provides utility functions for plotting data.
 """
 
+from typing import Any, cast
+
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 from matplotlib.legend_handler import HandlerLineCollection
+from matplotlib.projections.polar import PolarAxes
 
 
 #: Season colors (ColorBrewer Dark2) used for all season-keyed plots.
@@ -202,8 +206,7 @@ def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str] | None=No
     if ax is None:
         fig, ax = plt.subplots()
 
-    legend_elements = {
-    }
+    legend_elements: dict[str, Any] = {}
 
     for stat in stats:
         if stat == 'std' and 'mean' in stats:
@@ -225,7 +228,8 @@ def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str] | None=No
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_major_formatter(formatter)
 
-    ax.set_xlim(mdates.date2num(agg.index[0])-0.03, mdates.date2num(agg.index[-1])+0.03)
+    ax.set_xlim(float(mdates.date2num(agg.index[0])) - 0.03,
+                float(mdates.date2num(agg.index[-1])) + 0.03)
 
     # Build legend
     if 'std' in stats and 'mean' in stats:
@@ -279,7 +283,7 @@ def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt
 
     agg['mean'].plot(ax=ax, style=colors, lw=4)
     
-    for season in agg.columns.levels[1]:
+    for season in cast(pd.MultiIndex, agg.columns).levels[1]:
         ax.fill_between(agg.index, agg['mean', season] - agg['std', season],
                         agg['mean', season] + agg['std', season],
                         color=colors[season], alpha=0.2, edgecolor='none')
@@ -290,7 +294,7 @@ def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt
     return ax
 
 
-def create_polar_ax() -> plt.Axes:
+def create_polar_ax() -> PolarAxes:
     """
     Create a polar axis with North at the top.
 
@@ -300,6 +304,7 @@ def create_polar_ax() -> plt.Axes:
         Polar axis.
     """
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    ax = cast(PolarAxes, ax)
     ax.set_theta_direction(-1)
     ax.set_theta_zero_location('N')
     plt.xticks([0, np.pi/2, np.pi, 3*np.pi/2], ['N', 'E', 'S', 'W'])
@@ -307,13 +312,13 @@ def create_polar_ax() -> plt.Axes:
     return ax
 
 
-def format_radial_axis(ax: plt.Axes, x: str, scale_angle: float | None) -> None:
+def format_radial_axis(ax: PolarAxes, x: str, scale_angle: float | None) -> None:
     """
     Format radial axis of polar plot.
 
     Parameters
     ----------
-    ax : plt.Axes
+    ax : PolarAxes
         Axis to format.
     x : str
         Label of the radial axis.
@@ -377,7 +382,7 @@ def polarPlot(data: pd.DataFrame, param: str='CH4', x: str='ws', wd: str='wd',
 
     # Filter by count in each bin
     bins_n = agg['count']
-    agg = agg[statistic].where(bins_n > min_bin)
+    agg = cast(pd.DataFrame, agg[statistic]).where(bins_n > min_bin)
 
     theta, r, c = circularize_radial_data(agg)
 
@@ -386,7 +391,8 @@ def polarPlot(data: pd.DataFrame, param: str='CH4', x: str='ws', wd: str='wd',
     p = ax.contourf(theta, r, c, cmap='YlOrRd')
     cb = plt.colorbar(p, pad=0.07,
                  label=f'{statistic.capitalize()} {param} [{units}]')
-    ax.colorbar = cb
+    # Keep the colorbar on the axes so callers can adjust it
+    ax.colorbar = cb  # pyrefly: ignore[missing-attribute]
 
     format_radial_axis(ax, x, scale_angle)
 
@@ -483,7 +489,7 @@ def windvectorPlot(data: pd.DataFrame, wd: str='WD', ws: str='WS',
 
     # Plot wind vectors
     ax.quiver(data.index, data[ws], u, v, **kwargs)
-    ax.get_figure().autofmt_xdate()
+    cast(Figure, ax.get_figure()).autofmt_xdate()
 
     return ax
 

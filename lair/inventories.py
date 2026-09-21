@@ -15,7 +15,7 @@ import os
 import re
 from abc import ABCMeta
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -52,6 +52,8 @@ DEFAULT_PINT_FMT = '~C'
 
 Regrid_Methods = Literal['conservative', 'conservative_normed']
 
+_XarrayT = TypeVar('_XarrayT', bound=DataArray | Dataset)
+
 
 #: Pollutants whose emissions are reported as the mass of another species
 _MASS_BASIS = {'NOX': 'NO2'}  # NOx is conventionally reported as NO2 mass
@@ -77,8 +79,7 @@ def molecular_weight(pollutant: str) -> pint.Quantity:
     return Formula(formula).mass * units('g/mol')
 
 
-def convert_units(data: DataArray | Dataset, pollutant: str, dst_units: Any,
-                  ) -> DataArray | Dataset:
+def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
     """
     Convert the units of a pint quantified data array or dataset.
 
@@ -183,44 +184,46 @@ class Inventory(BaseGrid):
         self.crs = CRS(crs)
         self.version: str | None = version
 
+        self.path: str | None
         if isinstance(data, str | Path):
             self.path = str(data)
 
             # Open dataset
-            data = self._open(self.get_files())
+            files = self.get_files()
+            if not files:
+                raise FileNotFoundError(f'No {type(self).__name__} files found under {self.path}')
+            ds = self._open(files)
 
             # Apply inventory-specific processing
-            data = self._process(data)
+            ds = self._process(ds)
         elif isinstance(data, Dataset):
             self.path = None
+            ds = data
             if src_units is None:
-                var = list(data.data_vars)[0]
-                src_units = data[var].attrs.get('units')
-                if src_units is None:
-                    raise ValueError('Units must be provided in the data attributes or as an argument')
+                var = list(ds.data_vars)[0]
+                src_units = ds[var].attrs.get('units')
         else:
             raise ValueError('Data must be a path to a file or an xarray Dataset')
+        if src_units is None:
+            raise ValueError('Units must be provided in the data attributes or as an argument')
 
         # Standardize units
         # - Requirements:
         #   - all variables are emissions
         #   - all in the same units
         self.src_units: str | pint.registry.Unit = src_units
-        quantified = self._quantify(data)
+        ds = self._quantify(ds)  # quantify using provided src_units
         if standardize_units:
-            data = convert_units(quantified, pollutant=self.pollutant, dst_units=DST_UNITS)
-        else:
-            # quantify using provided src_units
-            data = quantified
+            ds = convert_units(ds, pollutant=self.pollutant, dst_units=DST_UNITS)
 
         # Set the rioxarray CRS. Projected inventories (e.g. Vulcan) are on x/y
         # with 2D lat/lon coords; the rest are on 1D lat/lon.
-        x_dim, y_dim = ('lon', 'lat') if 'lon' in data.dims else ('x', 'y')
-        data = data.rio.set_spatial_dims(x_dim=x_dim, y_dim=y_dim)
-        data = write_rio_crs(data, self.crs)
+        x_dim, y_dim = ('lon', 'lat') if 'lon' in ds.dims else ('x', 'y')
+        ds = ds.rio.set_spatial_dims(x_dim=x_dim, y_dim=y_dim)
+        ds = write_rio_crs(ds, self.crs)
 
         # Store the data
-        self._data: Dataset = data
+        self._data: Dataset = ds
 
     def get_standard_name(self) -> str:
         """
@@ -249,6 +252,12 @@ class Inventory(BaseGrid):
             return [p]
         else :
             return list(p.glob('*.nc'))
+
+    def _file_root(self) -> Path:
+        """The inventory path, for subclasses that find their own files."""
+        if self.path is None:
+            raise ValueError(f'This {type(self).__name__} was built from a Dataset and has no files.')
+        return Path(self.path)
 
     def get_units(self, pint: bool = False) -> tuple[Any, Any, Any]:
         """
@@ -345,8 +354,9 @@ class Inventory(BaseGrid):
         """
         return self._data.to_dataarray(dim='sector', name='emissions').pint.dequantify(DEFAULT_PINT_FMT)
 
+    # A property here, a plain attribute on BaseGrid
     @property
-    def data(self) -> Dataset:
+    def data(self) -> Dataset:  # pyrefly: ignore[bad-override]
         """
         The inventory data.
 
@@ -417,6 +427,8 @@ class Inventory(BaseGrid):
         x_dim, y_dim = self.data.rio.x_dim, self.data.rio.y_dim
         return sum_sectors(self.absolute_emissions.sum([x_dim, y_dim]))
 
+    # Emission inventories only allow mass-conserving (conservative) regridding
+    # pyrefly: ignore[bad-override]
     def regrid(self, out_grid: Dataset,
                method: Regrid_Methods = 'conservative', inplace: bool = False) -> Self:
         """
@@ -451,6 +463,8 @@ class Inventory(BaseGrid):
         """
         return super().regrid(out_grid, method=method, inplace=inplace)
 
+    # Emission inventories only allow mass-conserving (conservative) regridding
+    # pyrefly: ignore[bad-override]
     def resample(self, resolution: float | tuple[float, float],
                  regrid_method: Regrid_Methods = 'conservative', inplace: bool = False) -> Self:
         """
@@ -471,6 +485,8 @@ class Inventory(BaseGrid):
         """
         return super().resample(resolution, regrid_method, inplace=inplace)
 
+    # Emission inventories only allow mass-conserving (conservative) regridding
+    # pyrefly: ignore[bad-override]
     def reproject(self, resolution: float | tuple[float, float],
                   regrid_method: Regrid_Methods = 'conservative', inplace: bool = False) -> Self:
         """
@@ -775,7 +791,7 @@ class EDGAR(Inventory, metaclass=ABCMeta):
         list[Path]
             The inventory files.
         """
-        return [f for f in Path(self.path).rglob('*.nc')
+        return [f for f in self._file_root().rglob('*.nc')
                 if 'TOTALS' not in f.stem]
 
     def get_sector_name(self, sector: str) -> str:
@@ -957,7 +973,7 @@ class EPA(Inventory, metaclass=ABCMeta):
         name_dict = {}
         for var in data.data_vars:
             attrs = data[var].attrs
-            if var.startswith(self._emissions_prefix):
+            if str(var).startswith(self._emissions_prefix):
                 ipcc_code, short_name = self._extract_ipcc_code_and_short_name(var, self._emissions_prefix)
                 attrs['IPCC_Code'] = ipcc_code
                 attrs['long_name'] = f'{short_name}_Emissions'
@@ -1077,7 +1093,7 @@ class EPAv2(EPA):
         files = list(Path(self.epa_dir, self.version, 'monthly_scale_factors'
                           ).glob('*.nc'))
         ds = xr.open_mfdataset(files)
-        ds = ds.rename_vars({var: '_'.join(var.split('_')[4:])
+        ds = ds.rename_vars({var: '_'.join(str(var).split('_')[4:])
                              for var in list(ds.data_vars)})
         return ds
 
@@ -1154,12 +1170,12 @@ class GFEI(Inventory, metaclass=ABCMeta):
         inventory_dir : str, optional
             Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
-        path = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'GFEI', self.version)
+        path = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'GFEI', str(self.version))
         super().__init__(path, self.pollutant,
                          src_units=self.src_units, version=self.version)
 
     def get_files(self) -> list[Path]:
-        p = Path(self.path)
+        p = self._file_root()
         return [f for f in p.glob('*.nc')
                 if f.stem.split('_')[-1] not in ['All', 'gsd', 'rsd']]
 
@@ -1245,7 +1261,7 @@ class GFEIv1(GFEI):
             ds = ds.expand_dims(time=[dt.datetime(int(ds.year), 1, 1)])
             return ds
 
-        p = Path(self.path)
+        p = self._file_root()
         files = [f for f in p.glob(f'*{short}.nc')
                  if 'All' not in f.stem]
         sd = xr.open_mfdataset(files, preprocess=preprocess)
@@ -1298,7 +1314,7 @@ class Vulcan(Inventory):
 
     version: str = 'v3'
     pollutant: str = 'CO2'
-    crs = '+proj=lcc +lat_1=33 +lat_2=45 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs'
+    native_crs = '+proj=lcc +lat_1=33 +lat_2=45 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs'
 
     _time_step_dict = {
         'annual': {
@@ -1342,11 +1358,11 @@ class Vulcan(Inventory):
             raise ValueError('Alaska region not supported - issues with 180th meridian')
         path = os.path.join(self.vulcan_dir, self.version, 'data/native', time_step)
         super().__init__(path, self.pollutant,
-                         src_units=src_units, time_step=time_step, crs=self.crs, version=self.version)
+                         src_units=src_units, time_step=time_step, crs=self.native_crs, version=self.version)
         self._is_clipped = False
 
     def get_files(self, uncertainty='central') -> list[Path]:
-        p = Path(self.path)
+        p = self._file_root()
         uncertainty = self._uncertainties[uncertainty]
         return [f for f in p.glob(self._glob_pattern.format(uncertainty))
                 if 'total' not in f.stem

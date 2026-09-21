@@ -23,6 +23,11 @@ repos:
       - id: ruff-format
         files: ^(lair|tests)/
 
-  # pyrefly is intentionally NOT a pre-commit hook yet: type checking is
-  # advisory while lair is being annotated (run `just type-check`). Add it here
-  # once the codebase passes cleanly.
+  - repo: local
+    hooks:
+      - id: pyrefly-check
+        name: Pyrefly (type checking)
+        entry: uv run pyrefly check
+        language: system
+        pass_filenames: false
+        types: [python]

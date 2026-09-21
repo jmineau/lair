@@ -27,7 +27,7 @@ def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -
     pd.Series | pd.DataFrame
         Subset of the data for the well-mixed hours.
     """
-    return data[data.index.hour.isin(hours)].resample('1D').mean()
+    return data[pd.DatetimeIndex(data.index).hour.isin(hours)].resample('1D').mean()
 
 
 def rolling_baseline(data: pd.Series, window: Any='24h', q: float=0.01,
@@ -95,7 +95,7 @@ def phase_shift_corrected_baseline(data: pd.Series, n: int = 3600, q: float = 0.
         n += 1
 
     b = []
-    for index, y in data.groupby(data.index.floor('D')):
+    for index, y in data.groupby(pd.DatetimeIndex(data.index).floor('D')):
         hz = y.asfreq('s')
         left = hz.rolling(n, min_periods=1).quantile(q)
         right = hz.iloc[::-1].rolling(n, min_periods=1).quantile(q).iloc[::-1]

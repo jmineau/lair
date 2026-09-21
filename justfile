@@ -80,9 +80,9 @@ format:
 	uv run ruff check --fix lair tests
 	uv run ruff format lair tests
 
-# Type-check with pyrefly (ADVISORY — lenient baseline, not yet a hard gate)
+# Type-check with pyrefly (enforced gate)
 type-check:
-	@echo "Type checking with pyrefly (advisory)..."
+	@echo "Type checking with pyrefly..."
 	uv run pyrefly check
 
 # Run the default test suite (excludes slow tests)
@@ -115,9 +115,9 @@ cov:
 	@echo "Running tests with coverage..."
 	uv run pytest -m "not network and not slow and not chpc" --cov=lair --cov-report=term-missing
 
-# Lint (gate) + type-check (advisory) + hermetic tests
+# Lint + type-check + hermetic tests
 quality-check:
 	@echo "Running quality checks..."
 	just lint
-	-just type-check
+	just type-check
 	just test-hermetic

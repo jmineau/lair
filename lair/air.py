@@ -50,7 +50,8 @@ def bin_polar(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30
 
     wd_bins = np.linspace(0, 360, 17) + 11.25
     wd_bins = np.insert(wd_bins, 0, -0.1)
-    data['wd_bin'] = pd.cut(data[wd], wd_bins, labels=directions.keys())
+    # pandas-stubs has no pd.cut overload for these argument types
+    data['wd_bin'] = pd.cut(data[wd], wd_bins, labels=directions.keys())  # pyrefly: ignore[no-matching-overload]
     data['wd_bin'] = data['wd_bin'].replace('N2', 'N')
 
     def direction_to_radians(direction):
@@ -69,7 +70,7 @@ def bin_polar(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30
         x_bins = xbins
     else:
         raise ValueError('Invalid xbins')
-    data['x_bin'] = pd.cut(data[x], x_bins, labels=x_bins[1:],
+    data['x_bin'] = pd.cut(data[x], x_bins, labels=x_bins[1:],  # pyrefly: ignore[no-matching-overload]
                            include_lowest=True)
 
     return data

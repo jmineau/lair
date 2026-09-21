@@ -276,7 +276,8 @@ def retrieve_object(s3, s3_url: str):
     return obj.get()['Body'].read()
 
 
-def generate_zarr_ids(times: list[dt.datetime], level_type: str, variables: list[Tuple[str, str]],
+def generate_zarr_ids(times: list[dt.datetime], level_type: Literal['sfc', 'prs'],
+                      variables: list[Tuple[str, str]],
                       model_type: Literal['anl', 'fcst']):
     '''
     Generate ZarrId instance for multiple times and variables

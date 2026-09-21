@@ -164,7 +164,7 @@ def vulcan_dir(tmp_path):
 
     x = np.arange(-1.5e6, -1.5e6 + 10_000, 1000.0)  # 10 x 1 km cells
     y = np.arange(4e5, 4e5 + 8_000, 1000.0)          # 8 x 1 km cells
-    to_ll = Transformer.from_crs(inventories.Vulcan.crs, "EPSG:4326", always_xy=True)
+    to_ll = Transformer.from_crs(inventories.Vulcan.native_crs, "EPSG:4326", always_xy=True)
     lon, lat = to_ll.transform(*np.meshgrid(x, y))
     time = pd.to_datetime(["2014-07-02T12:00", "2015-07-02T12:00"])
 
