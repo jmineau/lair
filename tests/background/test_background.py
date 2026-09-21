@@ -37,6 +37,16 @@ def test_get_well_mixed_multiple_days():
     assert len(background.get_well_mixed(df)) == 2
 
 
+def test_get_well_mixed_ignores_text_columns():
+    import pandas as pd
+
+    idx = pd.to_datetime(["2024-01-01 13:00", "2024-01-01 14:00"])
+    df = pd.DataFrame({"co2": [1.0, 3.0], "site": ["WBB", "WBB"]}, index=idx)
+    out = background.get_well_mixed(df)
+    assert list(out.columns) == ["co2"]
+    assert out["co2"].iloc[0] == 2.0
+
+
 class TestRollingBaseline:
     def test_shape_and_low_quantile(self):
         import numpy as np

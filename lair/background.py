@@ -25,9 +25,9 @@ def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -
     Returns
     -------
     pd.Series | pd.DataFrame
-        Subset of the data for the well-mixed hours.
+        Daily means over the well-mixed hours (non-numeric columns are dropped).
     """
-    return data[pd.DatetimeIndex(data.index).hour.isin(hours)].resample('1D').mean()
+    return data[pd.DatetimeIndex(data.index).hour.isin(hours)].resample('1D').mean(numeric_only=True)
 
 
 def rolling_baseline(data: pd.Series, window: Any='24h', q: float=0.01,
