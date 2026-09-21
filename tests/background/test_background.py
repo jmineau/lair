@@ -61,3 +61,35 @@ def test_phase_shift_corrected_baseline_returns_series():
     out = background.phase_shift_corrected_baseline(signal, n=60, q=0.1)
     assert isinstance(out, pd.Series)
     assert len(out) > 0
+
+
+class TestThoning:
+    @pytest.fixture
+    def co2(self):
+        import numpy as np
+        import pandas as pd
+
+        idx = pd.date_range("2020-01-01", periods=400, freq="D")
+        t = np.arange(400)
+        return pd.Series(400 + 0.005 * t + 3 * np.sin(2 * np.pi * t / 365.25),
+                         index=idx, name="co2")
+
+    def test_nan_rows_keep_original_index(self, co2):
+        co2.iloc[10] = float("nan")
+        out = background.thoning(co2, debug=False)
+        assert out.index.equals(co2.index)
+        assert out.notna().all()
+
+    def test_unsorted_input_matches_sorted(self, co2):
+        import pandas as pd
+
+        expected = background.thoning(co2, debug=False)
+        shuffled = background.thoning(co2.iloc[::-1], debug=False)
+        pd.testing.assert_series_equal(shuffled.sort_index(), expected)
+
+    def test_verbose_flag_read_at_call_time(self, co2, monkeypatch, capsys):
+        from lair import config
+
+        monkeypatch.setattr(config, "verbose", False)
+        background.thoning(co2)
+        assert capsys.readouterr().out == ""

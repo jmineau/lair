@@ -6,7 +6,7 @@ import datetime as dt
 import pandas as pd
 from typing import Any
 
-from lair.config import verbose
+from lair import config
 from lair._ccg_filter import ccgFilter  # make available to user
 from lair.clock import AFTERNOON, dt2decimalDate
 
@@ -27,7 +27,7 @@ def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -
     pd.Series | pd.DataFrame
         Subset of the data for the well-mixed hours.
     """
-    return data[data.index.hour.isin(hours)].resample('1d').mean()
+    return data[data.index.hour.isin(hours)].resample('1D').mean()
 
 
 def rolling_baseline(data: pd.Series, window: Any='24h', q: float=0.01,
@@ -95,7 +95,7 @@ def phase_shift_corrected_baseline(data: pd.Series, n: int = 3600, q: float = 0.
         n += 1
 
     b = []
-    for index, y in data.groupby(data.index.floor('d')):
+    for index, y in data.groupby(data.index.floor('D')):
         hz = y.asfreq('s')
         left = hz.rolling(n, min_periods=1).quantile(q)
         right = hz.iloc[::-1].rolling(n, min_periods=1).quantile(q).iloc[::-1]
@@ -135,14 +135,15 @@ def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     yp = data.values
 
     if 'debug' not in kwargs:
-        # Set debug level using lair's verbose setting
-        kwargs['debug'] = verbose
+        # Set debug level using lair's verbose setting (read at call time so
+        # `lair.config.verbose = False` takes effect)
+        kwargs['debug'] = config.verbose
 
     # Fit the Thoning curve
     return ccgFilter(xp, yp, **kwargs)
 
 def thoning(data: pd.Series,
-            smooth_time: list[dt.datetime] | None = None,
+            smooth_time: list[dt.datetime] | pd.Index | None = None,
             **kwargs
             )-> pd.Series:
     """
@@ -170,18 +171,17 @@ def thoning(data: pd.Series,
     """
     # Drop nans (filter does not handle them)
     orig_index = data.index.copy()  # however, we may want to return the original index
-    data = data.dropna()
+    data = data.dropna().sort_index()
 
     # Create a Thoning filter object
     filt = thoning_filter(data, **kwargs)
 
-    # Get the times to return the smoothed data
+    # Get the times to return the smoothed data. Evaluate the curve at the
+    # original times (including any NaN rows) rather than reusing filt.xp,
+    # which is NaN-free and sorted, so it would not line up with orig_index
     if smooth_time is None:
-        # Use the original time series
         smooth_time = orig_index
-        decimal_time = filt.xp
-    else:
-        decimal_time = [dt2decimalDate(t) for t in smooth_time]
+    decimal_time = [dt2decimalDate(t) for t in smooth_time]
 
     # Return the smoothed data
     smooth = filt.getSmoothValue(decimal_time)

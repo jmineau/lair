@@ -41,7 +41,9 @@ if not os.path.exists(CACHE_DIR):
 
 #: Pandas copy-on-write
 pandas_CoW = True
-pd.options.mode.copy_on_write = pandas_CoW
+if int(pd.__version__.split('.')[0]) < 3:
+    # Always on (and no longer settable) from pandas 3.0
+    pd.options.mode.copy_on_write = pandas_CoW
 
 
 ########
@@ -55,10 +57,11 @@ pd.options.mode.copy_on_write = pandas_CoW
 # Verbose Printer #
 ###################
 
-class _Printer:
-    global verbose
-    verbose = True  # FIXME
+#: Print progress messages (set ``lair.config.verbose = False`` to silence)
+verbose = True  # FIXME
 
+
+class _Printer:
     @staticmethod
     def vprint(*args, **kwargs):
         if verbose:
