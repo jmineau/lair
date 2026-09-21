@@ -140,6 +140,18 @@ class TestSampleField:
         assert "indx" in out.columns  # passthrough columns preserved
 
 
+class TestDownload:
+    def test_sub_dirs_none_downloads_whole_version(self, monkeypatch):
+        import lair.noaa as noaa
+
+        calls = []
+        monkeypatch.setattr(noaa, "ftp_download",
+                            lambda host, paths, *args, **kwargs: calls.append(paths))
+        ct = CarbonTrackerCH4(carbon_tracker_directory="/tmp/ct")
+        ct.download(sub_dirs=None)
+        assert calls == [[f"/products/carbontracker/{ct.specie}/{ct.version}"]]
+
+
 class TestSample:
     def test_empty_points(self):
         ct = CarbonTrackerCH4(carbon_tracker_directory="/tmp/ct")
@@ -158,6 +170,16 @@ class TestSample:
 
 class TestBackground:
     """background() averages the sampled field; output is ppm (field is ppb)."""
+
+    def test_no_molefraction_files_gives_nan(self, tmp_path):
+        ct = CarbonTrackerCH4(carbon_tracker_directory=tmp_path)
+        ct.molefractions_dir.mkdir(parents=True)
+        points = pd.DataFrame(
+            {"time": ["2020-01-01"], "lati": [40.0], "long": [-112.0], "zagl": [10.0]}
+        )
+        out = ct.background(points)
+        assert np.isnan(out["background_ppm"].iloc[0])
+        assert out["n_endpoints"].iloc[0] == 0
 
     class _FakeCT(CarbonTrackerCH4):
         def sample(self, points):

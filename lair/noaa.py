@@ -114,13 +114,12 @@ class CarbonTracker(metaclass=ABCMeta):
         specie = CarbonTracker.get_specie_from_version(version)
         if specie == 'co2':
             raise ValueError("CarbonTrackerCO2 not yet implemented")
-            return CarbonTrackerCO2(version, directory)
         elif specie == 'ch4':
             return CarbonTrackerCH4(version, carbon_tracker_directory)
         else:
             raise ValueError("Invalid specie")
 
-    def download(self, sub_dirs: list[str]=['fluxes', 'molefractions'], 
+    def download(self, sub_dirs: list[str] | None=('fluxes', 'molefractions'),
                  pattern: str=None):
         """
         Download CarbonTracker data from the NOAA GML FTP server.
@@ -138,7 +137,10 @@ class CarbonTracker(metaclass=ABCMeta):
 
         # Build list of remote paths to download
         path = f'{parent}/{self.specie}/{self.version}'
-        paths = [f'{path}/{sub_dir}' for sub_dir in sub_dirs]
+        if sub_dirs is None:
+            paths = [path]
+        else:
+            paths = [f'{path}/{sub_dir}' for sub_dir in sub_dirs]
 
         # Download the data
         ftp_download(host, paths, str(self.directory), prefix=path, pattern=pattern)
@@ -233,7 +235,12 @@ class CarbonTracker(metaclass=ABCMeta):
         (CarbonTracker mole fractions are stored in ppb).
         """
         sampled = self.sample(points)
-        ppm = sampled[f'ct_{self.specie}_ppb'] / 1000.0
+        col = f'ct_{self.specie}_ppb'
+        if col not in sampled:
+            # sample() returns no rows (and no ct_ columns) when no
+            # molefraction file covers the points
+            sampled[col] = pd.Series(dtype=float)
+        ppm = sampled[col] / 1000.0
         if by is None:
             return pd.DataFrame({'background_ppm': [ppm.mean()],
                                  'sigma_ppm': [ppm.std()],
