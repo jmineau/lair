@@ -97,13 +97,13 @@ def determine_pcap_events(vhd: pd.Series, threshold: float, min_periods: int = 3
     
     # Group by event_id and determine the start and end time of each event
     pcap_events = (
-    pcap_vhd.groupby('event_id')
-    .apply(lambda g: pd.Series({
-        'start': g.index.min(),
-        'end': g.index.max() + pd.Timedelta(hours=11, minutes=59, seconds=59)  # inclusive of following 12 hours
-    }))
-    .reset_index(drop=True)
-)
+        pcap_vhd.index.to_series()
+        .groupby(pcap_vhd['event_id'].to_numpy())
+        .agg(start='min', end='max')
+        .reset_index(drop=True)
+    )
+    # inclusive of following 12 hours (VHD is 12-hourly)
+    pcap_events['end'] += pd.Timedelta(hours=11, minutes=59, seconds=59)
     pcap_events.index.name = 'event_id'
 
     return pcap_events
@@ -147,7 +147,7 @@ def build_pcap_mask(index: pd.DatetimeIndex, events: pd.DataFrame) -> pd.Series:
 
 def filter_pcap_events(data: pd.DataFrame, events: pd.DataFrame, level=None) -> pd.DataFrame:
     """
-    Filter a DataFrame to only include rows within PCAP events.
+    Filter a DataFrame to exclude rows within PCAP events.
 
     Parameters
     ----------
@@ -161,7 +161,7 @@ def filter_pcap_events(data: pd.DataFrame, events: pd.DataFrame, level=None) -> 
     Returns
     -------
     pd.DataFrame
-        The filtered DataFrame.
+        The DataFrame without the rows that fall within PCAP events.
     """
     index = data.index.get_level_values(level) if level is not None else data.index
     mask = build_pcap_mask(index, events)

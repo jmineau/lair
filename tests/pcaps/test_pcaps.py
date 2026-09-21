@@ -35,6 +35,12 @@ class TestDeterminePcapEvents:
         events = pcaps.determine_pcap_events(vhd, threshold=5.0, min_periods=5)
         assert len(events) == 0
 
+    def test_no_events_keeps_start_end_columns(self, vhd):
+        # Callers index events['start'] / events['end'] even when there are none
+        events = pcaps.determine_pcap_events(vhd, threshold=100.0)
+        assert events.empty
+        assert list(events.columns) == ["start", "end"]
+
 
 class TestBuildPcapMask:
     def test_marks_in_event_timestamps(self, vhd):

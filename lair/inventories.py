@@ -290,9 +290,9 @@ class Inventory(BaseGrid):
         elif self.time_step == 'biweekly':
             seconds_per_step = np.full(time.size, 14 * 24 * 3600)
         elif self.time_step == 'daily':
-            seconds_per_step = 24 * 3600
+            seconds_per_step = np.full(time.size, 24 * 3600)
         elif self.time_step == 'hourly':
-            seconds_per_step = 3600
+            seconds_per_step = np.full(time.size, 3600)
         else:
             raise ValueError(f'Time step {self.time_step} not supported')
         if isinstance(seconds_per_step, xr.DataArray):

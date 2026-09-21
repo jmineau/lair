@@ -143,7 +143,8 @@ class Winds:
                                             self.nearest_point)
                                   for zarr_id in ids]
 
-        u_earth, v_earth = rotate_winds(var_data['UGRD'], var_data['VGRD'],
+        u_earth, v_earth = rotate_winds(np.asarray(var_data['UGRD'], dtype=float),
+                                        np.asarray(var_data['VGRD'], dtype=float),
                                         self.lon)
 
         angle = wind_direction(u_earth, v_earth)

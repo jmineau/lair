@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 from numpy.typing import ArrayLike
-from typing import Iterable, Optional
+from typing import Iterable
 from typing_extensions import \
     Self  # requires python 3.11 to import from typing
 from xarray import DataArray, Dataset
@@ -192,7 +192,7 @@ def dms2dd(d: float=0.0, m: float=0.0, s: float=0.0) -> float:
 
 
 def wrap_lons(
-    longitudes: npt.ArrayLike, base: float = -180.0, period: Optional[float] = 360.0
+    longitudes: npt.ArrayLike, base: float = -180.0, period: float = 360.0
 ) -> np.ndarray:
     """
     Transform the longitude values to be within the closed interval
@@ -870,8 +870,8 @@ def resample(data: DataArray | Dataset,
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
     
-    if isinstance(resolution, float):
-        resolution: tuple = (resolution, resolution)
+    if isinstance(resolution, (int, float)):
+        resolution = (resolution, resolution)
 
     # Calculate the new grid
     bounds = data.cf.add_bounds(['lat', 'lon'])

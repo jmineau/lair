@@ -119,6 +119,17 @@ class TestBaseInventory:
         assert integrated.sizes["time"] == 2
         assert bool((integrated.values > 0).all())
 
+    @pytest.mark.parametrize("time_step, seconds", [("daily", 86400), ("hourly", 3600)])
+    def test_absolute_emissions_sub_monthly(self, inventory, time_step, seconds):
+        inv = inventories.Inventory(
+            inventory.data.pint.dequantify(), pollutant="CH4",
+            src_units="kg/m**2/s", time_step=time_step,
+        )
+        absolute = inv.absolute_emissions
+        # 1 kg/m2/s over one gridcell (km2 -> m2) for one time step
+        expected = inv.gridcell_area.values * 1e6 * seconds
+        np.testing.assert_allclose(absolute["energy"].isel(time=0).values, expected)
+
     def test_missing_units_raises(self):
         import pandas as pd
 
