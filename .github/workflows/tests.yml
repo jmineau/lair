@@ -23,6 +23,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0  # setuptools-scm needs the tags for the version
 
     - name: Set up uv
       uses: astral-sh/setup-uv@v7

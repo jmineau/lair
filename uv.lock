@@ -1165,7 +1165,6 @@ wheels = [
 
 [[package]]
 name = "lair"
-version = "2026.12.1"
 source = { editable = "." }
 dependencies = [
     { name = "cf-xarray", version = "0.10.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },

@@ -5,10 +5,8 @@
 
 import datetime as dt
 import os
-import re
 import sys
 from importlib.metadata import PackageNotFoundError, version as package_version
-from pathlib import Path
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -25,14 +23,11 @@ author = 'James Mineau'
 
 
 def _detect_release() -> str:
+    # setuptools-scm writes the version into the installed package metadata
     try:
         return package_version('lair')
     except PackageNotFoundError:
-        pyproject = Path(__file__).resolve().parents[1] / 'pyproject.toml'
-        match = re.search(r'^version\s*=\s*"([^"]+)"',
-                          pyproject.read_text(encoding='utf-8'),
-                          flags=re.MULTILINE)
-        return match.group(1) if match else '0+unknown'
+        return '0+unknown'
 
 
 release = _detect_release()

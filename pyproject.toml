@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,7 +10,7 @@ authors = [
 ]
 readme = "README.md"
 keywords = ["land-air interactions", "research", "pollution", "atmospheric science"]
-version = "2026.12.3"
+dynamic = ["version"]  # from git tags via setuptools-scm (see [tool.setuptools_scm])
 requires-python = ">=3.10"
 dependencies = [
   "cf_xarray",
@@ -112,6 +112,12 @@ include-package-data = true
 [tool.setuptools.packages.find]
 include = ["lair*"]
 
+[tool.setuptools_scm]
+# CalVer releases are git tags vYYYY.MM.PATCH (MM = 05, 08 or 12), made with
+# `just release`. Between releases the version is the next patch as a dev
+# version, e.g. 2026.12.4.dev3+g1a2b3c4.
+fallback_version = "0.0.0"  # no git metadata at all (e.g. a bare source copy)
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
@@ -126,7 +132,6 @@ omit = [
     "*/tests/*",
     "*/test_*.py",
     "lair/_ccg_filter.py",  # vendored from NOAA GML, not authored here
-    "lair/_version.py",     # version-bump script run by pre-commit, not at runtime
 ]
 
 [tool.coverage.report]
@@ -155,7 +160,6 @@ exclude_also = [
 project-includes = ["lair"]
 project-excludes = [
     "lair/_ccg_filter.py",  # vendored from NOAA GML
-    "lair/_version.py",     # version-bump script, run by CI (not at runtime)
     "lair/noaa.py",         # WIP
     "**/__pycache__",
 ]
@@ -176,7 +180,6 @@ target-version = "py310"
 extend-exclude = [
     "lair/noaa.py",        # WIP
     "lair/_ccg_filter.py", # vendored from NOAA GML
-    "lair/_version.py",    # version-bump script, run by pre-commit
 ]
 
 [tool.ruff.format]

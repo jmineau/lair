@@ -1,4 +1,5 @@
 import os
+from importlib.metadata import PackageNotFoundError, version as _version
 
 import cf_xarray.units  # must be imported before pint_xarray
 import pint
@@ -19,6 +20,11 @@ except ImportError:
 
 from . import config
 from .records import ftp_download, unzip
+
+try:
+    __version__ = _version('lair')  # set by setuptools-scm from git tags
+except PackageNotFoundError:  # running from a source tree that isn't installed
+    __version__ = '0+unknown'
 
 
 # Custom pint context to convert fluxes from mass <--> substance

@@ -23,6 +23,37 @@ build-docs:
 	rm -rf docs/_build/ docs/_autosummary/
 	LAIR_SKIP_CCG_DOWNLOAD=1 uv run sphinx-build -M html docs docs/_build
 
+# Show the version setuptools-scm derives from git (tags + commits since)
+version:
+	@uv run python -c "import importlib.metadata as m; print(m.version('lair'))"
+
+# Tag + push the next CalVer release vYYYY.MM.PATCH (MM = 05/08/12; new month -> .0)
+release:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+	    echo "Commit or stash your changes first." >&2; exit 1
+	fi
+	if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+	    echo "Releases are tagged from main." >&2; exit 1
+	fi
+	git fetch --tags origin
+	if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+	    echo "main differs from origin/main; push or pull first." >&2; exit 1
+	fi
+	last=$(git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo v0.0.0)
+	year=$(date +%Y); month=$(date +%-m)
+	if [ "$month" -le 5 ]; then rel=05; elif [ "$month" -le 8 ]; then rel=08; else rel=12; fi
+	IFS=. read -r ly lm lp <<< "${last#v}"
+	if [ "$ly" = "$year" ] && [ "$((10#$lm))" = "$((10#$rel))" ]; then
+	    next="$year.$rel.$((lp + 1))"
+	else
+	    next="$year.$rel.0"
+	fi
+	echo "Tagging v$next (previous: $last)"
+	git tag -a "v$next" -m "lair $next"
+	git push origin "v$next"
+
 # Clean up build artifacts and cache files
 clean:
 	@echo "Cleaning up generated files..."

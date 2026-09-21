@@ -45,3 +45,8 @@ def test_verbose_flag_accessible():
     """Verbosity is a boolean toggle on the config module (no logging setup)."""
     assert isinstance(lair.config.verbose, bool)
     assert callable(lair.config.vprint)
+
+
+def test_version_from_metadata():
+    """``lair.__version__`` comes from the installed metadata (setuptools-scm)."""
+    assert isinstance(lair.__version__, str) and lair.__version__
