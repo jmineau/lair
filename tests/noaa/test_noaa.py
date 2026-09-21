@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from lair.noaa import CarbonTracker, CarbonTrackerCH4, GMLData
+from lair.noaa import CarbonTracker, CarbonTrackerCH4, CarbonTrackerCO2, GMLData
 
 
 class TestVersionDispatch:
@@ -36,9 +36,14 @@ class TestVersionDispatch:
         assert isinstance(ct, CarbonTrackerCH4)
         assert ct.specie == "ch4"
 
-    def test_from_version_co2_not_implemented(self):
-        with pytest.raises(ValueError, match="not yet implemented"):
-            CarbonTracker.from_version("CT2022")
+    def test_from_version_returns_co2_subclass(self):
+        ct = CarbonTracker.from_version("CT2019B", carbon_tracker_directory="/tmp/ct")
+        assert isinstance(ct, CarbonTrackerCO2)
+        assert ct.directory.as_posix() == "/tmp/ct/co2/CT2019B"
+
+    def test_base_class_needs_a_specie(self):
+        with pytest.raises(TypeError, match="from_version"):
+            CarbonTracker("CT2019B", carbon_tracker_directory="/tmp/ct")
 
 
 class TestCarbonTrackerPaths:
@@ -149,6 +154,49 @@ class TestSampleField:
         assert out["ct_level"].tolist() == [1.0, 2.0]
         assert "indx" in out.columns  # passthrough columns preserved
 
+    def test_points_outside_grid_are_nan(self):
+        ds = self._synthetic_ct()  # cells centred on 40-41 N, 112-111 W
+        points = pd.DataFrame(
+            {"time": ["2020-01-01", "2020-01-01"], "lati": [40.2, 45.0],
+             "long": [-112.0, -112.0], "zagl": [10.0, 10.0]}
+        )
+        out = CarbonTracker._sample_field(points, ds, "ch4")
+        assert out["ct_ch4_ppb"].iloc[0] == 1900.0
+        assert np.isnan(out["ct_ch4_ppb"].iloc[1])
+        assert np.isnan(out["ct_level"].iloc[1])
+
+    def test_units_in_column_name(self):
+        ds = self._synthetic_ct().rename({"ch4": "co2"})
+        points = pd.DataFrame(
+            {"time": ["2020-01-01"], "lati": [40.0], "long": [-112.0], "zagl": [10.0]}
+        )
+        out = CarbonTracker._sample_field(points, ds, "co2", units="ppm")
+        assert "ct_co2_ppm" in out.columns
+
+
+class TestCarbonTrackerCO2:
+    def test_file_lookup_flat_layout_and_grid(self, tmp_path):
+        ct = CarbonTrackerCO2("CT2019B", carbon_tracker_directory=tmp_path)
+        d = ct.molefractions_dir
+        assert d.as_posix().endswith("co2/CT2019B/molefractions/co2_total")
+        d.mkdir(parents=True)
+        for grid in ("glb3x2", "nam1x1"):
+            (d / f"CT2019B.molefrac_{grid}_2015-06-01.nc").touch()
+        assert ct._molefraction_file_for_date("2015-06-01").name == \
+            "CT2019B.molefrac_nam1x1_2015-06-01.nc"
+        glb = CarbonTrackerCO2("CT2019B", carbon_tracker_directory=tmp_path, grid="glb3x2")
+        assert "glb3x2" in glb._molefraction_file_for_date("2015-06-01").name
+        assert ct._molefraction_file_for_date("2015-06-02") is None
+
+    def test_background_is_already_ppm(self):
+        class _FakeCO2(CarbonTrackerCO2):
+            def sample(self, points):
+                return pd.DataFrame({"ct_co2_ppm": [400.0, 402.0]})
+
+        out = _FakeCO2("CT2019B", carbon_tracker_directory="/tmp/ct").background(
+            pd.DataFrame({"x": [1]}))
+        assert out["background_ppm"].iloc[0] == pytest.approx(401.0)
+
 
 class TestDownload:
     def test_sub_dirs_none_downloads_whole_version(self, monkeypatch):
@@ -253,6 +301,23 @@ class TestGMLData:
         data = g.data
         assert len(data) == 2
         assert data.index.name == "datetime"
+
+
+class TestGMLMonthly:
+    def test_reads_monthly_means(self, tmp_path):
+        g = GMLData("ch4", "uta", frequency="month", gml_dir=str(tmp_path))
+        g.directory.mkdir(parents=True, exist_ok=True)
+        g.filepath.write_text(
+            "# number_of_header_lines: 3\n"
+            "# comment line\n"
+            "# data_fields: site year month value\n"
+            "UTA 1993  5  1788.16\n"
+            "UTA 1993  6  1781.70\n"
+        )
+        data = g.data
+        assert list(data.columns) == ["site", "year", "month", "value"]
+        assert data.index.tolist() == [pd.Timestamp("1993-05-01"), pd.Timestamp("1993-06-01")]
+        assert data["value"].iloc[1] == pytest.approx(1781.70)
 
 
 class TestApplyQAQC:

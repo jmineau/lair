@@ -47,6 +47,8 @@ class CarbonTracker(metaclass=ABCMeta):
         Download CarbonTracker data from the NOAA GML FTP server.
     """
     specie: Literal['ch4', 'co2']
+    #: Units of the molefraction field ('ppb' for CH4, 'ppm' for CO2)
+    units: Literal['ppb', 'ppm']
 
     def __init__(self, version: str, carbon_tracker_directory: str | Path | None=None,
                  cache: bool=True):
@@ -63,6 +65,9 @@ class CarbonTracker(metaclass=ABCMeta):
         cache : bool, optional
             Whether to cache the data, by default True.
         """
+        if not hasattr(self, 'specie'):
+            raise TypeError('Use CarbonTrackerCH4 / CarbonTrackerCO2, or '
+                            'CarbonTracker.from_version(version).')
         self.version = version
 
         carbon_tracker_directory = get_data_dir(CARBONTRACKER_DIR_ENV, carbon_tracker_directory)
@@ -113,7 +118,7 @@ class CarbonTracker(metaclass=ABCMeta):
         """
         specie = CarbonTracker.get_specie_from_version(version)
         if specie == 'co2':
-            raise ValueError("CarbonTrackerCO2 not yet implemented")
+            return CarbonTrackerCO2(version, carbon_tracker_directory)
         elif specie == 'ch4':
             return CarbonTrackerCH4(version, carbon_tracker_directory)
         else:
@@ -166,13 +171,15 @@ class CarbonTracker(metaclass=ABCMeta):
         return matches[-1] if matches else None
 
     @staticmethod
-    def _sample_field(points: pd.DataFrame, ds: xr.Dataset, variable: str) -> pd.DataFrame:
+    def _sample_field(points: pd.DataFrame, ds: xr.Dataset, variable: str,
+                      units: str = 'ppb') -> pd.DataFrame:
         """Evaluate ``ds[variable]`` at each row's (time, lati, long, zagl).
 
         Vertical placement uses the geopotential-height (``gph``) layer bounds:
         the particle's height-above-ground is added to the surface gph and the
         enclosing model level selected. Returns the input rows (index reset) with
-        ``ct_<variable>_ppb`` plus the CT cell/level actually used.
+        ``ct_<variable>_<units>`` plus the CT cell/level actually used. Points
+        outside the horizontal grid (e.g. a regional CO2 grid) are NaN.
         """
         dim = 'points'
         t = pd.DatetimeIndex(pd.to_datetime(points['time'], utc=True)).tz_convert(None).values
@@ -188,13 +195,22 @@ class CarbonTracker(metaclass=ABCMeta):
         gph_hi = gph.isel(boundary=slice(1, None)).rename({'boundary': 'level'}).assign_coords(level=ds['level'].values)
         z_asl = zagl + gph_lo.isel(level=0)
         mask = (z_asl >= gph_lo) & (z_asl < gph_hi)
-        has_layer = mask.any(dim='level')
+
+        # Nearest-cell selection would clamp points outside the grid to its edge
+        in_domain = np.ones(len(points), dtype=bool)
+        for coord, col in (('latitude', 'lati'), ('longitude', 'long')):
+            centers = ds[coord].values
+            if centers.size > 1:
+                half = np.abs(np.diff(centers)).max() / 2
+                p = points[col].to_numpy()
+                in_domain &= (p >= centers.min() - half) & (p <= centers.max() + half)
+        has_layer = mask.any(dim='level') & xr.DataArray(in_domain, dims=dim)
         values = sel[variable].where(mask).max(dim='level', skipna=True).where(has_layer)
         level_idx = mask.argmax(dim='level')
         used_level = xr.DataArray(ds['level'].values, dims='level').isel(level=level_idx).where(has_layer)
 
         out = points.reset_index(drop=True).copy()
-        out[f'ct_{variable}_ppb'] = values.load().to_numpy()
+        out[f'ct_{variable}_{units}'] = values.load().to_numpy()
         out['ct_time'] = pd.to_datetime(sel['time'].load().to_numpy())
         out['ct_latitude'] = sel['latitude'].load().to_numpy()
         out['ct_longitude'] = sel['longitude'].load().to_numpy()
@@ -207,7 +223,7 @@ class CarbonTracker(metaclass=ABCMeta):
         ``points`` is a DataFrame with columns ``time`` (UTC sample time),
         ``lati``, ``long``, ``zagl``; any other columns (e.g. ``indx``,
         ``run_time``) are carried through for downstream grouping. Returns one row
-        per input point with ``ct_<specie>_ppb`` and the CT cell/level used.
+        per input point with ``ct_<specie>_<units>`` and the CT cell/level used.
         Points whose UTC date has no molefraction file are dropped.
         """
         points = points.reset_index(drop=True)
@@ -224,7 +240,7 @@ class CarbonTracker(metaclass=ABCMeta):
             files, preprocess=self._preprocess_molefractions,
             data_vars='all', combine='by_coords',
         ) as ds:
-            return self._sample_field(points, ds, self.specie)
+            return self._sample_field(points, ds, self.specie, self.units)
 
     def background(self, points: pd.DataFrame, by: str | None = None) -> pd.DataFrame:
         """Background mole fraction [ppm]: mean of the sampled field over ``points``.
@@ -232,15 +248,15 @@ class CarbonTracker(metaclass=ABCMeta):
         Samples the field at every point (e.g. trajectory endpoints) and averages
         over them. With ``by`` (e.g. ``'run_time'``) the mean and 1-sigma spread
         are returned per group; otherwise a single-row summary. Output is ppm
-        (CarbonTracker mole fractions are stored in ppb).
+        (CT-CH4 mole fractions are stored in ppb, CO2 in ppm).
         """
         sampled = self.sample(points)
-        col = f'ct_{self.specie}_ppb'
+        col = f'ct_{self.specie}_{self.units}'
         if col not in sampled:
             # sample() returns no rows (and no ct_ columns) when no
             # molefraction file covers the points
             sampled[col] = pd.Series(dtype=float)
-        ppm = sampled[col] / 1000.0
+        ppm = sampled[col] / (1000.0 if self.units == 'ppb' else 1.0)
         if by is None:
             return pd.DataFrame({'background_ppm': [ppm.mean()],
                                  'sigma_ppm': [ppm.std()],
@@ -266,6 +282,7 @@ class CarbonTrackerCH4(CarbonTracker):
         Calculate the pressure at each level in the molefractions Dataset.
     """
     specie = 'ch4'
+    units = 'ppb'
 
     def __init__(self, version='CT-CH4-2025', carbon_tracker_directory=None, cache=True,
                  parallel_parse=True):
@@ -321,6 +338,66 @@ class CarbonTrackerCH4(CarbonTracker):
         molefractions['P'].attrs = {'long_name': 'Pressure', 'units': 'hPa',
                                     'comment': 'Calculated from hybrid sigma-pressure coefficients and surface pressure.'}
         return molefractions
+
+
+class CarbonTrackerCO2(CarbonTracker):
+    """
+    NOAA CarbonTracker (CO2)
+
+    Mole fractions are in ppm (micromol mol-1). Releases such as CT2019B keep
+    the daily molefraction files flat in ``molefractions/co2_total/``, one file
+    per grid (``CT2019B.molefrac_nam1x1_2015-06-01.nc``, ``..._glb3x2_...``).
+
+    Attributes
+    ----------
+    grid : str
+        The molefraction grid to read, e.g. ``'nam1x1'`` (North America,
+        1x1 deg) or ``'glb3x2'`` (global, 3x2 deg). Points outside the grid
+        sample as NaN.
+    molefractions : xr.Dataset
+        The molefractions Dataset.
+    """
+    specie = 'co2'
+    units = 'ppm'
+
+    def __init__(self, version: str, carbon_tracker_directory=None, cache=True,
+                 grid: str = 'nam1x1', parallel_parse=True):
+        super().__init__(version, carbon_tracker_directory, cache)
+        self.grid = grid
+        self.parallel_parse = parallel_parse
+
+    @property
+    def molefractions_dir(self) -> Path:
+        """Directory of the total-CO2 molefraction files."""
+        return self.directory / 'molefractions' / 'co2_total'
+
+    def _molefraction_file_for_date(self, date) -> Path | None:
+        """Molefraction file on ``self.grid`` covering a UTC ``date``, if present."""
+        date = pd.Timestamp(date).date()
+        matches = sorted(self.molefractions_dir.glob(f'*molefrac_{self.grid}_{date}.nc'))
+        return matches[-1] if matches else None
+
+    @cached_property
+    def molefractions(self) -> xr.Dataset:
+        'Molefractions Dataset on ``self.grid`` (lazy). Cached property.'
+        files = sorted(str(f) for f in self.molefractions_dir.glob(f'*molefrac_{self.grid}_*.nc'))
+        if not files:
+            raise FileNotFoundError(f'No {self.grid} molefraction files in {self.molefractions_dir}')
+
+        if self.cache:
+            from lair.config import CACHE_DIR
+            cache_file = (Path(CACHE_DIR) / 'carbontracker' / self.specie / self.version
+                          / f'molefractions_{self.grid}.pkl')
+            open_mfdataset = Cacher(xr.open_mfdataset, str(cache_file))
+        else:
+            open_mfdataset = xr.open_mfdataset
+        return open_mfdataset(files, preprocess=self._preprocess_molefractions,
+                              parallel=self.parallel_parse)
+
+    @staticmethod
+    def _preprocess_molefractions(ds: xr.Dataset) -> xr.Dataset:
+        # Times decode natively; drop the redundant component/decimal encodings
+        return ds.drop_vars(['time_components', 'decimal_date'], errors='ignore')
 
 
 class GMLData:
@@ -426,7 +503,9 @@ class GMLData:
 
     @cached_property
     def data(self):
-        if self.driver == 'pandas':
+        if self.driver == 'pandas' and self.frequency == 'month':
+            data = self._read_monthly()
+        elif self.driver == 'pandas':
             data = pd.read_csv(self.filepath, sep=' ', comment='#',
                                parse_dates=['datetime'])
             data['datetime'] = data.datetime.dt.tz_localize(None)
@@ -439,6 +518,27 @@ class GMLData:
             raise ValueError("Invalid driver")
 
         return data
+
+    def _read_monthly(self) -> pd.DataFrame:
+        """Read a monthly-mean file, indexed by the first of each month.
+
+        Unlike event files, monthly files have no header row: the column names
+        are only given in a ``# data_fields:`` comment, and columns are aligned
+        with runs of spaces. There is no ``qcflag`` column.
+        """
+        fields = None
+        with open(self.filepath) as f:
+            for line in f:
+                if not line.startswith('#'):
+                    break
+                if line.startswith('# data_fields:'):
+                    fields = line.split(':', 1)[1].split()
+        if fields is None:
+            raise ValueError(f'No "# data_fields:" header line in {self.filepath}')
+
+        data = pd.read_csv(self.filepath, sep=r'\s+', comment='#', header=None, names=fields)
+        data['datetime'] = pd.to_datetime(dict(year=data['year'], month=data['month'], day=1))
+        return data.set_index('datetime').sort_index()
 
     @staticmethod
     def apply_qaqc(data: Union[pd.DataFrame, xr.Dataset], flags: None | str | list[str]=None,
