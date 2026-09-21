@@ -151,6 +151,9 @@ class TestInventoryDir:
 
 VULCAN_SECTORS = ["onroad", "elec_prod"]
 
+#: Vulcan files are tC; lair loads them as CO2 mass (M(CO2)/M(C))
+C_TO_CO2 = 44.0095 / 12.0107
+
 
 @pytest.fixture
 def vulcan_dir(tmp_path):
@@ -222,11 +225,17 @@ class TestVulcan:
         with pytest.raises(ValueError, match="clipped"):
             v.reproject(0.01)
 
+    def test_carbon_converted_to_co2(self, vulcan_dir):
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        onroad = v.data["onroad"].pint.dequantify()
+        np.testing.assert_allclose(onroad.values, 2.0 * C_TO_CO2, rtol=1e-4)
+
     def test_no_emission_cells_are_zero(self, vulcan_dir):
         v = inventories.Vulcan(inventory_dir=vulcan_dir)
         elec = v.data["elec"].pint.dequantify()
         assert not bool(elec.isnull().any())
-        assert float(elec.sum()) == pytest.approx(2 * 200.0)  # one source cell, 2 years
+        # one source cell, 2 years, converted from tC to CO2
+        assert float(elec.sum()) == pytest.approx(2 * 200.0 * C_TO_CO2, rel=1e-4)
 
     def test_reproject_returns_latlon(self, vulcan_dir):
         pytest.importorskip("xesmf")
@@ -255,5 +264,5 @@ class TestVulcan:
         lower = v.get_uncertainties("lower")
         upper = v.get_uncertainties("upper")
         assert set(lower.data_vars) == {"onroad", "elec"}
-        assert float(lower["onroad"].max()) == 1.0
-        assert float(upper["onroad"].max()) == 3.0
+        assert float(lower["onroad"].max()) == pytest.approx(1.0 * C_TO_CO2, rel=1e-4)
+        assert float(upper["onroad"].max()) == pytest.approx(3.0 * C_TO_CO2, rel=1e-4)

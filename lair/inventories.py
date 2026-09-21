@@ -1268,6 +1268,14 @@ class Vulcan(Inventory):
     Vulcan: High-Resolution Annual Fossil Fuel CO2 Emissions in USA, 2010-2015,
     Version 3. ORNL DAAC, Oak Ridge, Tennessee, USA.
     https://doi.org/10.3334/ORNLDAAC/1741
+
+    .. note::
+        Vulcan distributes emissions as mass of **carbon** (tC, i.e.
+        ``Mg C km-2 yr-1``). lair converts them to mass of **CO2** on load
+        (multiplying by M(CO2)/M(C) ~= 3.664) so the values are consistent
+        with ``pollutant='CO2'`` and with unit conversions to moles. Divide by
+        that factor to recover the published tC values. Cells without
+        emissions (NaN in the files) are set to 0.
     """
     # hourly data is 1.6 Tb !!!
 
@@ -1445,7 +1453,16 @@ class Vulcan(Inventory):
         # source sectors). Treat them as zero: otherwise every regridded cell
         # touching a NaN becomes NaN and conservative regridding drops most of
         # the airport/cement/cmv/elec emissions.
-        return data.fillna(0)
+        data = data.fillna(0)
+
+        # The files are mass of carbon (tC); express them as mass of CO2 to
+        # match pollutant='CO2' (see the class note)
+        c_to_co2 = float((molecular_weight('CO2') / molecular_weight('C')).magnitude)
+        data = data * c_to_co2
+        for var in data.data_vars:
+            data[var].attrs['comment'] = (f'Converted by lair from tonnes of carbon to '
+                                          f'tonnes of CO2 (x {c_to_co2:.4f}).')
+        return data
 
 
 class WetCHARTs(MultiModelInventory):
