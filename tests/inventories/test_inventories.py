@@ -266,3 +266,47 @@ class TestVulcan:
         assert set(lower.data_vars) == {"onroad", "elec"}
         assert float(lower["onroad"].max()) == pytest.approx(1.0 * C_TO_CO2, rel=1e-4)
         assert float(upper["onroad"].max()) == pytest.approx(3.0 * C_TO_CO2, rel=1e-4)
+
+
+class TestPollutantNames:
+    def test_nox_uses_no2_mass(self):
+        assert inventories.molecular_weight("NOx").magnitude == pytest.approx(
+            inventories.molecular_weight("NO2").magnitude)
+
+    @pytest.mark.parametrize("given, kept", [("NOx", "NOx"), ("ch4", "CH4"), ("CO2", "CO2")])
+    def test_pollutant_case(self, inventory, given, kept):
+        inv = inventories.Inventory(inventory.data.pint.dequantify(), pollutant=given,
+                                    src_units="kg/m**2/s")
+        assert inv.pollutant == kept
+
+
+class TestEPAv2ExpressMonthly:
+    """express + scale_by_month: after 2018 only three sectors keep a monthly
+    pattern; the other scaled sectors fall back to their annual rate."""
+
+    def test_no_nan_after_2018(self):
+        import pandas as pd
+
+        epa = inventories.EPAv2.__new__(inventories.EPAv2)
+        epa.express = True
+        epa._lat_deci = epa._lon_deci = 2
+        lat, lon = [40.0, 40.1], [-112.0, -111.9]
+        scalable = inventories.EPAv2._express_vars_scalable_past_2018
+        names = scalable + ["Enteric_Fermentation", "Landfills_MSW"]
+        annual = xr.Dataset(
+            {n: (("time", "lat", "lon"), np.full((2, 2, 2), 3.0)) for n in names},
+            coords={"time": pd.to_datetime(["2018-01-01", "2019-01-01"]), "lat": lat, "lon": lon},
+        )
+        sf = xr.Dataset(
+            {n: (("time", "lat", "lon"), np.full((12, 2, 2), 2.0)) for n in names},
+            coords={"time": pd.date_range("2018-01-01", periods=12, freq="MS"), "lat": lat, "lon": lon},
+        )
+        epa.get_monthly_scale_factors = lambda: sf
+
+        out = epa._scale_by_month(annual)
+        y2019 = out.sel(time="2019")
+        assert y2019.sizes["time"] == 12
+        for n in names:
+            assert not bool(y2019[n].isnull().any()), n
+        assert float(y2019["Manure_Management"].max()) == 6.0     # scaled
+        assert float(y2019["Enteric_Fermentation"].max()) == 3.0  # annual rate

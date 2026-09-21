@@ -53,21 +53,28 @@ DEFAULT_PINT_FMT = '~C'
 Regrid_Methods = Literal['conservative', 'conservative_normed']
 
 
+#: Pollutants whose emissions are reported as the mass of another species
+_MASS_BASIS = {'NOX': 'NO2'}  # NOx is conventionally reported as NO2 mass
+
+
 def molecular_weight(pollutant: str) -> pint.Quantity:
     """
     Calculate the molecular weight of a pollutant.
 
+    NOx is taken as NO2, the usual reporting basis for NOx emissions.
+
     Parameters
     ----------
     pollutant : str
-        The pollutant.
+        The pollutant, as a chemical formula (case-sensitive, e.g. ``'CH4'``).
 
     Returns
     -------
     pint.Quantity
         The molecular weight.
     """
-    return Formula(pollutant).mass * units('g/mol')
+    formula = _MASS_BASIS.get(pollutant.upper(), pollutant)
+    return Formula(formula).mass * units('g/mol')
 
 
 def convert_units(data: DataArray | Dataset, pollutant: str, dst_units: Any,
@@ -168,7 +175,10 @@ class Inventory(BaseGrid):
             If False, the units of each variable are retained as-is.
         """
 
-        self.pollutant: str = pollutant.upper()
+        # Upper-case all-lowercase names ('ch4' -> 'CH4') but keep mixed-case
+        # formulas as given: 'NOx'.upper() would no longer be a formula
+        self.pollutant: str = (pollutant if any(c.isupper() for c in pollutant)
+                               else pollutant.upper())
         self.time_step: str = time_step
         self.crs = CRS(crs)
         self.version: str | None = version
@@ -1099,6 +1109,13 @@ class EPAv2(EPA):
             express_monthly = data[self._express_vars_scalable_past_2018].reindex(time=express_sf['time'], method='ffill')
             express_monthly *= express_sf
             monthly = monthly.combine_first(express_monthly)
+
+            # The other scaled sectors keep their annual rate in every month
+            # after 2018 (they would otherwise be NaN, which sums as zero)
+            others = [var for var in sf.data_vars
+                      if var not in self._express_vars_scalable_past_2018]
+            annual_rate = data[others].reindex(time=express_sf['time'], method='ffill')
+            monthly = monthly.combine_first(annual_rate)
 
         return monthly
 
