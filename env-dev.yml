@@ -14,9 +14,7 @@ dependencies:
   - lxml
   - matplotlib
   - molmass
-  - myst-parser
   - numpy
-  - numpydoc
   - pandas
   - pint
   - pint-xarray
@@ -33,7 +31,6 @@ dependencies:
   - shapely
   - siphon
   - sphinx
-  - sphinx-design
   - typing-extensions
   - xarray
   - xesmf

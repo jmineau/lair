@@ -2,6 +2,8 @@
 Geo-spatial utilities.
 """
 
+from __future__ import annotations  # keep optional-dep annotations (e.g. shapely Polygon) lazy
+
 import copy
 from typing import Any, Literal, Sequence
 

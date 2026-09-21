@@ -17,13 +17,19 @@ lock:
 	@echo "Refreshing uv.lock..."
 	uv lock
 
+# Build the HTML documentation (docs/_build/html)
+build-docs:
+	@echo "Building HTML documentation..."
+	rm -rf docs/_build/ docs/_autosummary/
+	LAIR_SKIP_CCG_DOWNLOAD=1 uv run sphinx-build -M html docs docs/_build
+
 # Clean up build artifacts and cache files
 clean:
 	@echo "Cleaning up generated files..."
 	rm -rf build/ dist/ *.egg-info
 	rm -rf .pytest_cache/ .ruff_cache/ .pyrefly_cache/
 	rm -rf .coverage coverage.xml junit.xml
-	rm -rf docs/build/
+	rm -rf docs/_build/ docs/_autosummary/
 	find . -path ./.venv -prune -o -type d -name __pycache__ -exec rm -rf {} +
 	find . -path ./.venv -prune -o -type f -name '*.py[co]' -delete
 

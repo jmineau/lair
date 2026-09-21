@@ -1,1 +1,0 @@
-0 0 * * * ~/.lair-docs/docs/make_docs.sh >> ~/.lair-docs/docs/cron.log 2>&1

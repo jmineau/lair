@@ -7,7 +7,7 @@
 
 # Land-Air Interactions Research
 
-## [:scroll: Documentation](https://jamesmineau.chpc.utah.edu/lair)
+## [:scroll: Documentation](https://jmineau.github.io/lair/)
 
 </div>
 

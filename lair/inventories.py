@@ -8,6 +8,8 @@ pollutants, originating from all source categories in a certain
 geographical area and within a specified time span, usually a specific year.
 """
 
+from __future__ import annotations  # keep optional-dep annotations (e.g. shapely Polygon) lazy
+
 import datetime as dt
 import os
 import re

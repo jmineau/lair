@@ -82,6 +82,7 @@ complete = [
 ]
 
 [project.urls]
+Documentation = "https://jmineau.github.io/lair/"
 Repository = "https://github.com/jmineau/lair.git"
 Issues = "https://github.com/jmineau/lair/issues"
 
@@ -93,11 +94,13 @@ Issues = "https://github.com/jmineau/lair/issues"
 # use the conda `lair-dev` env (see env-dev.yml) and run `pytest` there.
 dev = [
   "pre-commit>=3.0.0",
+  "pydata-sphinx-theme>=0.14.0",
   "pyrefly>=1.0.0",
   "pytest>=7.0.0",
   "pytest-cov>=4.0.0",
   "ruff>=0.1.0",
   "rust-just>=1.42.4",
+  "sphinx>=7.0.0",
 ]
 
 [tool.uv]
