@@ -10,7 +10,7 @@ import requests
 from time import sleep
 import xarray as xr
 
-from lair.config import GROUP_DIR
+from lair.config import get_data_dir
 from lair._optional import import_optional_dependency
 
 # Optional dependency
@@ -18,8 +18,8 @@ siphon = import_optional_dependency("siphon")
 from siphon.simplewebservice.wyoming import WyomingUpperAir
 
 
-#: Sounding data directory
-SOUNDING_DIR = os.path.join(GROUP_DIR, 'soundings')
+#: Environment variable holding the sounding archive root (one subdirectory per station)
+SOUNDING_DIR_ENV = 'LAIR_SOUNDING_DIR'
 
 
 class Sounding:
@@ -163,7 +163,7 @@ def download_sounding(station, date, dst=None) -> str:
     date : datetime
         The date and time.
     dst : str
-        The destination directory.
+        The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/<station>``.
 
     Returns
     -------
@@ -171,7 +171,7 @@ def download_sounding(station, date, dst=None) -> str:
         The path to the downloaded sounding data.
     """
     if dst is None:
-        dst = os.path.join(SOUNDING_DIR, station)
+        dst = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)
     os.makedirs(dst, exist_ok=True)
 
     path = os.path.join(dst, f'{station}_{date:%Y%m%d%H}.csv')
@@ -246,7 +246,8 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
     end : datetime
         The end date and time.
     sounding_dir : str
-        The directory containing the sounding data.
+        The directory containing the station's sounding files. Defaults to
+        ``$LAIR_SOUNDING_DIR/<station>``.
 
     Returns
     -------
@@ -254,7 +255,7 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
         The sounding data.
     """
     if sounding_dir is None:
-        sounding_dir = os.path.join(SOUNDING_DIR, station)
+        sounding_dir = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)
 
     files = os.listdir(sounding_dir) if os.path.isdir(sounding_dir) else []
     if len(files) == 0:

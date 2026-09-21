@@ -71,6 +71,18 @@ class TestGetSoundings:
         with pytest.raises(ValueError, match="start and end"):
             soundings.get_soundings("SLC", sounding_dir=str(tmp_path / "missing"))
 
+    def test_default_dir_is_env_root_plus_station(self, tmp_path, monkeypatch):
+        (tmp_path / "SLC").mkdir()
+        _write_sounding(tmp_path / "SLC", "SLC", pd.Timestamp("2024-01-01"))
+        monkeypatch.setenv("LAIR_SOUNDING_DIR", str(tmp_path))
+        ds = soundings.get_soundings("SLC")
+        assert ds.sizes["time"] == 1
+
+    def test_unset_env_raises(self, monkeypatch):
+        monkeypatch.delenv("LAIR_SOUNDING_DIR", raising=False)
+        with pytest.raises(ValueError, match="LAIR_SOUNDING_DIR"):
+            soundings.get_soundings("SLC")
+
     def test_nothing_in_range_raises(self, tmp_path):
         _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01"))
         with pytest.raises(ValueError, match="No soundings found"):

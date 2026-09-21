@@ -42,6 +42,16 @@ class TestVersionDispatch:
 
 
 class TestCarbonTrackerPaths:
+    def test_directory_from_env(self, monkeypatch):
+        monkeypatch.setenv("LAIR_CARBONTRACKER_DIR", "/env/ct")
+        ct = CarbonTrackerCH4(version="CT-CH4-2025")
+        assert ct.directory.as_posix() == "/env/ct/ch4/CT-CH4-2025"
+
+    def test_directory_unset_raises(self, monkeypatch):
+        monkeypatch.delenv("LAIR_CARBONTRACKER_DIR", raising=False)
+        with pytest.raises(ValueError, match="LAIR_CARBONTRACKER_DIR"):
+            CarbonTrackerCH4(version="CT-CH4-2025")
+
     def test_directory_layout(self):
         ct = CarbonTrackerCH4(version="CT-CH4-2025", carbon_tracker_directory="/data/ct")
         assert ct.directory.as_posix() == "/data/ct/ch4/CT-CH4-2025"
@@ -204,14 +214,23 @@ class TestBackground:
 
 class TestGMLData:
     def test_filename_and_extension_pandas(self):
-        g = GMLData("co2", "spo")  # defaults: surface/flask/1/ccgg/event, pandas
+        g = GMLData("co2", "spo", gml_dir="/data/gml")  # surface/flask/1/ccgg/event, pandas
         assert g.ext == "txt"
         assert g.filename == "co2_spo_surface-flask_1_ccgg_event.txt"
 
     def test_filename_and_extension_xarray(self):
-        g = GMLData("ch4", "mlo", driver="xarray")
+        g = GMLData("ch4", "mlo", driver="xarray", gml_dir="/data/gml")
         assert g.ext == "nc"
         assert g.filename == "ch4_mlo_surface-flask_1_ccgg_event.nc"
+
+    def test_gml_dir_from_env(self, monkeypatch):
+        monkeypatch.setenv("LAIR_GML_DIR", "/env/gml")
+        assert GMLData("ch4", "mlo").directory.as_posix() == "/env/gml/ch4/flask"
+
+    def test_gml_dir_unset_raises(self, monkeypatch):
+        monkeypatch.delenv("LAIR_GML_DIR", raising=False)
+        with pytest.raises(ValueError, match="LAIR_GML_DIR"):
+            GMLData("ch4", "mlo")
 
     def test_directory_and_filepath(self):
         g = GMLData("ch4", "mlo", gml_dir="/data/gml")
@@ -219,7 +238,7 @@ class TestGMLData:
         assert g.filepath.as_posix() == "/data/gml/ch4/flask/" + g.filename
 
     def test_repr_str(self):
-        g = GMLData("ch4", "mlo")
+        g = GMLData("ch4", "mlo", gml_dir="/data/gml")
         assert "GMLData" in repr(g)
         assert str(g) == "NOAA GML Data(ch4, mlo, flask)"
 

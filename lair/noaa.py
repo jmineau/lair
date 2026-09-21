@@ -12,14 +12,14 @@ from typing import Literal, Union
 import numpy as np
 import xarray as xr
 
-from lair.config import GROUP_DIR
+from lair.config import get_data_dir
 from lair.records import ftp_download, list_files, Cacher
 
-#: CarbonTracker data directory
-CARBONTRACKER_DIR = Path(GROUP_DIR) / 'carbontracker'
+#: Environment variable holding the CarbonTracker data root
+CARBONTRACKER_DIR_ENV = 'LAIR_CARBONTRACKER_DIR'
 
-#: NOAA GML data directory
-GML_DIR = Path(GROUP_DIR) / 'gml'
+#: Environment variable holding the NOAA GML data root
+GML_DIR_ENV = 'LAIR_GML_DIR'
 
 
 class CarbonTracker(metaclass=ABCMeta):
@@ -58,14 +58,14 @@ class CarbonTracker(metaclass=ABCMeta):
         version : str
             The version of CarbonTracker data to download.
             Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.
-        carbon_tracker_dir : str, optional
-            The directory to download the data to, by default CARBONTRACKER_DIR.
+        carbon_tracker_directory : str, optional
+            The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.
         cache : bool, optional
             Whether to cache the data, by default True.
         """
         self.version = version
 
-        carbon_tracker_directory = Path(carbon_tracker_directory or CARBONTRACKER_DIR)
+        carbon_tracker_directory = get_data_dir(CARBONTRACKER_DIR_ENV, carbon_tracker_directory)
         self.directory = carbon_tracker_directory / self.specie / version
 
         self.cache = cache
@@ -104,7 +104,7 @@ class CarbonTracker(metaclass=ABCMeta):
             The version of CarbonTracker data to download.
             Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.
         carbon_tracker_directory : str, optional
-            The directory to download the data to, by default CARBONTRACKER_DIR.
+            The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.
 
         Returns
         -------
@@ -344,7 +344,7 @@ class GMLData:
     driver : str, optional
         The driver to use to read the data, by default 'pandas'.
     gml_dir : str, optional
-        The NOAA GML directory to download the data to, by default GML_DIR.
+        The NOAA GML data root, by default ``$LAIR_GML_DIR``.
     directory : str
         The directory for the data.
     filename : str
@@ -396,7 +396,7 @@ class GMLData:
         driver : str, optional
             The driver to use to read the data, by default 'pandas'.
         gml_dir : str, optional
-            The NOAA GML directory to download the data to, by default GML_DIR.
+            The NOAA GML data root, by default ``$LAIR_GML_DIR``.
         """
         self.specie = specie
         self.site = site
@@ -407,7 +407,7 @@ class GMLData:
         self.frequency = frequency
         self.driver = driver
         self.ext = self.driver_ext[driver]
-        self.gml_dir = Path(gml_dir or GML_DIR)
+        self.gml_dir = get_data_dir(GML_DIR_ENV, gml_dir)
         self.directory = self.gml_dir / specie / sample_type
         self.filename = self.file_template.format(**self.__dict__)
         self.filepath = self.directory / self.filename

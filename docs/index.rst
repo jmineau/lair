@@ -71,6 +71,30 @@ Extra          Packages                               Used by
 
    mamba install -c conda-forge esmpy
 
+Data locations
+--------------
+
+``lair`` has no built-in data paths. Functions and classes that read from a
+local data archive take an explicit directory argument and otherwise fall back
+to an environment variable:
+
+============================ ==================================================
+Variable                     Used by
+============================ ==================================================
+``LAIR_INVENTORY_DIR``       ``lair.inventories`` (root with ``EDGAR/``,
+                             ``EPA/``, ``GFEI/``, ``vulcan/``, ``WetCHARTs/``)
+``LAIR_SOUNDING_DIR``        ``lair.soundings`` (one subdirectory per station)
+``LAIR_CARBONTRACKER_DIR``   ``lair.noaa.CarbonTracker``
+``LAIR_GML_DIR``             ``lair.noaa.GMLData``
+``LAIR_CACHE_DIR``           cached results (default ``~/.cache/lair``)
+============================ ==================================================
+
+For example:
+
+.. code-block:: bash
+
+   export LAIR_INVENTORY_DIR=/path/to/inventories
+
 Verbosity
 ---------
 

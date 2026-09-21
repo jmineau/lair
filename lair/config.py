@@ -3,6 +3,8 @@ Config module for lair package
 """
 
 import os
+from pathlib import Path
+
 import pandas as pd
 
 
@@ -10,21 +12,40 @@ import pandas as pd
 # Directories #
 ###############
 
-#: CHPC Home
-HOME = '/uufs/chpc.utah.edu/common/home'
+# lair has no built-in data locations. Readers of a data archive take an
+# explicit directory argument and otherwise fall back to a LAIR_* environment
+# variable (see `get_data_dir`), e.g. LAIR_INVENTORY_DIR, LAIR_SOUNDING_DIR,
+# LAIR_CARBONTRACKER_DIR, LAIR_GML_DIR.
 
-# -- LAIR GROUP -- #
-#: Lin Group Directory
-GROUP_DIR = os.path.join(HOME, 'lin-group11', 'group_data')
 
-#: Lin Group Inventory Directory
-INVENTORY_DIR = os.path.join(GROUP_DIR, 'inventories')
+def get_data_dir(env_var: str, path: str | os.PathLike | None = None) -> Path:
+    """
+    Resolve a data directory.
 
-#: Lin Group Met-Field Directory
-MET_DIR = os.path.join(GROUP_DIR, 'NOAA-ARL_formatted_metfields')
+    Parameters
+    ----------
+    env_var : str
+        Environment variable to fall back to, e.g. ``'LAIR_INVENTORY_DIR'``.
+    path : str | os.PathLike, optional
+        Explicit directory. Takes precedence over the environment variable.
 
-#: Lin Group Spatial File Directory
-SPATIAL_DIR = os.path.join(GROUP_DIR, 'spatial')
+    Returns
+    -------
+    Path
+        The data directory.
+
+    Raises
+    ------
+    ValueError
+        If neither ``path`` nor the environment variable is set.
+    """
+    if path is None:
+        path = os.environ.get(env_var)
+    if not path:
+        raise ValueError(f'No data directory given: pass it explicitly or set '
+                         f'the {env_var} environment variable.')
+    return Path(path)
+
 
 # LAIR
 LAIR_DIR = os.path.dirname(__file__)

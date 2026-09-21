@@ -27,7 +27,7 @@ from typing_extensions import \
 from xarray import DataArray, Dataset
 
 from lair import units
-from lair.config import GROUP_DIR
+from lair.config import get_data_dir
 from lair.geo import (CRS, PC, BaseGrid, round_latlon, wrap_lons,
                             write_rio_crs)
 from lair._optional import import_optional_dependency
@@ -41,8 +41,9 @@ from shapely import Polygon  # noqa: E402
 xr.set_options(keep_attrs=True)
 
 
-#: Inventory directory
-INVENTORY_DIR = os.path.join(GROUP_DIR, 'inventories')
+#: Environment variable holding the inventory archive root
+#: (with EDGAR/, EPA/, GFEI/, vulcan/ and WetCHARTs/ subdirectories)
+INVENTORY_DIR_ENV = 'LAIR_INVENTORY_DIR'
 
 #: Default destination units
 DST_UNITS: str = 'kg km-2 d-1'
@@ -603,7 +604,6 @@ class EDGAR(Inventory, metaclass=ABCMeta):
     EDGAR provides both emissions as national totals and gridmaps at 0.1 x 0.1 degree
     resolution at global level, with yearly, monthly and up to hourly data. 
     """
-    edgar_dir = os.path.join(INVENTORY_DIR, 'EDGAR')
     src_units: str = 'kg m-2 s-1'
 
     sectors = {
@@ -802,7 +802,7 @@ class EDGARv7(EDGAR):
     """
     version: str = 'v7'
 
-    def __init__(self, pollutant: str) -> None:
+    def __init__(self, pollutant: str, inventory_dir: str | None = None) -> None:
         """
         Initialize the EDGAR inventory.
 
@@ -810,7 +810,10 @@ class EDGARv7(EDGAR):
         ----------
         pollutant : str
             The pollutant.
+        inventory_dir : str, optional
+            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
+        self.edgar_dir = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'EDGAR')
         path = os.path.join(self.edgar_dir, self.version, pollutant)
         super().__init__(path, pollutant,
                          src_units=self.src_units, version=self.version)
@@ -863,7 +866,8 @@ class EDGARv8(EDGAR):
     """
     version: str = 'v8'
 
-    def __init__(self, pollutant: str, time_step: Literal['annual', 'monthly']='annual'):
+    def __init__(self, pollutant: str, time_step: Literal['annual', 'monthly']='annual',
+                 inventory_dir: str | None = None):
         """
         Initialize the EDGAR inventory.
 
@@ -873,7 +877,10 @@ class EDGARv8(EDGAR):
             The pollutant.
         time_step : Literal['annual', 'monthly'], optional
             The time step of the data, by default 'annual'.
+        inventory_dir : str, optional
+            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
+        self.edgar_dir = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'EDGAR')
         path = os.path.join(self.edgar_dir, self.version,
                             '' if time_step == 'annual' else time_step, pollutant)
         super().__init__(path, pollutant,
@@ -912,7 +919,6 @@ class EPA(Inventory, metaclass=ABCMeta):
     consistent with methane emissions from the U.S. EPA Inventory of U.S.
     Greenhouse Gas Emissions and Sinks (U.S. GHGI).
     """
-    epa_dir: str = os.path.join(INVENTORY_DIR, 'EPA')
     pollutant: str = 'CH4'
     src_units: str = 'molec cm-2 s-1'
 
@@ -971,7 +977,7 @@ class EPAv1(EPA):
 
     _emissions_prefix: str = 'emissions'
 
-    def __init__(self, time_step='Annual') -> None:
+    def __init__(self, time_step='Annual', inventory_dir: str | None = None) -> None:
         """
         Initialize the EPA inventory.
 
@@ -979,7 +985,10 @@ class EPAv1(EPA):
         ----------
         time_step : str, optional
             The time step of the data, by default 'Annual'.
+        inventory_dir : str, optional
+            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
+        self.epa_dir = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'EPA')
         self.time_step = time_step.lower()
         path = os.path.join(self.epa_dir, self.version, f'GEPA_{self.time_step.capitalize()}.nc')
         super().__init__(path, self.pollutant,
@@ -1022,7 +1031,8 @@ class EPAv2(EPA):
         'Manure_Management', 'Rice_Cultivation', 'Field_Burning'
     ]
 
-    def __init__(self, express: bool=False, scale_by_month: bool=False) -> None:
+    def __init__(self, express: bool=False, scale_by_month: bool=False,
+                 inventory_dir: str | None = None) -> None:
         """
         Initialize the EPA inventory.
 
@@ -1032,7 +1042,10 @@ class EPAv2(EPA):
             Whether to use the express extension, by default False.
         scale_by_month : bool, optional
             Whether to scale emissions by month, by default False.
+        inventory_dir : str, optional
+            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
+        self.epa_dir = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'EPA')
         self.express = express
         self.scale_by_month = scale_by_month
 
@@ -1113,11 +1126,16 @@ class GFEI(Inventory, metaclass=ABCMeta):
 
     _file_prefix: str
 
-    def __init__(self) -> None:
+    def __init__(self, inventory_dir: str | None = None) -> None:
         """
         Initialize the GFEI inventory.
+
+        Parameters
+        ----------
+        inventory_dir : str, optional
+            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
-        path = os.path.join(INVENTORY_DIR, 'GFEI', self.version)
+        path = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'GFEI', self.version)
         super().__init__(path, self.pollutant,
                          src_units=self.src_units, version=self.version)
 
@@ -1250,7 +1268,6 @@ class Vulcan(Inventory):
     https://doi.org/10.3334/ORNLDAAC/1741
     """
     # hourly data is 1.6 Tb !!!
-    vulcan_dir = os.path.join(INVENTORY_DIR, 'vulcan')
 
     version: str = 'v3'
     pollutant: str = 'CO2'
@@ -1275,7 +1292,8 @@ class Vulcan(Inventory):
     }
 
     def __init__(self, time_step: Literal['annual', 'hourly']='annual',
-                 region: Literal['US', 'AK']='US') -> None:
+                 region: Literal['US', 'AK']='US',
+                 inventory_dir: str | None = None) -> None:
         """
         Initialize the Vulcan inventory.
 
@@ -1285,7 +1303,10 @@ class Vulcan(Inventory):
             The time step of the data, by default 'annual'.
         region : Literal['US', 'AK'], optional
             The region of the data, by default 'US'.
+        inventory_dir : str, optional
+            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
+        self.vulcan_dir = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'vulcan')
         src_units = self._time_step_dict[time_step]['src_units']
         self._glob_pattern = self._time_step_dict[time_step]['glob_pattern']
         self._sep = self._time_step_dict[time_step]['sep']
@@ -1416,13 +1437,12 @@ class WetCHARTs(MultiModelInventory):
     Wetland Methane Emissions and Uncertainty (WetCHARTs v1.3.1). ORNL DAAC,
     Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1915
     """
-    wetcharts_dir = os.path.join(INVENTORY_DIR, 'WetCHARTs')
     version: str = 'v1.3.1'
     pollutant = 'CH4'
     src_units: str = 'mg m-2 d-1'
     time_step = 'monthly'
 
-    def __init__(self, model: str | None = None):
+    def __init__(self, model: str | None = None, inventory_dir: str | None = None):
         """
         Initialize the WetCHARTs inventory.
 
@@ -1431,7 +1451,10 @@ class WetCHARTs(MultiModelInventory):
         model : str | None, optional
             The model to select, by default None.
             If None, the mean of all models is used.
+        inventory_dir : str, optional
+            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
+        self.wetcharts_dir = os.path.join(get_data_dir(INVENTORY_DIR_ENV, inventory_dir), 'WetCHARTs')
         path = os.path.join(self.wetcharts_dir, self.version)
         super().__init__(path, self.pollutant,
                          src_units=self.src_units, time_step=self.time_step, version=self.version, model=model)
