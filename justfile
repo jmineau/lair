@@ -23,9 +23,9 @@ build-docs:
 	rm -rf docs/_build/ docs/_autosummary/
 	LAIR_SKIP_CCG_DOWNLOAD=1 uv run sphinx-build -M html docs docs/_build
 
-# Show the version setuptools-scm derives from git (tags + commits since)
+# Show the version setuptools-scm derives from git right now (tags + commits since)
 version:
-	@uv run python -c "import importlib.metadata as m; print(m.version('lair'))"
+	@uv run python -m setuptools_scm
 
 # Tag + push the next CalVer release vYYYY.MM.PATCH (MM = 05/08/12; new month -> .0)
 release:

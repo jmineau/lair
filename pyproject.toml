@@ -100,6 +100,7 @@ dev = [
   "pytest-cov>=4.0.0",
   "ruff>=0.1.0",
   "rust-just>=1.42.4",
+  "setuptools-scm>=8",  # `just version` / `just release`
   "sphinx>=7.0.0",
 ]
 
