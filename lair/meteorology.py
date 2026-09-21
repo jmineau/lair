@@ -66,14 +66,15 @@ def ideal_gas_law(solve_for, p=None, V=None, T=None,
         else:
             if n:
                 x = n * Rstar * T / V
-                x = m * R / V
+            elif m:
+                x = m * R * T / V
             else:
                 x = N * kb * T / V
     elif solve_for in ['volume', 'vol', 'V']:
         if n:
             x = n * Rstar * T / p
         elif m:
-            x = m * R / p
+            x = m * R * T / p
         else:
             x = N * kb * T / p
     elif solve_for in ['temperature', 'temp', 'T']:
@@ -120,8 +121,11 @@ def hypsometric(Tv=None, p1=None, p2=None,
 
     Can be used to solve for any of the variables in the equation or deltaz.
     """
-    if deltaz or (Z1 and Z2):
-        deltaz = deltaz or Z2 - Z1
+    # Compare against None (not truthiness) so a surface height of 0 m and
+    # array inputs work
+    if deltaz is not None or (Z1 is not None and Z2 is not None):
+        if deltaz is None:
+            deltaz = Z2 - Z1
 
         if Tv is None:
             return deltaz * g / (Rd * np.log(p1/p2))
@@ -130,7 +134,7 @@ def hypsometric(Tv=None, p1=None, p2=None,
         elif p2 is None:
             return p1 * np.exp(-deltaz * g / (Rd * Tv))
 
-    if not any([deltaz, Z1, Z2]):
+    elif Z1 is None and Z2 is None:
         return Rd * Tv * np.log(p1/p2) / g
     elif Z1 is None:
         return Z2 - Rd * Tv * np.log(p1/p2) / g

@@ -106,8 +106,21 @@ class TestIdealGasLaw:
         assert _mag(V) == pytest.approx(_mag(Rstar) * 300.0 / 1e5)
 
     def test_volume_from_mass(self):
+        # V = m R T / p
         V = met.ideal_gas_law("volume", p=1e5, m=1.0, R=287.05, T=300.0)
-        assert _mag(V) == pytest.approx(287.05 / 1e5)
+        assert _mag(V) == pytest.approx(287.05 * 300.0 / 1e5)
+
+    def test_pressure_from_moles_and_volume(self):
+        # p = n R* T / V
+        from lair.constants import Rstar
+
+        p = met.ideal_gas_law("pressure", V=1.0, n=1.0, T=300.0)
+        assert _mag(p) == pytest.approx(_mag(Rstar) * 300.0)
+
+    def test_pressure_from_mass_and_volume(self):
+        # p = m R T / V
+        p = met.ideal_gas_law("pressure", V=1.0, m=1.0, R=287.05, T=300.0)
+        assert _mag(p) == pytest.approx(287.05 * 300.0)
 
     def test_temperature_from_volume_and_moles(self):
         from lair.constants import Rstar
@@ -122,6 +135,23 @@ class TestHypsometric:
         deltaz = met.hypsometric(Tv=288.0, p1=1e5, p2=9e4)
         assert _mag(deltaz) == pytest.approx(
             287.05 * 288.0 * np.log(1e5 / 9e4) / 9.81, rel=1e-6
+        )
+
+    def test_tv_from_heights_with_surface_at_zero(self):
+        # Z1 = 0 m is a valid height, not a missing value
+        dz = 287.05 * 288.0 * np.log(1e5 / 9e4) / 9.81
+        Tv = met.hypsometric(p1=1e5, p2=9e4, Z1=0.0, Z2=dz)
+        assert _mag(Tv) == pytest.approx(288.0, rel=1e-6)
+
+    def test_top_height_from_bottom_height(self):
+        # Adding to Z1 needs unit-carrying inputs: the constants are pint
+        # quantities, so a bare-float Tv leaves the thickness in odd units
+        from lair import units
+
+        Z2 = met.hypsometric(Tv=288.0 * units("K"), p1=1e5, p2=9e4,
+                             Z1=100.0 * units("m"))
+        assert Z2.to("m").magnitude == pytest.approx(
+            100.0 + 287.05 * 288.0 * np.log(1e5 / 9e4) / 9.81, rel=1e-6
         )
 
     def test_invalid_combination_raises(self):
