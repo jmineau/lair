@@ -18,12 +18,12 @@ from lair._optional import import_optional_dependency
 boto3 = import_optional_dependency("boto3")
 cartopy = import_optional_dependency("cartopy")
 s3fs = import_optional_dependency("s3fs")
-zarr = import_optional_dependency("zarr")
+zarr = import_optional_dependency("zarr")  # needed by xr.open_zarr below
+ncd = import_optional_dependency("numcodecs")
 
 from botocore import UNSIGNED  # noqa: E402
 import cartopy.crs as ccrs  # noqa: E402
 from botocore.config import Config  # noqa: E402
-import numcodecs as ncd  # noqa: E402
 
 
 #: HRRR Projection
@@ -84,6 +84,30 @@ class ZarrId:
             return chunk_id
 
 
+def winds_frame(u_grid, v_grid, lon: float, times) -> pd.DataFrame:
+    """
+    Earth-relative 10 m winds at a point from HRRR grid-relative components.
+
+    Parameters
+    ----------
+    u_grid, v_grid : array-like
+        Grid-relative u and v components (m/s), one per time.
+    lon : float
+        Longitude of the point.
+    times : list[dt.datetime]
+        Valid times, used as the index.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns ``u``, ``v`` (earth-relative, m/s), ``ws`` (speed from u and v,
+        m/s) and ``wd`` (direction, degrees).
+    """
+    u, v = rotate_winds(np.asarray(u_grid, dtype=float), np.asarray(v_grid, dtype=float), lon)
+    return pd.DataFrame({'u': u, 'v': v, 'ws': np.hypot(u, v), 'wd': wind_direction(u, v)},
+                        index=times)
+
+
 @dataclasses.dataclass
 class Winds:
     """
@@ -104,7 +128,8 @@ class Winds:
     zarr_ids : dict[str, list[ZarrId]]
         dictionary of zarr ids with var as key
     data : pd.DataFrame
-        wind data
+        10 m winds: ``u``, ``v`` (earth-relative), ``ws`` (speed from u and v)
+        and ``wd`` (see :func:`winds_frame`).
     """
     lat: float
     lon: float
@@ -129,8 +154,7 @@ class Winds:
 
         # Generate zarr ids
         variables = [('UGRD', '10m_above_ground'),
-                     ('VGRD', '10m_above_ground'),
-                     ('WIND_max_fcst', '10m_above_ground')]
+                     ('VGRD', '10m_above_ground')]
         self.zarr_ids = generate_zarr_ids(times=self.times,
                                           level_type='sfc',
                                           variables=variables,
@@ -143,16 +167,7 @@ class Winds:
                                             self.nearest_point)
                                   for zarr_id in ids]
 
-        u_earth, v_earth = rotate_winds(np.asarray(var_data['UGRD'], dtype=float),
-                                        np.asarray(var_data['VGRD'], dtype=float),
-                                        self.lon)
-
-        angle = wind_direction(u_earth, v_earth)
-
-        self.data = pd.DataFrame({'u': u_earth,
-                                  'v': v_earth,
-                                  'ws': var_data['WIND_max_fcst'],
-                                  'wd': angle}, index=self.times)
+        self.data = winds_frame(var_data['UGRD'], var_data['VGRD'], self.lon, self.times)
 
 
 def create_s3_group_url(zarr_id: ZarrId, prefix: bool=True) -> str:

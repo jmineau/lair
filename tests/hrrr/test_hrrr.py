@@ -65,3 +65,16 @@ def test_generate_zarr_ids():
     # One ZarrId per requested time.
     assert len(ids[key]) == 2
     assert all(isinstance(z, hrrr.ZarrId) for z in ids[key])
+
+
+class TestWindsFrame:
+    def test_speed_is_from_components(self):
+        import numpy as np
+        import pandas as pd
+
+        times = pd.date_range("2024-01-01", periods=2, freq="h")
+        out = hrrr.winds_frame([3.0, 0.0], [4.0, 2.0], lon=-111.9, times=times)
+        assert list(out.columns) == ["u", "v", "ws", "wd"]
+        # rotation to earth-relative preserves the speed
+        np.testing.assert_allclose(out["ws"], [5.0, 2.0])
+        np.testing.assert_allclose(out["ws"], np.hypot(out["u"], out["v"]))
