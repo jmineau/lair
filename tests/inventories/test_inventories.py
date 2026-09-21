@@ -1,8 +1,9 @@
 """Tests for lair.inventories.
 
-Requires the `geo` extra (imports lair.geo) plus molmass. The concrete inventory
-loaders (EDGAR/EPA/GFEI/Vulcan/WetCHARTs) read CHPC group data and are left for
-`chpc`-marked tests; the module-level unit/sector helpers are tested here.
+Requires the `geo` extra (imports lair.geo) plus molmass. The base Inventory
+machinery and unit/sector helpers are tested on synthetic data, and Vulcan on a
+tiny synthetic archive shaped like the real v3 files. The other concrete loaders
+(EDGAR/EPA/GFEI/WetCHARTs) need the real archive (LAIR_INVENTORY_DIR).
 """
 
 import numpy as np
@@ -139,3 +140,120 @@ class TestBaseInventory:
         )
         with pytest.raises(ValueError):
             inventories.Inventory(ds, pollutant="CH4")
+
+
+class TestInventoryDir:
+    def test_unset_env_raises(self, monkeypatch):
+        monkeypatch.delenv("LAIR_INVENTORY_DIR", raising=False)
+        with pytest.raises(ValueError, match="LAIR_INVENTORY_DIR"):
+            inventories.EDGARv8("CH4")
+
+
+VULCAN_SECTORS = ["onroad", "elec_prod"]
+
+
+@pytest.fixture
+def vulcan_dir(tmp_path):
+    """A tiny Vulcan v3 archive shaped like the real files: (time, y, x) on the
+    Vulcan LCC grid with 2D lat/lon coords, one file per sector and bound."""
+    import pandas as pd
+    from pyproj import Transformer
+
+    x = np.arange(-1.5e6, -1.5e6 + 10_000, 1000.0)  # 10 x 1 km cells
+    y = np.arange(4e5, 4e5 + 8_000, 1000.0)          # 8 x 1 km cells
+    to_ll = Transformer.from_crs(inventories.Vulcan.crs, "EPSG:4326", always_xy=True)
+    lon, lat = to_ll.transform(*np.meshgrid(x, y))
+    time = pd.to_datetime(["2014-07-02T12:00", "2015-07-02T12:00"])
+
+    d = tmp_path / "vulcan" / "v3" / "data" / "native" / "annual"
+    d.mkdir(parents=True)
+    for sector in VULCAN_SECTORS + ["total"]:
+        for bound, value in [("mn", 2.0), ("lo", 1.0), ("hi", 3.0)]:
+            emis = np.full((2, y.size, x.size), value)
+            if sector == "elec_prod":
+                # Point-source sectors are NaN except where there are sources
+                emis[:] = np.nan
+                emis[:, 4, 5] = 100 * value
+            ds = xr.Dataset(
+                {
+                    "carbon_emissions": (("time", "y", "x"), emis),
+                    "time_bnds": (("time", "nv"), np.stack([time, time], axis=1)),
+                    "crs": ((), np.int16(0)),
+                },
+                coords={"time": time, "y": y, "x": x,
+                        "lat": (("y", "x"), lat), "lon": (("y", "x"), lon)},
+            )
+            ds.carbon_emissions.attrs["units"] = "Mg km-2 year-1"
+            ds.to_netcdf(d / f"Vulcan_v3_US_annual_1km_{sector}_{bound}.nc4")
+    return tmp_path
+
+
+class TestVulcan:
+    def test_loads_projected_grid(self, vulcan_dir):
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        assert set(v.data.data_vars) == {"onroad", "elec"}  # 'total' excluded
+        assert v.data.rio.x_dim == "x" and v.data.rio.y_dim == "y"
+        assert v.data.time.dt.month.values.tolist() == [1, 1]
+        # 1 km^2 cells on the projected grid
+        np.testing.assert_allclose(v.gridcell_area.values, 1.0)
+
+    def test_env_var_fallback(self, vulcan_dir, monkeypatch):
+        monkeypatch.setenv("LAIR_INVENTORY_DIR", str(vulcan_dir))
+        v = inventories.Vulcan()
+        assert v.vulcan_dir == str(vulcan_dir / "vulcan")
+
+    def test_clip_returns_clipped_copy(self, vulcan_dir):
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        bbox = (-1.5e6, 4e5, -1.5e6 + 4_000, 4e5 + 3_000)  # data CRS (metres)
+        clipped = v.clip(bbox=bbox)
+        assert clipped is not v
+        assert clipped._is_clipped and not v._is_clipped
+        assert clipped.data.sizes["x"] < v.data.sizes["x"]
+        assert v.data.sizes["x"] == 10  # original untouched
+
+    def test_clip_inplace(self, vulcan_dir):
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        same = v.clip(bbox=(-1.5e6, 4e5, -1.5e6 + 4_000, 4e5 + 3_000), inplace=True)
+        assert same is v and v._is_clipped
+        assert v.data.sizes["x"] < 10
+
+    def test_reproject_requires_clip(self, vulcan_dir):
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        with pytest.raises(ValueError, match="clipped"):
+            v.reproject(0.01)
+
+    def test_no_emission_cells_are_zero(self, vulcan_dir):
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        elec = v.data["elec"].pint.dequantify()
+        assert not bool(elec.isnull().any())
+        assert float(elec.sum()) == pytest.approx(2 * 200.0)  # one source cell, 2 years
+
+    def test_reproject_returns_latlon(self, vulcan_dir):
+        pytest.importorskip("xesmf")
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        out = v.clip(bbox=(-1.5e6, 4e5, -1.5e6 + 9_000, 4e5 + 7_000)).reproject(0.02)
+        assert out.crs.epsg == 4326
+        assert {"lat", "lon"} <= set(out.data.dims)
+
+    def test_reproject_conserves_point_sources(self, vulcan_dir):
+        # NaN "no emission" cells must not wipe out neighbouring point sources
+        pytest.importorskip("xesmf")
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        clipped = v.clip(bbox=(-1.5e6, 4e5, -1.5e6 + 9_000, 4e5 + 7_000))
+        out = clipped.reproject(0.02)
+
+        def elec_total(inv, dims):
+            absolute = inv.absolute_emissions["elec"].pint.quantify()
+            return float(absolute.sum(dims).pint.to("Mg").pint.dequantify().sum())
+
+        src = elec_total(clipped, ["x", "y"])
+        assert src > 0
+        assert elec_total(out, ["lat", "lon"]) == pytest.approx(src, rel=0.03)
+
+    def test_uncertainties(self, vulcan_dir):
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        lower = v.get_uncertainties("lower")
+        upper = v.get_uncertainties("upper")
+        assert set(lower.data_vars) == {"onroad", "elec"}
+        assert float(lower["onroad"].max()) == 1.0
+        assert float(upper["onroad"].max()) == 3.0

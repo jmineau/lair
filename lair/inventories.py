@@ -203,8 +203,10 @@ class Inventory(BaseGrid):
             # quantify using provided src_units
             data = quantified
 
-        # Set the rioxarray CRS
-        data = data.rio.set_spatial_dims(x_dim='lon', y_dim='lat')
+        # Set the rioxarray CRS. Projected inventories (e.g. Vulcan) are on x/y
+        # with 2D lat/lon coords; the rest are on 1D lat/lon.
+        x_dim, y_dim = ('lon', 'lat') if 'lon' in data.dims else ('x', 'y')
+        data = data.rio.set_spatial_dims(x_dim=x_dim, y_dim=y_dim)
         data = write_rio_crs(data, self.crs)
 
         # Store the data
@@ -1326,16 +1328,31 @@ class Vulcan(Inventory):
                 and self.region in f.stem]
 
     def get_uncertainties(self, uncertainty: Literal['lower', 'upper']) -> Dataset:
-        assert self.time_step == 'annual', 'Uncertainties are only available for annual data'
-        files = self.get_files(self._uncertainties[uncertainty])
-        return xr.open_mfdataset(files)
+        """
+        Get the lower or upper 95% confidence bound of the emissions.
+
+        Parameters
+        ----------
+        uncertainty : Literal['lower', 'upper']
+            Which bound to load.
+
+        Returns
+        -------
+        xr.Dataset
+            The bound for each sector over the full (unclipped) domain, in the
+            source units (not pint-quantified).
+        """
+        if self.time_step != 'annual':
+            raise ValueError('Uncertainties are only available for annual data')
+        return self._process(self._open(self.get_files(uncertainty)))
 
     def clip(self,
              bbox: tuple[float, float, float, float] | None = None,
              extent: tuple[float, float, float, float] | None = None,
              geom: Polygon | None = None,
              crs: Any = None,
-             **kwargs: Any) -> None:
+             inplace: bool = False,
+             **kwargs: Any) -> Self:
         """
         Clip the data to the given bounds.
 
@@ -1356,20 +1373,24 @@ class Vulcan(Inventory):
             The geometry to clip the data to.
         crs : Any
             The CRS of the input geometries. If not provided, the CRS of the data is used.
+        inplace : bool, optional
+            Whether to modify the data in place. Default is False (returns a
+            new, clipped inventory).
         kwargs : Any
             Additional keyword arguments to pass to the rioxarray clip method.
 
         Returns
         -------
-        None - modifies the data in place
+        Vulcan
+            The clipped inventory.
         """
-        super().clip(bbox, extent, geom, crs, **kwargs)
-        self._is_clipped = True
-        return None
+        clipped = super().clip(bbox, extent, geom, crs, inplace=inplace, **kwargs)
+        clipped._is_clipped = True
+        return clipped
 
     def reproject(self, resolution: float | tuple[float, float] = 0.01,
                   regrid_method: Regrid_Methods = 'conservative',
-                  force: bool = False) -> None:
+                  inplace: bool = False, force: bool = False) -> Self:
         """
         Reproject the data to a lat lon rectilinear grid.
         
@@ -1382,16 +1403,21 @@ class Vulcan(Inventory):
         resolution : float | tuple[x_res, y_res]
             The new resolution in degrees. If a single value is provided, the resolution
             is assumed to be the same in both dimensions.
+        regrid_method : str, optional
+            The regridding method, by default 'conservative'.
+        inplace : bool, optional
+            Whether to modify the object in place. Default is False.
         force : bool
             Whether to override the clipping requirement
 
         Returns
         -------
-        None - modifies the data in place
+        Vulcan
+            The reprojected inventory (on EPSG:4326 lat/lon).
         """
         if not self._is_clipped and not force:
             raise ValueError('Data must be clipped before reprojecting! Set force=True to override')
-        return super().reproject(resolution, regrid_method)
+        return super().reproject(resolution, regrid_method, inplace=inplace)
 
     def _preprocess(self, ds: Dataset) -> Dataset:
         # Rename variables
@@ -1415,7 +1441,11 @@ class Vulcan(Inventory):
             data = data.assign_coords(time=[dt.datetime(int(year), 1, 1)
                                             for year in data.time.dt.year])
 
-        return data
+        # Vulcan marks cells without emissions as NaN (most cells of the point
+        # source sectors). Treat them as zero: otherwise every regridded cell
+        # touching a NaN becomes NaN and conservative regridding drops most of
+        # the airport/cement/cmv/elec emissions.
+        return data.fillna(0)
 
 
 class WetCHARTs(MultiModelInventory):
