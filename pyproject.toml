@@ -38,16 +38,18 @@ classifiers = [
 # Remote data access (AWS S3, soundings)
 requests = [
   "boto3",
+  "requests",
   "s3fs",
   "siphon",
 ]
 
-# Alternative data formats (Zarr, KML)
+# Alternative data formats (Zarr, KML, HDF5)
 formats = [
   "zarr",
   "numcodecs",
   "fastkml",
   "lxml",  # speeds up fastkml
+  "tables",  # HDF5 (MesoWest SODAR archive)
 ]
 
 # Geographic data processing
@@ -151,8 +153,18 @@ exclude_also = [
 project-includes = ["lair"]
 project-excludes = [
     "lair/_ccg_filter.py",  # vendored from NOAA GML
+    "lair/_version.py",     # version-bump script, run by CI (not at runtime)
     "lair/noaa.py",         # WIP
     "**/__pycache__",
+]
+# Optional extras (and their transitive helpers) are typed as Any so the result
+# is the same in the lean uv env (extras absent) and the conda lair-dev env
+# (extras installed). Core deps (numpy/pandas/xarray/matplotlib/pint) stay typed.
+replace-imports-with-any = [
+    "boto3.*", "botocore.*", "cartopy.*", "fastkml.*", "molmass.*",
+    "networkx.*", "numcodecs.*", "pyproj.*", "rasterio.*", "requests.*",
+    "rioxarray.*", "s3fs.*", "scipy.*", "shapely.*", "siphon.*", "tables.*",
+    "xesmf.*", "zarr.*",
 ]
 
 [tool.ruff]
@@ -187,5 +199,4 @@ known-first-party = ["lair"]
 [tool.ruff.lint.per-file-ignores]
 # Intentional, kept on purpose (NOT a legacy backlog):
 "lair/__init__.py" = ["F401"]   # cf_xarray.units / pint_xarray / config: side-effect & re-export imports
-"lair/records.py" = ["F821"]    # forward ref to optional `KML` (fastkml) type
 "lair/soundings.py" = ["E402"]  # import after optional-dependency check (intentional)
