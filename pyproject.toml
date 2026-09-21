@@ -171,6 +171,7 @@ project-excludes = [
 # attributes typed more loosely (`str | None`); that's intended here.
 errors = { bad-override-mutable-attribute = false }
 replace-imports-with-any = [
+    "lair._ccg_filter",  # downloaded from NOAA GML on first import; absent in CI
     "boto3.*", "botocore.*", "cartopy.*", "fastkml.*", "molmass.*",
     "networkx.*", "numcodecs.*", "pyproj.*", "rasterio.*", "requests.*",
     "rioxarray.*", "s3fs.*", "scipy.*", "shapely.*", "siphon.*",
