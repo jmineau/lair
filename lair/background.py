@@ -11,7 +11,9 @@ from lair._ccg_filter import ccgFilter  # make available to user
 from lair.clock import AFTERNOON, dt2decimalDate
 
 
-def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -> pd.Series | pd.DataFrame:
+def get_well_mixed(
+    data: pd.Series | pd.DataFrame, hours: list[int] = AFTERNOON
+) -> pd.Series | pd.DataFrame:
     """
     Subset the data to the well-mixed hours of the day.
 
@@ -27,12 +29,20 @@ def get_well_mixed(data: pd.Series | pd.DataFrame, hours: list[int]=AFTERNOON) -
     pd.Series | pd.DataFrame
         Daily means over the well-mixed hours (non-numeric columns are dropped).
     """
-    return data[pd.DatetimeIndex(data.index).hour.isin(hours)].resample('1D').mean(numeric_only=True)
+    return (
+        data[pd.DatetimeIndex(data.index).hour.isin(hours)]
+        .resample("1D")
+        .mean(numeric_only=True)
+    )
 
 
-def rolling_baseline(data: pd.Series, window: Any='24h', q: float=0.01,
-                     min_periods: int=1, center: bool=True
-             ) -> pd.Series:
+def rolling_baseline(
+    data: pd.Series,
+    window: Any = "24h",
+    q: float = 0.01,
+    min_periods: int = 1,
+    center: bool = True,
+) -> pd.Series:
     """
     Calculate the baseline concentration as the {q} quantile of a rolling
     window of size {window} hours.
@@ -58,13 +68,19 @@ def rolling_baseline(data: pd.Series, window: Any='24h', q: float=0.01,
         Baseline concentration
     """
     window = pd.Timedelta(window)
-    baseline = (data.rolling(window=window, center=center, min_periods=min_periods).quantile(q)
-                    .rolling(window=window, center=center, min_periods=min_periods).mean())
+    baseline = (
+        data.rolling(window=window, center=center, min_periods=min_periods)
+        .quantile(q)
+        .rolling(window=window, center=center, min_periods=min_periods)
+        .mean()
+    )
 
     return baseline
 
 
-def phase_shift_corrected_baseline(data: pd.Series, n: int = 3600, q: float = 0.01) -> pd.Series:
+def phase_shift_corrected_baseline(
+    data: pd.Series, n: int = 3600, q: float = 0.01
+) -> pd.Series:
     """
     Derive a baseline concentration using a low quantile approach to minimize
     phase shift effects. This method uses forward-looking and backward-looking
@@ -95,18 +111,20 @@ def phase_shift_corrected_baseline(data: pd.Series, n: int = 3600, q: float = 0.
         n += 1
 
     b = []
-    for index, y in data.groupby(pd.DatetimeIndex(data.index).floor('D')):
-        hz = y.asfreq('s')
+    for index, y in data.groupby(pd.DatetimeIndex(data.index).floor("D")):
+        hz = y.asfreq("s")
         left = hz.rolling(n, min_periods=1).quantile(q)
         right = hz.iloc[::-1].rolling(n, min_periods=1).quantile(q).iloc[::-1]
 
         forward = right.rolling(n, min_periods=1).max()
         backward = left.iloc[::-1].rolling(n, min_periods=1).max().iloc[::-1]
 
-        b.append(pd.concat([forward, backward], axis=1)
-                 .max(axis=1)
-                 .rolling(n, min_periods=1, center=True, win_type='blackman')
-                 .mean())
+        b.append(
+            pd.concat([forward, backward], axis=1)
+            .max(axis=1)
+            .rolling(n, min_periods=1, center=True, win_type="blackman")
+            .mean()
+        )
 
     return pd.concat(b)
 
@@ -134,18 +152,18 @@ def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     xp = data.index.to_series().apply(dt2decimalDate).values
     yp = data.values
 
-    if 'debug' not in kwargs:
+    if "debug" not in kwargs:
         # Set debug level using lair's verbose setting (read at call time so
         # `lair.config.verbose = False` takes effect)
-        kwargs['debug'] = config.verbose
+        kwargs["debug"] = config.verbose
 
     # Fit the Thoning curve
     return ccgFilter(xp, yp, **kwargs)
 
-def thoning(data: pd.Series,
-            smooth_time: list[dt.datetime] | pd.Index | None = None,
-            **kwargs
-            )-> pd.Series:
+
+def thoning(
+    data: pd.Series, smooth_time: list[dt.datetime] | pd.Index | None = None, **kwargs
+) -> pd.Series:
     """
     Thoning curve fitting.
 
@@ -160,7 +178,7 @@ def thoning(data: pd.Series,
     ----------
     data : pd.Series
         Time series of data to be smoothed. Must have a datetime index.
-    
+
     **kwargs
         Additional keyword arguments to pass to the ccgFilter class.
 
@@ -185,4 +203,6 @@ def thoning(data: pd.Series,
 
     # Return the smoothed data
     smooth = filt.getSmoothValue(decimal_time)
-    return pd.Series(smooth, index=smooth_time, name=data.name)  # reassign index times to avoid issues with decimal rounding
+    return pd.Series(
+        smooth, index=smooth_time, name=data.name
+    )  # reassign index times to avoid issues with decimal rounding

@@ -32,7 +32,9 @@ class TestVersionDispatch:
         assert CarbonTracker.get_specie_from_version(version) == specie
 
     def test_from_version_returns_ch4_subclass(self):
-        ct = CarbonTracker.from_version("CT-CH4-2025", carbon_tracker_directory="/tmp/ct")
+        ct = CarbonTracker.from_version(
+            "CT-CH4-2025", carbon_tracker_directory="/tmp/ct"
+        )
         assert isinstance(ct, CarbonTrackerCH4)
         assert ct.specie == "ch4"
 
@@ -58,12 +60,18 @@ class TestCarbonTrackerPaths:
             CarbonTrackerCH4(version="CT-CH4-2025")
 
     def test_directory_layout(self):
-        ct = CarbonTrackerCH4(version="CT-CH4-2025", carbon_tracker_directory="/data/ct")
+        ct = CarbonTrackerCH4(
+            version="CT-CH4-2025", carbon_tracker_directory="/data/ct"
+        )
         assert ct.directory.as_posix() == "/data/ct/ch4/CT-CH4-2025"
-        assert ct.molefractions_dir.as_posix() == "/data/ct/ch4/CT-CH4-2025/molefractions"
+        assert (
+            ct.molefractions_dir.as_posix() == "/data/ct/ch4/CT-CH4-2025/molefractions"
+        )
 
     def test_repr_and_str(self):
-        ct = CarbonTrackerCH4(version="CT-CH4-2025", carbon_tracker_directory="/data/ct")
+        ct = CarbonTrackerCH4(
+            version="CT-CH4-2025", carbon_tracker_directory="/data/ct"
+        )
         assert "CarbonTrackerCH4" in repr(ct)
         assert "CT-CH4-2025" in repr(ct)
         assert str(ct) == "CarbonTrackerCH4(CT-CH4-2025)"
@@ -82,8 +90,12 @@ class TestCarbonTrackerPaths:
 class TestPreprocessMolefractions:
     def test_builds_time_from_components(self):
         ds = xr.Dataset(
-            {"time_components": (("time", "n"), np.array([[2020, 1, 1, 0, 0, 0],
-                                                          [2020, 1, 2, 0, 0, 0]]))},
+            {
+                "time_components": (
+                    ("time", "n"),
+                    np.array([[2020, 1, 1, 0, 0, 0], [2020, 1, 2, 0, 0, 0]]),
+                )
+            },
             coords={"time": [0, 1]},
         )
         out = CarbonTrackerCH4._preprocess_molefractions(ds)
@@ -134,8 +146,13 @@ class TestSampleField:
                 "gph": (("time", "boundary", "latitude", "longitude"), gph),
                 "ch4": (("time", "level", "latitude", "longitude"), ch4),
             },
-            coords={"time": times, "latitude": lat, "longitude": lon,
-                    "level": level, "boundary": boundary},
+            coords={
+                "time": times,
+                "latitude": lat,
+                "longitude": lon,
+                "level": level,
+                "boundary": boundary,
+            },
         )
 
     def test_selects_enclosing_level(self):
@@ -157,8 +174,12 @@ class TestSampleField:
     def test_points_outside_grid_are_nan(self):
         ds = self._synthetic_ct()  # cells centred on 40-41 N, 112-111 W
         points = pd.DataFrame(
-            {"time": ["2020-01-01", "2020-01-01"], "lati": [40.2, 45.0],
-             "long": [-112.0, -112.0], "zagl": [10.0, 10.0]}
+            {
+                "time": ["2020-01-01", "2020-01-01"],
+                "lati": [40.2, 45.0],
+                "long": [-112.0, -112.0],
+                "zagl": [10.0, 10.0],
+            }
         )
         out = CarbonTracker._sample_field(points, ds, "ch4")
         assert out["ct_ch4_ppb"].iloc[0] == 1900.0
@@ -182,9 +203,13 @@ class TestCarbonTrackerCO2:
         d.mkdir(parents=True)
         for grid in ("glb3x2", "nam1x1"):
             (d / f"CT2019B.molefrac_{grid}_2015-06-01.nc").touch()
-        assert ct._molefraction_file_for_date("2015-06-01").name == \
-            "CT2019B.molefrac_nam1x1_2015-06-01.nc"
-        glb = CarbonTrackerCO2("CT2019B", carbon_tracker_directory=tmp_path, grid="glb3x2")
+        assert (
+            ct._molefraction_file_for_date("2015-06-01").name
+            == "CT2019B.molefrac_nam1x1_2015-06-01.nc"
+        )
+        glb = CarbonTrackerCO2(
+            "CT2019B", carbon_tracker_directory=tmp_path, grid="glb3x2"
+        )
         assert "glb3x2" in glb._molefraction_file_for_date("2015-06-01").name
         assert ct._molefraction_file_for_date("2015-06-02") is None
 
@@ -194,7 +219,8 @@ class TestCarbonTrackerCO2:
                 return pd.DataFrame({"ct_co2_ppm": [400.0, 402.0]})
 
         out = _FakeCO2("CT2019B", carbon_tracker_directory="/tmp/ct").background(
-            pd.DataFrame({"x": [1]}))
+            pd.DataFrame({"x": [1]})
+        )
         assert out["background_ppm"].iloc[0] == pytest.approx(401.0)
 
 
@@ -203,8 +229,11 @@ class TestDownload:
         import lair.noaa as noaa
 
         calls = []
-        monkeypatch.setattr(noaa, "ftp_download",
-                            lambda host, paths, *args, **kwargs: calls.append(paths))
+        monkeypatch.setattr(
+            noaa,
+            "ftp_download",
+            lambda host, paths, *args, **kwargs: calls.append(paths),
+        )
         ct = CarbonTrackerCH4(carbon_tracker_directory="/tmp/ct")
         ct.download(sub_dirs=None)
         assert calls == [[f"/products/carbontracker/{ct.specie}/{ct.version}"]]
@@ -262,7 +291,9 @@ class TestBackground:
 
 class TestGMLData:
     def test_filename_and_extension_pandas(self):
-        g = GMLData("co2", "spo", gml_dir="/data/gml")  # surface/flask/1/ccgg/event, pandas
+        g = GMLData(
+            "co2", "spo", gml_dir="/data/gml"
+        )  # surface/flask/1/ccgg/event, pandas
         assert g.ext == "txt"
         assert g.filename == "co2_spo_surface-flask_1_ccgg_event.txt"
 
@@ -316,7 +347,10 @@ class TestGMLMonthly:
         )
         data = g.data
         assert list(data.columns) == ["site", "year", "month", "value"]
-        assert data.index.tolist() == [pd.Timestamp("1993-05-01"), pd.Timestamp("1993-06-01")]
+        assert data.index.tolist() == [
+            pd.Timestamp("1993-05-01"),
+            pd.Timestamp("1993-06-01"),
+        ]
         assert data["value"].iloc[1] == pytest.approx(1781.70)
 
 

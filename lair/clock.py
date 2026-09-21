@@ -13,9 +13,21 @@ from typing import Any, Callable, ClassVar, Dict, Literal, Optional, Union
 from zoneinfo import ZoneInfo
 import numpy as np
 
-AFTERNOON = [12, 13, 14, 15, 16] # HH Local Standard Time
-SEASONS = {1: 'DJF', 2: 'DJF', 3: 'MAM', 4: 'MAM', 5: 'MAM', 6: 'JJA',
-           7: 'JJA', 8: 'JJA', 9: 'SON', 10: 'SON', 11: 'SON', 12: 'DJF'}
+AFTERNOON = [12, 13, 14, 15, 16]  # HH Local Standard Time
+SEASONS = {
+    1: "DJF",
+    2: "DJF",
+    3: "MAM",
+    4: "MAM",
+    5: "MAM",
+    6: "JJA",
+    7: "JJA",
+    8: "JJA",
+    9: "SON",
+    10: "SON",
+    11: "SON",
+    12: "DJF",
+}
 
 
 class TimeRange:
@@ -37,16 +49,20 @@ class TimeRange:
         Parse the ISO8601 formatted time string and return a datetime object.
     """
 
-    _input_types = Union[str,
-                        list[Union[str, dt.datetime, None]],
-                        tuple[Union[str, dt.datetime, None],
-                              Union[str, dt.datetime, None]],
-                        slice,
-                        None]
+    _input_types = Union[
+        str,
+        list[Union[str, dt.datetime, None]],
+        tuple[Union[str, dt.datetime, None], Union[str, dt.datetime, None]],
+        slice,
+        None,
+    ]
 
-    def __init__(self, time_range: 'TimeRange' | _input_types = None,
-                 start: Union[_input_types, dt.datetime] = None,
-                 stop: Union[_input_types, dt.datetime] = None):
+    def __init__(
+        self,
+        time_range: "TimeRange" | _input_types = None,
+        start: Union[_input_types, dt.datetime] = None,
+        stop: Union[_input_types, dt.datetime] = None,
+    ):
         """
         Initialize a TimeRange object with the specified time range.
 
@@ -64,7 +80,9 @@ class TimeRange:
         ValueError
             _description_
         """
-        assert not all([time_range, any([start, stop])]), "Cannot specify both time_range and start/stop"
+        assert not all([time_range, any([start, stop])]), (
+            "Cannot specify both time_range and start/stop"
+        )
 
         self._start = None
         self._stop = None
@@ -97,13 +115,13 @@ class TimeRange:
 
     def __str__(self):
         if not any([self.start, self.stop]):
-            return 'Entire Observation Period'
+            return "Entire Observation Period"
         elif not self.start:
-            return f'Before {self.stop}'
+            return f"Before {self.stop}"
         elif not self.stop:
-            return f'After {self.start}'
+            return f"After {self.start}"
         else:
-            return f'{self.start} to {self.stop}'
+            return f"{self.start} to {self.stop}"
 
     def __iter__(self):
         return iter([self.start, self.stop])
@@ -178,35 +196,37 @@ class TimeRange:
             If the time_str format is invalid.
         """
         # Parse time_range string using regex assuming ISO8601 format
-        iso8601 = (r'^(?P<year>\d{4})-?(?P<month>\d{2})?-?(?P<day>\d{2})?'
-                   r'[T\s]?(?P<hour>\d{1,2})?:?(?:\d{2})?')
+        iso8601 = (
+            r"^(?P<year>\d{4})-?(?P<month>\d{2})?-?(?P<day>\d{2})?"
+            r"[T\s]?(?P<hour>\d{1,2})?:?(?:\d{2})?"
+        )
         match = re.match(iso8601, string)
         if not match:
             raise ValueError("Invalid time string format")
 
         components = match.groupdict()
-        year = int(components['year'])
-        month = int(components['month'] or 1)
-        day = int(components['day'] or 1)
-        hour = int(components['hour'] or 0)
+        year = int(components["year"])
+        month = int(components["month"] or 1)
+        day = int(components["day"] or 1)
+        hour = int(components["hour"] or 0)
 
         start = dt.datetime(year, month, day, hour)
 
         # Determine the stop time based on the inclusive flag
         if inclusive:
-            if components['year'] and not components['month']:
-                'YYYY'
+            if components["year"] and not components["month"]:
+                "YYYY"
                 stop = dt.datetime(year + 1, 1, 1)
-            elif components['month'] and not components['day']:
-                'YYYY-MM'
+            elif components["month"] and not components["day"]:
+                "YYYY-MM"
                 mm = month + 1 if month < 12 else 1
                 yyyy = year + 1 if month == 12 else year
                 stop = dt.datetime(yyyy, mm, 1)
-            elif components['day'] and not components['hour']:
-                'YYYY-MM-DD'
+            elif components["day"] and not components["hour"]:
+                "YYYY-MM-DD"
                 stop = start + dt.timedelta(days=1)
-            elif components['hour']:
-                'YYYY-MM-DDTHH'
+            elif components["hour"]:
+                "YYYY-MM-DDTHH"
                 stop = start + dt.timedelta(hours=1)
             else:
                 raise ValueError("Invalid time string format")
@@ -232,6 +252,7 @@ class Timer(ContextDecorator):
 
     class TimerError(Exception):
         """A custom exception used to report errors in use of Timer class"""
+
         pass
 
     def __post_init__(self) -> None:
@@ -277,7 +298,7 @@ class Timer(ContextDecorator):
         self.stop()
 
 
-def datetime_accessor(obj, accessor='dt'):
+def datetime_accessor(obj, accessor="dt"):
     """
     Returns the datetime accessor of the object.
     """
@@ -286,9 +307,11 @@ def datetime_accessor(obj, accessor='dt'):
     return obj
 
 
-def regular_times_to_intervals(times, time_step='monthly',
-                               closed: Literal['left', 'right', 'both', 'neither'] = 'left'
-                               ) -> pd.IntervalIndex:
+def regular_times_to_intervals(
+    times,
+    time_step="monthly",
+    closed: Literal["left", "right", "both", "neither"] = "left",
+) -> pd.IntervalIndex:
     """
     Convert an array of regular times to intervals of the specified length.
 
@@ -317,10 +340,10 @@ def regular_times_to_intervals(times, time_step='monthly',
 
     # Define a dictionary mapping time_step to DateOffset
     offsets = {
-        'hourly': pd.offsets.DateOffset(hours=1),
-        'daily': pd.offsets.DateOffset(days=1),
-        'monthly': pd.offsets.DateOffset(months=1),
-        'annual': pd.offsets.DateOffset(years=1)
+        "hourly": pd.offsets.DateOffset(hours=1),
+        "daily": pd.offsets.DateOffset(days=1),
+        "monthly": pd.offsets.DateOffset(months=1),
+        "annual": pd.offsets.DateOffset(years=1),
     }
 
     # Get the offset from the dictionary or raise an error if the time_step is invalid
@@ -371,7 +394,9 @@ def time_difference_matrix(times, absolute: bool = True) -> np.ndarray:
     np.ndarray
         The matrix of time differences.
     """
-    times = pd.DatetimeIndex(times)  # wrap in pandas DatetimeIndex as np.subtract.outer doesn't like pd.Series
+    times = pd.DatetimeIndex(
+        times
+    )  # wrap in pandas DatetimeIndex as np.subtract.outer doesn't like pd.Series
     diffs = np.subtract.outer(times, times)
     if absolute:
         diffs = np.abs(diffs)
@@ -401,8 +426,13 @@ def time_decay_matrix(times, decay: str | pd.Timedelta) -> np.ndarray:
 
 # ----- Time Aggregation ----- #
 
-def diurnal(data: pd.DataFrame, freq: str='1h', statistic: str | list[str]='mean',
-            method: Literal['floor', 'ceil', 'round']='floor'):
+
+def diurnal(
+    data: pd.DataFrame,
+    freq: str = "1h",
+    statistic: str | list[str] = "mean",
+    method: Literal["floor", "ceil", "round"] = "floor",
+):
     """
     Aggregate the data to the specified frequency and compute the statistic for each group.
 
@@ -428,7 +458,7 @@ def diurnal(data: pd.DataFrame, freq: str='1h', statistic: str | list[str]='mean
     return agg
 
 
-def seasonal(data: pd.DataFrame, statistic: str | list[str]='mean') -> pd.DataFrame:
+def seasonal(data: pd.DataFrame, statistic: str | list[str] = "mean") -> pd.DataFrame:
     """
     Aggregate data by season and year.
 
@@ -445,17 +475,18 @@ def seasonal(data: pd.DataFrame, statistic: str | list[str]='mean') -> pd.DataFr
         The aggregated data.
     """
     # Resample the data to the start of quarters and group by year
-    df = data.resample('QS-DEC').agg(statistic)  # pyrefly: ignore[no-matching-overload]
+    df = data.resample("QS-DEC").agg(statistic)  # pyrefly: ignore[no-matching-overload]
     index = pd.DatetimeIndex(df.index)
-    df['season'] = index.month.map(SEASONS)
+    df["season"] = index.month.map(SEASONS)
 
     # doesnt actually take the mean, just regroups them into season:year
-    df = df.set_index(['season', index.year])
+    df = df.set_index(["season", index.year])
 
     return df
 
 
 # ----- Decimal Time ----- #
+
 
 def dt2decimalDate(datetime: dt.datetime) -> float:
     """
@@ -471,7 +502,9 @@ def dt2decimalDate(datetime: dt.datetime) -> float:
     float
         The decimal date.
     """
-    this_year = dt.datetime(datetime.year, 1, 1, tzinfo=getattr(datetime, 'tzinfo', None))
+    this_year = dt.datetime(
+        datetime.year, 1, 1, tzinfo=getattr(datetime, "tzinfo", None)
+    )
     total_seconds = (datetime - this_year).total_seconds()
     total_seconds_year = TimeRange(str(datetime.year)).total_seconds
     return datetime.year + (total_seconds / total_seconds_year)
@@ -501,8 +534,8 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
 
 # ----- Time Zones ----- #
 
-def convert_timezones(x, totz, fromtz=None, localize=False,
-                      driver=None):
+
+def convert_timezones(x, totz, fromtz=None, localize=False, driver=None):
     """
     Convert the times from one timezone to another.
 
@@ -539,7 +572,7 @@ def convert_timezones(x, totz, fromtz=None, localize=False,
             converted_times = [t.replace(tzinfo=None) for t in converted_times]
 
         return converted_times
-    elif driver == 'pandas':
+    elif driver == "pandas":
         data = x.copy(deep=True)
 
         # If x is a DataFrame, convert DateTimeIndex
@@ -555,7 +588,7 @@ def convert_timezones(x, totz, fromtz=None, localize=False,
 
         # If the times are not tz-aware, assign them the fromtz timezone.
         if fromtz and datetime_accessor(times).tz is None:
-            times = datetime_accessor(times).tz_localize(fromtz) 
+            times = datetime_accessor(times).tz_localize(fromtz)
 
         # Convert the times to the specified timezone.
         times = datetime_accessor(times).tz_convert(totz)
@@ -573,8 +606,8 @@ def convert_timezones(x, totz, fromtz=None, localize=False,
         raise ValueError("Invalid driver")
 
 
-UTC2 = partial(convert_timezones, fromtz='UTC')
-UTC2MST = partial(UTC2, totz='MST')
-UTC2MTN = partial(UTC2, totz='America/Denver')
-MST2UTC = partial(convert_timezones, fromtz='MST', totz='UTC')
-MTN2UTC = partial(convert_timezones, fromtz='America/Denver', totz='UTC')
+UTC2 = partial(convert_timezones, fromtz="UTC")
+UTC2MST = partial(UTC2, totz="MST")
+UTC2MTN = partial(UTC2, totz="America/Denver")
+MST2UTC = partial(convert_timezones, fromtz="MST", totz="UTC")
+MTN2UTC = partial(convert_timezones, fromtz="America/Denver", totz="UTC")

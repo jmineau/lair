@@ -25,19 +25,29 @@ Numeric = Any
 
 #: Standard Atmosphere
 standard: dict[str, float] = {
-    'T': 288.15 * units('K'),
-    'p': 1013.25 * units('hPa'),
-    'rho': 1.225 * units('kg / m**3'),
-    'z': 0 * units('m')
+    "T": 288.15 * units("K"),
+    "p": 1013.25 * units("hPa"),
+    "rho": 1.225 * units("kg / m**3"),
+    "z": 0 * units("m"),
 }
 
 #############
 # Functions #
 #############
 
-def ideal_gas_law(solve_for: str, p: Numeric = None, V: Numeric = None, T: Numeric = None,
-                  m: Numeric = None, n: Numeric = None, N: Numeric = None,
-                  rho: Numeric = None, alpha: Numeric = None, R: Numeric = None) -> Numeric:
+
+def ideal_gas_law(
+    solve_for: str,
+    p: Numeric = None,
+    V: Numeric = None,
+    T: Numeric = None,
+    m: Numeric = None,
+    n: Numeric = None,
+    N: Numeric = None,
+    rho: Numeric = None,
+    alpha: Numeric = None,
+    R: Numeric = None,
+) -> Numeric:
     """
     Ideal gas law equation solver.
     Solver attempts to solve for the specified variable using the following
@@ -62,13 +72,13 @@ def ideal_gas_law(solve_for: str, p: Numeric = None, V: Numeric = None, T: Numer
     α : specific volume (m^3/kg)
     R : specific gas constant (J/kg/K)
 
-    Can be used to solve for pressure, volume, temperature, density, mass, 
+    Can be used to solve for pressure, volume, temperature, density, mass,
     moles, or number of molecules.
     """
 
-    if solve_for in ['pressure', 'pres', 'p']:
+    if solve_for in ["pressure", "pres", "p"]:
         if not V:
-            rho = rho or 1/alpha
+            rho = rho or 1 / alpha
             x = rho * R * T
         else:
             if n:
@@ -77,16 +87,16 @@ def ideal_gas_law(solve_for: str, p: Numeric = None, V: Numeric = None, T: Numer
                 x = m * R * T / V
             else:
                 x = N * kb * T / V
-    elif solve_for in ['volume', 'vol', 'V']:
+    elif solve_for in ["volume", "vol", "V"]:
         if n:
             x = n * Rstar * T / p
         elif m:
             x = m * R * T / p
         else:
             x = N * kb * T / p
-    elif solve_for in ['temperature', 'temp', 'T']:
+    elif solve_for in ["temperature", "temp", "T"]:
         if not V:
-            rho = rho or 1/alpha
+            rho = rho or 1 / alpha
             x = p / (rho * R)
         else:
             if n:
@@ -95,22 +105,28 @@ def ideal_gas_law(solve_for: str, p: Numeric = None, V: Numeric = None, T: Numer
                 x = p * V / (m * R)
             else:
                 x = p * V / (N * kb)
-    elif solve_for in ['density', 'rho']:
+    elif solve_for in ["density", "rho"]:
         x = p / (R * T)
-    elif solve_for in ['mass', 'm']:
+    elif solve_for in ["mass", "m"]:
         x = p * V / (R * T)
-    elif solve_for in ['moles', 'n']:
+    elif solve_for in ["moles", "n"]:
         x = p * V / (Rstar * T)
-    elif solve_for in ['number', 'N']:
+    elif solve_for in ["number", "N"]:
         x = p * V / (kb * T)
     else:
-        raise ValueError('Invalid solve_for')
+        raise ValueError("Invalid solve_for")
 
     return x
 
 
-def hypsometric(Tv: Numeric = None, p1: Numeric = None, p2: Numeric = None,
-                Z1: Numeric = None, Z2: Numeric = None, deltaz: Numeric = None) -> Numeric:
+def hypsometric(
+    Tv: Numeric = None,
+    p1: Numeric = None,
+    p2: Numeric = None,
+    Z1: Numeric = None,
+    Z2: Numeric = None,
+    deltaz: Numeric = None,
+) -> Numeric:
     """
     Hyposometric equation solver.
 
@@ -135,20 +151,20 @@ def hypsometric(Tv: Numeric = None, p1: Numeric = None, p2: Numeric = None,
             deltaz = Z2 - Z1
 
         if Tv is None:
-            return deltaz * g / (Rd * np.log(p1/p2))
+            return deltaz * g / (Rd * np.log(p1 / p2))
         elif p1 is None:
             return p2 * np.exp(deltaz * g / (Rd * Tv))
         elif p2 is None:
             return p1 * np.exp(-deltaz * g / (Rd * Tv))
 
     elif Z1 is None and Z2 is None:
-        return Rd * Tv * np.log(p1/p2) / g
+        return Rd * Tv * np.log(p1 / p2) / g
     elif Z1 is None:
-        return Z2 - Rd * Tv * np.log(p1/p2) / g
+        return Z2 - Rd * Tv * np.log(p1 / p2) / g
     elif Z2 is None:
-        return Z1 + Rd * Tv * np.log(p1/p2) / g
+        return Z1 + Rd * Tv * np.log(p1 / p2) / g
 
-    raise ValueError('Invalid input combination')
+    raise ValueError("Invalid input combination")
 
 
 def virt_T(T: Numeric, q: Numeric) -> Numeric:
@@ -188,7 +204,7 @@ def poisson(T: Numeric, p: Numeric, p0: Numeric = 1e5) -> Numeric:
     float
         Potential temperature in Kelvin.
     """
-    return T * (p0/p)**(Rd/cp)
+    return T * (p0 / p) ** (Rd / cp)
 
 
 def inv_poisson(p: Numeric, theta: Numeric, p0: Numeric = 1e5) -> Numeric:
@@ -209,7 +225,7 @@ def inv_poisson(p: Numeric, theta: Numeric, p0: Numeric = 1e5) -> Numeric:
     float
         Temperature in Kelvin.
     """
-    return theta * (p/p0)**(Rd/cp)
+    return theta * (p / p0) ** (Rd / cp)
 
 
 def sat_vapor_pres(T: Numeric) -> Numeric:
@@ -226,7 +242,7 @@ def sat_vapor_pres(T: Numeric) -> Numeric:
     float
         Saturation vapor pressure in Pascals.
     """
-    return 2.53e11 * np.exp(-5420/T)
+    return 2.53e11 * np.exp(-5420 / T)
 
 
 def sat_vapor_pres_ice(T: Numeric) -> Numeric:
@@ -243,7 +259,7 @@ def sat_vapor_pres_ice(T: Numeric) -> Numeric:
     float
         Saturation vapor pressure over ice in Pascals.
     """
-    return 3.41e11 * np.exp(-6130/T)
+    return 3.41e11 * np.exp(-6130 / T)
 
 
 def mixing_ratio(e: Numeric, p: Numeric) -> Numeric:
@@ -265,7 +281,7 @@ def mixing_ratio(e: Numeric, p: Numeric) -> Numeric:
     return epsilon * e / p
 
 
-def T_from_e(e: Numeric) -> Numeric: #Pa
+def T_from_e(e: Numeric) -> Numeric:  # Pa
     """
     Calculate the temperature from vapor pressure.
 
@@ -279,4 +295,4 @@ def T_from_e(e: Numeric) -> Numeric: #Pa
     float
         Temperature in Kelvin.
     """
-    return -5420/np.log(e/2.53e11) #K
+    return -5420 / np.log(e / 2.53e11)  # K

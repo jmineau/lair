@@ -314,7 +314,7 @@ class CarbonTrackerCH4(CarbonTracker):
             open_mfdataset = Cacher(xr.open_mfdataset, str(cache_file))
         else:
             open_mfdataset = xr.open_mfdataset
-        ds = open_mfdataset(files, preprocess=CarbonTrackerCH4._preprocess_molefractions, 
+        ds = open_mfdataset(files, preprocess=CarbonTrackerCH4._preprocess_molefractions,
                             parallel=self.parallel_parse)
         return ds
 
@@ -333,7 +333,7 @@ class CarbonTrackerCH4(CarbonTracker):
         xr.Dataset
             The molefractions Dataset with the pressure calculated.
         """
-        molefractions['P'] = (molefractions.at 
+        molefractions['P'] = (molefractions.at
                               + molefractions.bt * molefractions.surf_pressure)
         molefractions['P'] /= 100  # Convert to hPa
         molefractions['P'].attrs = {'long_name': 'Pressure', 'units': 'hPa',

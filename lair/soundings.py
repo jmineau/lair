@@ -19,7 +19,7 @@ from siphon.simplewebservice.wyoming import WyomingUpperAir
 
 
 #: Environment variable holding the sounding archive root (one subdirectory per station)
-SOUNDING_DIR_ENV = 'LAIR_SOUNDING_DIR'
+SOUNDING_DIR_ENV = "LAIR_SOUNDING_DIR"
 
 
 class Sounding:
@@ -44,11 +44,31 @@ class Sounding:
     interpolate(start=1289, stop=5000, interval=10)
         Interpolate sounding data to regular height intervals.
     """
-    _attrs = ['station', 'time', 'station_number', 'latitude', 'longitude', 'elevation', 'pw']
 
-    units = {'pressure': 'hPa', 'height': 'meter', 'temperature': 'degC', 'dewpoint': 'degC',
-             'direction': 'degrees', 'speed': 'knot', 'u_wind': 'knot', 'v_wind': 'knot', 
-             'latitude': 'degrees', 'longitude': 'degrees', 'elevation': 'meter', 'pw': 'millimeter'}
+    _attrs = [
+        "station",
+        "time",
+        "station_number",
+        "latitude",
+        "longitude",
+        "elevation",
+        "pw",
+    ]
+
+    units = {
+        "pressure": "hPa",
+        "height": "meter",
+        "temperature": "degC",
+        "dewpoint": "degC",
+        "direction": "degrees",
+        "speed": "knot",
+        "u_wind": "knot",
+        "v_wind": "knot",
+        "latitude": "degrees",
+        "longitude": "degrees",
+        "elevation": "meter",
+        "pw": "millimeter",
+    }
 
     def __init__(self, path: str):
         """
@@ -64,12 +84,13 @@ class Sounding:
         self.path = path
         self.filename = os.path.basename(path)
 
-        self.station = self.filename.split('_')[0]
-        self.time = dt.datetime.strptime(self.filename.split('_')[1].split('.')[0],
-                                         '%Y%m%d%H')
+        self.station = self.filename.split("_")[0]
+        self.time = dt.datetime.strptime(
+            self.filename.split("_")[1].split(".")[0], "%Y%m%d%H"
+        )
 
-        self.data = pd.read_csv(path, parse_dates=['time'])
-        self.data.drop(columns=['station', 'time'], inplace=True)
+        self.data = pd.read_csv(path, parse_dates=["time"])
+        self.data.drop(columns=["station", "time"], inplace=True)
 
         for attr in self._attrs:
             if attr in self.data.columns:
@@ -87,7 +108,7 @@ class Sounding:
             The stopping height.
         step : int
             The height step.
-        
+
         Returns
         -------
         xr.Dataset
@@ -95,30 +116,31 @@ class Sounding:
         """
         height = range(start, stop, interval)
         df = pd.DataFrame(index=height)
-        data_height = self.data.dropna(subset='height').set_index('height')
-        data_height['raw'] = True
+        data_height = self.data.dropna(subset="height").set_index("height")
+        data_height["raw"] = True
         merged = pd.concat([df, data_height])
-        merged.index.name = 'height'
-        merged = merged.sort_values(['height', 'raw'])
+        merged.index.name = "height"
+        merged = merged.sort_values(["height", "raw"])
 
         # Keep the object-dtype 'raw' flag out of the interpolation (pandas 3
         # refuses object columns) and only fill between observed levels, so
         # heights above the sounding top stay NaN instead of being extrapolated
-        raw = merged.pop('raw')
-        data = merged.interpolate(method='index', limit_area='inside')
+        raw = merged.pop("raw")
+        data = merged.interpolate(method="index", limit_area="inside")
 
-        data = data[raw.isna().to_numpy()
-                    & (data.index >= start)
-                    & (data.index < stop)]
+        data = data[raw.isna().to_numpy() & (data.index >= start) & (data.index < stop)]
 
         ds = data.to_xarray().expand_dims(time=[self.time])
-        ds['pw'] = (('time', ), [getattr(self, 'pw', float('nan'))])
+        ds["pw"] = (("time",), [getattr(self, "pw", float("nan"))])
 
-        attrs = {attr: getattr(self, attr) for attr in self._attrs
-                 if hasattr(self, attr) and attr not in ['time', 'pw']}
+        attrs = {
+            attr: getattr(self, attr)
+            for attr in self._attrs
+            if hasattr(self, attr) and attr not in ["time", "pw"]
+        }
         ds.attrs.update(attrs)
-        ds.attrs['interpolation_interval'] = interval
-        ds.attrs['notes'] = f'Interpolated to {start}-{stop}m at {interval}m intervals.'
+        ds.attrs["interpolation_interval"] = interval
+        ds.attrs["notes"] = f"Interpolated to {start}-{stop}m at {interval}m intervals."
 
         return ds
 
@@ -174,15 +196,16 @@ def download_sounding(station, date, dst=None) -> str:
         dst = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)
     os.makedirs(dst, exist_ok=True)
 
-    path = os.path.join(dst, f'{station}_{date:%Y%m%d%H}.csv')
+    path = os.path.join(dst, f"{station}_{date:%Y%m%d%H}.csv")
     if not os.path.exists(path):
-        print(f'Downloading {station} on {date:%Y-%m-%d %H:%M}...')
+        print(f"Downloading {station} on {date:%Y-%m-%d %H:%M}...")
         df = WyomingUpperAir.request_data(date, station)
         df.to_csv(path, index=False)
     else:
-        print(f'{station} on {date:%Y-%m-%d %H:%M} already exists.')
+        print(f"{station} on {date:%Y-%m-%d %H:%M} already exists.")
 
     return path
+
 
 def download_soundings(station, start, end, dst=None, months=None):
     """
@@ -201,9 +224,9 @@ def download_soundings(station, start, end, dst=None, months=None):
     months : list
         The months to download.
     """
-    print('Downloading soundings...')
+    print("Downloading soundings...")
 
-    dates = pd.date_range(start, end, freq='12h')
+    dates = pd.date_range(start, end, freq="12h")
 
     if months:
         dates = dates[dates.month.isin(months)]
@@ -214,26 +237,33 @@ def download_soundings(station, start, end, dst=None, months=None):
         try:
             download_sounding(station, date, dst)
         except IndexError as e:
-            print(f'Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}')
+            print(f"Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}")
             continue
         except ValueError as e:
-            print(f'Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}')
-            if 'No data available' in str(e):
+            print(f"Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}")
+            if "No data available" in str(e):
                 continue
             else:
                 raise e
         except requests.exceptions.HTTPError as e:
-            print(f'Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}')
-            if 'Please try again later' in str(e):
-                print('Trying again in 2 seconds...')
+            print(f"Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}")
+            if "Please try again later" in str(e):
+                print("Trying again in 2 seconds...")
                 to_download.appendleft(date)
                 sleep(2)
             else:
                 raise e
 
 
-def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months=None,
-                  driver='xarray', **kwargs):
+def get_soundings(
+    station="SLC",
+    start=None,
+    end=None,
+    sounding_dir=None,
+    months=None,
+    driver="xarray",
+    **kwargs,
+):
     """
     Get upper air soundings from the Wyoming archive.
 
@@ -267,10 +297,12 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
 
     files = os.listdir(sounding_dir) if os.path.isdir(sounding_dir) else []
     if len(files) == 0:
-        print('No soundings found. Downloading...')
+        print("No soundings found. Downloading...")
 
         if not all([start, end]):
-            raise ValueError('start and end must be specified if no soundings are found.')
+            raise ValueError(
+                "start and end must be specified if no soundings are found."
+            )
         download_soundings(station, start, end, sounding_dir, months)
         files = os.listdir(sounding_dir)
 
@@ -278,7 +310,7 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
     for file in files:
         # Skip anything that isn't a <station>_<YYYYmmddHH>.csv sounding
         try:
-            date = dt.datetime.strptime(file.split('_')[1].split('.')[0], '%Y%m%d%H')
+            date = dt.datetime.strptime(file.split("_")[1].split(".")[0], "%Y%m%d%H")
         except (IndexError, ValueError):
             continue
 
@@ -296,19 +328,21 @@ def get_soundings(station='SLC', start=None, end=None, sounding_dir=None, months
         try:
             soundings.append(Sounding(path))
         except Exception as e:
-            print(f'Error reading file {path}: {e}')
+            print(f"Error reading file {path}: {e}")
             continue
 
     if not soundings:
-        raise ValueError(f'No soundings found in {sounding_dir} for the requested period.')
+        raise ValueError(
+            f"No soundings found in {sounding_dir} for the requested period."
+        )
 
-    if driver in ['xarray', 'nc']:
-        data = xr.concat([sounding.interpolate() for sounding in soundings],
-                         dim='time').sortby('time')
-    elif driver in ['pandas', 'csv']:
+    if driver in ["xarray", "nc"]:
+        data = xr.concat(
+            [sounding.interpolate() for sounding in soundings], dim="time"
+        ).sortby("time")
+    elif driver in ["pandas", "csv"]:
         data = merge(soundings)
     else:
-        raise ValueError(f'Invalid driver: {driver}')
+        raise ValueError(f"Invalid driver: {driver}")
 
     return data
-

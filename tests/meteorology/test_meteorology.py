@@ -148,8 +148,9 @@ class TestHypsometric:
         # quantities, so a bare-float Tv leaves the thickness in odd units
         from lair import units
 
-        Z2 = met.hypsometric(Tv=288.0 * units("K"), p1=1e5, p2=9e4,
-                             Z1=100.0 * units("m"))
+        Z2 = met.hypsometric(
+            Tv=288.0 * units("K"), p1=1e5, p2=9e4, Z1=100.0 * units("m")
+        )
         assert Z2.to("m").magnitude == pytest.approx(
             100.0 + 287.05 * 288.0 * np.log(1e5 / 9e4) / 9.81, rel=1e-6
         )

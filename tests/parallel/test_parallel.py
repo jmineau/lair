@@ -61,4 +61,3 @@ class TestMultiprocessingPath:
 
 # NOTE: an empty iterable currently clamps `processes` to 0 and raises
 # ValueError from Pool(processes=0) — likely a bug worth a guard.
-

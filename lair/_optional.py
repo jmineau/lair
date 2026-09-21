@@ -8,17 +8,17 @@ import importlib
 def import_optional_dependency(name: str):
     """
     Import an optional dependency.
-    
+
     Parameters
     ----------
     name : str
         The module name to import.
-        
+
     Returns
     -------
     module
         The imported module.
-        
+
     Raises
     ------
     ImportError

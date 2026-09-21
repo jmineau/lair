@@ -34,7 +34,9 @@ class TestTimeRangeParsing:
 
 class TestTimeRangeMembership:
     def test_contains_within_bounds(self):
-        tr = clock.TimeRange(start=dt.datetime(2024, 1, 1), stop=dt.datetime(2024, 1, 3))
+        tr = clock.TimeRange(
+            start=dt.datetime(2024, 1, 1), stop=dt.datetime(2024, 1, 3)
+        )
         assert dt.datetime(2024, 1, 2) in tr
         assert dt.datetime(2024, 2, 1) not in tr
 
@@ -168,9 +170,7 @@ class TestConvertTimezonesPandas:
         assert list(out.dt.hour) == [11, 12]
 
     def test_localize_drops_tz(self):
-        df = pd.DataFrame(
-            {"v": [1]}, index=pd.to_datetime(["2024-01-01 18:00"])
-        )
+        df = pd.DataFrame({"v": [1]}, index=pd.to_datetime(["2024-01-01 18:00"]))
         out = clock.convert_timezones(
             df, totz="MST", fromtz="UTC", localize=True, driver="pandas"
         )

@@ -27,18 +27,19 @@ from botocore.config import Config  # noqa: E402
 
 
 #: HRRR Projection
-PROJECTION: ccrs.CRS = ccrs.LambertConformal(central_longitude=262.5,
-                                             central_latitude=38.5,
-                                             standard_parallels=(38.5, 38.5),
-                                             globe=ccrs.Globe(semimajor_axis=6371229,
-                                                              semiminor_axis=6371229))
+PROJECTION: ccrs.CRS = ccrs.LambertConformal(
+    central_longitude=262.5,
+    central_latitude=38.5,
+    standard_parallels=(38.5, 38.5),
+    globe=ccrs.Globe(semimajor_axis=6371229, semiminor_axis=6371229),
+)
 
 
 @dataclasses.dataclass
 class ZarrId:
     """
     Class to store information about a HRRR zarr file.
-    
+
     Attributes
     ----------
     run_hour : dt.datetime
@@ -57,11 +58,12 @@ class ZarrId:
     format_chunk_id(chunk_id)
         Format chunk_id for zarr url.
     """
+
     run_hour: dt.datetime
-    level_type: Literal['sfc', 'prs']
+    level_type: Literal["sfc", "prs"]
     var_level: str
     var_name: str
-    model_type: Literal['anl', 'fcst']
+    model_type: Literal["anl", "fcst"]
 
     def format_chunk_id(self, chunk_id):
         """
@@ -103,9 +105,12 @@ def winds_frame(u_grid, v_grid, lon: float, times) -> pd.DataFrame:
         Columns ``u``, ``v`` (earth-relative, m/s), ``ws`` (speed from u and v,
         m/s) and ``wd`` (direction, degrees).
     """
-    u, v = rotate_winds(np.asarray(u_grid, dtype=float), np.asarray(v_grid, dtype=float), lon)
-    return pd.DataFrame({'u': u, 'v': v, 'ws': np.hypot(u, v), 'wd': wind_direction(u, v)},
-                        index=times)
+    u, v = rotate_winds(
+        np.asarray(u_grid, dtype=float), np.asarray(v_grid, dtype=float), lon
+    )
+    return pd.DataFrame(
+        {"u": u, "v": v, "ws": np.hypot(u, v), "wd": wind_direction(u, v)}, index=times
+    )
 
 
 @dataclasses.dataclass
@@ -131,6 +136,7 @@ class Winds:
         10 m winds: ``u``, ``v`` (earth-relative), ``ws`` (speed from u and v)
         and ``wd`` (see :func:`winds_frame`).
     """
+
     lat: float
     lon: float
     times: list[dt.datetime]
@@ -140,40 +146,43 @@ class Winds:
         fs = s3fs.S3FileSystem(anon=True)
         # Don't recreate this resource in a loop! That caused a 3-4x slowdown for me.
         # Not sure who the above is, but should be listened to.
-        s3 = boto3.resource(service_name='s3', region_name='us-west-1',
-                            config=Config(signature_version=UNSIGNED))
+        s3 = boto3.resource(
+            service_name="s3",
+            region_name="us-west-1",
+            config=Config(signature_version=UNSIGNED),
+        )
 
         # Chunk Index
         chunk_index_url = "s3://hrrrzarr/grid/HRRR_chunk_index.zarr"
         self.chunk_index = xr.open_zarr(s3fs.S3Map(chunk_index_url, s3=fs))
 
         # Nearest Point to chunk_id
-        self.nearest_point = get_nearest_point(self.lon, self.lat,
-                                               self.chunk_index)
+        self.nearest_point = get_nearest_point(self.lon, self.lat, self.chunk_index)
         self.chunk_id = self.nearest_point.chunk_id.values
 
         # Generate zarr ids
-        variables = [('UGRD', '10m_above_ground'),
-                     ('VGRD', '10m_above_ground')]
-        self.zarr_ids = generate_zarr_ids(times=self.times,
-                                          level_type='sfc',
-                                          variables=variables,
-                                          model_type='anl')
+        variables = [("UGRD", "10m_above_ground"), ("VGRD", "10m_above_ground")]
+        self.zarr_ids = generate_zarr_ids(
+            times=self.times, level_type="sfc", variables=variables, model_type="anl"
+        )
 
         # Download variables
         var_data = {}
         for (var_name, _), ids in self.zarr_ids.items():
-            var_data[var_name] = [get_value(s3, zarr_id, self.chunk_id,
-                                            self.nearest_point)
-                                  for zarr_id in ids]
+            var_data[var_name] = [
+                get_value(s3, zarr_id, self.chunk_id, self.nearest_point)
+                for zarr_id in ids
+            ]
 
-        self.data = winds_frame(var_data['UGRD'], var_data['VGRD'], self.lon, self.times)
+        self.data = winds_frame(
+            var_data["UGRD"], var_data["VGRD"], self.lon, self.times
+        )
 
 
-def create_s3_group_url(zarr_id: ZarrId, prefix: bool=True) -> str:
+def create_s3_group_url(zarr_id: ZarrId, prefix: bool = True) -> str:
     """
     Create the s3 group url for a zarr id.
-    
+
      - Start of the zarr array data format
      - Includes metadata such as the grid
 
@@ -191,12 +200,13 @@ def create_s3_group_url(zarr_id: ZarrId, prefix: bool=True) -> str:
     """
     url = "s3://hrrrzarr/" if prefix else ""  # Skip when using boto3
     url += zarr_id.run_hour.strftime(
-        f"{zarr_id.level_type}/%Y%m%d/%Y%m%d_%Hz_{zarr_id.model_type}.zarr/")
+        f"{zarr_id.level_type}/%Y%m%d/%Y%m%d_%Hz_{zarr_id.model_type}.zarr/"
+    )
     url += f"{zarr_id.var_level}/{zarr_id.var_name}"
     return url
 
 
-def create_s3_subgroup_url(zarr_id: ZarrId, prefix: bool=True) -> str:
+def create_s3_subgroup_url(zarr_id: ZarrId, prefix: bool = True) -> str:
     """
     Create the s3 subgroup url for a zarr id.
 
@@ -221,7 +231,7 @@ def create_s3_subgroup_url(zarr_id: ZarrId, prefix: bool=True) -> str:
     return url
 
 
-def create_s3_chunk_url(zarr_id: ZarrId, chunk_id, prefix: bool=False) -> str:
+def create_s3_chunk_url(zarr_id: ZarrId, chunk_id, prefix: bool = False) -> str:
     """
     Create the s3 chunk url for a zarr id.
 
@@ -248,8 +258,9 @@ def create_s3_chunk_url(zarr_id: ZarrId, chunk_id, prefix: bool=False) -> str:
     return url
 
 
-def get_nearest_point(longitude: float, latitude: float, chunk_index: xr.Dataset
-                      ) -> xr.Dataset:
+def get_nearest_point(
+    longitude: float, latitude: float, chunk_index: xr.Dataset
+) -> xr.Dataset:
     """
     Get the nearest point to a given latitude and longitude.
 
@@ -287,14 +298,17 @@ def retrieve_object(s3, s3_url: str):
     bytes
         compressed object data
     """
-    obj = s3.Object('hrrrzarr', s3_url)
-    return obj.get()['Body'].read()
+    obj = s3.Object("hrrrzarr", s3_url)
+    return obj.get()["Body"].read()
 
 
-def generate_zarr_ids(times: list[dt.datetime], level_type: Literal['sfc', 'prs'],
-                      variables: list[Tuple[str, str]],
-                      model_type: Literal['anl', 'fcst']):
-    '''
+def generate_zarr_ids(
+    times: list[dt.datetime],
+    level_type: Literal["sfc", "prs"],
+    variables: list[Tuple[str, str]],
+    model_type: Literal["anl", "fcst"],
+):
+    """
     Generate ZarrId instance for multiple times and variables
 
     Parameters
@@ -313,17 +327,19 @@ def generate_zarr_ids(times: list[dt.datetime], level_type: Literal['sfc', 'prs'
     ids : [ZarrId]
         dictionary of zarr ids with var as key
 
-    '''
+    """
     ids = {}
 
     for var in variables:
         ids[var] = []
         for time in times:
-            ID = ZarrId(run_hour=time,
-                        level_type=level_type,
-                        var_name=var[0],
-                        var_level=var[1],
-                        model_type=model_type)
+            ID = ZarrId(
+                run_hour=time,
+                level_type=level_type,
+                var_name=var[0],
+                var_level=var[1],
+                model_type=model_type,
+            )
             ids[var].append(ID)
 
     return ids
@@ -357,7 +373,7 @@ def decompress_chunk(zarr_id: ZarrId, compressed_data: bytes):
         arr = np.reshape(chunk, (150, 150))
     else:
         entry_size = 22500
-        arr = np.reshape(chunk, (len(chunk)//entry_size, 150, 150))
+        arr = np.reshape(chunk, (len(chunk) // entry_size, 150, 150))
 
     return arr
 
@@ -385,6 +401,10 @@ def get_value(s3, zarr_id: ZarrId, chunk_id, nearest_point: xr.Dataset):
     compressed_data = retrieve_object(s3, create_s3_chunk_url(zarr_id, chunk_id))
     chunk_data = decompress_chunk(zarr_id, compressed_data)
     if zarr_id.model_type == "fcst":
-        return chunk_data[:, nearest_point.in_chunk_y.values, nearest_point.in_chunk_x.values]
+        return chunk_data[
+            :, nearest_point.in_chunk_y.values, nearest_point.in_chunk_x.values
+        ]
     else:
-        return chunk_data[nearest_point.in_chunk_y.values, nearest_point.in_chunk_x.values]
+        return chunk_data[
+            nearest_point.in_chunk_y.values, nearest_point.in_chunk_x.values
+        ]

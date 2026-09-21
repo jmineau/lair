@@ -1,9 +1,10 @@
 def updating_print(msg):
-    print(f'\r{msg}', end='')
+    print(f"\r{msg}", end="")
 
 
 class DotDict(dict):
     """dot.notation access to dictionary attributes"""
+
     def __getattr__(*args):
         val = dict.__getitem__(*args)
         return DotDict(val) if type(val) is dict else val

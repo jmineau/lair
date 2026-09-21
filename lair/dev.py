@@ -17,4 +17,4 @@ def public_attrs(obj: object) -> list[str]:
     list[str]
         List of public attributes.
     """
-    return [a for a in dir(obj) if not a.startswith('_')]
+    return [a for a in dir(obj) if not a.startswith("_")]

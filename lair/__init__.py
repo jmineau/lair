@@ -22,19 +22,26 @@ from . import config
 from .records import ftp_download, unzip
 
 try:
-    __version__ = _version('lair')  # set by setuptools-scm from git tags
+    __version__ = _version("lair")  # set by setuptools-scm from git tags
 except PackageNotFoundError:  # running from a source tree that isn't installed
-    __version__ = '0+unknown'
+    __version__ = "0+unknown"
 
 
 # Custom pint context to convert fluxes from mass <--> substance
-mass_flux = pint.Context('mass_flux')
-mass_flux.add_transformation('[substance] / [area] / [time]',
-                             '[mass] / [area] / [time]',
-                        lambda units, substance, mw: substance * mw)  # pyrefly: ignore[bad-argument-type]
-mass_flux.add_transformation('[mass] / [area] / [time]',
-                             '[substance] / [area] / [time]',
-                        lambda units, mass, mw: mass / mw)  # pyrefly: ignore[bad-argument-type]
+mass_flux = pint.Context("mass_flux")
+mass_flux.add_transformation(
+    "[substance] / [area] / [time]",
+    "[mass] / [area] / [time]",
+    # pint types the callback narrowly; (units, value, mw) is what it calls
+    # pyrefly: ignore[bad-argument-type]
+    lambda units, substance, mw: substance * mw,
+)
+mass_flux.add_transformation(
+    "[mass] / [area] / [time]",
+    "[substance] / [area] / [time]",
+    # pyrefly: ignore[bad-argument-type]
+    lambda units, mass, mw: mass / mw,
+)
 units.add_context(mass_flux)
 
 # Set default pint sorting function to sort by dimensionality.
@@ -54,32 +61,30 @@ def setup_ccg_filter():
     """
     # Define the path for the CCG filter file
     lair_dir = os.path.dirname(__file__)
-    ccg_filter_file = os.path.join(lair_dir, '_ccg_filter.py')
+    ccg_filter_file = os.path.join(lair_dir, "_ccg_filter.py")
 
     # Check if the CCG filter file already exists
     if not os.path.exists(ccg_filter_file):
-
-        if os.getenv('LAIR_SKIP_CCG_DOWNLOAD'):
+        if os.getenv("LAIR_SKIP_CCG_DOWNLOAD"):
             # Offline/CI/read-only: skip the FTP download (see docstring)
             return
 
-        remote_zf = 'user/thoning/ccgcrv/ccg_filter.zip'
-        zf = os.path.join(lair_dir, 'ccg_filter.zip')
+        remote_zf = "user/thoning/ccgcrv/ccg_filter.zip"
+        zf = os.path.join(lair_dir, "ccg_filter.zip")
 
         # Download the zip file from the FTP server
-        ftp_download('ftp.gml.noaa.gov', remote_zf, lair_dir)
+        ftp_download("ftp.gml.noaa.gov", remote_zf, lair_dir)
 
         # Unzip the downloaded file
         unzip(zf, lair_dir)
 
         # Cleanup: remove the downloaded zip and unnecessary files
         os.remove(zf)
-        os.remove(os.path.join(lair_dir, 'ccg_dates.py'))
-        os.remove(os.path.join(lair_dir, 'ccgcrv.py'))
+        os.remove(os.path.join(lair_dir, "ccg_dates.py"))
+        os.remove(os.path.join(lair_dir, "ccgcrv.py"))
 
         # Rename the original file with leading underscore (private module)
-        os.rename(os.path.join(lair_dir, 'ccg_filter.py'), ccg_filter_file)
+        os.rename(os.path.join(lair_dir, "ccg_filter.py"), ccg_filter_file)
 
 
 setup_ccg_filter()
-

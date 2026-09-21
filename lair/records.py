@@ -14,25 +14,32 @@ if TYPE_CHECKING:
     from fastkml.kml import KML
 
 
-def unzip(zf: str, dir_path: str | None=None):
-    '''
+def unzip(zf: str, dir_path: str | None = None):
+    """
     Unzip file into dir_path if given
-    
+
     Parameters
     ----------
     zf : str
         Path to zip file
     dir_path : str, optional
         Path to directory to unzip to, by default None
-    '''
+    """
     import zipfile
 
-    with zipfile.ZipFile(zf, 'r') as zip_ref:
+    with zipfile.ZipFile(zf, "r") as zip_ref:
         zip_ref.extractall(dir_path or os.path.dirname(zf))
 
 
-def list_files(path: str | Path = '.', pattern: str|None = None, ignore_case: bool = False, all_files: bool = False,
-               full_names: bool = False, recursive: bool = False, followlinks: bool = False) -> list[str]:
+def list_files(
+    path: str | Path = ".",
+    pattern: str | None = None,
+    ignore_case: bool = False,
+    all_files: bool = False,
+    full_names: bool = False,
+    recursive: bool = False,
+    followlinks: bool = False,
+) -> list[str]:
     """
     Returns a list of files in the specified directory that match the specified pattern.
 
@@ -64,13 +71,13 @@ def list_files(path: str | Path = '.', pattern: str|None = None, ignore_case: bo
         walk = os.walk(path, followlinks=followlinks)
     else:
         walk = [(path, None, os.listdir(path))]
-        
+
     if ignore_case and pattern is not None:
         pattern = pattern.lower()
 
     for root, _, files in walk:
         for file in files:
-            if all_files or not file.startswith('.'):
+            if all_files or not file.startswith("."):
                 fn = file.lower() if ignore_case else file
                 if pattern is None or fnmatch.fnmatch(fn, pattern):
                     if full_names:
@@ -98,21 +105,24 @@ def read_kml(path: str) -> "KML":
     import_optional_dependency("fastkml")
     from fastkml import kml
 
-    if hasattr(kml.KML, 'parse'):
+    if hasattr(kml.KML, "parse"):
         # fastkml >= 1.0: from_string/parse are classmethods returning a new KML
         return kml.KML.parse(path)
 
     # fastkml < 1.0: from_string fills the instance in place
-    with open(path, 'rt') as f:
+    with open(path, "rt") as f:
         k = kml.KML()
-        k.from_string(f.read().encode('utf-8'))
+        k.from_string(f.read().encode("utf-8"))
     return k
 
 
-def wget_download(urls: str | list[str],
-                  download_dir: str,
-                  prefix: str | None = None, num_threads: int = 1,
-                  unzip: bool = True):
+def wget_download(
+    urls: str | list[str],
+    download_dir: str,
+    prefix: str | None = None,
+    num_threads: int = 1,
+    unzip: bool = True,
+):
     """
     Download multiple files from given URLs using wget and extract them if they are ZIP files.
 
@@ -146,15 +156,15 @@ def wget_download(urls: str | list[str],
         """
         # Parse the URL to extract the filename
         parsed_url = urlparse(url)
-        
+
         # Get common path to append to download_dir
         if prefix is not None:
-            if prefix == '':
+            if prefix == "":
                 # Recreate the entire structure
-                common = parsed_url.path.strip('/')  # Remove leading '/'
+                common = parsed_url.path.strip("/")  # Remove leading '/'
             else:
                 # Get the relative strucuture from prefix
-                common = os.path.relpath(parsed_url.path.strip('/'), prefix.strip('/'))
+                common = os.path.relpath(parsed_url.path.strip("/"), prefix.strip("/"))
         else:
             # Drop each file into the download_dir
             common = os.path.basename(parsed_url.path)
@@ -167,14 +177,14 @@ def wget_download(urls: str | list[str],
         vprint(f"Downloading: {url} to {local_path}")
         try:
             # Use wget with the -O option to specify the output file
-            subprocess.run(['wget', '-O', local_path, url], check=True)
+            subprocess.run(["wget", "-O", local_path, url], check=True)
         except subprocess.CalledProcessError as e:
             vprint(f"Failed to download {url}: {e}")
             return
 
-        if unzip and local_path.endswith('.zip'):
-            vprint('Unzipping...')
-            subprocess.run(['unzip', '-d', output_dir, local_path], check=True)
+        if unzip and local_path.endswith(".zip"):
+            vprint("Unzipping...")
+            subprocess.run(["unzip", "-d", output_dir, local_path], check=True)
             os.remove(local_path)
 
     if isinstance(urls, str):
@@ -187,15 +197,20 @@ def wget_download(urls: str | list[str],
 
 def _path_matches(path: str, pattern: str) -> bool:
     """Glob match on the full path if ``pattern`` has wildcards, else a substring match."""
-    if any(char in pattern for char in '*?['):
+    if any(char in pattern for char in "*?["):
         return fnmatch.fnmatch(path, pattern)
     return pattern in path
 
 
-def ftp_download(host: str, paths: str | list[str], download_dir: str,
-                 username: str='anonymous', password: str='',
-                 prefix: str | None=None,
-                 pattern: str | None=None):
+def ftp_download(
+    host: str,
+    paths: str | list[str],
+    download_dir: str,
+    username: str = "anonymous",
+    password: str = "",
+    prefix: str | None = None,
+    pattern: str | None = None,
+):
     """
     Recursively download files from an FTP server.
 
@@ -226,8 +241,8 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
     """
     import ftplib
 
-    if username == 'anonymous' and password == '':
-        password = 'anonymous@'
+    if username == "anonymous" and password == "":
+        password = "anonymous@"
 
     ftp = ftplib.FTP(host)
     ftp.login(username, password)
@@ -237,9 +252,9 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
 
     for path in paths:
         # Start in root for every path
-        ftp.cwd('/')
+        ftp.cwd("/")
 
-        PATH = '/' + path.strip('/')  # path should start from root on ftp
+        PATH = "/" + path.strip("/")  # path should start from root on ftp
 
         # Redefine download func for each path to pass PATH
         def download(path):
@@ -249,23 +264,23 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
 
             except ftplib.error_perm as e:
                 # 550 = not a directory (the wording varies between servers)
-                if not str(e).startswith('550'):
+                if not str(e).startswith("550"):
                     raise
                 # If it's not a directory, download the file
 
                 if pattern is not None and not _path_matches(path, pattern):
                     # Exit if pattern is not in path
-                    vprint(f'Skipping {path} - pattern does not match')
+                    vprint(f"Skipping {path} - pattern does not match")
                     return None
 
                 # Get common path to append to download_dir
                 if prefix is not None:
-                    if prefix == '':
+                    if prefix == "":
                         # Recreate the entire structure
-                        common = path.strip('/')  # Remove leading '/'
+                        common = path.strip("/")  # Remove leading '/'
                     else:
                         # Get the relative strucuture from prefix
-                        common = os.path.relpath(path.strip('/'), prefix.strip('/'))
+                        common = os.path.relpath(path.strip("/"), prefix.strip("/"))
                 else:
                     # Drop each PATH directory into the download_dir
                     common = os.path.relpath(path, os.path.dirname(PATH))
@@ -275,24 +290,24 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
                 os.makedirs(os.path.dirname(local), exist_ok=True)
 
                 # Download the file
-                with open(local, 'wb') as local_file:
-                    vprint(f'Downloading {path} to {os.path.dirname(local)}')
-                    ftp.retrbinary(f'RETR {path}', local_file.write)
+                with open(local, "wb") as local_file:
+                    vprint(f"Downloading {path} to {os.path.dirname(local)}")
+                    ftp.retrbinary(f"RETR {path}", local_file.write)
 
-                return 'f'
+                return "f"
 
             else:  # path is a directory
                 files = ftp.nlst()  # Get a list of files in that directory
 
                 for file in files:
                     # recursively download files
-                    f_d = download('/'.join([path, file]))
+                    f_d = download("/".join([path, file]))
 
-                    if f_d == 'd':  # file is a directory
+                    if f_d == "d":  # file is a directory
                         # download changed to a subdirectory
                         # restart in the above directory to be able to traverse multiple dirs
                         ftp.cwd(path)
-                return 'd'
+                return "d"
 
         download(PATH)
 
@@ -329,7 +344,7 @@ class Cacher:
         reload : bool, optional
             Whether to reload the cache index from the index file. Defaults to False.
         """
-        assert cache_file.endswith('.pkl')
+        assert cache_file.endswith(".pkl")
 
         self.func = func
         self.cache_file = cache_file
@@ -337,9 +352,9 @@ class Cacher:
 
         # Make sure the directory exists for the cache file
         head, tail = os.path.split(cache_file)
-        os.makedirs(head or '.', exist_ok=True)
+        os.makedirs(head or ".", exist_ok=True)
 
-        self.index_file = os.path.join(head, f'.{tail}.index')
+        self.index_file = os.path.join(head, f".{tail}.index")
         self.cache_index = self.load_cache_index()
 
     def load_cache_index(self):
@@ -356,11 +371,11 @@ class Cacher:
             # TODO causes previous caches to become unreadable
             #   need to delete previous cache or append to index_file
             # Force func to be executed by setting cache_index to empty
-            vprint(f'Forcing {self.func.__name__} to execute')
+            vprint(f"Forcing {self.func.__name__} to execute")
             return {}
 
         try:
-            with open(self.index_file, 'rb') as f:
+            with open(self.index_file, "rb") as f:
                 cache_index = self.pkl.load(f)
         except FileNotFoundError:
             cache_index = {}
@@ -371,9 +386,8 @@ class Cacher:
         """
         Saves the cache index to a file.
         """
-        with open(self.index_file, 'wb') as f:
-            self.pkl.dump(self.cache_index, f,
-                          protocol=self.pkl.HIGHEST_PROTOCOL)
+        with open(self.index_file, "wb") as f:
+            self.pkl.dump(self.cache_index, f, protocol=self.pkl.HIGHEST_PROTOCOL)
 
     def __call__(self, *args, **kwargs):
         """
@@ -395,9 +409,11 @@ class Cacher:
 
         if key in self.cache_index:
             # Load the result from the cache_file using its index
-            vprint(f"Returning cached result for {self.func.__name__} with args: {args} {kwargs}")
+            vprint(
+                f"Returning cached result for {self.func.__name__} with args: {args} {kwargs}"
+            )
 
-            with open(self.cache_file, 'rb') as f:
+            with open(self.cache_file, "rb") as f:
                 f.seek(self.cache_index[key])  # go to index in cache_file
                 result = self.pkl.load(f)
 
@@ -405,7 +421,7 @@ class Cacher:
             # Call the function and update the cache
             result = self.func(*args, **kwargs)
 
-            with open(self.cache_file, 'ab') as f:
+            with open(self.cache_file, "ab") as f:
                 f.seek(0, 2)  # go to the end of the pickle file
                 pos = f.tell()  # get position of the end
 

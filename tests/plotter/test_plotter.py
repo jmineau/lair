@@ -43,7 +43,9 @@ class TestColormapsAndFormatters:
         assert isinstance(cmap, matplotlib.colors.LinearSegmentedColormap)
 
     def test_terrain_cmap(self):
-        assert isinstance(plotter.terrain_cmap(), matplotlib.colors.LinearSegmentedColormap)
+        assert isinstance(
+            plotter.terrain_cmap(), matplotlib.colors.LinearSegmentedColormap
+        )
 
 
 class TestPolarHelpers:

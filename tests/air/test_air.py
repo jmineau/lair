@@ -16,10 +16,10 @@ class TestWindComponents:
     @pytest.mark.parametrize(
         "direction, exp_u, exp_v",
         [
-            (0.0, 0.0, -1.0),    # from N -> blows toward S (v < 0)
-            (90.0, -1.0, 0.0),   # from E -> blows toward W (u < 0)
-            (180.0, 0.0, 1.0),   # from S -> blows toward N (v > 0)
-            (270.0, 1.0, 0.0),   # from W -> blows toward E (u > 0)
+            (0.0, 0.0, -1.0),  # from N -> blows toward S (v < 0)
+            (90.0, -1.0, 0.0),  # from E -> blows toward W (u < 0)
+            (180.0, 0.0, 1.0),  # from S -> blows toward N (v > 0)
+            (270.0, 1.0, 0.0),  # from W -> blows toward E (u > 0)
         ],
     )
     def test_unit_speed_directions(self, direction, exp_u, exp_v):

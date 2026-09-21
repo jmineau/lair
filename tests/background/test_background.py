@@ -30,9 +30,7 @@ def test_get_well_mixed_subsets_afternoon(sample_timeseries):
 def test_get_well_mixed_multiple_days():
     import pandas as pd
 
-    idx = pd.to_datetime(
-        ["2024-01-01 13:00", "2024-01-01 14:00", "2024-01-02 13:00"]
-    )
+    idx = pd.to_datetime(["2024-01-01 13:00", "2024-01-01 14:00", "2024-01-02 13:00"])
     df = pd.DataFrame({"co2": [1.0, 2.0, 3.0]}, index=idx)
     assert len(background.get_well_mixed(df)) == 2
 
@@ -65,9 +63,7 @@ def test_phase_shift_corrected_baseline_returns_series():
     import pandas as pd
 
     idx = pd.date_range("2020-01-01 00:00", "2020-01-01 01:00", freq="min")
-    signal = pd.Series(
-        np.random.default_rng(0).normal(100, 5, len(idx)), index=idx
-    )
+    signal = pd.Series(np.random.default_rng(0).normal(100, 5, len(idx)), index=idx)
     out = background.phase_shift_corrected_baseline(signal, n=60, q=0.1)
     assert isinstance(out, pd.Series)
     assert len(out) > 0
@@ -81,8 +77,9 @@ class TestThoning:
 
         idx = pd.date_range("2020-01-01", periods=400, freq="D")
         t = np.arange(400)
-        return pd.Series(400 + 0.005 * t + 3 * np.sin(2 * np.pi * t / 365.25),
-                         index=idx, name="co2")
+        return pd.Series(
+            400 + 0.005 * t + 3 * np.sin(2 * np.pi * t / 365.25), index=idx, name="co2"
+        )
 
     def test_nan_rows_keep_original_index(self, co2):
         co2.iloc[10] = float("nan")

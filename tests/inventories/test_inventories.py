@@ -19,14 +19,14 @@ inventories = pytest.importorskip(
 
 class TestMolecularWeight:
     def test_methane(self):
-        assert inventories.molecular_weight("CH4").to("g/mol").magnitude == pytest.approx(
-            16.0425, abs=1e-3
-        )
+        assert inventories.molecular_weight("CH4").to(
+            "g/mol"
+        ).magnitude == pytest.approx(16.0425, abs=1e-3)
 
     def test_carbon_dioxide(self):
-        assert inventories.molecular_weight("CO2").to("g/mol").magnitude == pytest.approx(
-            44.0096, abs=1e-3
-        )
+        assert inventories.molecular_weight("CO2").to(
+            "g/mol"
+        ).magnitude == pytest.approx(44.0096, abs=1e-3)
 
 
 class TestSumSectors:
@@ -53,7 +53,9 @@ class TestConvertUnits:
         )
         out = inventories.convert_units(da, "CH4", "kg/meter**2/second")
         # 1 mol/m2/s * 16.0425 g/mol = 0.0160425 kg/m2/s
-        assert float(out.pint.dequantify().values[0, 0]) == pytest.approx(0.0160425, abs=1e-6)
+        assert float(out.pint.dequantify().values[0, 0]) == pytest.approx(
+            0.0160425, abs=1e-6
+        )
 
     def test_rejects_non_xarray(self):
         with pytest.raises(TypeError):
@@ -123,8 +125,10 @@ class TestBaseInventory:
     @pytest.mark.parametrize("time_step, seconds", [("daily", 86400), ("hourly", 3600)])
     def test_absolute_emissions_sub_monthly(self, inventory, time_step, seconds):
         inv = inventories.Inventory(
-            inventory.data.pint.dequantify(), pollutant="CH4",
-            src_units="kg/m**2/s", time_step=time_step,
+            inventory.data.pint.dequantify(),
+            pollutant="CH4",
+            src_units="kg/m**2/s",
+            time_step=time_step,
         )
         absolute = inv.absolute_emissions
         # 1 kg/m2/s over one gridcell (km2 -> m2) for one time step
@@ -136,7 +140,11 @@ class TestBaseInventory:
 
         ds = xr.Dataset(
             {"energy": (("time", "lat", "lon"), np.ones((1, 1, 1)))},
-            coords={"time": [pd.Timestamp("2020-01-01")], "lat": [40.0], "lon": [-112.0]},
+            coords={
+                "time": [pd.Timestamp("2020-01-01")],
+                "lat": [40.0],
+                "lon": [-112.0],
+            },
         )
         with pytest.raises(ValueError):
             inventories.Inventory(ds, pollutant="CH4")
@@ -163,8 +171,10 @@ def vulcan_dir(tmp_path):
     from pyproj import Transformer
 
     x = np.arange(-1.5e6, -1.5e6 + 10_000, 1000.0)  # 10 x 1 km cells
-    y = np.arange(4e5, 4e5 + 8_000, 1000.0)          # 8 x 1 km cells
-    to_ll = Transformer.from_crs(inventories.Vulcan.native_crs, "EPSG:4326", always_xy=True)
+    y = np.arange(4e5, 4e5 + 8_000, 1000.0)  # 8 x 1 km cells
+    to_ll = Transformer.from_crs(
+        inventories.Vulcan.native_crs, "EPSG:4326", always_xy=True
+    )
     lon, lat = to_ll.transform(*np.meshgrid(x, y))
     time = pd.to_datetime(["2014-07-02T12:00", "2015-07-02T12:00"])
 
@@ -183,8 +193,13 @@ def vulcan_dir(tmp_path):
                     "time_bnds": (("time", "nv"), np.stack([time, time], axis=1)),
                     "crs": ((), np.int16(0)),
                 },
-                coords={"time": time, "y": y, "x": x,
-                        "lat": (("y", "x"), lat), "lon": (("y", "x"), lon)},
+                coords={
+                    "time": time,
+                    "y": y,
+                    "x": x,
+                    "lat": (("y", "x"), lat),
+                    "lon": (("y", "x"), lon),
+                },
             )
             ds.carbon_emissions.attrs["units"] = "Mg km-2 year-1"
             ds.to_netcdf(d / f"Vulcan_v3_US_annual_1km_{sector}_{bound}.nc4")
@@ -271,12 +286,16 @@ class TestVulcan:
 class TestPollutantNames:
     def test_nox_uses_no2_mass(self):
         assert inventories.molecular_weight("NOx").magnitude == pytest.approx(
-            inventories.molecular_weight("NO2").magnitude)
+            inventories.molecular_weight("NO2").magnitude
+        )
 
-    @pytest.mark.parametrize("given, kept", [("NOx", "NOx"), ("ch4", "CH4"), ("CO2", "CO2")])
+    @pytest.mark.parametrize(
+        "given, kept", [("NOx", "NOx"), ("ch4", "CH4"), ("CO2", "CO2")]
+    )
     def test_pollutant_case(self, inventory, given, kept):
-        inv = inventories.Inventory(inventory.data.pint.dequantify(), pollutant=given,
-                                    src_units="kg/m**2/s")
+        inv = inventories.Inventory(
+            inventory.data.pint.dequantify(), pollutant=given, src_units="kg/m**2/s"
+        )
         assert inv.pollutant == kept
 
 
@@ -295,11 +314,19 @@ class TestEPAv2ExpressMonthly:
         names = scalable + ["Enteric_Fermentation", "Landfills_MSW"]
         annual = xr.Dataset(
             {n: (("time", "lat", "lon"), np.full((2, 2, 2), 3.0)) for n in names},
-            coords={"time": pd.to_datetime(["2018-01-01", "2019-01-01"]), "lat": lat, "lon": lon},
+            coords={
+                "time": pd.to_datetime(["2018-01-01", "2019-01-01"]),
+                "lat": lat,
+                "lon": lon,
+            },
         )
         sf = xr.Dataset(
             {n: (("time", "lat", "lon"), np.full((12, 2, 2), 2.0)) for n in names},
-            coords={"time": pd.date_range("2018-01-01", periods=12, freq="MS"), "lat": lat, "lon": lon},
+            coords={
+                "time": pd.date_range("2018-01-01", periods=12, freq="MS"),
+                "lat": lat,
+                "lon": lon,
+            },
         )
         epa.get_monthly_scale_factors = lambda: sf
 
@@ -308,5 +335,5 @@ class TestEPAv2ExpressMonthly:
         assert y2019.sizes["time"] == 12
         for n in names:
             assert not bool(y2019[n].isnull().any()), n
-        assert float(y2019["Manure_Management"].max()) == 6.0     # scaled
+        assert float(y2019["Manure_Management"].max()) == 6.0  # scaled
         assert float(y2019["Enteric_Fermentation"].max()) == 3.0  # annual rate

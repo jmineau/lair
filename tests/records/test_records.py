@@ -60,7 +60,9 @@ class TestListFiles:
         assert ".hidden" in records.list_files(tree, all_files=True)
 
     def test_recursive_full_names(self, tree):
-        found = records.list_files(tree, pattern="*.txt", recursive=True, full_names=True)
+        found = records.list_files(
+            tree, pattern="*.txt", recursive=True, full_names=True
+        )
         base = {os.path.basename(f) for f in found}
         assert base == {"a.txt", "c.txt"}
 
@@ -157,8 +159,14 @@ class TestWgetDownload:
 class TestPathMatches:
     def test_plain_string_is_substring(self):
         assert records._path_matches("/ct/2015/06/CT.molefrac_2015-06-01.nc", "2015-06")
-        assert not records._path_matches("/ct/2016/01/CT.molefrac_2016-01-01.nc", "2015")
+        assert not records._path_matches(
+            "/ct/2016/01/CT.molefrac_2016-01-01.nc", "2015"
+        )
 
     def test_wildcards_glob_the_full_path(self):
-        assert records._path_matches("/ct/2015/06/CT.molefrac_2015-06-01.nc", "*2015-06*.nc")
-        assert not records._path_matches("/ct/2015/06/CT.molefrac_2015-06-01.nc", "*.txt")
+        assert records._path_matches(
+            "/ct/2015/06/CT.molefrac_2015-06-01.nc", "*2015-06*.nc"
+        )
+        assert not records._path_matches(
+            "/ct/2015/06/CT.molefrac_2015-06-01.nc", "*.txt"
+        )

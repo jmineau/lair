@@ -143,7 +143,9 @@ def profile(
     """
     t = times + pd.Timedelta(hours=tz_offset_hours)
     key = {"hour": t.hour, "weekday": t.weekday, "month": t.month}[by]
-    bins = {"hour": np.arange(24), "weekday": np.arange(7), "month": np.arange(1, 13)}[by]
+    bins = {"hour": np.arange(24), "weekday": np.arange(7), "month": np.arange(1, 13)}[
+        by
+    ]
     key = np.asarray(key, dtype=float)
     freq = np.full((len(bins), enh.shape[1]), np.nan)
     mag = np.full_like(freq, np.nan)

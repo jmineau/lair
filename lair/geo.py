@@ -2,7 +2,9 @@
 Geo-spatial utilities.
 """
 
-from __future__ import annotations  # keep optional-dep annotations (e.g. shapely Polygon) lazy
+from __future__ import (
+    annotations,
+)  # keep optional-dep annotations (e.g. shapely Polygon) lazy
 
 import copy
 from typing import Any, Literal, Sequence, TypeVar, cast
@@ -13,14 +15,13 @@ import numpy as np
 import numpy.typing as npt
 from numpy.typing import ArrayLike
 from typing import Iterable
-from typing_extensions import \
-    Self  # requires python 3.11 to import from typing
+from typing_extensions import Self  # requires python 3.11 to import from typing
 from xarray import DataArray, Dataset
 
 from lair._optional import import_optional_dependency
 
 #: An xarray object; functions annotated with it return the type they're given
-_XarrayT = TypeVar('_XarrayT', bound=DataArray | Dataset)
+_XarrayT = TypeVar("_XarrayT", bound=DataArray | Dataset)
 
 cartopy = import_optional_dependency("cartopy")
 pyproj = import_optional_dependency("pyproj")
@@ -32,13 +33,17 @@ import cartopy.crs as ccrs  # noqa: E402
 from cartopy.mpl.geoaxes import GeoAxes  # noqa: E402
 import rasterio.crs  # noqa: E402 F811
 import rioxarray as rxr  # noqa: E402 F401
-from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,  # noqa: E402
-                                LongitudeFormatter, LongitudeLocator)
+from cartopy.mpl.ticker import (  # noqa: E402
+    LatitudeFormatter,
+    LatitudeLocator,
+    LongitudeFormatter,
+    LongitudeLocator,
+)
 from shapely import LineString, Point, Polygon, MultiLineString  # noqa: E402
 
 
-
 # ----- BOUNDS ----- #
+
 
 def bbox2extent(bbox: list[float]) -> list[float]:
     """
@@ -59,8 +64,7 @@ def bbox2extent(bbox: list[float]) -> list[float]:
     return extent
 
 
-def extent2bbox(extent: list[float] | tuple[float, float, float, float]
-                ) -> list[float]:
+def extent2bbox(extent: list[float] | tuple[float, float, float, float]) -> list[float]:
     """
     Extent to bounding box.
 
@@ -114,8 +118,8 @@ class CRS:
             self.crs = crs.crs
         elif isinstance(crs, int):
             self.crs = pyproj.CRS.from_epsg(crs)
-        elif isinstance(crs, str) and crs.startswith('EPSG:'):
-            epsg = int(crs.split(':')[1])
+        elif isinstance(crs, str) and crs.startswith("EPSG:"):
+            epsg = int(crs.split(":")[1])
             self.crs = pyproj.CRS.from_epsg(epsg)
         elif isinstance(crs, ccrs.CRS):
             self.crs = pyproj.CRS.from_user_input(crs)
@@ -168,7 +172,7 @@ class CRS:
         return self.crs
 
 
-def dms2dd(d: float=0.0, m: float=0.0, s: float=0.0) -> float:
+def dms2dd(d: float = 0.0, m: float = 0.0, s: float = 0.0) -> float:
     """
     Degree-minute-second to decimal degree
 
@@ -228,7 +232,9 @@ def wrap_lons(
     #
     # TODO: support radians
     #
-    lons = np.asanyarray(longitudes if isinstance(longitudes, Iterable) else [longitudes])
+    lons = np.asanyarray(
+        longitudes if isinstance(longitudes, Iterable) else [longitudes]
+    )
     result = ((lons.astype(np.float64) - base + period * 2) % period) + base
 
     return result
@@ -236,7 +242,10 @@ def wrap_lons(
 
 # ----- PLOTTING UTILITIES ----- #
 
-def add_lat_ticks(ax: plt.Axes, ylims: list[float], labelsize: int | None=None, more_ticks: int=0) -> None:
+
+def add_lat_ticks(
+    ax: plt.Axes, ylims: list[float], labelsize: int | None = None, more_ticks: int = 0
+) -> None:
     """
     Add latitude ticks to the map.
 
@@ -258,20 +267,27 @@ def add_lat_ticks(ax: plt.Axes, ylims: list[float], labelsize: int | None=None, 
     fig = cast(Figure, ax.figure)
     bins = (fig.get_size_inches()[1] * fig.dpi / 100).astype(int) + 1
 
-    y_ticks = LatitudeLocator(nbins=bins + more_ticks, prune='both')\
-        .tick_values(ylims[0], ylims[1])
+    y_ticks = LatitudeLocator(nbins=bins + more_ticks, prune="both").tick_values(
+        ylims[0], ylims[1]
+    )
 
     ax.set_yticks(y_ticks, crs=ccrs.PlateCarree())
     ax.yaxis.tick_left()
     ax.yaxis.set_major_formatter(LatitudeFormatter())
 
     if labelsize is not None:
-        ax.tick_params(axis='y', labelsize=labelsize)
+        ax.tick_params(axis="y", labelsize=labelsize)
 
     return None
 
 
-def add_lon_ticks(ax: plt.Axes, xlims: list[float], rotation: int=0, labelsize: int | None=None, more_ticks: int=0) -> None:
+def add_lon_ticks(
+    ax: plt.Axes,
+    xlims: list[float],
+    rotation: int = 0,
+    labelsize: int | None = None,
+    more_ticks: int = 0,
+) -> None:
     """
     Add longitude ticks to the map.
 
@@ -295,25 +311,33 @@ def add_lon_ticks(ax: plt.Axes, xlims: list[float], rotation: int=0, labelsize: 
     fig = cast(Figure, ax.figure)
     bins = (fig.get_size_inches()[0] * fig.dpi / 100).astype(int) + 1
 
-    x_ticks = LongitudeLocator(nbins=bins + more_ticks, prune='both')\
-        .tick_values(xlims[0], xlims[1])
+    x_ticks = LongitudeLocator(nbins=bins + more_ticks, prune="both").tick_values(
+        xlims[0], xlims[1]
+    )
 
     ax.set_xticks(x_ticks, crs=ccrs.PlateCarree())
     ax.xaxis.tick_bottom()
     ax.xaxis.set_major_formatter(LongitudeFormatter())
 
     if rotation != 0:
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=rotation,
-                           ha='right', rotation_mode='anchor')
+        ax.set_xticklabels(
+            ax.get_xticklabels(), rotation=rotation, ha="right", rotation_mode="anchor"
+        )
 
     if labelsize is not None:
-        ax.tick_params(axis='x', labelsize=labelsize)
+        ax.tick_params(axis="x", labelsize=labelsize)
 
     return None
 
 
-def add_latlon_ticks(ax: plt.Axes, extent: list[float], x_rotation: int=0, labelsize: int | None=None,
-                     more_lon_ticks: int=0, more_lat_ticks: int=0) -> None:
+def add_latlon_ticks(
+    ax: plt.Axes,
+    extent: list[float],
+    x_rotation: int = 0,
+    labelsize: int | None = None,
+    more_lon_ticks: int = 0,
+    more_lat_ticks: int = 0,
+) -> None:
     """
     Add latitude and longitude ticks to the map.
 
@@ -340,18 +364,27 @@ def add_latlon_ticks(ax: plt.Axes, extent: list[float], x_rotation: int=0, label
 
     add_lat_ticks(ax, ylims, labelsize=labelsize, more_ticks=more_lat_ticks)
 
-    add_lon_ticks(ax, xlims, rotation=x_rotation, labelsize=labelsize,
-                  more_ticks=more_lon_ticks)
+    add_lon_ticks(
+        ax, xlims, rotation=x_rotation, labelsize=labelsize, more_ticks=more_lon_ticks
+    )
 
     return None
 
-def add_extent_map(fig: 'plt.Figure', main_extent: list[float], main_extent_crs: ccrs.CRS,
-                   extent_map_rect: tuple[float, float, float, float], extent_map_extent: list[float],
-                   extent_map_crs: ccrs.CRS,
-                   color: str, linewidth: int, zorder: int | None=None) -> plt.Axes:
+
+def add_extent_map(
+    fig: "plt.Figure",
+    main_extent: list[float],
+    main_extent_crs: ccrs.CRS,
+    extent_map_rect: tuple[float, float, float, float],
+    extent_map_extent: list[float],
+    extent_map_crs: ccrs.CRS,
+    color: str,
+    linewidth: int,
+    zorder: int | None = None,
+) -> plt.Axes:
     """
     Add an extent map to the figure.
-    
+
     TODO This needs better naming and documentation.
 
     Parameters
@@ -383,8 +416,9 @@ def add_extent_map(fig: 'plt.Figure', main_extent: list[float], main_extent_crs:
     import cartopy.feature as cfeature
     from shapely.geometry import box
 
-    extent_map_ax: GeoAxes = fig.add_axes(extent_map_rect,
-                                          projection=extent_map_crs, zorder=zorder)
+    extent_map_ax: GeoAxes = fig.add_axes(
+        extent_map_rect, projection=extent_map_crs, zorder=zorder
+    )
     extent_map_ax.set_extent(extent_map_extent)
 
     extent_map_ax.add_feature(cfeature.LAND)
@@ -404,8 +438,9 @@ def add_extent_map(fig: 'plt.Figure', main_extent: list[float], main_extent_crs:
 
     main_poly = box(*extent2bbox(main_extent))
 
-    extent_map_ax.add_geometries([main_poly], crs=main_extent_crs,
-                                 color=color, linewidth=linewidth)
+    extent_map_ax.add_geometries(
+        [main_poly], crs=main_extent_crs, color=color, linewidth=linewidth
+    )
 
     return extent_map_ax
 
@@ -413,19 +448,19 @@ def add_extent_map(fig: 'plt.Figure', main_extent: list[float], main_extent_crs:
 # ----- XARRAY UTILITIES ----- #
 
 XESMF_Regrid_Methods = Literal[
-        "bilinear",
-        "conservative",
-        "conservative_normed",
-        "nearest_s2d",
-        "nearest_d2s",
-        "patch",
-    ]
+    "bilinear",
+    "conservative",
+    "conservative_normed",
+    "nearest_s2d",
+    "nearest_d2s",
+    "patch",
+]
 
 
 class BaseGrid:
     """
     Base class for working with gridded data.
-    
+
     This class is a wrapper around xarray DataArray and Dataset objects, with additional methods
     for clipping, regridding, resampling, and reprojection. All operations are performed inplace,
     but return the grid object for chaining.
@@ -458,13 +493,15 @@ class BaseGrid:
         """
         return gridcell_area(self.data)
 
-    def clip(self,
-             bbox: tuple[float, float, float, float] | None = None,
-             extent: tuple[float, float, float, float] | None = None,
-             geom: Polygon | None = None,
-             crs: Any = None,
-             inplace: bool = False,
-             **kwargs: Any) -> Self:
+    def clip(
+        self,
+        bbox: tuple[float, float, float, float] | None = None,
+        extent: tuple[float, float, float, float] | None = None,
+        geom: Polygon | None = None,
+        crs: Any = None,
+        inplace: bool = False,
+        **kwargs: Any,
+    ) -> Self:
         """
         Clip the data to the given bounds.
 
@@ -504,8 +541,12 @@ class BaseGrid:
             new.data = data
             return new
 
-    def regrid(self, out_grid: Dataset,
-               method: XESMF_Regrid_Methods = 'bilinear', inplace: bool = False) -> Self:
+    def regrid(
+        self,
+        out_grid: Dataset,
+        method: XESMF_Regrid_Methods = "bilinear",
+        inplace: bool = False,
+    ) -> Self:
         """
         Regrid the data to a new grid. Uses `xesmf` for regridding.
 
@@ -541,8 +582,12 @@ class BaseGrid:
             new.data = data
             return new
 
-    def resample(self, resolution: float | tuple[float, float],
-                 regrid_method: XESMF_Regrid_Methods = 'bilinear', inplace: bool = False) -> Self:
+    def resample(
+        self,
+        resolution: float | tuple[float, float],
+        regrid_method: XESMF_Regrid_Methods = "bilinear",
+        inplace: bool = False,
+    ) -> Self:
         """
         Resample the data to a new resolution.
 
@@ -570,8 +615,12 @@ class BaseGrid:
             new.data = data
             return new
 
-    def reproject(self, resolution: float | tuple[float, float],
-                  regrid_method: XESMF_Regrid_Methods = 'bilinear', inplace: bool = False) -> Self:
+    def reproject(
+        self,
+        resolution: float | tuple[float, float],
+        regrid_method: XESMF_Regrid_Methods = "bilinear",
+        inplace: bool = False,
+    ) -> Self:
         """
         Reproject the data to a lat lon rectilinear grid.
 
@@ -590,29 +639,31 @@ class BaseGrid:
         BaseGrid
             The reprojected grid
         """
-        assert self.crs.epsg != 4326, 'Data is already in lat lon'
+        assert self.crs.epsg != 4326, "Data is already in lat lon"
 
-        resampled_data = resample(self.data, resolution=resolution,
-                                  regrid_method=regrid_method)
+        resampled_data = resample(
+            self.data, resolution=resolution, regrid_method=regrid_method
+        )
 
         if inplace:
-            self.crs = CRS('EPSG:4326')
+            self.crs = CRS("EPSG:4326")
             self.data = write_rio_crs(resampled_data, self.crs)
             return self
         else:
             new = self.copy()
-            new.crs = CRS('EPSG:4326')
+            new.crs = CRS("EPSG:4326")
             new.data = write_rio_crs(resampled_data, new.crs)
             return new
 
 
-def clip(data: DataArray | Dataset,
-         bbox: list[float] | tuple[float, float, float, float] | None = None,
-         extent: list[float] | tuple[float, float, float, float] | None = None,
-         geom: Polygon | list[Polygon] | None = None,
-         crs: Any='EPSG:4326',
-         **kwargs: Any
-         ) -> DataArray | Dataset:
+def clip(
+    data: DataArray | Dataset,
+    bbox: list[float] | tuple[float, float, float, float] | None = None,
+    extent: list[float] | tuple[float, float, float, float] | None = None,
+    geom: Polygon | list[Polygon] | None = None,
+    crs: Any = "EPSG:4326",
+    **kwargs: Any,
+) -> DataArray | Dataset:
     """
     Clip the data to the given bounds.
 
@@ -641,7 +692,9 @@ def clip(data: DataArray | Dataset,
     xr.DataArray | xr.Dataset
         The clipped data.
     """
-    assert (bbox is not None) + (extent is not None) + (geom is not None) == 1, 'Only one of bbox, extent, or geom must be provided.'
+    assert (bbox is not None) + (extent is not None) + (geom is not None) == 1, (
+        "Only one of bbox, extent, or geom must be provided."
+    )
 
     if extent is not None:
         # Convert extent to bbox
@@ -657,8 +710,9 @@ def clip(data: DataArray | Dataset,
     return data
 
 
-def gridcell_area(grid: DataArray | Dataset, R: float | ArrayLike | None = None
-                  ) -> DataArray:
+def gridcell_area(
+    grid: DataArray | Dataset, R: float | ArrayLike | None = None
+) -> DataArray:
     """
     Calculate the area of each grid cell in a grid.
 
@@ -682,28 +736,28 @@ def gridcell_area(grid: DataArray | Dataset, R: float | ArrayLike | None = None
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
 
-    if grid.rio.crs == 'EPSG:4326':
-        R = R or earth_radius(grid['lat'])
+    if grid.rio.crs == "EPSG:4326":
+        R = R or earth_radius(grid["lat"])
         area = xe.util.cell_area(grid, earth_radius=R)
-    elif grid.rio.crs.linear_units == 'metre':
-        bounds = grid.cf.add_bounds(['x', 'y'])
-        dx = bounds.x_bounds.diff('bounds').squeeze()
-        dy = bounds.y_bounds.diff('bounds').squeeze()
+    elif grid.rio.crs.linear_units == "metre":
+        bounds = grid.cf.add_bounds(["x", "y"])
+        dx = bounds.x_bounds.diff("bounds").squeeze()
+        dy = bounds.y_bounds.diff("bounds").squeeze()
         cell_area_m2 = dx * dy
-        area = cell_area_m2.pint.quantify('m2')\
-            .pint.to('km2')\
-            .pint.dequantify()
+        area = cell_area_m2.pint.quantify("m2").pint.to("km2").pint.dequantify()
     else:
-        raise ValueError('Only lat-lon and meter grids are supported.')
+        raise ValueError("Only lat-lon and meter grids are supported.")
     return area
 
 
-def plot_grid(grid: DataArray | Dataset,
-              lw: float = 1,
-              ax: plt.Axes | None = None,
-              extent: list[float] | None = None,
-              crs: ccrs.CRS | None = None,
-              **kwargs: Any) -> plt.Axes:
+def plot_grid(
+    grid: DataArray | Dataset,
+    lw: float = 1,
+    ax: plt.Axes | None = None,
+    extent: list[float] | None = None,
+    crs: ccrs.CRS | None = None,
+    **kwargs: Any,
+) -> plt.Axes:
     """
     Plot a grid.
 
@@ -720,7 +774,7 @@ def plot_grid(grid: DataArray | Dataset,
     kwargs : Any
         Additional keyword arguments to pass to the pcol
         or pcolormesh method.
-    
+
     Returns
     -------
     plt.Axes
@@ -732,29 +786,36 @@ def plot_grid(grid: DataArray | Dataset,
         crs = crs.to_cartopy()
 
     if ax is None:
-        fig, ax = plt.subplots(subplot_kw={'projection': crs})
+        fig, ax = plt.subplots(subplot_kw={"projection": crs})
     ax = cast(GeoAxes, ax)
 
     if extent is not None:
         ax.set_extent(extent, crs=crs)
 
-    lat, lon = grid['lat'], grid['lon']
-    
-    grid = DataArray(np.zeros((len(lat), len(lon)), dtype=float),
-        coords={'lat': lat, 'lon': lon})
+    lat, lon = grid["lat"], grid["lon"]
 
-    grid.plot(ax=ax, transform=PC,
-              facecolor='none', edgecolor='black',
-              linewidth=lw,
-              **kwargs)
+    grid = DataArray(
+        np.zeros((len(lat), len(lon)), dtype=float), coords={"lat": lat, "lon": lon}
+    )
+
+    grid.plot(
+        ax=ax, transform=PC, facecolor="none", edgecolor="black", linewidth=lw, **kwargs
+    )
 
     return ax
 
 
-def generate_regular_grid(xmin: float, xmax: float, dx: float,
-                          ymin: float, ymax: float, dy: float,
-                          x_label='x', y_label='y',
-                          chunks: dict | None = None) -> DataArray:
+def generate_regular_grid(
+    xmin: float,
+    xmax: float,
+    dx: float,
+    ymin: float,
+    ymax: float,
+    dy: float,
+    x_label="x",
+    y_label="y",
+    chunks: dict | None = None,
+) -> DataArray:
     """
     Generate a regular grid. Grid points are cell centers.
 
@@ -795,9 +856,11 @@ def generate_regular_grid(xmin: float, xmax: float, dx: float,
     return DataArray(zeros, coords={y_label: y, x_label: x})
 
 
-def regrid(data: DataArray | Dataset,
-           out_grid: DataArray | Dataset,
-           method: XESMF_Regrid_Methods = 'bilinear') -> DataArray | Dataset:
+def regrid(
+    data: DataArray | Dataset,
+    out_grid: DataArray | Dataset,
+    method: XESMF_Regrid_Methods = "bilinear",
+) -> DataArray | Dataset:
     """
     Regrid data to a new grid. Uses `xesmf` for regridding.
 
@@ -825,11 +888,11 @@ def regrid(data: DataArray | Dataset,
     """
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
-    
-    out_crs = 'EPSG:4326'
+
+    out_crs = "EPSG:4326"
 
     # Use cf-xarray to calculate the bounds of the grid cells
-    data = data.cf.add_bounds(['lat', 'lon'])
+    data = data.cf.add_bounds(["lat", "lon"])
 
     # Regrid the data using `xesmf`
     regridder = xe.Regridder(ds_in=data, ds_out=out_grid, method=method)
@@ -841,20 +904,24 @@ def regrid(data: DataArray | Dataset,
         # We need to convert to 1D lat/lon
         lats = regridded.lat.isel(x=0).values
         lons = regridded.lon.isel(y=0).values
-        regridded = regridded.drop_vars(['lat', 'lon'])\
-            .rename_dims({'x': 'lon', 'y': 'lat'})\
+        regridded = (
+            regridded.drop_vars(["lat", "lon"])
+            .rename_dims({"x": "lon", "y": "lat"})
             .assign_coords(lat=lats, lon=lons)
+        )
 
     # Regridding drops rioxarray info - reattach
-    regridded.rio.set_spatial_dims(x_dim='lon', y_dim='lat', inplace=True)
+    regridded.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=True)
     regridded = write_rio_crs(regridded, out_crs)
 
     return regridded
 
 
-def resample(data: DataArray | Dataset,
-             resolution: float | tuple[float, float],
-             regrid_method: XESMF_Regrid_Methods = 'bilinear') -> DataArray | Dataset:
+def resample(
+    data: DataArray | Dataset,
+    resolution: float | tuple[float, float],
+    regrid_method: XESMF_Regrid_Methods = "bilinear",
+) -> DataArray | Dataset:
     """
     Resample the data to a new resolution. Modifies the data in place.
 
@@ -866,7 +933,7 @@ def resample(data: DataArray | Dataset,
         The new resolution in degrees. If a single value is provided, the resolution
         is assumed to be the same in both dimensions.
     regrid_method : str, optional
-        The regridding method, by default 'bilinear'. 
+        The regridding method, by default 'bilinear'.
 
     Returns
     -------
@@ -875,12 +942,12 @@ def resample(data: DataArray | Dataset,
     """
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
-    
+
     if isinstance(resolution, (int, float)):
         resolution = (resolution, resolution)
 
     # Calculate the new grid
-    bounds = data.cf.add_bounds(['lat', 'lon'])
+    bounds = data.cf.add_bounds(["lat", "lon"])
     xmin = bounds.lon_bounds.min()
     xmax = bounds.lon_bounds.max()
     ymin = bounds.lat_bounds.min()
@@ -888,21 +955,31 @@ def resample(data: DataArray | Dataset,
     dx = resolution[0]
     dy = resolution[1]
     if len(data.lon.dims) == 2:
-        out_grid = xe.util.grid_2d(xmin, xmax, dx,
-                                    ymin, ymax, dy)
+        out_grid = xe.util.grid_2d(xmin, xmax, dx, ymin, ymax, dy)
     else:
-        out_grid = generate_regular_grid(xmin=xmin, xmax=xmax, dx=dx,
-                                         ymin=ymin, ymax=ymax, dy=dy,
-                                         x_label='lon', y_label='lat')
-        out_grid.lat.attrs['units'] = 'degrees_north'
-        out_grid.lon.attrs['units'] = 'degrees_east'
+        out_grid = generate_regular_grid(
+            xmin=xmin,
+            xmax=xmax,
+            dx=dx,
+            ymin=ymin,
+            ymax=ymax,
+            dy=dy,
+            x_label="lon",
+            y_label="lat",
+        )
+        out_grid.lat.attrs["units"] = "degrees_north"
+        out_grid.lon.attrs["units"] = "degrees_east"
 
     return regrid(data, out_grid=out_grid, method=regrid_method)
 
 
-def round_latlon(data: _XarrayT,
-                 lat_deci: int, lon_deci: int,
-                 lat_dim: str = 'lat', lon_dim: str = 'lon') -> _XarrayT:
+def round_latlon(
+    data: _XarrayT,
+    lat_deci: int,
+    lon_deci: int,
+    lat_dim: str = "lat",
+    lon_dim: str = "lon",
+) -> _XarrayT:
     """
     Round latitude and longitude values to a specified number of decimal places.
 
@@ -924,10 +1001,12 @@ def round_latlon(data: _XarrayT,
     xr.DataArray | xr.Dataset
         The data with rounded lat/lon coordinates.
     """
-    return data.assign_coords({
-        lat_dim: np.round(data[lat_dim], lat_deci),
-        lon_dim: np.round(data[lon_dim], lon_deci)
-    })
+    return data.assign_coords(
+        {
+            lat_dim: np.round(data[lat_dim], lat_deci),
+            lon_dim: np.round(data[lon_dim], lon_deci),
+        }
+    )
 
 
 def write_rio_crs(data: _XarrayT, crs: Any) -> _XarrayT:
@@ -949,13 +1028,13 @@ def write_rio_crs(data: _XarrayT, crs: Any) -> _XarrayT:
     if isinstance(crs, CRS):
         crs = crs.to_rasterio()
 
-    data = data.rio.write_crs(crs)\
-        .rio.write_coordinate_system(inplace=True)
+    data = data.rio.write_crs(crs).rio.write_coordinate_system(inplace=True)
 
     return data
 
 
 # ----- MISCELLANEOUS ----- #
+
 
 def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
     # http://www.movable-type.co.uk/scripts/latlong.html
@@ -966,12 +1045,10 @@ def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
 
     dlon = lon2 - lon1
     y = np.sin(dlon) * np.cos(lat2)
-    x = np.cos(lat1) * np.sin(lat2) \
-        - np.sin(lat1) * np.cos(lat2) * np.cos(dlon)
+    x = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(dlon)
 
     # Inital bearing in degrees
-    brng = (np.rad2deg(np.arctan2(y, x))
-            + 360) % 360  # in [0,360)
+    brng = (np.rad2deg(np.arctan2(y, x)) + 360) % 360  # in [0,360)
 
     if final:
         # Final bearing in degrees
@@ -1004,7 +1081,7 @@ def cosine_weights(lats: np.ndarray) -> np.ndarray:
 
 
 def earth_radius(lat: ArrayLike) -> ArrayLike:
-    '''
+    """
     Calculate radius of Earth assuming oblate spheroid defined by WGS84
 
     Parameters
@@ -1021,7 +1098,7 @@ def earth_radius(lat: ArrayLike) -> ArrayLike:
     -----
      - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
      - WGS84: https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
-    '''
+    """
 
     # define oblate spheroid from WGS84
     a = 6378137
@@ -1031,21 +1108,19 @@ def earth_radius(lat: ArrayLike) -> ArrayLike:
     # convert from geodecic to geocentric
     # see equation 3-110 in WGS84
     lat = np.deg2rad(lat)
-    lat_gc = np.arctan((1-e2) * np.tan(lat))
+    lat_gc = np.arctan((1 - e2) * np.tan(lat))
 
     # radius equation
     # see equation 3-107 in WGS84
-    r = (
-        (a * (1 - e2)**0.5)
-        / (1 - (e2 * np.cos(lat_gc)**2))**0.5
-        )
+    r = (a * (1 - e2) ** 0.5) / (1 - (e2 * np.cos(lat_gc) ** 2)) ** 0.5
 
     r /= 1000  # convert to km
     return r
 
 
-def gridcell_area_from_latlon(lat: ArrayLike, lon: ArrayLike,
-                              R: float | None = None) -> np.ndarray:
+def gridcell_area_from_latlon(
+    lat: ArrayLike, lon: ArrayLike, R: float | None = None
+) -> np.ndarray:
     """
     Calculate the area of each grid cell in a lat-lon grid.
 
@@ -1062,10 +1137,9 @@ def gridcell_area_from_latlon(lat: ArrayLike, lon: ArrayLike,
         Grid-cell area in square-kilometers
     """
     lat, lon = np.array(lat), np.array(lon)
-    grid = DataArray(coords={'lat': lat, 'lon': lon},
-                     dims=['lat', 'lon'])
-    grid.rio.set_spatial_dims('lon', 'lat', inplace=True)
-    grid = write_rio_crs(grid, crs='EPSG:4326')
+    grid = DataArray(coords={"lat": lat, "lon": lon}, dims=["lat", "lon"])
+    grid.rio.set_spatial_dims("lon", "lat", inplace=True)
+    grid = write_rio_crs(grid, crs="EPSG:4326")
 
     area = gridcell_area(grid, R=R)
     return area.values
@@ -1081,15 +1155,17 @@ def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
     dlat = lat2 - lat1
     dlon = lon2 - lon1
 
-    a = np.sin((dlat) / 2)**2 + np.cos(lat1) \
-        * np.cos(lat2) * np.sin((dlon) / 2)**2
+    a = np.sin((dlat) / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin((dlon) / 2) ** 2
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
     d = R * c
     return d
 
 
-def points_along_line(multiline: LineString | MultiLineString, spacing: float,
-                      resolution_factor: float | None = None) -> list[Point]:
+def points_along_line(
+    multiline: LineString | MultiLineString,
+    spacing: float,
+    resolution_factor: float | None = None,
+) -> list[Point]:
     """
     Generates Euclidean spaced points covering a single Line or a MultiLineString network.
 
@@ -1138,16 +1214,16 @@ def points_along_line(multiline: LineString | MultiLineString, spacing: float,
     # unary_union splits lines at intersections, creating nodes where lines cross.
     # linemerge then stitches simple paths back together where possible.
     cleaned_geom = line_merge(union_all(multiline))
-    
-    if hasattr(cleaned_geom, 'geoms'):
+
+    if hasattr(cleaned_geom, "geoms"):
         lines = list(cleaned_geom.geoms)
     else:
         lines = [cleaned_geom]
-        
+
     # --- Build High-Res Graph ---
     G = nx.Graph()
     step_size = spacing * resolution_factor
-    
+
     # We round coordinates to 5 decimal places to "snap" microscopic gaps
     def round_coord(c):
         return (round(c[0], 5), round(c[1], 5))
@@ -1156,40 +1232,42 @@ def points_along_line(multiline: LineString | MultiLineString, spacing: float,
         # Segmentize to ensure we can measure distance around curves
         dense_line = segmentize(line, step_size)
         coords = list(dense_line.coords)
-        
+
         for i in range(len(coords) - 1):
             u = round_coord(coords[i])
-            v = round_coord(coords[i+1])
-            
+            v = round_coord(coords[i + 1])
+
             # Add edge with Euclidean weight
-            dist = np.sqrt((u[0]-v[0])**2 + (u[1]-v[1])**2)
+            dist = np.sqrt((u[0] - v[0]) ** 2 + (u[1] - v[1]) ** 2)
             G.add_edge(u, v, weight=dist)
 
     # --- Global State ---
     final_points = []
     # We maintain a simple list of accepted coordinates for checking distances
-    placed_coords = [] 
+    placed_coords = []
 
     # --- Process Every Component ---
     # This loop ensures we jump to the top line even if it's disconnected
     for component_nodes in nx.connected_components(G):
         subgraph = G.subgraph(component_nodes)
-        
+
         # Pick a start node for this component (preferably an endpoint)
         degrees = dict(subgraph.degree())
-        start_node = next((n for n, d in degrees.items() if d == 1), list(subgraph.nodes)[0])
-        
+        start_node = next(
+            (n for n, d in degrees.items() if d == 1), list(subgraph.nodes)[0]
+        )
+
         # Check if we should place a point at the start_node (might be too close to a different component)
         start_ok = True
         for p in placed_coords:
-            d_check = np.sqrt((start_node[0]-p[0])**2 + (start_node[1]-p[1])**2)
+            d_check = np.sqrt((start_node[0] - p[0]) ** 2 + (start_node[1] - p[1]) ** 2)
             if d_check < spacing:
                 start_ok = False
                 break
-        
+
         queue = []
         visited_state = set()
-        
+
         if start_ok:
             final_points.append(Point(start_node))
             placed_coords.append(start_node)
@@ -1203,38 +1281,42 @@ def points_along_line(multiline: LineString | MultiLineString, spacing: float,
         # BFS Walker
         while queue:
             current_node, origin_idx = queue.pop(0)
-            
+
             # State tracking: (Node, Which Point is the Parent)
             state = (current_node, origin_idx)
             if state in visited_state:
                 continue
             visited_state.add(state)
-            
+
             # Determine reference point
             if origin_idx == -1:
                 # We haven't placed a point on this component yet
-                dist = 0 # Arbitrary, effectively we are just walking until we find a clear spot
+                dist = 0  # Arbitrary, effectively we are just walking until we find a clear spot
             else:
                 origin_coord = placed_coords[origin_idx]
-                dist = np.sqrt((current_node[0]-origin_coord[0])**2 + (current_node[1]-origin_coord[1])**2)
+                dist = np.sqrt(
+                    (current_node[0] - origin_coord[0]) ** 2
+                    + (current_node[1] - origin_coord[1]) ** 2
+                )
 
             next_origin_idx = origin_idx
 
             # Attempt to place point
             if (origin_idx != -1 and dist >= spacing) or (origin_idx == -1):
-                
                 # HARD CONSTRAINT: Check against ALL global points
                 is_safe = True
                 for i, p in enumerate(placed_coords):
                     # Don't check against our own parent (we know it's valid)
                     if i == origin_idx:
                         continue
-                    
-                    d_global = np.sqrt((current_node[0]-p[0])**2 + (current_node[1]-p[1])**2)
+
+                    d_global = np.sqrt(
+                        (current_node[0] - p[0]) ** 2 + (current_node[1] - p[1]) ** 2
+                    )
                     if d_global < spacing:
                         is_safe = False
                         break
-                
+
                 if is_safe:
                     # Place the point!
                     final_points.append(Point(current_node))

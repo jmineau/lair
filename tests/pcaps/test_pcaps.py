@@ -16,8 +16,9 @@ def vhd():
     # Hourly VHD with one >= 3-hr run above threshold (idx 2-4) and one short
     # 2-hr run (idx 6-7) that should NOT qualify as an event.
     idx = pd.date_range("2024-01-01", periods=10, freq="h")
-    return pd.Series([1, 1, 6, 7, 8, 1, 6, 6, 1, 1], index=idx,
-                     name="VHD_MJ_m2", dtype=float)
+    return pd.Series(
+        [1, 1, 6, 7, 8, 1, 6, 6, 1, 1], index=idx, name="VHD_MJ_m2", dtype=float
+    )
 
 
 class TestDeterminePcapEvents:
@@ -50,7 +51,7 @@ class TestBuildPcapMask:
         # The event window covers idx 2..9 within this 10-hour index.
         assert int(mask.sum()) == 8
         assert mask.iloc[0] == False  # noqa: E712 - explicit bool check
-        assert mask.iloc[2] == True   # noqa: E712
+        assert mask.iloc[2] == True  # noqa: E712
 
     def test_empty_events_all_false(self, vhd):
         empty = pcaps.determine_pcap_events(vhd, threshold=100.0, min_periods=3)
@@ -62,8 +63,9 @@ class TestTimezones:
     def test_tz_aware_index_is_compared_in_utc(self, vhd):
         events = pcaps.determine_pcap_events(vhd, threshold=5.0, min_periods=3)
         # 2024-01-01 02:00 UTC is 2023-12-31 19:00 in Denver (UTC-7)
-        local = pd.DatetimeIndex(["2023-12-31 19:00", "2023-12-31 18:00"],
-                                 tz="America/Denver")
+        local = pd.DatetimeIndex(
+            ["2023-12-31 19:00", "2023-12-31 18:00"], tz="America/Denver"
+        )
         mask = pcaps.build_pcap_mask(local, events)
         assert mask.tolist() == [True, False]
 

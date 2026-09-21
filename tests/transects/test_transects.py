@@ -52,9 +52,13 @@ def test_transit_times_and_profile(matrix):
     time = base + np.arange(30)[:, None] * 3600 + np.arange(50)[None, :] * 10.0
     time[7] = np.nan
     tt = transects.transit_times(time)
-    assert tt[0] == pd.Timestamp("2020-01-01 12:04:05")  # median of 50 points, 10 s apart
+    assert tt[0] == pd.Timestamp(
+        "2020-01-01 12:04:05"
+    )  # median of 50 points, 10 s apart
     assert pd.isna(tt[7])
-    bins, freq, mag = transects.profile(enh, tt, by="hour", threshold=0.1, min_transits=1)
+    bins, freq, mag = transects.profile(
+        enh, tt, by="hour", threshold=0.1, min_transits=1
+    )
     assert bins.shape == (24,) and freq.shape == (24, 50)
     # the persistent source is detected in every hour bin that has data
     assert np.nanmin(freq[:, 10]) == pytest.approx(1.0)
@@ -62,7 +66,9 @@ def test_transit_times_and_profile(matrix):
 
 def test_along_route_distance():
     pytest.importorskip("pyproj")
-    d = transects.along_route_distance(np.array([-111.9, -111.9]), np.array([40.7, 40.709]))
+    d = transects.along_route_distance(
+        np.array([-111.9, -111.9]), np.array([40.7, 40.709])
+    )
     assert d[0] == 0.0 and d[1] == pytest.approx(1.0, abs=0.01)
 
 
@@ -75,8 +81,8 @@ def test_merge_and_pool_routes():
     assert len(net) == 7
     assert list(idx[0]) == [0, 1, 2, 3, 4]
     assert list(idx[1]) == [2, 3, 5, 6]
-    ma = np.arange(10, dtype=float).reshape(2, 5)          # 2 transits on A
-    mb = np.array([[1.0, 2.0, 3.0, 4.0]])                  # 1 transit on B
+    ma = np.arange(10, dtype=float).reshape(2, 5)  # 2 transits on A
+    mb = np.array([[1.0, 2.0, 3.0, 4.0]])  # 1 transit on B
     pooled = transects.pool_routes([ma, mb], idx, len(net))
     assert pooled.shape == (3, 7)
     assert pooled[0, 2] == 2.0 and pooled[2, 2] == 1.0 and pooled[2, 5] == 3.0
@@ -93,6 +99,6 @@ def test_robust_z_is_transit_relative(matrix):
     z = transects.robust_z(enh, min_points=10)
     assert np.isnan(z[7]).all()
     assert np.nanmedian(z[:, 0]) == pytest.approx(0.0, abs=0.5)
-    assert np.nanmin(z[:, 10]) > 3.0            # persistent source stands out in every transit
+    assert np.nanmin(z[:, 10]) > 3.0  # persistent source stands out in every transit
     f = transects.detection_frequency(z, threshold=3.0, min_transits=5)
     assert f[10] == pytest.approx(1.0) and f[0] == pytest.approx(0.0)

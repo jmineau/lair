@@ -42,8 +42,10 @@ def get_data_dir(env_var: str, path: str | os.PathLike | None = None) -> Path:
     if path is None:
         path = os.environ.get(env_var)
     if not path:
-        raise ValueError(f'No data directory given: pass it explicitly or set '
-                         f'the {env_var} environment variable.')
+        raise ValueError(
+            f"No data directory given: pass it explicitly or set "
+            f"the {env_var} environment variable."
+        )
     return Path(path)
 
 
@@ -51,8 +53,9 @@ def get_data_dir(env_var: str, path: str | os.PathLike | None = None) -> Path:
 LAIR_DIR = os.path.dirname(__file__)
 
 #: User Cache Directory
-CACHE_DIR = os.getenv('LAIR_CACHE_DIR',
-                      os.path.join(os.path.expanduser('~'), '.cache', 'lair'))
+CACHE_DIR = os.getenv(
+    "LAIR_CACHE_DIR", os.path.join(os.path.expanduser("~"), ".cache", "lair")
+)
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
 
@@ -62,7 +65,7 @@ if not os.path.exists(CACHE_DIR):
 
 #: Pandas copy-on-write
 pandas_CoW = True
-if int(pd.__version__.split('.')[0]) < 3:
+if int(pd.__version__.split(".")[0]) < 3:
     # Always on (and no longer settable) from pandas 3.0
     pd.options.mode.copy_on_write = pandas_CoW
 

@@ -59,7 +59,9 @@ class TestDistanceHelpers:
         assert geo.earth_radius(0.0) == pytest.approx(6378.137, abs=1e-3)
 
     def test_cosine_weights(self):
-        np.testing.assert_allclose(geo.cosine_weights(np.array([0.0, 60.0])), [1.0, 0.5])
+        np.testing.assert_allclose(
+            geo.cosine_weights(np.array([0.0, 60.0])), [1.0, 0.5]
+        )
 
     def test_bearing_final_bearing(self):
         # The final bearing along a great circle differs from the initial.
@@ -108,7 +110,9 @@ def test_write_rio_crs_sets_crs():
 
 
 def test_basegrid_copy_is_independent():
-    grid = geo.write_rio_crs(geo.generate_regular_grid(-112, -110, 1.0, 40, 42, 1.0), 4326)
+    grid = geo.write_rio_crs(
+        geo.generate_regular_grid(-112, -110, 1.0, 40, 42, 1.0), 4326
+    )
     bgrid = geo.BaseGrid(grid, crs=geo.CRS(4326))
     assert isinstance(bgrid.copy(), geo.BaseGrid)
 
@@ -193,7 +197,9 @@ class TestClip:
 
     def test_requires_exactly_one_selector(self, latlon_grid):
         with pytest.raises(AssertionError):
-            geo.clip(latlon_grid, bbox=(-113, 41, -110, 43), extent=(-113, -110, 41, 43))
+            geo.clip(
+                latlon_grid, bbox=(-113, 41, -110, 43), extent=(-113, -110, 41, 43)
+            )
         with pytest.raises(AssertionError):
             geo.clip(latlon_grid)
 

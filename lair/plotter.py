@@ -14,10 +14,7 @@ from matplotlib.projections.polar import PolarAxes
 
 
 #: Season colors (ColorBrewer Dark2) used for all season-keyed plots.
-SEASON_COLORS = {'DJF': '#e7298a',
-                 'MAM': '#1b9e77',
-                 'JJA': '#d95f02',
-                 'SON': '#7570b3'}
+SEASON_COLORS = {"DJF": "#e7298a", "MAM": "#1b9e77", "JJA": "#d95f02", "SON": "#7570b3"}
 
 
 def log10formatter(x, pos, deci=0) -> str:
@@ -41,13 +38,15 @@ def log10formatter(x, pos, deci=0) -> str:
     >>> from functools import partial
     >>> import numpy as np
     >>> data: xr.DataArray  # some data, in this case, 3D (time, lat, lon)
-    >>> np.log10(data).plot(cbar_kwargs={'format': partial(log10formatter, deci=2)})
+    >>> np.log10(data).plot(cbar_kwargs={"format": partial(log10formatter, deci=2)})
     """
 
-    return f'$10^{{{x:.{deci}f}}}$'
+    return f"$10^{{{x:.{deci}f}}}$"
 
 
-def truncate_colormap(cmap: str | mcolors.Colormap, minval: float=0.0, maxval: float=1.0, n: int=100) -> mcolors.LinearSegmentedColormap:
+def truncate_colormap(
+    cmap: str | mcolors.Colormap, minval: float = 0.0, maxval: float = 1.0, n: int = 100
+) -> mcolors.LinearSegmentedColormap:
     """
     Truncate matplotlib colormaps using min and max vals from 0 to 1,
     and then linearly build a new colormap
@@ -72,8 +71,9 @@ def truncate_colormap(cmap: str | mcolors.Colormap, minval: float=0.0, maxval: f
         cmap = plt.get_cmap(cmap)
 
     new_cmap = mcolors.LinearSegmentedColormap.from_list(
-        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
-        cmap(np.linspace(minval, maxval, n)))
+        "trunc({n},{a:.2f},{b:.2f})".format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)),
+    )
 
     return new_cmap
 
@@ -94,21 +94,25 @@ def NCL_cmap(table_name: str) -> mcolors.LinearSegmentedColormap:
     import pandas as pd
 
     # Get NCL table link
-    tables = 'https://www.ncl.ucar.edu/Document/Graphics/ColorTables/Files'
-    table_link = f'{tables}/{table_name}.rgb'
+    tables = "https://www.ncl.ucar.edu/Document/Graphics/ColorTables/Files"
+    table_link = f"{tables}/{table_name}.rgb"
 
     # Convert table rgb file to pandas dataframe
     # TODO might be a better way to do this
-    colortab = pd.read_csv(table_link, sep=r'\s+', skiprows=1)
-    colortab = colortab.drop('b', axis=1)  # Fix columns
-    colortab = colortab.rename({'#': 'r', 'r': 'g', 'g': 'b'}, axis=1)
+    colortab = pd.read_csv(table_link, sep=r"\s+", skiprows=1)
+    colortab = colortab.drop("b", axis=1)  # Fix columns
+    colortab = colortab.rename({"#": "r", "r": "g", "g": "b"}, axis=1)
 
     # Create linear matplotlib cmap from pandas dataframe
-    cmap = mcolors.LinearSegmentedColormap.from_list(table_name, colortab.values/255, N=100)
+    cmap = mcolors.LinearSegmentedColormap.from_list(
+        table_name, colortab.values / 255, N=100
+    )
     return cmap
 
 
-def terrain_cmap(minval: float=0.42, maxval: float=1.0, n: int=256) -> mcolors.LinearSegmentedColormap:
+def terrain_cmap(
+    minval: float = 0.42, maxval: float = 1.0, n: int = 256
+) -> mcolors.LinearSegmentedColormap:
     """
     Matplotlib terrain cmap.
 
@@ -126,13 +130,20 @@ def terrain_cmap(minval: float=0.42, maxval: float=1.0, n: int=256) -> mcolors.L
     matplotlib.colors.LinearSegmentedColormap
         Matplotlib terrain colormap.
     """
-    return truncate_colormap('terrain', minval=minval, maxval=maxval, n=n)
+    return truncate_colormap("terrain", minval=minval, maxval=maxval, n=n)
 
 
-def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str] | None=None,
-                units: str | None=None, tz: str='UTC', freq: str='1h', ax: plt.Axes | None=None,
-                colors: str | dict[str, str] | None=None,
-                min_count: int = 0) -> plt.Axes:
+def diurnalPlot(
+    data: pd.DataFrame,
+    param: str,
+    stats: str | list[str] | None = None,
+    units: str | None = None,
+    tz: str = "UTC",
+    freq: str = "1h",
+    ax: plt.Axes | None = None,
+    colors: str | dict[str, str] | None = None,
+    min_count: int = 0,
+) -> plt.Axes:
     """
     Plot the diurnal cycle of data.
 
@@ -173,34 +184,33 @@ def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str] | None=No
 
     # Copy so appending 'count' below never touches the caller's list
     if stats is None:
-        stats = ['std', 'median', 'mean']
+        stats = ["std", "median", "mean"]
     elif isinstance(stats, str):
         stats = [stats]
     else:
         stats = list(stats)
 
     if colors is None:
-        colors = {'mean': 'black', 'median': 'blue', 'std': 'gray'}
+        colors = {"mean": "black", "median": "blue", "std": "gray"}
     elif isinstance(colors, str):
         colors = {stat: colors for stat in stats}
 
     # Check for count in stats
-    if 'count' in stats:
+    if "count" in stats:
         plot_count = True
     else:
         plot_count = False
-        stats.append('count')
+        stats.append("count")
 
     # Calculate diurnal cycle
     agg = diurnal(data, freq, stats)[param]
 
     # Assign dummy date so locator isn't confused
-    agg.index = agg.index.map(lambda t:
-                              dt.datetime.combine(dt.date.today(), t))
+    agg.index = agg.index.map(lambda t: dt.datetime.combine(dt.date.today(), t))
 
     # Filter by count
     if min_count > 0:
-        agg.loc[agg['count'] < min_count] = np.nan
+        agg.loc[agg["count"] < min_count] = np.nan
 
     # Plot data
     if ax is None:
@@ -209,48 +219,57 @@ def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str] | None=No
     legend_elements: dict[str, Any] = {}
 
     for stat in stats:
-        if stat == 'std' and 'mean' in stats:
+        if stat == "std" and "mean" in stats:
             # Plot standard deviation as fill_between only if 'mean' is also plotted
-            handle = ax.fill_between(agg.index,
-                                  agg['mean'] - agg['std'],
-                                  agg['mean'] + agg['std'],
-                                  color=colors.get(stat, 'gray'), alpha=0.2, edgecolor='none')
+            handle = ax.fill_between(
+                agg.index,
+                agg["mean"] - agg["std"],
+                agg["mean"] + agg["std"],
+                color=colors.get(stat, "gray"),
+                alpha=0.2,
+                edgecolor="none",
+            )
         else:
-            if stat == 'count' and not plot_count:
+            if stat == "count" and not plot_count:
                 continue
             # Plot other statistics as lines
-            handle, = ax.plot(agg.index, agg[stat], c=colors.get(stat, 'black'), lw=3)
+            (handle,) = ax.plot(agg.index, agg[stat], c=colors.get(stat, "black"), lw=3)
         legend_elements[stat] = handle
 
     # Format x axis
     locator = mdates.HourLocator(byhour=range(3, 24, 3))
-    formatter = mdates.DateFormatter('%H:%M')
+    formatter = mdates.DateFormatter("%H:%M")
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_major_formatter(formatter)
 
-    ax.set_xlim(float(mdates.date2num(agg.index[0])) - 0.03,
-                float(mdates.date2num(agg.index[-1])) + 0.03)
+    ax.set_xlim(
+        float(mdates.date2num(agg.index[0])) - 0.03,
+        float(mdates.date2num(agg.index[-1])) + 0.03,
+    )
 
     # Build legend
-    if 'std' in stats and 'mean' in stats:
-        std = legend_elements.pop('std')
-        mean = legend_elements.pop('mean')
-        legend_elements[r'mean $\pm$1$\sigma$'] = (std, mean)
+    if "std" in stats and "mean" in stats:
+        std = legend_elements.pop("std")
+        mean = legend_elements.pop("mean")
+        legend_elements[r"mean $\pm$1$\sigma$"] = (std, mean)
     handles = [value for value in legend_elements.values()]
     labels = [key for key in legend_elements.keys()]
     ax.legend(handles, labels)
 
-    ylabel = f'{param}'
+    ylabel = f"{param}"
     if units is not None:
-        ylabel += f' [{units}]'
-    ax.set(xlabel=f'Time [{tz}]',
-           ylabel=ylabel)
+        ylabel += f" [{units}]"
+    ax.set(xlabel=f"Time [{tz}]", ylabel=ylabel)
 
     return ax
 
 
-def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt.Axes | None=None
-                 ) -> plt.Axes:
+def seasonalPlot(
+    data: pd.DataFrame,
+    param: str = "CH4",
+    units: str = "ppm",
+    ax: plt.Axes | None = None,
+) -> plt.Axes:
     """
     Plot the seasonal cycle of data by year.
 
@@ -273,23 +292,27 @@ def seasonalPlot(data: pd.DataFrame, param: str='CH4', units: str='ppm', ax: plt
     # TODO need to add a year or int x formatter
     colors = SEASON_COLORS
     from lair.clock import seasonal
-    
+
     # Calculate seasonal cycle
-    agg = seasonal(data, ['mean', 'std'])[param].unstack(level=0)
+    agg = seasonal(data, ["mean", "std"])[param].unstack(level=0)
 
     # Plot data
     if ax is None:
         fig, ax = plt.subplots()
 
-    agg['mean'].plot(ax=ax, style=colors, lw=4)
-    
-    for season in cast(pd.MultiIndex, agg.columns).levels[1]:
-        ax.fill_between(agg.index, agg['mean', season] - agg['std', season],
-                        agg['mean', season] + agg['std', season],
-                        color=colors[season], alpha=0.2, edgecolor='none')
+    agg["mean"].plot(ax=ax, style=colors, lw=4)
 
-    ax.set(xlabel='Year',
-           ylabel=f'{param} [{units}]')
+    for season in cast(pd.MultiIndex, agg.columns).levels[1]:
+        ax.fill_between(
+            agg.index,
+            agg["mean", season] - agg["std", season],
+            agg["mean", season] + agg["std", season],
+            color=colors[season],
+            alpha=0.2,
+            edgecolor="none",
+        )
+
+    ax.set(xlabel="Year", ylabel=f"{param} [{units}]")
 
     return ax
 
@@ -303,11 +326,11 @@ def create_polar_ax() -> PolarAxes:
     plt.Axes
         Polar axis.
     """
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
     ax = cast(PolarAxes, ax)
     ax.set_theta_direction(-1)
-    ax.set_theta_zero_location('N')
-    plt.xticks([0, np.pi/2, np.pi, 3*np.pi/2], ['N', 'E', 'S', 'W'])
+    ax.set_theta_zero_location("N")
+    plt.xticks([0, np.pi / 2, np.pi, 3 * np.pi / 2], ["N", "E", "S", "W"])
 
     return ax
 
@@ -331,18 +354,25 @@ def format_radial_axis(ax: PolarAxes, x: str, scale_angle: float | None) -> None
     """
     if scale_angle is not None:
         ax.set_rlabel_position(scale_angle)
-    ha = 'right' if ax.get_rlabel_position() > 180 else 'left'
-    ax.text(np.deg2rad(ax.get_rlabel_position()), max(ax.get_yticks()),
-            x, ha=ha)
+    ha = "right" if ax.get_rlabel_position() > 180 else "left"
+    ax.text(np.deg2rad(ax.get_rlabel_position()), max(ax.get_yticks()), x, ha=ha)
     # TODO
-        # auto.text
-        # when xbins is a list, x label is not positioned well
+    # auto.text
+    # when xbins is a list, x label is not positioned well
     return None
 
 
-def polarPlot(data: pd.DataFrame, param: str='CH4', x: str='ws', wd: str='wd',
-              statistic: str='mean', units: str='ppm', min_bin: int=1, xbins: int=30,
-              scale_angle: float | None=None) -> plt.Axes:
+def polarPlot(
+    data: pd.DataFrame,
+    param: str = "CH4",
+    x: str = "ws",
+    wd: str = "wd",
+    statistic: str = "mean",
+    units: str = "ppm",
+    min_bin: int = 1,
+    xbins: int = 30,
+    scale_angle: float | None = None,
+) -> plt.Axes:
     """
     Plot polar contour of data.
 
@@ -376,21 +406,23 @@ def polarPlot(data: pd.DataFrame, param: str='CH4', x: str='ws', wd: str='wd',
 
     binned_data = bin_polar(data, x=x, wd=wd, xbins=xbins)
 
-    agg = binned_data[[param, 'radian_bin', 'x_bin']]\
-        .groupby(['radian_bin', 'x_bin']).agg([statistic, 'count'])[param]\
+    agg = (
+        binned_data[[param, "radian_bin", "x_bin"]]
+        .groupby(["radian_bin", "x_bin"])
+        .agg([statistic, "count"])[param]
         .unstack()
+    )
 
     # Filter by count in each bin
-    bins_n = agg['count']
+    bins_n = agg["count"]
     agg = cast(pd.DataFrame, agg[statistic]).where(bins_n > min_bin)
 
     theta, r, c = circularize_radial_data(agg)
 
     ax = create_polar_ax()
 
-    p = ax.contourf(theta, r, c, cmap='YlOrRd')
-    cb = plt.colorbar(p, pad=0.07,
-                 label=f'{statistic.capitalize()} {param} [{units}]')
+    p = ax.contourf(theta, r, c, cmap="YlOrRd")
+    cb = plt.colorbar(p, pad=0.07, label=f"{statistic.capitalize()} {param} [{units}]")
     # Keep the colorbar on the axes so callers can adjust it
     ax.colorbar = cb  # pyrefly: ignore[missing-attribute]
 
@@ -399,8 +431,13 @@ def polarPlot(data: pd.DataFrame, param: str='CH4', x: str='ws', wd: str='wd',
     return ax
 
 
-def polarFreq(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30,
-              scale_angle: float | None =None) -> plt.Axes:
+def polarFreq(
+    data: pd.DataFrame,
+    x: str = "ws",
+    wd: str = "wd",
+    xbins: int = 30,
+    scale_angle: float | None = None,
+) -> plt.Axes:
     """
     Plot the contoured frequency of the data.
 
@@ -426,10 +463,13 @@ def polarFreq(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30,
 
     binned_data = bin_polar(data, x=x, wd=wd, xbins=xbins)
 
-    binned_data['count'] = 1
-    counts = binned_data[['count', 'radian_bin', 'x_bin']]\
-        .groupby(['radian_bin', 'x_bin'])['count'].sum()\
+    binned_data["count"] = 1
+    counts = (
+        binned_data[["count", "radian_bin", "x_bin"]]
+        .groupby(["radian_bin", "x_bin"])["count"]
+        .sum()
         .unstack()
+    )
 
     theta, r, c = circularize_radial_data(counts)
 
@@ -441,18 +481,22 @@ def polarFreq(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30,
 
     ax = create_polar_ax()
 
-    p = ax.contourf(theta, r, c, cmap='binary')
-    plt.colorbar(p, pad=0.07,
-                 label='Frequency [%]')
+    p = ax.contourf(theta, r, c, cmap="binary")
+    plt.colorbar(p, pad=0.07, label="Frequency [%]")
 
     format_radial_axis(ax, x, scale_angle)
 
     return ax
 
 
-def windvectorPlot(data: pd.DataFrame, wd: str='WD', ws: str='WS',
-                   ax: plt.Axes | None =None, unit_length: bool=False,
-                   **kwargs) -> plt.Axes:
+def windvectorPlot(
+    data: pd.DataFrame,
+    wd: str = "WD",
+    ws: str = "WS",
+    ax: plt.Axes | None = None,
+    unit_length: bool = False,
+    **kwargs,
+) -> plt.Axes:
     """
     Plot wind vectors.
 
@@ -477,11 +521,12 @@ def windvectorPlot(data: pd.DataFrame, wd: str='WD', ws: str='WS',
         Axis with the plot
     """
     from lair.air import wind_components
+
     if ax is None:
         fig, ax = plt.subplots()
 
     u, v = wind_components(data[ws], data[wd])
-    
+
     if unit_length:
         # Normalize vectors to unit length
         u = u / data[ws]
@@ -505,15 +550,17 @@ class HandlerDashedLines(HandlerLineCollection):
     This needs a new names and better documentation.
     """
 
-    def create_artists(self, legend, orig_handle,
-                       xdescent, ydescent, width, height, fontsize, trans):
+    def create_artists(
+        self, legend, orig_handle, xdescent, ydescent, width, height, fontsize, trans
+    ):
         import numpy as np
         from matplotlib.lines import Line2D
 
         # figure out how many lines there are
         numlines = len(orig_handle.get_segments())
-        xdata, xdata_marker = self.get_xdata(legend, xdescent, ydescent,
-                                             width, height, fontsize)
+        xdata, xdata_marker = self.get_xdata(
+            legend, xdescent, ydescent, width, height, fontsize
+        )
         leglines = []
         # divide the vertical space where the lines will go
         # into equal parts based on the number of lines

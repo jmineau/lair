@@ -8,8 +8,10 @@ from typing import Any
 
 # %% Polar
 
-def bin_polar(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30
-              ) -> pd.DataFrame:
+
+def bin_polar(
+    data: pd.DataFrame, x: str = "ws", wd: str = "wd", xbins: int = 30
+) -> pd.DataFrame:
     """
     Bin data into polar coordinates.
 
@@ -30,29 +32,30 @@ def bin_polar(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30
         Data with binned wind direction and speed.
     """
     directions = {
-        "N":   0,
+        "N": 0,
         "NNE": 22.5,
-        "NE":  45,
+        "NE": 45,
         "ENE": 67.5,
-        "E":   90,
+        "E": 90,
         "ESE": 112.5,
-        "SE":  135,
+        "SE": 135,
         "SSE": 157.5,
-        "S":   180,
+        "S": 180,
         "SSW": 202.5,
-        "SW":  225,
+        "SW": 225,
         "WSW": 247.5,
-        "W":   270,
+        "W": 270,
         "WNW": 292.5,
-        "NW":  315,
+        "NW": 315,
         "NNW": 337.5,
-        "N2":  0}
+        "N2": 0,
+    }
 
     wd_bins = np.linspace(0, 360, 17) + 11.25
     wd_bins = np.insert(wd_bins, 0, -0.1)
     # pandas-stubs has no pd.cut overload for these argument types
-    data['wd_bin'] = pd.cut(data[wd], wd_bins, labels=directions.keys())  # pyrefly: ignore[no-matching-overload]
-    data['wd_bin'] = data['wd_bin'].replace('N2', 'N')
+    data["wd_bin"] = pd.cut(data[wd], wd_bins, labels=directions.keys())  # pyrefly: ignore[no-matching-overload]
+    data["wd_bin"] = data["wd_bin"].replace("N2", "N")
 
     def direction_to_radians(direction):
         degrees = directions.get(direction.upper())
@@ -61,7 +64,7 @@ def bin_polar(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30
         radians = np.deg2rad(degrees)
         return float(radians)
 
-    data['radian_bin'] = data.wd_bin.apply(direction_to_radians).astype(float)
+    data["radian_bin"] = data.wd_bin.apply(direction_to_radians).astype(float)
 
     # Bin x (speed)
     if isinstance(xbins, int):
@@ -69,9 +72,14 @@ def bin_polar(data: pd.DataFrame, x: str='ws', wd: str='wd', xbins: int=30
     elif isinstance(xbins, (list, tuple, range)):
         x_bins = xbins
     else:
-        raise ValueError('Invalid xbins')
-    data['x_bin'] = pd.cut(data[x], x_bins, labels=x_bins[1:],  # pyrefly: ignore[no-matching-overload]
-                           include_lowest=True)
+        raise ValueError("Invalid xbins")
+    # pyrefly: ignore[no-matching-overload]
+    data["x_bin"] = pd.cut(
+        data[x],
+        x_bins,
+        labels=x_bins[1:],
+        include_lowest=True,
+    )
 
     return data
 
@@ -105,10 +113,11 @@ def circularize_radial_data(agg: pd.DataFrame):
 
 # %% Wind
 
-def wind_components(speed, wind_direction)-> tuple[Any, Any]:
+
+def wind_components(speed, wind_direction) -> tuple[Any, Any]:
     """
     Calculate the u and v components of the wind.
-    
+
     Parameters
     ----------
     speed : float
@@ -122,9 +131,9 @@ def wind_components(speed, wind_direction)-> tuple[Any, Any]:
     tuple[float, float]
         u and v components of the wind.
     """
-    u = - speed * np.sin(np.deg2rad(wind_direction))
-    v = - speed * np.cos(np.deg2rad(wind_direction))
-    
+    u = -speed * np.sin(np.deg2rad(wind_direction))
+    v = -speed * np.cos(np.deg2rad(wind_direction))
+
     return u, v
 
 
