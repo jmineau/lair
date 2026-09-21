@@ -58,6 +58,16 @@ class TestBuildPcapMask:
         assert not mask.any()
 
 
+class TestTimezones:
+    def test_tz_aware_index_is_compared_in_utc(self, vhd):
+        events = pcaps.determine_pcap_events(vhd, threshold=5.0, min_periods=3)
+        # 2024-01-01 02:00 UTC is 2023-12-31 19:00 in Denver (UTC-7)
+        local = pd.DatetimeIndex(["2023-12-31 19:00", "2023-12-31 18:00"],
+                                 tz="America/Denver")
+        mask = pcaps.build_pcap_mask(local, events)
+        assert mask.tolist() == [True, False]
+
+
 class TestFilterPcapEvents:
     def test_drops_in_event_rows(self, vhd):
         events = pcaps.determine_pcap_events(vhd, threshold=5.0, min_periods=3)

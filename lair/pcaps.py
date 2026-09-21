@@ -109,6 +109,11 @@ def determine_pcap_events(vhd: pd.Series, threshold: float, min_periods: int = 3
     return pcap_events
 
 
+def _naive_utc(t):
+    """Convert a tz-aware Timestamp/DatetimeIndex to naive UTC (naive passes through)."""
+    return t.tz_convert('UTC').tz_localize(None) if t.tz is not None else t
+
+
 def build_pcap_mask(index: pd.DatetimeIndex, events: pd.DataFrame) -> pd.Series:
     """
     Build a boolean mask for PCAP events.
@@ -116,9 +121,11 @@ def build_pcap_mask(index: pd.DatetimeIndex, events: pd.DataFrame) -> pd.Series:
     Parameters
     ----------
     index : pd.DatetimeIndex
-        The index to build the mask for.
+        The index to build the mask for. Naive times are taken as UTC;
+        tz-aware times are converted.
     events : pd.DataFrame
-        The DataFrame of PCAP events.
+        The DataFrame of PCAP events (naive UTC or tz-aware start/end).
+
     Returns
     -------
     pd.Series
@@ -127,13 +134,15 @@ def build_pcap_mask(index: pd.DatetimeIndex, events: pd.DataFrame) -> pd.Series:
     # Ensure we can compare the index values to the event timestamps.
     # Use pd.to_datetime so the function is robust to Index types that
     # are datetime-like but not necessarily a DatetimeIndex object.
-    idx = pd.to_datetime(index)
+    # Naive times are taken as UTC (valleyheatdeficit's events are naive UTC),
+    # so tz-aware times are converted to naive UTC before comparing.
+    idx = _naive_utc(pd.DatetimeIndex(pd.to_datetime(index)))
 
     mask = pd.Series(False, index=index)
 
     for _, event in events.iterrows():
-        start = event['start']
-        end = event['end']
+        start = _naive_utc(pd.Timestamp(event['start']))
+        end = _naive_utc(pd.Timestamp(event['end']))
         # Build boolean selection using vectorized comparisons. This
         # avoids label-based slicing (mask.loc[start: end]) which can
         # raise KeyError for non-monotonic indexes or when exact labels
