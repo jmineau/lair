@@ -408,7 +408,7 @@ def time_decay_matrix(times, decay: str | pd.Timedelta) -> np.ndarray:
 
 # ----- Time Aggregation ----- #
 
-def diurnal(data: pd.DataFrame, freq: str='1H', statistic: str='mean',
+def diurnal(data: pd.DataFrame, freq: str='1h', statistic: str | list[str]='mean',
             method: Literal['floor', 'ceil', 'round']='floor'):
     """
     Aggregate the data to the specified frequency and compute the statistic for each group.

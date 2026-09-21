@@ -65,7 +65,7 @@ def truncate_colormap(cmap: str | mcolors.Colormap, minval: float=0.0, maxval: f
         Truncated colormap.
     """
     if isinstance(cmap, str):
-        cmap: mcolors.Colormap = plt.get_cmap(cmap)
+        cmap = plt.get_cmap(cmap)
 
     new_cmap = mcolors.LinearSegmentedColormap.from_list(
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
@@ -95,7 +95,7 @@ def NCL_cmap(table_name: str) -> mcolors.LinearSegmentedColormap:
 
     # Convert table rgb file to pandas dataframe
     # TODO might be a better way to do this
-    colortab = pd.read_csv(table_link, delim_whitespace=True, skiprows=1)
+    colortab = pd.read_csv(table_link, sep=r'\s+', skiprows=1)
     colortab = colortab.drop('b', axis=1)  # Fix columns
     colortab = colortab.rename({'#': 'r', 'r': 'g', 'g': 'b'}, axis=1)
 
@@ -125,9 +125,9 @@ def terrain_cmap(minval: float=0.42, maxval: float=1.0, n: int=256) -> mcolors.L
     return truncate_colormap('terrain', minval=minval, maxval=maxval, n=n)
 
 
-def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str]=['std', 'median', 'mean'],
-                units: str | None=None, tz: str='UTC', freq: str='1H', ax: plt.Axes | None=None,
-                colors: str | dict[str, str]={'mean': 'black', 'median': 'blue', 'std': 'gray'},
+def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str] | None=None,
+                units: str | None=None, tz: str='UTC', freq: str='1h', ax: plt.Axes | None=None,
+                colors: str | dict[str, str] | None=None,
                 min_count: int = 0) -> plt.Axes:
     """
     Plot the diurnal cycle of data.
@@ -149,11 +149,12 @@ def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str]=['std', '
             DOES NOT CONVERT TIMEZONES.
 
     freq : str, optional
-        Frequency of the data. Defaults to '1H'.
+        Frequency of the data. Defaults to '1h'.
     ax : plt.Axes | None, optional
         Axis to plot on. Defaults to None.
     colors : str | dict[str, str], optional
-        Colors of the statistics. Defaults to {'mean': 'black', 'median': 'blue', 'std': 'gray'}.
+        Colors of the statistics, or a single color for all of them.
+        Defaults to {'mean': 'black', 'median': 'blue', 'std': 'gray'}.
     min_count : int, optional
         Minimum count to plot. Defaults to 0.
 
@@ -165,6 +166,19 @@ def diurnalPlot(data: pd.DataFrame, param: str, stats: str | list[str]=['std', '
     import datetime as dt
     import matplotlib.dates as mdates
     from lair.clock import diurnal
+
+    # Copy so appending 'count' below never touches the caller's list
+    if stats is None:
+        stats = ['std', 'median', 'mean']
+    elif isinstance(stats, str):
+        stats = [stats]
+    else:
+        stats = list(stats)
+
+    if colors is None:
+        colors = {'mean': 'black', 'median': 'blue', 'std': 'gray'}
+    elif isinstance(colors, str):
+        colors = {stat: colors for stat in stats}
 
     # Check for count in stats
     if 'count' in stats:
@@ -293,7 +307,7 @@ def create_polar_ax() -> plt.Axes:
     return ax
 
 
-def format_radial_axis(ax: plt.Axes, x: str, scale_angle: float) -> None:
+def format_radial_axis(ax: plt.Axes, x: str, scale_angle: float | None) -> None:
     """
     Format radial axis of polar plot.
 
@@ -303,7 +317,7 @@ def format_radial_axis(ax: plt.Axes, x: str, scale_angle: float) -> None:
         Axis to format.
     x : str
         Label of the radial axis.
-    scale_angle : float
+    scale_angle : float | None
         Angle to position the label.
 
     Returns

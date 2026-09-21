@@ -186,7 +186,7 @@ class TestAggregation:
         df = pd.DataFrame(
             {"v": range(48)}, index=pd.date_range("2024-01-01", periods=48, freq="h")
         )
-        out = clock.diurnal(df, freq="1h")
+        out = clock.diurnal(df)  # default freq must parse on pandas >= 3.0
         assert len(out) == 24  # two days collapse onto 24 unique hours
 
     def test_seasonal_indexes_by_season_and_year(self):

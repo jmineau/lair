@@ -58,10 +58,32 @@ class TestPlots:
             {"CH4": rng.normal(2, 0.3, 240)},
             index=pd.date_range("2024-01-01", periods=240, freq="h"),
         )
-        # Pass freq explicitly: the function's default '1H' (uppercase) is
-        # rejected by pandas >= 3.0 (a latent deprecation in the source).
-        ax = plotter.diurnalPlot(df, "CH4", freq="1h")
+        # Default freq must parse on pandas >= 3.0 (uppercase '1H' does not)
+        ax = plotter.diurnalPlot(df, "CH4")
         assert ax.has_data()
+
+    def test_diurnal_plot_does_not_mutate_stats(self, rng):
+        df = pd.DataFrame(
+            {"CH4": rng.normal(2, 0.3, 48)},
+            index=pd.date_range("2024-01-01", periods=48, freq="h"),
+        )
+        stats = ["mean"]
+        plotter.diurnalPlot(df, "CH4", stats=stats)
+        assert stats == ["mean"]
+        # Repeated default calls must not start plotting 'count'
+        plotter.diurnalPlot(df, "CH4")
+        ax = plotter.diurnalPlot(df, "CH4")
+        labels = [t.get_text() for t in ax.get_legend().get_texts()]
+        assert "count" not in labels
+
+    def test_diurnal_plot_accepts_str_stats_and_color(self, rng):
+        df = pd.DataFrame(
+            {"CH4": rng.normal(2, 0.3, 48)},
+            index=pd.date_range("2024-01-01", periods=48, freq="h"),
+        )
+        ax = plotter.diurnalPlot(df, "CH4", stats="median", colors="red")
+        labels = [t.get_text() for t in ax.get_legend().get_texts()]
+        assert labels == ["median"]
 
     def test_seasonal_plot(self, rng):
         df = pd.DataFrame(
