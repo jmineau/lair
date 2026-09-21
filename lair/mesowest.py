@@ -6,7 +6,8 @@ the Horel group.
 
 lair is a toolkit, so the data location is **not** hard-coded. Provide it either
 explicitly (``Sodar(SID, mesowest_dir=...)``) or via the ``LAIR_MESOWEST_DIR``
-environment variable. On CHPC this is ``$HOME/horel-group/oper/mesowest``.
+environment variable. On CHPC this is
+``/uufs/chpc.utah.edu/common/home/horel-group/oper/mesowest``.
 """
 
 import os
@@ -49,7 +50,7 @@ def resolve_mesowest_dir(mesowest_dir: str | None = None) -> str:
         raise ValueError(
             'No MesoWest data directory configured. Pass `mesowest_dir=...` or '
             f'set the {MESOWEST_DIR_ENV} environment variable '
-            '(on CHPC: $HOME/horel-group/oper/mesowest).'
+            '(on CHPC: /uufs/chpc.utah.edu/common/home/horel-group/oper/mesowest).'
         )
     return mesowest_dir
 
@@ -154,6 +155,10 @@ class Sodar:
         Read and merge SODAR data over a time range.
         """
         files = self.get_files(lvl, time_range)
+        if not files:
+            raise FileNotFoundError(
+                f'No {lvl} SODAR files for {self.SID} in {self.archive_dir} '
+                f'overlapping {time_range}')
         read_files = parallelize(self.parse, num_processes=num_processes)
         data = xr.merge(read_files(files, variables=self.variables))
 

@@ -1,6 +1,7 @@
 """Tests for lair.records (file/dir utilities).
 
-Network helpers (ftp_download, wget_download) are not exercised here; the pure
+Network helpers (ftp_download, wget_download) are not exercised against real
+servers; wget_download is checked with subprocess.run stubbed out, and the pure
 filesystem helpers are tested against tmp_path fixtures.
 """
 
@@ -98,6 +99,11 @@ class TestCacher:
         assert records.Cacher(square, cache_file)(5) == 25
         assert calls["n"] == 1
 
+    def test_bare_filename_uses_cwd(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        cacher = records.Cacher(lambda x: x, "cache.pkl")
+        assert cacher.index_file == ".cache.pkl.index"
+
     def test_requires_pkl_extension(self, tmp_path):
         with pytest.raises(AssertionError):
             records.Cacher(lambda x: x, str(tmp_path / "cache.txt"))
@@ -114,3 +120,35 @@ def test_read_kml(tmp_path):
     )
     k = records.read_kml(str(kml_path))
     assert k is not None
+
+
+class TestWgetDownload:
+    @pytest.fixture
+    def calls(self, monkeypatch):
+        """Record the commands wget_download would run instead of running them."""
+        import subprocess
+
+        calls = []
+        monkeypatch.setattr(subprocess, "run", lambda cmd, check: calls.append(cmd))
+        return calls
+
+    def test_single_url_string_is_one_download(self, tmp_path, calls):
+        url = "https://example.com/data/file.csv"
+        records.wget_download(url, str(tmp_path))
+        assert calls == [["wget", "-O", str(tmp_path / "file.csv"), url]]
+
+    def test_prefix_with_leading_slash(self, tmp_path, calls):
+        url = "https://example.com/pub/data/file.csv"
+        records.wget_download(url, str(tmp_path), prefix="/pub")
+        assert calls[0][2] == str(tmp_path / "data" / "file.csv")
+
+    def test_worker_errors_are_raised(self, tmp_path, monkeypatch):
+        import subprocess
+
+        def fake_run(cmd, check):
+            if cmd[0] == "unzip":
+                raise subprocess.CalledProcessError(1, cmd)
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        with pytest.raises(subprocess.CalledProcessError):
+            records.wget_download(["https://example.com/a.zip"], str(tmp_path))

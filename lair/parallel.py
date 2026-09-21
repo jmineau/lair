@@ -62,8 +62,9 @@ def parallelize(func: Callable, num_processes: int | Literal['max'] = 1
                     f'but there are only {len(iterable)} items in the iterable.')
             processes = len(iterable)
 
-        # If only one process is requested, execute the function sequentially
-        if processes == 1:
+        # If only one process is requested (or there is nothing to do),
+        # execute the function sequentially
+        if processes <= 1:
             vprint(f'Executing {func_name} sequentially...')
             results = [func(i, **kwargs) for i in iterable]
             return results

@@ -4,10 +4,13 @@ Utilities for working with files and directories.
 
 import os
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from lair.config import vprint
 from lair._optional import import_optional_dependency
+
+if TYPE_CHECKING:
+    from fastkml.kml import KML
 
 
 def unzip(zf: str, dir_path: str | None=None):
@@ -95,9 +98,14 @@ def read_kml(path: str) -> "KML":
     import_optional_dependency("fastkml")
     from fastkml import kml
 
-    with open(path, 'rt') as KML:
+    if hasattr(kml.KML, 'parse'):
+        # fastkml >= 1.0: from_string/parse are classmethods returning a new KML
+        return kml.KML.parse(path)
+
+    # fastkml < 1.0: from_string fills the instance in place
+    with open(path, 'rt') as f:
         k = kml.KML()
-        k.from_string(KML.read().encode('utf-8'))
+        k.from_string(f.read().encode('utf-8'))
     return k
 
 
@@ -146,7 +154,7 @@ def wget_download(urls: str | list[str],
                 common = parsed_url.path.strip('/')  # Remove leading '/'
             else:
                 # Get the relative strucuture from prefix
-                common = os.path.relpath(parsed_url.path.strip('/'), prefix)
+                common = os.path.relpath(parsed_url.path.strip('/'), prefix.strip('/'))
         else:
             # Drop each file into the download_dir
             common = os.path.basename(parsed_url.path)
@@ -169,8 +177,12 @@ def wget_download(urls: str | list[str],
             subprocess.run(['unzip', '-d', output_dir, local_path], check=True)
             os.remove(local_path)
 
+    if isinstance(urls, str):
+        urls = [urls]  # a bare string would otherwise be iterated per character
+
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        executor.map(download_file, urls)
+        # Consume the results so exceptions raised in the workers surface here
+        list(executor.map(download_file, urls))
 
 
 def ftp_download(host: str, paths: str | list[str], download_dir: str,
@@ -226,7 +238,9 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
                 ftp.cwd(path)
 
             except ftplib.error_perm as e:
-                assert 'Failed to change directory' in str(e)
+                # 550 = not a directory (the wording varies between servers)
+                if not str(e).startswith('550'):
+                    raise
                 # If it's not a directory, download the file
 
                 if pattern is not None and pattern not in path:
@@ -241,7 +255,7 @@ def ftp_download(host: str, paths: str | list[str], download_dir: str,
                         common = path.strip('/')  # Remove leading '/'
                     else:
                         # Get the relative strucuture from prefix
-                        common = os.path.relpath(path, prefix)
+                        common = os.path.relpath(path.strip('/'), prefix.strip('/'))
                 else:
                     # Drop each PATH directory into the download_dir
                     common = os.path.relpath(path, os.path.dirname(PATH))
@@ -312,11 +326,10 @@ class Cacher:
         self.reload = reload
 
         # Make sure the directory exists for the cache file
-        if not os.path.exists(os.path.dirname(cache_file)):
-            os.makedirs(os.path.dirname(cache_file))
-
         head, tail = os.path.split(cache_file)
-        self.index_file = f'{head}/.{tail}.index'
+        os.makedirs(head or '.', exist_ok=True)
+
+        self.index_file = os.path.join(head, f'.{tail}.index')
         self.cache_index = self.load_cache_index()
 
     def load_cache_index(self):

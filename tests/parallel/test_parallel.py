@@ -29,6 +29,12 @@ def test_sequential_passes_kwargs():
     assert run([1, 2, 3], factor=10) == [10, 20, 30]
 
 
+def test_empty_iterable_returns_empty_list():
+    # Must not try to start a Pool with 0 processes
+    run = parallelize(_square, num_processes=4)
+    assert run([]) == []
+
+
 def test_returns_a_callable():
     assert callable(parallelize(_square, num_processes=1))
 
