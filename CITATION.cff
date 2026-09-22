@@ -4,19 +4,18 @@ type: software
 title: "lair"
 version: 2026.12.5
 date-released: "2026-09-22"
+# Concept DOI (always resolves to the latest release) — same convention as
+# pandas/astropy/xarray. `doi` is the shorthand GitHub's "Cite this
+# repository" popup actually renders in APA/BibTeX (it ignores
+# `identifiers`, per citation-file-format/ruby-cff's formatters);
+# `identifiers` is kept too for tools that prefer that form. Deliberately
+# not tracking the per-version DOI here — none of the above do either.
 doi: "10.5281/zenodo.22900040"
 abstract: "lair (Land-Air Interactions Research) is a Python toolkit of atmospheric-science utilities: meteorology, geospatial helpers, HRRR access, emissions inventories, NOAA GML data, upper-air soundings, PCAP/valley heat deficit calculations, CCG-filter backgrounds, and plotting helpers."
-# `doi` (above) is the shorthand GitHub's "Cite this repository" popup
-# actually renders in APA/BibTeX (it ignores `identifiers`, see
-# citation-file-format/ruby-cff's formatters). Keep `identifiers` too for
-# tools that do read it, and bump the version-DOI entry on each release.
 identifiers:
   - type: doi
     value: "10.5281/zenodo.22900040"
     description: "The concept DOI for all versions of lair."
-  - type: doi
-    value: "10.5281/zenodo.22900041"
-    description: "The DOI for version 2026.12.5 of lair."
 authors:
   - family-names: Mineau
     given-names: James K.
