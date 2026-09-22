@@ -1147,7 +1147,6 @@ def gridcell_area_from_latlon(
 
 def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
     # http://www.movable-type.co.uk/scripts/latlong.html
-    # TODO not sure this is completely correct
 
     if deg:
         lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])

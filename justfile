@@ -27,7 +27,7 @@ build-docs:
 version:
 	@uv run python -m setuptools_scm
 
-# Tag + push the next CalVer release vYYYY.MM.PATCH (MM = 05/08/12; new month -> .0)
+# Tag, push, and publish (GitHub release -> Zenodo DOI) the next CalVer release vYYYY.MM.PATCH (MM = 05/08/12; new month -> .0)
 release:
 	#!/usr/bin/env bash
 	set -euo pipefail
@@ -56,6 +56,8 @@ release:
 	echo "Tagging v$next (previous: $last)"
 	git tag -a "v$next" -m "lair $next"
 	git push origin "v$next"
+	# Zenodo archives (and mints a DOI for) GitHub releases, not bare tags
+	gh release create "v$next" --verify-tag --generate-notes --title "lair $next"
 
 # Clean up build artifacts and cache files
 clean:

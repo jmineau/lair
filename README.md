@@ -1,13 +1,19 @@
 <div align=center>
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="/docs/source/_static/lair_fordark_r.png">
-    <source media="(prefers-color-scheme: light)" srcset="/docs/source/_static/lair_forlight_r.png">
-    <img alt="lair logo" src="/docs/source/_static/lair_fordark_r.png">
+    <source media="(prefers-color-scheme: dark)" srcset="/docs/_static/lair_fordark_r.png">
+    <source media="(prefers-color-scheme: light)" srcset="/docs/_static/lair_forlight_r.png">
+    <img alt="lair logo" src="/docs/_static/lair_fordark_r.png">
 </picture>
 
 # Land-Air Interactions Research
 
 ## [:scroll: Documentation](https://jmineau.github.io/lair/)
+
+[![Tests](https://github.com/jmineau/lair/actions/workflows/tests.yml/badge.svg)](https://github.com/jmineau/lair/actions/workflows/tests.yml)
+[![Documentation](https://github.com/jmineau/lair/actions/workflows/docs.yml/badge.svg)](https://github.com/jmineau/lair/actions/workflows/docs.yml)
+[![Code Quality](https://github.com/jmineau/lair/actions/workflows/quality.yml/badge.svg)](https://github.com/jmineau/lair/actions/workflows/quality.yml)
+[![codecov](https://codecov.io/gh/jmineau/lair/branch/main/graph/badge.svg)](https://codecov.io/gh/jmineau/lair)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 </div>
 
@@ -16,7 +22,7 @@
 # Installation
 
 The `lair` package is installable from the git repository via `pip`, however, some dependencies can only be installed via `conda`.
-Additionally, many components of `lair` require access to CHPC which encourages the use of `conda`. Therefore, we recommend using `conda` to install the package.
+In particular, the `regridding` extra needs ESMF, which is only practical to get from conda-forge. Therefore, we recommend using `conda` to install the package.
 
 > If you are using CHPC, it is assumed that `miniforge3` is installed following the instructions at https://www.chpc.utah.edu/documentation/software/python-anaconda.php
 
@@ -71,5 +77,4 @@ Contributions are welcome! Please take a look at current [issues](https://github
 # Citation
 
 If you use any portion of this package in your research, please cite the software and/or acknowledge me.
-
-A DOI will be provided in the future.
+Citation metadata is in [`CITATION.cff`](CITATION.cff) (GitHub's "Cite this repository" button uses it), and each release is archived on [Zenodo](https://zenodo.org/) with a DOI.

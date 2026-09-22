@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "lair"
+abstract: "lair (Land-Air Interactions Research) is a Python toolkit of atmospheric-science utilities: meteorology, geospatial helpers, HRRR access, emissions inventories, NOAA GML data, upper-air soundings, PCAP/valley heat deficit calculations, CCG-filter backgrounds, and plotting helpers."
+authors:
+  - family-names: Mineau
+    given-names: James K.
+    email: jameskmineau@gmail.com
+    affiliation: "University of Utah"
+    orcid: "https://orcid.org/0000-0002-2289-2252"
+license: MIT
+repository-code: "https://github.com/jmineau/lair"
+url: "https://jmineau.github.io/lair/"
+keywords:
+  - atmospheric-science
+  - land-air-interactions
+  - meteorology
+  - emissions-inventories
+  - greenhouse-gases
+  - python

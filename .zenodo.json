@@ -1,0 +1,14 @@
+{
+  "title": "lair",
+  "description": "lair (Land-Air Interactions Research) is a Python toolkit of atmospheric-science utilities: meteorology, geospatial helpers, HRRR access, emissions inventories, NOAA GML data, upper-air soundings, PCAP/valley heat deficit calculations, CCG-filter backgrounds, and plotting helpers.",
+  "creators": [
+    {
+      "name": "Mineau, James K.",
+      "affiliation": "University of Utah",
+      "orcid": "0000-0002-2289-2252"
+    }
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "keywords": ["atmospheric-science", "land-air-interactions", "meteorology", "emissions-inventories", "greenhouse-gases", "python"]
+}

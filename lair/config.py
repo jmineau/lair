@@ -70,13 +70,6 @@ if int(pd.__version__.split(".")[0]) < 3:
     pd.options.mode.copy_on_write = pandas_CoW
 
 
-########
-# DATA #
-########
-
-# TODO data for valley.py needs to be kept somewhere
-
-
 ###################
 # Verbose Printer #
 ###################

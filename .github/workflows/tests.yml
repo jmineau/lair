@@ -44,3 +44,15 @@ jobs:
         uv run --no-sync pytest -v
         -m "not network and not slow and not chpc"
         --cov=lair --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' && !cancelled() }}
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Upload test results to Codecov
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' && !cancelled() }}
+      uses: codecov/test-results-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
