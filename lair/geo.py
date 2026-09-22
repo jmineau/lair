@@ -1037,24 +1037,56 @@ def write_rio_crs(data: _XarrayT, crs: Any) -> _XarrayT:
 
 
 def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
-    # http://www.movable-type.co.uk/scripts/latlong.html
-    # TODO I dont think this works correctly
+    """
+    Great-circle bearing from point 1 to point 2 on a sphere.
+
+    Formulas from https://www.movable-type.co.uk/scripts/latlong.html.
+    Vectorized: any argument can be an array (or pandas Series), broadcast
+    together with numpy rules.
+
+    Parameters
+    ----------
+    lat1, lon1 : float or array-like
+        Start point.
+    lat2, lon2 : float or array-like
+        End point.
+    deg : bool, default True
+        Whether the *inputs* are in degrees (``False``: radians). The output
+        is always in degrees.
+    final : bool, default False
+        Return the final bearing (the course on arrival at point 2) instead of
+        the initial bearing (the course on leaving point 1). The two differ
+        along a great circle unless the path follows a meridian or the equator.
+
+    Returns
+    -------
+    float or np.ndarray
+        Bearing in degrees clockwise from true north, in ``[0, 360)``.
+        Coincident points return 0.
+
+    Examples
+    --------
+    >>> round(float(bearing(40, -111, 41, -111)), 6)  # due north
+    0.0
+    >>> round(float(bearing(35, 45, 35, 135)), 2)  # Baghdad -> Osaka
+    60.16
+    >>> round(float(bearing(35, 45, 35, 135, final=True)), 2)
+    119.84
+    """
+    if final:
+        # Final bearing = reverse of the initial bearing from point 2 back to 1.
+        # (Not initial + 180: that is just the reverse course at point 1.)
+        return (bearing(lat2, lon2, lat1, lon1, deg=deg) + 180) % 360
 
     if deg:
-        lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
+        lat1, lon1, lat2, lon2 = (np.deg2rad(v) for v in (lat1, lon1, lat2, lon2))
 
     dlon = lon2 - lon1
     y = np.sin(dlon) * np.cos(lat2)
     x = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(dlon)
 
-    # Inital bearing in degrees
-    brng = (np.rad2deg(np.arctan2(y, x)) + 360) % 360  # in [0,360)
-
-    if final:
-        # Final bearing in degrees
-        brng = (brng + 180) % 360
-
-    return brng
+    # arctan2 is in (-180, 180]; shift to [0, 360)
+    return (np.rad2deg(np.arctan2(y, x)) + 360) % 360
 
 
 def cosine_weights(lats: np.ndarray) -> np.ndarray:
@@ -1146,10 +1178,32 @@ def gridcell_area_from_latlon(
 
 
 def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
-    # http://www.movable-type.co.uk/scripts/latlong.html
+    """
+    Great-circle distance between two points on a sphere (haversine formula).
 
+    Formula from https://www.movable-type.co.uk/scripts/latlong.html.
+    Vectorized: any argument can be an array (or pandas Series), broadcast
+    together with numpy rules, so a fixed point against many points works.
+
+    Parameters
+    ----------
+    lat1, lon1 : float or array-like
+        First point.
+    lat2, lon2 : float or array-like
+        Second point.
+    R : float, default 6371
+        Sphere radius. The result is in the same units (default: mean Earth
+        radius in km, so the result is in km).
+    deg : bool, default True
+        Whether the inputs are in degrees (``False``: radians).
+
+    Returns
+    -------
+    float or np.ndarray
+        Distance in the units of ``R``.
+    """
     if deg:
-        lat1, lon1, lat2, lon2 = np.deg2rad([lat1, lon1, lat2, lon2])
+        lat1, lon1, lat2, lon2 = (np.deg2rad(v) for v in (lat1, lon1, lat2, lon2))
 
     dlat = lat2 - lat1
     dlon = lon2 - lon1

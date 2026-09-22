@@ -63,10 +63,85 @@ class TestDistanceHelpers:
             geo.cosine_weights(np.array([0.0, 60.0])), [1.0, 0.5]
         )
 
-    def test_bearing_final_bearing(self):
-        # The final bearing along a great circle differs from the initial.
+    def test_bearing_final_bearing_in_range(self):
         b = geo.bearing(40, -111, 41, -110, final=True)
         assert 0.0 <= b < 360.0
+
+    def test_haversine_broadcasts_scalar_against_array(self):
+        # A fixed point against many points (e.g. distance from a site).
+        d = geo.haversine(40, -111, np.array([41.0, 42.0]), np.array([-111.0, -111.0]))
+        np.testing.assert_allclose(d, [111.19, 222.39], atol=0.1)
+
+
+# Worked example from https://www.movable-type.co.uk/scripts/latlong.html:
+# Land's End (50 03 59N, 005 42 53W) -> John o' Groats (58 38 38N, 003 04 12W)
+LANDS_END = (50 + 3 / 60 + 59 / 3600, -(5 + 42 / 60 + 53 / 3600))
+JOHN_O_GROATS = (58 + 38 / 60 + 38 / 3600, -(3 + 4 / 60 + 12 / 3600))
+
+
+class TestBearing:
+    """lair#23: verify bearing against published and independent references."""
+
+    @pytest.mark.parametrize(
+        "p2, expected",
+        [
+            ((41, -111), 0.0),  # north
+            ((40, -110), 89.678),  # east (not exactly 90: great circle)
+            ((39, -111), 180.0),  # south
+            ((40, -112), 270.322),  # west
+        ],
+    )
+    def test_cardinal_directions(self, p2, expected):
+        assert geo.bearing(40, -111, *p2) == pytest.approx(expected, abs=1e-3)
+
+    def test_movable_type_initial(self):
+        # 009 07 11 on the reference page
+        b = geo.bearing(*LANDS_END, *JOHN_O_GROATS)
+        assert b == pytest.approx(9 + 7 / 60 + 11 / 3600, abs=1 / 3600)
+
+    def test_movable_type_final(self):
+        # 011 16 31 on the reference page. The old implementation returned
+        # initial + 180 (~189 deg) here.
+        b = geo.bearing(*LANDS_END, *JOHN_O_GROATS, final=True)
+        assert b == pytest.approx(11 + 16 / 60 + 31 / 3600, abs=1 / 3600)
+
+    def test_final_equals_reverse_of_return_leg(self):
+        fwd_final = geo.bearing(35, 45, 35, 135, final=True)
+        back_initial = geo.bearing(35, 135, 35, 45)
+        assert fwd_final == pytest.approx((back_initial + 180) % 360)
+
+    def test_meridian_initial_equals_final(self):
+        assert geo.bearing(40, -111, 45, -111, final=True) == pytest.approx(0.0)
+
+    def test_radians_input_gives_degrees_output(self):
+        b = geo.bearing(*np.deg2rad([35, 45, 35, 135]), deg=False)
+        assert b == pytest.approx(geo.bearing(35, 45, 35, 135))
+
+    def test_coincident_points(self):
+        assert geo.bearing(40, -111, 40, -111) == 0.0
+
+    def test_broadcasts_scalar_against_array(self):
+        b = geo.bearing(40, -111, np.array([41.0, 39.0]), np.array([-111.0, -111.0]))
+        np.testing.assert_allclose(b, [0.0, 180.0], atol=1e-9)
+
+    def test_matches_pyproj_sphere(self):
+        """Initial and final bearings agree with pyproj's geodesic on a sphere."""
+        pyproj = pytest.importorskip("pyproj")
+        g = pyproj.Geod(a=6371000, b=6371000)
+        rng = np.random.default_rng(0)
+        lat1, lat2 = rng.uniform(-80, 80, (2, 200))
+        lon1, lon2 = rng.uniform(-180, 180, (2, 200))
+        az12, az21, _ = g.inv(lon1, lat1, lon2, lat2)
+        init = geo.bearing(lat1, lon1, lat2, lon2)
+        final = geo.bearing(lat1, lon1, lat2, lon2, final=True)
+
+        # compare on the circle (359.9999 == 0.0000)
+        def angdiff(a, b):
+            return np.abs((np.asarray(a) - np.asarray(b) + 180) % 360 - 180)
+
+        assert angdiff(init, az12 % 360).max() < 1e-6
+        assert angdiff(final, (az21 + 180) % 360).max() < 1e-6
+        assert ((init >= 0) & (init < 360)).all()
 
     def test_haversine_radius_argument(self):
         # One degree of arc on a unit sphere is 1 degree in radians.
