@@ -56,8 +56,15 @@ release:
 	echo "Tagging v$next (previous: $last)"
 	git tag -a "v$next" -m "lair $next"
 	git push origin "v$next"
-	# Zenodo archives (and mints a DOI for) GitHub releases, not bare tags
-	gh release create "v$next" --verify-tag --generate-notes --title "lair $next"
+	# Zenodo archives (and mints a DOI for) GitHub releases, not bare tags.
+	# The installed `gh` here is old (2.0.0) and lacks --verify-tag/--generate-notes,
+	# so build notes from the commit log and create the release via the REST API.
+	if [ "$last" = "v0.0.0" ]; then
+	    notes=$(git log --format='- %s' "v$next")
+	else
+	    notes=$(git log --format='- %s' "$last".."v$next")
+	fi
+	gh api repos/jmineau/lair/releases -f tag_name="v$next" -f name="lair $next" -f body="$notes"
 
 # Clean up build artifacts and cache files
 clean:
