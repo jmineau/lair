@@ -13,6 +13,10 @@ LAIR: Land-Air Interactions Research
    :target: https://github.com/jmineau/lair/actions/workflows/quality.yml
    :alt: Code Quality
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.22900040.svg
+   :target: https://doi.org/10.5281/zenodo.22900040
+   :alt: DOI
+
 ``lair`` is a collection of tools that I have developed/acquired for my research
 regarding land-air interactions. It is designed to make it easier to work with
 atmospheric data: meteorological calculations, emissions inventories, NOAA

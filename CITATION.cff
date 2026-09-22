@@ -2,7 +2,16 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 title: "lair"
+version: 2026.12.5
+date-released: "2026-09-22"
 abstract: "lair (Land-Air Interactions Research) is a Python toolkit of atmospheric-science utilities: meteorology, geospatial helpers, HRRR access, emissions inventories, NOAA GML data, upper-air soundings, PCAP/valley heat deficit calculations, CCG-filter backgrounds, and plotting helpers."
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22900040"
+    description: "The concept DOI for all versions of lair."
+  - type: doi
+    value: "10.5281/zenodo.22900041"
+    description: "The DOI for version 2026.12.5 of lair."
 authors:
   - family-names: Mineau
     given-names: James K.
