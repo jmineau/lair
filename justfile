@@ -37,11 +37,14 @@ release:
 	if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
 	    echo "Releases are tagged from main." >&2; exit 1
 	fi
-	git fetch --tags origin
+	git fetch origin main
 	if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
 	    echo "main differs from origin/main; push or pull first." >&2; exit 1
 	fi
-	last=$(git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo v0.0.0)
+	# Latest vYYYY.MM.PATCH release tag on GitHub (the source of truth)
+	last=$(git ls-remote --tags --refs origin 'v*' | sed 's|.*refs/tags/||' \
+	    | { grep -E '^v[0-9]{4}\.[0-9]{2}\.[0-9]+$' || true; } | sort -V | tail -n 1)
+	last=${last:-v0.0.0}
 	year=$(date +%Y); month=$(date +%-m)
 	if [ "$month" -le 5 ]; then rel=05; elif [ "$month" -le 8 ]; then rel=08; else rel=12; fi
 	IFS=. read -r ly lm lp <<< "${last#v}"
