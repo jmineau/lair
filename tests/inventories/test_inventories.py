@@ -117,6 +117,38 @@ class TestBaseInventory:
         assert set(absolute.data_vars) == {"energy", "agriculture"}
         assert absolute.attrs["long_name"] == "Absolute Emissions"
 
+    def test_coords_stay_unquantified(self, inventory):
+        # A coordinate index wrapped in a pint Quantity cannot be aligned
+        # against a plain one, which breaks anything combining the data with
+        # something derived from it.
+        for coord in inventory._data.coords:
+            assert not hasattr(inventory._data[coord].data, "units"), coord
+
+    def test_absolute_emissions_with_units_on_coords(self):
+        # Real inventory files carry `units: degrees_north` on lat/lon, which
+        # pint-xarray quantifies unless told not to. The plain fixture has no
+        # units on its coords and so never exercised this path.
+        import pandas as pd
+
+        time = pd.date_range("2020-01-01", periods=2, freq="YS")
+        ds = xr.Dataset(
+            {"energy": (("time", "lat", "lon"), np.ones((2, 2, 2)))},
+            coords={
+                "time": time,
+                "lat": ("lat", np.array([40.0, 41.0]), {"units": "degrees_north"}),
+                "lon": ("lon", np.array([-112.0, -111.0]), {"units": "degrees_east"}),
+            },
+        )
+        ds["energy"].attrs["units"] = "kg/m**2/s"
+        inv = inventories.Inventory(ds, pollutant="CH4", src_units="kg/m**2/s")
+        assert not hasattr(inv._data.lat.data, "units")
+        assert bool((inv.integrate().values > 0).all())
+
+    def test_clip_keeps_integrate_working(self, inventory):
+        # clip() assigns through the data setter, which re-quantifies.
+        clipped = inventory.clip(bbox=(-112.5, 39.5, -110.5, 41.5))
+        assert bool((clipped.integrate().values > 0).all())
+
     def test_integrate_per_time_step(self, inventory):
         integrated = inventory.integrate()
         assert integrated.sizes["time"] == 2

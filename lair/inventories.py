@@ -116,6 +116,24 @@ def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
     return data
 
 
+def _quantify_data_only(
+    data: Dataset, units_map: dict[Any, Any] | None = None
+) -> Dataset:
+    """Attach pint units to a dataset's variables while leaving its coordinates alone.
+
+    Real inventory files carry ``units: degrees_north`` on lat/lon, and
+    pint-xarray quantifies any variable with a ``units`` attribute unless it is
+    told otherwise. A coordinate *index* wrapped in a pint Quantity cannot be
+    aligned against a plain one, which silently breaks every operation that
+    combines the data with something derived from it -- notably
+    :attr:`Inventory.gridcell_area`, and so ``absolute_emissions`` and
+    ``integrate``. Mapping each coordinate to ``None`` keeps them plain.
+    """
+    mapping: dict[Any, Any] = dict(units_map or {})
+    mapping.update({coord: None for coord in data.coords})
+    return data.pint.quantify(mapping)
+
+
 def sum_sectors(data: Dataset) -> DataArray:
     """
     Sum emissions from all sectors in the dataset.
@@ -392,8 +410,8 @@ class Inventory(BaseGrid):
 
     @data.setter
     def data(self, data: Dataset) -> None:
-        # Reattach pint units to the data from attrs
-        self._data = data.pint.quantify()
+        # Reattach pint units to the data from attrs, leaving coords plain
+        self._data = _quantify_data_only(data)
 
     def quantify(self) -> Dataset:
         """
@@ -600,7 +618,7 @@ class Inventory(BaseGrid):
     def _quantify(self, data: Dataset) -> Dataset:
         # Quantify the entire dataset at once to keep coord indexes consistent.
         units_map = {var: self.src_units for var in data.data_vars}
-        return data.pint.quantify(units_map)
+        return _quantify_data_only(data, units_map)
 
 
 class MultiModelInventory(Inventory):
