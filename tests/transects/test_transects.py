@@ -102,3 +102,106 @@ def test_robust_z_is_transit_relative(matrix):
     assert np.nanmin(z[:, 10]) > 3.0  # persistent source stands out in every transit
     f = transects.detection_frequency(z, threshold=3.0, min_transits=5)
     assert f[10] == pytest.approx(1.0) and f[0] == pytest.approx(0.0)
+
+
+# ---------------------------------------------------------------------------
+# builder: lag_positions / snap_to_route / split_transits / transect_matrix
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def track():
+    """A 5-km straight route sampled every second at 10 m/s: out (s increasing), a
+    120-s dwell at the far end, back, a 30-min gap, then out again but only 3 km.
+    Obs = 2.0 ppm with a +0.3 ppm source at s = 2,000 m (sampled with a 10-s lag, i.e.
+    the value shows up 100 m further along in the direction of travel)."""
+    v, L = 10.0, 5000.0
+    out = np.arange(0, L + 1, v)
+    s = np.r_[out, np.full(120, L), out[::-1]]
+    t = np.arange(len(s), dtype=float)
+    # second run after a gap, partial
+    out2 = np.arange(0, 3000 + 1, v)
+    s = np.r_[s, out2]
+    t = np.r_[t, t[-1] + 1800 + np.arange(len(out2))]
+    xy = np.c_[s, np.zeros_like(s)]
+    lag = 10.0
+    obs = np.full(len(s), 2.0)
+    # source is at s = 2000; a lagged reading logs it at the position v*lag later
+    s_true = np.interp(t - lag, t, s)  # where the air was taken in
+    obs[np.abs(s_true - 2000.0) <= 25.0] += 0.3
+    return t, xy, obs, lag
+
+
+def test_lag_positions_moves_samples_back_along_the_track(track):
+    t, xy, obs, lag = track
+    lagged = transects.lag_positions(t, xy, lag, max_gap_s=600)
+    # outbound: 100 m behind the logged position
+    assert lagged[50, 0] == pytest.approx(xy[50, 0] - 100.0)
+    # the first sample of a run is clamped to the run start, not interpolated across the gap
+    i_run2 = len(t) - 301
+    assert lagged[i_run2, 0] == pytest.approx(xy[i_run2, 0])
+    assert lagged[i_run2 + 5, 0] == pytest.approx(
+        0.0
+    )  # 5 s in, lag 10 s -> still clamped
+
+
+def test_split_transits_finds_reversal_and_gap(track):
+    pytest.importorskip("scipy")
+    t, xy, obs, lag = track
+    transit, table = transects.split_transits(
+        t, xy[:, 0], max_gap_s=600, reversal_m=500, min_span_m=1000
+    )
+    assert list(table["direction"]) == [1, -1, 1]
+    assert table.loc[0, "s_max"] == pytest.approx(5000.0)
+    assert table.loc[2, "s_max"] == pytest.approx(3000.0)
+    # every kept sample belongs to exactly one transit; the dwell is split between 0 and 1
+    assert (transit >= 0).all()
+    assert (transit[:501] == 0).all()
+    assert (transit[-301:] == 2).all()
+
+
+def test_split_transits_ignores_jitter_and_short_shunts():
+    pytest.importorskip("scipy")
+    t = np.arange(600.0)
+    s = t * 10.0
+    s[100:110] -= 30.0  # GPS jitter
+    s[300:340] = (
+        s[300] - np.r_[np.arange(20), np.arange(20)[::-1]] * 10.0
+    )  # 200-m shunt
+    transit, table = transects.split_transits(t, s, reversal_m=500)
+    assert len(table) == 1 and table.loc[0, "direction"] == 1
+    assert (transit == 0).all()
+
+
+def test_split_transits_drops_off_route_and_short():
+    pytest.importorskip("scipy")
+    t = np.arange(200.0)
+    s = np.full(200, np.nan)
+    s[:50] = np.arange(50) * 10.0  # 500 m only
+    transit, table = transects.split_transits(t, s, min_span_m=1000)
+    assert table.empty and (transit == -1).all()
+
+
+def test_transect_matrix_with_lag_and_dwell_trim(track):
+    pytest.importorskip("scipy")
+    t, xy, obs, lag = track
+    route_xy = np.c_[np.arange(0, 5001, 50.0), np.zeros(101)]
+    lagged = transects.lag_positions(t, xy, lag)
+    point, dist = transects.snap_to_route(lagged, route_xy, max_dist=60)
+    assert (point >= 0).all() and dist.max() <= 25.0
+    transit, table = transects.split_transits(t, lagged[:, 0], max_gap_s=600)
+    m_obs, m_t, m_n = transects.transect_matrix(
+        transit, point, obs, t, len(table), len(route_xy), max_dwell_s=30
+    )
+    assert m_obs.shape == (3, 101)
+    # with the lag applied the source lands on point 40 (s = 2000) in both directions
+    src = np.nanargmax(m_obs, axis=1)
+    assert list(src) == [40, 40, 40]
+    assert m_obs[0, 40] == pytest.approx(2.3, abs=0.05)
+    assert m_obs[0, 10] == pytest.approx(2.0)
+    # the partial third transit logs to 3 km, i.e. air taken in up to 2.9 km (point 58)
+    assert np.isnan(m_obs[2, 59:]).all() and np.isfinite(m_obs[2, :59]).all()
+    # the terminus dwell is trimmed to max_dwell_s: the end point holds ~30 s, not 60
+    assert m_n[0, 100] <= 32 and m_n[1, 100] <= 32
+    # time is the mean sample time of the cell
+    assert m_t[0, 0] == pytest.approx(t[point == 0][transit[point == 0] == 0].mean())

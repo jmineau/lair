@@ -13,6 +13,15 @@ transit has no data at a point). Persistence questions are answered per point:
 - :func:`profile`            — detection frequency and magnitude binned by hour / weekday / month
 - :func:`along_route_distance` — cumulative geodesic distance of the points [km]
 
+Building the matrix from a georeferenced time series (the *transect builder*, after
+Mitchell et al. 2018's algorithm):
+
+- :func:`lag_positions`  — put each sample where the sampled air was taken in (inlet lag)
+- :func:`snap_to_route`  — nearest fixed route point of each sample
+- :func:`split_transits` — cut the along-route coordinate into one-way transits at the
+                            reversals of travel and at time gaps
+- :func:`transect_matrix` — average the samples onto ``[transit, point]``
+
 Everything is plain numpy; the platform-specific file formats live in the calling package
 (e.g. ``slv.measurements.mobile`` for TRAX). Times are POSIX seconds (float) or datetime64.
 """
@@ -32,6 +41,10 @@ __all__ = [
     "along_route_distance",
     "merge_route_points",
     "pool_routes",
+    "lag_positions",
+    "snap_to_route",
+    "split_transits",
+    "transect_matrix",
 ]
 
 
@@ -209,3 +222,185 @@ def pool_routes(
         out[r0 : r0 + m.shape[0], idx] = m
         r0 += m.shape[0]
     return out
+
+
+# ---------------------------------------------------------------------------
+# Transect builder: from a georeferenced time series to [transit, point]
+# ---------------------------------------------------------------------------
+
+TRANSIT_COLUMNS = ["direction", "t_start", "t_end", "s_min", "s_max", "n"]
+
+
+def _time_seconds(time) -> np.ndarray:
+    """POSIX seconds (float) from datetime64 / pandas / numeric input."""
+    t = np.asarray(time)
+    if np.issubdtype(t.dtype, np.datetime64):
+        return t.astype("datetime64[ns]").astype("int64") / 1e9
+    return t.astype(float)
+
+
+def _runs(t: np.ndarray, max_gap_s: float) -> np.ndarray:
+    """Run index per sample; a new run starts after a gap longer than ``max_gap_s``."""
+    new = np.ones(len(t), bool)
+    new[1:] = np.diff(t) > max_gap_s
+    return np.cumsum(new) - 1
+
+
+def lag_positions(time, xy: np.ndarray, lag_s, max_gap_s: float = 600.0) -> np.ndarray:
+    """Positions where the air of each sample was actually taken in.
+
+    A sample logged at time *t* is air that entered the inlet ``lag_s`` seconds earlier, so
+    it belongs at the platform's position at ``t - lag``. Positions are interpolated
+    linearly in time along ``xy`` (``(n, 2)``, planar or lon/lat; ``time`` sorted).
+    ``lag_s`` is a scalar or one value per sample (the lag differs by instrument epoch).
+
+    The record is cut into runs at gaps longer than ``max_gap_s``, and ``t - lag`` is not
+    allowed to reach back before the start of the sample's own run: the first seconds of a
+    run keep its first position instead of being interpolated across the gap to wherever
+    the previous run ended.
+    """
+    t = _time_seconds(time)
+    xy = np.asarray(xy, dtype=float)
+    lag = np.broadcast_to(np.asarray(lag_s, dtype=float), t.shape)
+    run = _runs(t, max_gap_s)
+    starts = np.flatnonzero(np.r_[True, np.diff(run) != 0])
+    t_lag = np.maximum(t - lag, t[starts][run])
+    out = np.empty_like(xy)
+    for k in range(xy.shape[1]):
+        out[:, k] = np.interp(t_lag, t, xy[:, k])
+    return out
+
+
+def snap_to_route(
+    xy: np.ndarray, route_xy: np.ndarray, max_dist: float
+) -> tuple[np.ndarray, np.ndarray]:
+    """Nearest route point of each sample: ``(index, distance)``, index -1 beyond ``max_dist``.
+
+    Both arrays are ``(n, 2)`` in the same projected metres.
+    """
+    from scipy.spatial import cKDTree
+
+    d, idx = cKDTree(np.asarray(route_xy, dtype=float)).query(
+        np.asarray(xy, dtype=float)
+    )
+    return np.where(d <= max_dist, idx, -1), d
+
+
+def _empty_transit_table() -> pd.DataFrame:
+    return pd.DataFrame(columns=TRANSIT_COLUMNS, index=pd.Index([], name="transit"))
+
+
+def split_transits(
+    time,
+    s: np.ndarray,
+    max_gap_s: float = 600.0,
+    reversal_m: float = 500.0,
+    min_span_m: float = 1000.0,
+) -> tuple[np.ndarray, pd.DataFrame]:
+    """Cut a platform's along-route coordinate into one-way transits.
+
+    ``s`` is the along-route position of each sample (metres; NaN where the sample is not
+    on this route) and ``time`` is sorted. A transit ends
+
+    - at a time gap longer than ``max_gap_s`` (overnight, or the record stops), or
+    - at a reversal of the direction of travel: a turning point of ``s`` with prominence
+      of at least ``reversal_m`` (``scipy.signal.find_peaks`` on ``s`` and on ``-s``).
+      GPS jitter and short shunts stay inside a transit; a turnaround at a terminus does
+      not. A dwell at the terminus is cut at its middle, between the arriving and the
+      departing transit (trim it with ``max_dwell_s`` in :func:`transect_matrix`).
+
+    Transits covering less than ``min_span_m`` of route are discarded.
+
+    Returns ``(transit, table)``: ``transit`` is the transit index per sample (-1 for
+    samples not in a kept transit) and ``table`` has one row per transit, indexed by
+    that number: ``direction`` (+1 with increasing ``s``, -1 against it), ``t_start``,
+    ``t_end`` (POSIX s), ``s_min``, ``s_max`` and ``n`` samples.
+    """
+    from scipy.signal import find_peaks
+
+    t = _time_seconds(time)
+    s = np.asarray(s, dtype=float)
+    transit = np.full(len(t), -1, dtype=int)
+    idx_on = np.flatnonzero(np.isfinite(s))
+    if len(idx_on) == 0:
+        return transit, _empty_transit_table()
+    t_on, s_on = t[idx_on], s[idx_on]
+    run = _runs(t_on, max_gap_s)
+    run_starts = np.flatnonzero(np.r_[True, np.diff(run) != 0])
+    run_ends = np.r_[run_starts[1:], len(run)]
+    rows = []
+    k = 0
+    for a0, b0 in zip(run_starts, run_ends, strict=True):
+        sr = s_on[a0:b0]
+        if len(sr) < 2:
+            continue
+        hi, _ = find_peaks(sr, prominence=reversal_m)
+        lo, _ = find_peaks(-sr, prominence=reversal_m)
+        cuts = np.unique(np.r_[0, hi, lo, len(sr)])
+        for a, b in zip(cuts[:-1], cuts[1:], strict=True):
+            seg = idx_on[a0 + a : a0 + b]
+            ss = s[seg]
+            if ss.max() - ss.min() < min_span_m:
+                continue
+            transit[seg] = k
+            rows.append(
+                (
+                    k,
+                    1 if ss[-1] >= ss[0] else -1,
+                    t[seg[0]],
+                    t[seg[-1]],
+                    ss.min(),
+                    ss.max(),
+                    len(seg),
+                )
+            )
+            k += 1
+    if not rows:
+        return transit, _empty_transit_table()
+    table = pd.DataFrame(rows, columns=["transit", *TRANSIT_COLUMNS]).set_index(
+        "transit"
+    )
+    return transit, table
+
+
+def transect_matrix(
+    transit: np.ndarray,
+    point: np.ndarray,
+    obs: np.ndarray,
+    time,
+    n_transits: int,
+    n_points: int,
+    max_dwell_s: float | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Average samples onto a ``[transit, point]`` matrix.
+
+    ``transit`` comes from :func:`split_transits` and ``point`` from :func:`snap_to_route`
+    (-1 in either skips the sample); ``obs`` and ``time`` are per sample. With
+    ``max_dwell_s``, samples at a point taken more than that long after the transit first
+    reached the point are dropped, so a platform sitting at a stop contributes a pass, not
+    a long time-average, to that point.
+
+    Returns ``(obs, time, n)``: the mean observation, the mean POSIX time and the number of
+    samples per cell, NaN where a transit has no sample at a point.
+    """
+    t = _time_seconds(time)
+    obs = np.asarray(obs, dtype=float)
+    ok = (transit >= 0) & (point >= 0) & np.isfinite(obs)
+    df = pd.DataFrame(
+        {"transit": transit[ok], "point": point[ok], "obs": obs[ok], "t": t[ok]}
+    )
+    if max_dwell_s is not None:
+        first = df.groupby(["transit", "point"])["t"].transform("min")
+        df = df[(df["t"] - first) <= max_dwell_s]
+    agg = df.groupby(["transit", "point"]).agg(
+        obs=("obs", "mean"), t=("t", "mean"), n=("obs", "size")
+    )
+    out_obs = np.full((n_transits, n_points), np.nan)
+    out_t = np.full_like(out_obs, np.nan)
+    out_n = np.full_like(out_obs, np.nan)
+    ti = agg.index.get_level_values("transit").to_numpy()
+    pi = agg.index.get_level_values("point").to_numpy()
+    out_obs[ti, pi] = agg["obs"].to_numpy()
+    out_t[ti, pi] = agg["t"].to_numpy()
+    out_n[ti, pi] = agg["n"].to_numpy(dtype=float)
+    return out_obs, out_t, out_n

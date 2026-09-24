@@ -70,9 +70,14 @@ lair/
   plotter.py         matplotlib helpers (log formatter, legend handlers, ...)
   records.py         file/dir utilities (ftp_download, unzip)
   soundings.py       upper-air sounding fetch/parse
-  transects.py       metrics on mobile transect matrices (obs[transit, point]):
-                     per-transit baseline enhancement, detection frequency,
-                     magnitude, hour/weekday/month profiles, route distance
+  transects.py       mobile transect matrices (obs[transit, point]): metrics
+                     (enhancement, robust_z, detection_frequency, magnitude,
+                     profile, merge_route_points/pool_routes) and the builder
+                     (lag_positions, snap_to_route, split_transits — one-way
+                     transits cut at reversals of travel via find_peaks prominence
+                     and at time gaps — transect_matrix). scipy is optional:
+                     the builder tests importorskip it. Platform specifics
+                     (TRAX) live in slv.measurements.mobile.transects.
   utils.py           tiny helpers (updating_print, DotDict)
 docs/                Sphinx source (conf.py, index.rst, api.rst, _templates/);
                      .github/workflows/docs.yml deploys to GitHub Pages
