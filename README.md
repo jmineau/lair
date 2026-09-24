@@ -66,10 +66,14 @@ For early versions of the package, `verbose` will be set to `True` by default. T
 
 This package was partially inspired and uses some code generously provided by [Brian Blaylock's Carpenter Workshop python package](https://github.com/blaylockbk/Carpenter_Workshop).
 
-# Disclaimer
+# Use of AI coding agents
 
- - Portions of this package were written with AI-based tools including Github CoPilot, ChatGPT, and Google Gemini.
- - Additionally, various code snippets were borrowed from StackOverflow and other online resources.
+This project is developed with the help of AI coding agents, directed and
+reviewed by the maintainer, who owns the design and the science.
+
+Portions of this package were also written with AI-based tools including
+GitHub Copilot, ChatGPT, and Google Gemini, and some code snippets were
+borrowed from StackOverflow and other online resources.
 
 # Contributing
 
