@@ -28,6 +28,7 @@ Data Sources
    lair.hrrr
    lair.inventories
    lair.noaa
+   lair.synoptic
 
 Measurements
 ------------

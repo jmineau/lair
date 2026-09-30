@@ -56,7 +56,8 @@ lair/
   _optional.py       import_optional_dependency() helper
   config.py          paths, `verbose`, `vprint`
   constants.py       physical constants (workaround until pint has them)
-  air.py             general atmospheric helpers (e.g. bin_polar)
+  air.py             general atmospheric helpers (bin_polar, wind_components,
+                     wind_direction -- NaN for a zero vector, not 270)
   background.py      background concentration via CCG filter
   clock.py           time/date utilities (TimeRange-ish, decimal date conv.)
   dev.py             dev helpers (e.g. public_attrs)
@@ -70,6 +71,9 @@ lair/
   plotter.py         matplotlib helpers (log formatter, legend handlers, ...)
   records.py         file/dir utilities (ftp_download, unzip)
   soundings.py       upper-air sounding fetch/parse
+  synoptic.py        Synoptic Data API (MesoWest successor): metadata, timeseries,
+                     hourly_mean (vector-mean wind). Token from token= or
+                     $SYNOPTIC_TOKEN at call time; needs the `requests` extra.
   transects.py       mobile transect matrices (obs[transit, point]): metrics
                      (enhancement, robust_z, detection_frequency, magnitude,
                      profile, merge_route_points/pool_routes) and the builder

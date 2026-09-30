@@ -151,9 +151,15 @@ def wind_direction(u, v):
     Returns
     -------
     np.array
-        wind direction in degrees
+        wind direction in degrees (blowing from), NaN where u = v = 0: a zero
+        vector has no direction, and arctan2(0, 0) = 0 would report 270 (west).
+        This matters for vector-mean winds, where a dead-calm period averages
+        to exactly zero.
     """
-    return (270 - np.rad2deg(np.arctan2(v, u))) % 360
+    direction = (270 - np.rad2deg(np.arctan2(v, u))) % 360
+    calm = (np.asarray(u) == 0) & (np.asarray(v) == 0)
+    # multiply rather than index, so pandas/xarray inputs keep their labels
+    return direction * np.where(calm, np.nan, 1.0)
 
 
 def rotate_winds(u, v, lon) -> tuple[Any, Any]:

@@ -41,6 +41,23 @@ class TestWindDirection:
         # Toward the north (v>0) comes FROM the south -> 180.
         assert air.wind_direction(0.0, 1.0) == pytest.approx(180.0)
 
+    def test_zero_vector_has_no_direction(self):
+        assert np.isnan(air.wind_direction(0.0, 0.0))
+        wd = air.wind_direction(np.array([0.0, 1.0]), np.array([0.0, 0.0]))
+        assert np.isnan(wd[0]) and wd[1] == pytest.approx(270.0)
+
+    def test_pandas_labels_kept(self):
+        u = pd.Series([0.0, 1.0], index=["a", "b"])
+        v = pd.Series([0.0, 0.0], index=["a", "b"])
+        wd = air.wind_direction(u, v)
+        assert isinstance(wd, pd.Series) and list(wd.index) == ["a", "b"]
+        assert np.isnan(wd["a"]) and wd["b"] == pytest.approx(270.0)
+
+    def test_vector_mean_across_north(self):
+        # 350 and 10 deg average to north, not to the 180 a mean of degrees gives
+        u, v = air.wind_components(np.array([5.0, 5.0]), np.array([350.0, 10.0]))
+        assert air.wind_direction(u.mean(), v.mean()) % 360 == pytest.approx(0.0)
+
     def test_range_is_0_to_360(self):
         rng = np.random.default_rng(0)
         u = rng.normal(size=100)
