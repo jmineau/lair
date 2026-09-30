@@ -152,11 +152,23 @@ def timeseries(
             continue
         df = pd.DataFrame(obs).rename(columns={"date_time": "Time"})
         df["Time"] = pd.to_datetime(df["Time"], utc=True)
+        for col in df.columns.drop("Time"):
+            df[col] = _numeric_if_possible(df[col])
         df.insert(0, "stid", st.get("STID"))
         frames.append(df)
     if not frames:
         return pd.DataFrame(columns=["stid", "Time"])
     return pd.concat(frames, ignore_index=True)
+
+
+def _numeric_if_possible(values: pd.Series) -> pd.Series:
+    """Numbers where every non-missing value parses as one (some stations send numeric
+    strings, e.g. '0.51', mixed with floats); text columns such as cardinal wind
+    directions are left alone."""
+    converted = pd.to_numeric(values, errors="coerce")
+    if converted.notna().sum() == values.notna().sum():
+        return converted
+    return values
 
 
 def hourly_mean(

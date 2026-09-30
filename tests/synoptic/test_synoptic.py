@@ -90,6 +90,16 @@ class TestTimeseries:
         assert str(df.Time.dt.tz) == "UTC"
         assert len(df) == 4
 
+    def test_numeric_strings_become_numbers_text_stays(self, api):
+        t = ["2024-01-01T00:00:00Z", "2024-01-01T00:05:00Z"]
+        st = _station("A", t, [1.0, 2.0], [90, 90])
+        st["OBSERVATIONS"]["air_temp_set_1"] = [1.5, "0.51"]  # seen from a real station
+        st["OBSERVATIONS"]["wind_cardinal_direction_set_1d"] = ["E", "E"]
+        api.payload = {"SUMMARY": OK, "STATION": [st]}
+        df = synoptic.timeseries("2024-01-01", "2024-01-02", stid="A")
+        assert df.air_temp_set_1.tolist() == [1.5, 0.51]
+        assert df.wind_cardinal_direction_set_1d.tolist() == ["E", "E"]
+
 
 class TestMetadata:
     def test_rows_and_period(self, api):
