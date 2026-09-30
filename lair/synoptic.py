@@ -163,8 +163,10 @@ def timeseries(
 
 def _numeric_if_possible(values: pd.Series) -> pd.Series:
     """Numbers where every non-missing value parses as one (some stations send numeric
-    strings, e.g. '0.51', mixed with floats); text columns such as cardinal wind
-    directions are left alone."""
+    strings, e.g. '0.51', mixed with floats, and '' for missing); text columns such as
+    cardinal wind directions are left alone."""
+    blank = values.map(lambda x: isinstance(x, str) and not x.strip())
+    values = values.where(~blank.astype(bool))
     converted = pd.to_numeric(values, errors="coerce")
     if converted.notna().sum() == values.notna().sum():
         return converted
