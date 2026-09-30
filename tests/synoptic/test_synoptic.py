@@ -94,10 +94,12 @@ class TestTimeseries:
         t = ["2024-01-01T00:00:00Z", "2024-01-01T00:05:00Z"]
         st = _station("A", t, [1.0, 2.0], [90, 90])
         st["OBSERVATIONS"]["air_temp_set_1"] = [1.5, "0.51"]  # seen from a real station
+        st["OBSERVATIONS"]["wind_gust_set_1"] = ["", 3.0]  # '' = missing, also seen
         st["OBSERVATIONS"]["wind_cardinal_direction_set_1d"] = ["E", "E"]
         api.payload = {"SUMMARY": OK, "STATION": [st]}
         df = synoptic.timeseries("2024-01-01", "2024-01-02", stid="A")
         assert df.air_temp_set_1.tolist() == [1.5, 0.51]
+        assert np.isnan(df.wind_gust_set_1[0]) and df.wind_gust_set_1[1] == 3.0
         assert df.wind_cardinal_direction_set_1d.tolist() == ["E", "E"]
 
 
