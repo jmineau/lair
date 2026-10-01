@@ -159,7 +159,7 @@ class TestSampleField:
         ds = self._synthetic_ct()
         points = pd.DataFrame(
             {
-                "time": ["2020-01-01 00:00", "2020-01-02 00:00"],
+                "datetime": ["2020-01-01 00:00", "2020-01-02 00:00"],
                 "lati": [40.0, 41.0],
                 "long": [-112.0, -111.0],
                 "zagl": [10.0, 200.0],  # -> level 1, level 2
@@ -175,7 +175,7 @@ class TestSampleField:
         ds = self._synthetic_ct()  # cells centred on 40-41 N, 112-111 W
         points = pd.DataFrame(
             {
-                "time": ["2020-01-01", "2020-01-01"],
+                "datetime": ["2020-01-01", "2020-01-01"],
                 "lati": [40.2, 45.0],
                 "long": [-112.0, -112.0],
                 "zagl": [10.0, 10.0],
@@ -189,7 +189,12 @@ class TestSampleField:
     def test_units_in_column_name(self):
         ds = self._synthetic_ct().rename({"ch4": "co2"})
         points = pd.DataFrame(
-            {"time": ["2020-01-01"], "lati": [40.0], "long": [-112.0], "zagl": [10.0]}
+            {
+                "datetime": ["2020-01-01"],
+                "lati": [40.0],
+                "long": [-112.0],
+                "zagl": [10.0],
+            }
         )
         out = CarbonTracker._sample_field(points, ds, "co2", units="ppm")
         assert "ct_co2_ppm" in out.columns
@@ -242,7 +247,7 @@ class TestDownload:
 class TestSample:
     def test_empty_points(self):
         ct = CarbonTrackerCH4(carbon_tracker_directory="/tmp/ct")
-        empty = pd.DataFrame(columns=["time", "lati", "long", "zagl"])
+        empty = pd.DataFrame(columns=["datetime", "lati", "long", "zagl"])
         assert ct.sample(empty).empty
 
     def test_drops_points_without_molefraction_files(self, tmp_path):
@@ -250,7 +255,12 @@ class TestSample:
         ct = CarbonTrackerCH4(carbon_tracker_directory=tmp_path)
         ct.molefractions_dir.mkdir(parents=True)
         points = pd.DataFrame(
-            {"time": ["2020-01-01"], "lati": [40.0], "long": [-112.0], "zagl": [10.0]}
+            {
+                "datetime": ["2020-01-01"],
+                "lati": [40.0],
+                "long": [-112.0],
+                "zagl": [10.0],
+            }
         )
         assert ct.sample(points).empty
 
@@ -262,7 +272,12 @@ class TestBackground:
         ct = CarbonTrackerCH4(carbon_tracker_directory=tmp_path)
         ct.molefractions_dir.mkdir(parents=True)
         points = pd.DataFrame(
-            {"time": ["2020-01-01"], "lati": [40.0], "long": [-112.0], "zagl": [10.0]}
+            {
+                "datetime": ["2020-01-01"],
+                "lati": [40.0],
+                "long": [-112.0],
+                "zagl": [10.0],
+            }
         )
         out = ct.background(points)
         assert np.isnan(out["background_ppm"].iloc[0])

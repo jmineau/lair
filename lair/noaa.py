@@ -174,7 +174,7 @@ class CarbonTracker(metaclass=ABCMeta):
     @staticmethod
     def _sample_field(points: pd.DataFrame, ds: xr.Dataset, variable: str,
                       units: str = 'ppb') -> pd.DataFrame:
-        """Evaluate ``ds[variable]`` at each row's (time, lati, long, zagl).
+        """Evaluate ``ds[variable]`` at each row's (datetime, lati, long, zagl).
 
         Vertical placement uses the geopotential-height (``gph``) layer bounds:
         the particle's height-above-ground is added to the surface gph and the
@@ -183,7 +183,7 @@ class CarbonTracker(metaclass=ABCMeta):
         outside the horizontal grid (e.g. a regional CO2 grid) are NaN.
         """
         dim = 'points'
-        t = pd.DatetimeIndex(pd.to_datetime(points['time'], utc=True)).tz_convert(None).values
+        t = pd.DatetimeIndex(pd.to_datetime(points['datetime'], utc=True)).tz_convert(None).values
         sel = ds.sel(
             time=xr.DataArray(t, dims=dim),
             latitude=xr.DataArray(points['lati'].to_numpy(), dims=dim),
@@ -221,16 +221,17 @@ class CarbonTracker(metaclass=ABCMeta):
     def sample(self, points: pd.DataFrame) -> pd.DataFrame:
         """Sample the molefraction field at ``points``.
 
-        ``points`` is a DataFrame with columns ``time`` (UTC sample time),
-        ``lati``, ``long``, ``zagl``; any other columns (e.g. ``indx``,
-        ``run_time``) are carried through for downstream grouping. Returns one row
+        ``points`` is a DataFrame with columns ``datetime`` (UTC sample time),
+        ``lati``, ``long``, ``zagl``, as in a PYSTILT particle table (for
+        example ``particles.stilt.endpoints()``); any other columns (e.g.
+        ``indx``, ``receptor``) are carried through for downstream grouping. Returns one row
         per input point with ``ct_<specie>_<units>`` and the CT cell/level used.
         Points whose UTC date has no molefraction file are dropped.
         """
         points = points.reset_index(drop=True)
         if points.empty:
             return points
-        dates = pd.DatetimeIndex(pd.to_datetime(points['time'], utc=True)).normalize()
+        dates = pd.DatetimeIndex(pd.to_datetime(points['datetime'], utc=True)).normalize()
         file_for = {d: self._molefraction_file_for_date(d) for d in dates.unique()}
         keep = dates.map(lambda d: file_for[d] is not None).to_numpy()
         points = points.loc[keep].reset_index(drop=True)
@@ -247,7 +248,7 @@ class CarbonTracker(metaclass=ABCMeta):
         """Background mole fraction [ppm]: mean of the sampled field over ``points``.
 
         Samples the field at every point (e.g. trajectory endpoints) and averages
-        over them. With ``by`` (e.g. ``'run_time'``) the mean and 1-sigma spread
+        over them. With ``by`` (e.g. ``'receptor'``) the mean and 1-sigma spread
         are returned per group; otherwise a single-row summary. Output is ppm
         (CT-CH4 mole fractions are stored in ppb, CO2 in ppm).
         """
