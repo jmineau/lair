@@ -8,6 +8,26 @@ from typing import Any
 
 # %% Polar
 
+#: The 16 compass sectors used by :func:`bin_polar`, in degrees clockwise from N
+WIND_SECTORS = {
+    "N": 0.0,
+    "NNE": 22.5,
+    "NE": 45.0,
+    "ENE": 67.5,
+    "E": 90.0,
+    "ESE": 112.5,
+    "SE": 135.0,
+    "SSE": 157.5,
+    "S": 180.0,
+    "SSW": 202.5,
+    "SW": 225.0,
+    "WSW": 247.5,
+    "W": 270.0,
+    "WNW": 292.5,
+    "NW": 315.0,
+    "NNW": 337.5,
+}
+
 
 def bin_polar(
     data: pd.DataFrame, x: str = "ws", wd: str = "wd", xbins: int = 30
@@ -36,24 +56,7 @@ def bin_polar(
         caller's frame is not modified.
     """
     data = data.copy()
-    directions = {
-        "N": 0,
-        "NNE": 22.5,
-        "NE": 45,
-        "ENE": 67.5,
-        "E": 90,
-        "ESE": 112.5,
-        "SE": 135,
-        "SSE": 157.5,
-        "S": 180,
-        "SSW": 202.5,
-        "SW": 225,
-        "WSW": 247.5,
-        "W": 270,
-        "WNW": 292.5,
-        "NW": 315,
-        "NNW": 337.5,
-    }
+    directions = WIND_SECTORS
 
     wd_bins = np.linspace(0, 360, 17) + 11.25
     wd_bins = np.insert(wd_bins, 0, -0.1)
@@ -86,9 +89,25 @@ def bin_polar(
     return data
 
 
+def sector_radians() -> np.ndarray:
+    """
+    Radian values of the 16 direction sectors (``radian_bin`` of :func:`bin_polar`).
+
+    Returns
+    -------
+    np.ndarray
+        N, NNE, ..., NNW in radians clockwise from N.
+    """
+    return np.deg2rad(np.array(list(WIND_SECTORS.values())))
+
+
 def circularize_radial_data(agg: pd.DataFrame):
     """
     Circularize radial data for polar plots.
+
+    The rows must be evenly spaced in theta and cover the full circle (e.g.
+    all 16 sectors of :func:`sector_radians`); the first row is repeated one
+    step past the last to close the circle.
 
     Parameters
     ----------

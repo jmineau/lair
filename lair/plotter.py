@@ -403,7 +403,7 @@ def polarPlot(
     plt.Axes
         Axis with the plot
     """
-    from lair.air import bin_polar, circularize_radial_data
+    from lair.air import bin_polar, circularize_radial_data, sector_radians
 
     binned_data = bin_polar(data, x=x, wd=wd, xbins=xbins)
 
@@ -419,6 +419,10 @@ def polarPlot(
     # Filter by count in each bin
     bins_n = agg["count"]
     agg = cast(pd.DataFrame, agg[statistic]).where(bins_n >= min_bin)
+
+    # Keep all 16 direction sectors (empty ones as NaN) so the grid is evenly
+    # spaced and circularize_radial_data closes it at N, not mid-circle
+    agg = agg.reindex(sector_radians())
 
     theta, r, c = circularize_radial_data(agg)
 
@@ -463,7 +467,7 @@ def polarFreq(
     plt.Axes
         Axis with the plot
     """
-    from lair.air import bin_polar, circularize_radial_data
+    from lair.air import bin_polar, circularize_radial_data, sector_radians
 
     binned_data = bin_polar(data, x=x, wd=wd, xbins=xbins)
 
@@ -472,6 +476,9 @@ def polarFreq(
     counts = (
         binned_data.groupby(["radian_bin", "x_bin"], observed=False).size().unstack()
     )
+    # Keep all 16 direction sectors (empty ones count 0) so the grid is evenly
+    # spaced and circularize_radial_data closes it at N, not mid-circle
+    counts = counts.reindex(sector_radians(), fill_value=0)
 
     theta, r, c = circularize_radial_data(counts)
 
