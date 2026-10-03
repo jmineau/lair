@@ -61,6 +61,32 @@ class TestInterpolate:
         assert T.loc[:2900].notna().all()
         assert T.loc[3000:].isna().all()  # no extrapolation past the top (2989 m)
 
+    def test_target_on_bottom_and_top_levels_takes_raw_values(self, tmp_path):
+        # Raw levels 1289, 1389, ..., 2989 m; the grid hits the bottom and top
+        # levels exactly (#45: the top one came back NaN)
+        path = _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01"), top=3000.0)
+        snd = soundings.Sounding(str(path))
+        ds = snd.interpolate(start=1289, stop=2990, interval=100)
+        T = ds.temperature.isel(time=0).to_series()
+        raw = snd.data.set_index("height")["temperature"]
+        assert T.index.tolist() == raw.index.tolist()
+        np.testing.assert_allclose(T.to_numpy(), raw.to_numpy())
+        assert T.loc[2989] == pytest.approx(-15.0)
+        assert T.loc[1289] == pytest.approx(0.0)
+
+    def test_duplicate_raw_heights(self, tmp_path):
+        # A repeated raw level must not duplicate or drop the target level
+        path = _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01"), top=3000.0)
+        df = pd.read_csv(path)
+        df = pd.concat([df, df.iloc[[-1]]]).sort_values("height")
+        df.to_csv(path, index=False)
+        ds = soundings.Sounding(str(path)).interpolate(
+            start=1289, stop=2990, interval=100
+        )
+        T = ds.temperature.isel(time=0).to_series()
+        assert T.index.is_unique
+        assert T.loc[2989] == pytest.approx(-15.0)
+
     def test_wind_direction_interpolates_across_north(self, tmp_path):
         # 350 deg below and 10 deg above: halfway is ~0/360 deg, not 180 deg
         direction = np.array([350.0, 10.0])
