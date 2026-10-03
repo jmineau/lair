@@ -62,6 +62,23 @@ class TestRotateWinds:
         u_out, v_out = air.rotate_winds(u, v, lon=-110.0)
         assert np.hypot(u_out, v_out) == pytest.approx(np.hypot(u, v))
 
+    @pytest.mark.parametrize("lon", [-112.0, 248.0, -472.0])
+    def test_longitude_convention_does_not_matter(self, lon):
+        # 248 E and -472 are the same meridian as 112 W; HRRR readers accept
+        # either convention, so the rotation must not depend on it.
+        u_ref, v_ref = air.rotate_winds(0.0, 10.0, lon=-112.0)
+        u_out, v_out = air.rotate_winds(0.0, 10.0, lon=lon)
+        assert u_out == pytest.approx(u_ref)
+        assert v_out == pytest.approx(v_ref)
+        assert v_out > 0  # a southerly grid wind stays southerly at 112 W
+
+    def test_longitude_array(self):
+        u_out, v_out = air.rotate_winds(
+            np.zeros(2), np.full(2, 10.0), lon=np.array([-112.0, 248.0])
+        )
+        assert u_out[0] == pytest.approx(u_out[1])
+        assert v_out[0] == pytest.approx(v_out[1])
+
 
 def test_bin_polar_adds_expected_columns():
     rng = np.random.default_rng(1)
@@ -85,6 +102,35 @@ def test_bin_polar_explicit_bin_edges():
     assert out["wd_bin"].tolist() == ["N", "E", "S", "W"]
     # Speeds binned to the right edge of each explicit interval.
     assert out["x_bin"].tolist() == [2, 2, 4, 4]
+
+
+def test_bin_polar_int_xbins_is_number_of_edges():
+    # An int xbins is the number of evenly spaced edges from min to max, so it
+    # gives xbins - 1 speed bins, labelled by their right edges.
+    df = pd.DataFrame({"ws": [0.0, 1.0, 2.0, 3.0, 4.0], "wd": [10.0] * 5})
+    out = air.bin_polar(df, xbins=5)
+    assert list(out["x_bin"].cat.categories) == [1.0, 2.0, 3.0, 4.0]
+    assert out["x_bin"].tolist() == [1.0, 1.0, 2.0, 3.0, 4.0]
+
+
+def test_bin_polar_nan_direction():
+    # A missing direction leaves that row unbinned instead of raising.
+    df = pd.DataFrame({"ws": [1.0, 2.0, 3.0], "wd": [10.0, np.nan, 280.0]})
+    out = air.bin_polar(df, xbins=[0, 2, 4])
+    assert out["wd_bin"].iloc[0] == "N"
+    assert pd.isna(out["wd_bin"].iloc[1])
+    assert out["radian_bin"].iloc[0] == pytest.approx(0.0)
+    assert np.isnan(out["radian_bin"].iloc[1])
+    assert out["radian_bin"].iloc[2] == pytest.approx(np.deg2rad(270))
+
+
+def test_bin_polar_nan_speed_first():
+    # Bin edges come from the non-missing speeds, even when the first is NaN.
+    df = pd.DataFrame({"ws": [np.nan, 0.0, 2.0, 4.0], "wd": [10.0] * 4})
+    out = air.bin_polar(df, xbins=3)
+    assert list(out["x_bin"].cat.categories) == [2.0, 4.0]
+    assert pd.isna(out["x_bin"].iloc[0])
+    assert out["x_bin"].iloc[1:].tolist() == [2.0, 2.0, 4.0]
 
 
 def test_bin_polar_invalid_xbins_raises():
