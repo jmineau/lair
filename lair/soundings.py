@@ -120,12 +120,18 @@ class Sounding:
             The interpolated sounding data.
         """
         height = pd.Index(range(start, stop, interval), dtype=float, name="height")
-        raw = self.data.dropna(subset="height").set_index("height").sort_index()
-        # One row per raw level (keep the first of any repeats) so a target
+        # A stable sort keeps repeated levels in file order, so "last" below
+        # means the row that comes later in the file
+        raw = (
+            self.data.dropna(subset="height")
+            .set_index("height")
+            .sort_index(kind="stable")
+        )
+        # One row per raw level (keep the last of any repeats) so a target
         # height that equals a raw level shares its row and takes its values.
         # A separate target row there would sort before or after the raw row
         # and be left NaN at the bottom or top level (#45).
-        raw = raw[~raw.index.duplicated()]
+        raw = raw[~raw.index.duplicated(keep="last")]
 
         # Only fill between observed levels, so heights above the sounding top
         # stay NaN instead of being extrapolated
