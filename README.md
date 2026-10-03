@@ -56,11 +56,18 @@ cd lair
 pip install -e .
 ```
 
-# Verbosity
+# Logging
 
-Verbosity for the `lair` package is set via `lair.config.verbose` as a boolean.
+`lair` logs through Python's standard `logging` module, under the `lair` logger
+(one child logger per module, e.g. `lair.records`). Warnings are shown by
+default; progress messages are logged at `INFO` and hidden unless you ask for
+them:
 
-For early versions of the package, `verbose` will be set to `True` by default. This will be changed in future versions.
+```python
+import logging
+logging.basicConfig(level=logging.INFO)                 # everything, incl. lair
+logging.getLogger("lair").setLevel(logging.INFO)        # or tune lair alone
+```
 
 # Acknowledgements
 

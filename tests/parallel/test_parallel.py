@@ -61,11 +61,15 @@ class TestMultiprocessingPath:
         run = parallelize(_square, num_processes="max")
         assert run([1, 2, 3, 4]) == [1, 4, 9, 16]
 
-    def test_more_processes_than_cpus_is_clamped(self):
-        # Requesting an absurd count clamps to cpu_count (and emits a vprint
+    def test_more_processes_than_cpus_is_clamped(self, caplog):
+        # Requesting an absurd count clamps to cpu_count (and logs a
         # warning); results are still correct.
         run = parallelize(_square, num_processes=10_000)
         assert run([1, 2, 3]) == [1, 4, 9]
+        assert any(
+            r.levelname == "WARNING" and r.name == "lair.parallel"
+            for r in caplog.records
+        )
 
     def test_kwargs_passed_through_pool(self):
         run = parallelize(_add, num_processes=2)

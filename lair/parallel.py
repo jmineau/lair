@@ -3,10 +3,11 @@ Parallelization utilities.
 """
 
 from functools import partial
+import logging
 import multiprocessing
 from typing import Any, Callable, Literal
 
-from lair.config import vprint
+logger = logging.getLogger(__name__)
 
 
 def parallelize(func: Callable, num_processes: int | Literal["max"] = 1) -> Callable:
@@ -67,29 +68,33 @@ def parallelize(func: Callable, num_processes: int | Literal["max"] = 1) -> Call
         if num_processes == "max":
             processes = cpu_count
         elif num_processes > cpu_count:
-            vprint(
-                f"Warning: {num_processes} processes requested, "
-                f"but there are only {cpu_count} CPU(s) available."
+            logger.warning(
+                "%s processes requested, but there are only %d CPU(s) available.",
+                num_processes,
+                cpu_count,
             )
             processes = cpu_count
         else:
             processes = num_processes
 
         if processes > len(items):
-            vprint(
-                f"Info: {num_processes} processes requested, "
-                f"but there are only {len(items)} items in the iterable."
+            logger.info(
+                "%s processes requested, but there are only %d items in the iterable.",
+                num_processes,
+                len(items),
             )
             processes = len(items)
 
         # If only one process is requested (or there is nothing to do),
         # execute the function sequentially
         if processes <= 1:
-            vprint(f"Executing {func_name} sequentially...")
+            logger.info("Executing %s sequentially...", func_name)
             results = [func(i, **kwargs) for i in items]
             return results
 
-        vprint(f"Executing {func_name} in parallel with {processes} processes...")
+        logger.info(
+            "Executing %s in parallel with %d processes...", func_name, processes
+        )
 
         # Map the function across the items. The context manager terminates
         # the workers on exit, even when a worker raises.

@@ -99,18 +99,22 @@ For example:
 
    export LAIR_INVENTORY_DIR=/path/to/inventories
 
-Verbosity
----------
+Logging
+-------
 
-Verbosity is set via ``lair.config.verbose`` as a boolean:
+``lair`` logs through Python's standard :mod:`logging` module, under the
+``lair`` logger (one child logger per module, e.g. ``lair.records``). Warnings
+are shown by default; progress messages are logged at ``INFO`` and hidden
+unless you ask for them:
 
 .. code-block:: python
 
-   import lair
-   lair.config.verbose = False
+   import logging
+   logging.basicConfig(level=logging.INFO)            # everything, incl. lair
+   logging.getLogger("lair").setLevel(logging.INFO)   # or tune lair alone
 
-For early versions of the package ``verbose`` defaults to ``True``; this will
-change in a future version.
+``lair.background.thoning_filter`` prints the CCG filter's diagnostics when the
+``lair.background`` logger is at ``DEBUG``.
 
 Acknowledgements
 ----------------

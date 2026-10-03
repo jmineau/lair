@@ -57,29 +57,7 @@ def test_cache_dir_creation_tolerates_concurrent_import(monkeypatch, tmp_path):
         importlib.reload(config)
 
 
-def test_verbose_is_boolean():
-    assert isinstance(config.verbose, bool)
-
-
-def test_vprint_respects_verbose_flag(capsys):
-    original = config.verbose
-    try:
-        config.verbose = True
-        config.vprint("loud")
-        assert "loud" in capsys.readouterr().out
-
-        config.verbose = False
-        config.vprint("silent")
-        assert capsys.readouterr().out == ""
-    finally:
-        config.verbose = original
-
-
-def test_vprint_accepts_flush_kwarg(capsys):
-    original = config.verbose
-    try:
-        config.verbose = True
-        config.vprint("no flush", flush=False)
-        assert "no flush" in capsys.readouterr().out
-    finally:
-        config.verbose = original
+def test_no_verbose_flag():
+    # Verbosity moved to the standard logging module (#22)
+    assert not hasattr(config, "verbose")
+    assert not hasattr(config, "vprint")

@@ -94,9 +94,16 @@ class TestThoning:
         shuffled = background.thoning(co2.iloc[::-1], debug=False)
         pd.testing.assert_series_equal(shuffled.sort_index(), expected)
 
-    def test_verbose_flag_read_at_call_time(self, co2, monkeypatch, capsys):
-        from lair import config
+    def test_filter_debug_follows_log_level(self, co2, monkeypatch, caplog):
+        import logging
 
-        monkeypatch.setattr(config, "verbose", False)
-        background.thoning(co2)
-        assert capsys.readouterr().out == ""
+        seen = []
+
+        def fake_filter(xp, yp, **kwargs):
+            seen.append(kwargs["debug"])
+
+        monkeypatch.setattr(background, "ccgFilter", fake_filter)
+        background.thoning_filter(co2)
+        caplog.set_level(logging.DEBUG, logger="lair.background")
+        background.thoning_filter(co2)
+        assert seen == [False, True]

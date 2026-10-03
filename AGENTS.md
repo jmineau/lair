@@ -54,7 +54,7 @@ lair/
   _ccg_filter.py     NOAA GML CCG filter (downloaded on first import;
                      **do not commit**)
   _optional.py       import_optional_dependency() helper
-  config.py          paths, `verbose`, `vprint`
+  config.py          data-dir resolution (get_data_dir), CACHE_DIR
   constants.py       physical constants (workaround until pint has them)
   air.py             general atmospheric helpers (bin_polar, wind_components,
                      wind_direction -- NaN for a zero vector, not 270)
@@ -109,7 +109,7 @@ practice everything else is reached via submodule import:
 
 ```python
 from lair import units                    # pint unit registry (with mass_flux ctx)
-from lair.config import verbose, vprint
+from lair.config import get_data_dir
 from lair.background import ccgFilter
 from lair.meteorology import ideal_gas_law, hypsometric, poisson
 from lair.pcaps import ...                # VHD / PCAP helpers
@@ -145,20 +145,21 @@ Implications:
 - The pint registry is process-global; importing `lair` mutates other code's
   pint behavior in the same process.
 
-## Verbosity
+## Logging
 
-There is no `logging` setup. Verbosity is a boolean:
+lair uses the standard `logging` module (since #22; `config.verbose` and
+`vprint` are gone). Each module has `logger = logging.getLogger(__name__)`;
+no handler is attached anywhere. Never add handlers (not even a `NullHandler`,
+which would also hide warnings from Python's last-resort handler), set levels,
+or `print()` in library code: output is the application's choice
+(`logging.basicConfig(level=logging.INFO)`).
 
-```python
-import lair
-lair.config.verbose = False   # silence vprint
-```
-
-`vprint` (in `config.py`) prints conditionally on this flag. Most modules
-import and use `vprint` rather than the stdlib logger.
-
-> Future direction (per README): default `verbose` will flip to `False` and
-> the package will move to `logging`. Don't break that transition.
+Levels: progress ("Downloading ...", "Executing ... in parallel") is `INFO`;
+chatty per-item detail (cache hits, skipped files) is `DEBUG`; recoverable
+problems the caller should know about (a failed download that is skipped, an
+unreadable file) are `WARNING`, which shows by default. Use %-style arguments
+(`logger.info("x %s", y)`), not f-strings. `background.thoning_filter` turns
+the CCG filter's own `debug` prints on when `lair.background` is at `DEBUG`.
 
 ## Dev workflow
 
@@ -280,10 +281,6 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   is gone (use `sep=r'\s+'`), `DataFrame.interpolate` refuses object-dtype
   columns, and `pd.options.mode.copy_on_write` is always on (config only sets
   it on pandas < 3).
-- **`verbose`:** read `lair.config.verbose` at call time (`from lair import
-  config` … `config.verbose`). `from lair.config import verbose` copies the
-  value at import and ignores later toggles (that was a real bug in
-  `background`).
 - **Vulcan (fixed 2026-09-21):** the files are `(time, y, x)` on an LCC grid
   with 2D lat/lon, so `Inventory.__init__` picks x/y spatial dims when there's
   no `lon` dim. `Vulcan.clip`/`reproject` follow the base-class API (return the

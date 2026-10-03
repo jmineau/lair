@@ -3,12 +3,14 @@ Calculate background concentrations.
 """
 
 import datetime as dt
+import logging
 import pandas as pd
 from typing import Any
 
-from lair import config
 from lair._ccg_filter import ccgFilter  # make available to user
 from lair.clock import AFTERNOON, dt2decimalDate
+
+logger = logging.getLogger(__name__)
 
 
 def get_well_mixed(
@@ -153,9 +155,8 @@ def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     yp = data.values
 
     if "debug" not in kwargs:
-        # Set debug level using lair's verbose setting (read at call time so
-        # `lair.config.verbose = False` takes effect)
-        kwargs["debug"] = config.verbose
+        # Print the filter's diagnostics when lair.background logs at DEBUG
+        kwargs["debug"] = logger.isEnabledFor(logging.DEBUG)
 
     # Fit the Thoning curve
     return ccgFilter(xp, yp, **kwargs)

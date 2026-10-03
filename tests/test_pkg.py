@@ -41,10 +41,18 @@ def test_reexports_present():
     assert hasattr(lair, "config")
 
 
-def test_verbose_flag_accessible():
-    """Verbosity is a boolean toggle on the config module (no logging setup)."""
-    assert isinstance(lair.config.verbose, bool)
-    assert callable(lair.config.vprint)
+def test_logging_is_left_to_the_application():
+    """lair adds no handlers and sets no level on its loggers.
+
+    Without configuration, Python's last-resort handler then shows WARNING
+    and above on stderr, and INFO progress messages stay hidden. (A
+    NullHandler would silence the warnings too.)
+    """
+    import logging
+
+    logger = logging.getLogger("lair")
+    assert logger.handlers == []
+    assert logger.level == logging.NOTSET
 
 
 def test_version_from_metadata():
