@@ -264,7 +264,8 @@ def test_lag_positions_tz_aware_and_nat(track):
     t, xy, obs, lag = track
     expected = transects.lag_positions(t, xy, lag)
     when = pd.Series(pd.Timestamp("2024-07-01", tz="UTC") + pd.to_timedelta(t, "s"))
-    when = when.dt.tz_convert("America/Denver")
+    # .copy(): pandas 2 marks a .dt result as derived, so setting a value warns
+    when = when.dt.tz_convert("America/Denver").copy()
     np.testing.assert_allclose(transects.lag_positions(when, xy, lag), expected)
     when[50] = pd.NaT
     lagged = transects.lag_positions(when, xy, lag)

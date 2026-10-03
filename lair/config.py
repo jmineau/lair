@@ -5,8 +5,6 @@ Config module for lair package
 import os
 from pathlib import Path
 
-import pandas as pd
-
 
 ###############
 # Directories #
@@ -58,13 +56,3 @@ CACHE_DIR = os.getenv(
 )
 # exist_ok: many processes (e.g. SLURM tasks) may import lair at once
 os.makedirs(CACHE_DIR, exist_ok=True)
-
-##########
-# PANDAS #
-##########
-
-#: Pandas copy-on-write
-pandas_CoW = True
-if int(pd.__version__.split(".")[0]) < 3:
-    # Always on (and no longer settable) from pandas 3.0
-    pd.options.mode.copy_on_write = pandas_CoW
