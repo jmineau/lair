@@ -225,6 +225,154 @@ class TestBaseInventory:
             inventories.Inventory(ds, pollutant="CH4")
 
 
+# --- Attributes ----------------------------------------------------------------
+# lair.inventories must not change xarray's global options (GitHub issue #38):
+# the operations that need attributes kept set keep_attrs themselves.
+
+
+def test_import_leaves_keep_attrs_default():
+    assert xr.get_options()["keep_attrs"] == "default"
+
+
+def test_import_does_not_change_user_arithmetic():
+    # A kg m-2 s-1 flux times an area must behave exactly as without lair
+    # (older xarray drops the attrs, newer keeps them; either way, the same)
+    import subprocess
+    import sys
+
+    code = (
+        "import numpy as np, xarray as xr\n"
+        "flux = xr.DataArray(np.ones(2), dims='x', attrs={'units': 'kg m-2 s-1'})\n"
+        "print((flux * 4.0).attrs)\n"
+        "import lair.inventories\n"
+        "print((flux * 4.0).attrs)\n"
+    )
+    out = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True
+    ).stdout.splitlines()
+    assert out[0] == out[1]
+
+
+@pytest.fixture
+def described():
+    """An Inventory whose variables carry long_name/standard_name like the
+    loaders' do."""
+    import pandas as pd
+
+    time = pd.date_range("2020-01-01", periods=2, freq="YS")
+    shp = (2, 4, 4)  # 0.5 degree cells
+    lat = ("lat", 40.25 + 0.5 * np.arange(4), {"units": "degrees_north"})
+    lon = ("lon", -112.75 + 0.5 * np.arange(4), {"units": "degrees_east"})
+    ds = xr.Dataset(
+        {
+            "energy": (("time", "lat", "lon"), np.ones(shp)),
+            "agriculture": (("time", "lat", "lon"), 2 * np.ones(shp)),
+        },
+        coords={"time": time, "lat": lat, "lon": lon},
+    )
+    for var in ds.data_vars:
+        ds[var].attrs = {
+            "units": "kg/m**2/s",
+            "long_name": f"{var}_Emissions",
+            "standard_name": "annual_CH4_emissions",
+        }
+    return inventories.Inventory(ds, pollutant="CH4")
+
+
+def _assert_described(data, units):
+    for var in data.data_vars:
+        attrs = data[var].attrs
+        assert attrs["long_name"] == f"{var}_Emissions", var
+        assert attrs["units"] == units, var
+
+
+class TestAttributes:
+    def test_data(self, described):
+        _assert_described(described.data, "kg/m**2/s")
+        assert described.data["energy"].attrs["standard_name"] == (
+            "annual_CH4_emissions"
+        )
+
+    def test_total_emissions(self, described):
+        total = described.total_emissions
+        assert total.attrs == {"long_name": "Total Emissions", "units": "kg/m**2/s"}
+
+    def test_collapsed(self, described):
+        assert described.collapsed.attrs["units"] == "kg/m**2/s"
+
+    def test_absolute_emissions(self, described):
+        absolute = described.absolute_emissions
+        assert absolute.attrs["long_name"] == "Absolute Emissions"
+        assert absolute.attrs["standard_name"] == "annual_emissions_per_gridcell"
+        _assert_described(absolute, "kg")
+
+    def test_integrate(self, described):
+        total = described.integrate()
+        assert total.attrs["long_name"] == "Total Emissions"
+        assert total.attrs["units"] == "kg"
+        assert total.dims == ("time",)
+
+    def test_convert_units(self, described):
+        converted = described.convert_units("mol/km**2/d")
+        _assert_described(converted.data, "mol/km**2/d")
+
+    def test_clip(self, described):
+        clipped = described.clip(bbox=(-113.0, 40.0, -112.0, 41.0))
+        assert clipped.data.sizes["lat"] == 2
+        _assert_described(clipped.data, "kg/m**2/s")
+
+    def test_resample(self, described):
+        pytest.importorskip("xesmf")
+        coarse = described.resample(1.0)
+        assert coarse.data.sizes["lat"] == 2
+        _assert_described(coarse.data, "kg/m**2/s")
+
+    def test_regrid(self, described):
+        pytest.importorskip("xesmf")
+        out_grid = xr.Dataset(
+            coords={
+                "lat": ("lat", [40.5, 41.5], {"units": "degrees_north"}),
+                "lon": ("lon", [-112.5, -111.5], {"units": "degrees_east"}),
+            }
+        )
+        regridded = described.regrid(out_grid)
+        _assert_described(regridded.data, "kg/m**2/s")
+
+    def test_plot_labels_units(self, described):
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        ax = described.plot()
+        colorbar = ax.figure.axes[-1]
+        assert colorbar.get_ylabel() == "Total Emissions [kg/m**2/s]"
+        plt.close(ax.figure)
+
+    def test_wetcharts_ensemble_mean(self, wetcharts_dir):
+        w = inventories.WetCHARTs(inventory_dir=wetcharts_dir)
+        attrs = w.data["wetlands"].attrs
+        assert attrs["long_name"] == "Wetland_CH4_Emissions"
+        assert attrs["standard_name"] == "monthly_CH4_emissions"
+        assert attrs["units"] == "mg/m**2/d"
+
+    def test_vulcan(self, vulcan_dir):
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        attrs = v.data["onroad"].attrs
+        assert attrs["units"] == "Mg/km**2/yr"
+        assert "tonnes of CO2" in attrs["comment"]
+        lower = v.get_uncertainties("lower")
+        assert lower["onroad"].attrs["units"] == "Mg km-2 year-1"
+        assert "tonnes of CO2" in lower["onroad"].attrs["comment"]
+
+    def test_epa_v2_monthly(self, epa_v2_dir):
+        monthly = inventories.EPAv2(scale_by_month=True, inventory_dir=epa_v2_dir)
+        for var in monthly.data.data_vars:
+            attrs = monthly.data[var].attrs
+            assert attrs["long_name"] == f"{var}_Emissions", var
+            assert attrs["IPCC_Code"], var
+
+
 class TestInventoryDir:
     def test_unset_env_raises(self, monkeypatch):
         monkeypatch.delenv("LAIR_INVENTORY_DIR", raising=False)

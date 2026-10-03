@@ -150,6 +150,13 @@ Implications:
   user's `.gitignore`/`.git/info/exclude` already handles it.
 - The pint registry is process-global; importing `lair` mutates other code's
   pint behavior in the same process.
+- **No global xarray options** (#38): `lair.inventories` used to run
+  `xr.set_options(keep_attrs=True)` at import. Code that needs attributes kept
+  scopes it: `@_keep_attrs` (absolute_emissions, integrate, plot) or a `with
+  xr.set_options(keep_attrs=True):` block (loaders' `_open`/`_process` in
+  `Inventory.__init__`, `Vulcan.get_uncertainties`). Only xarray < 2025.11
+  drops attrs by default, so run the attr tests (`TestAttributes`) in
+  `lair-dev`.
 
 ## Logging
 
