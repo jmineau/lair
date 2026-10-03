@@ -1,8 +1,9 @@
 """Tests for lair.plotter.
 
-Plotting functions are smoke-exercised on a headless (Agg) backend: they build
-a figure on synthetic data and we assert they return an Axes without error.
-NCL_cmap (network) and the HandlerDashedLines legend artist are not covered.
+Plotting functions run on a headless (Agg) backend against synthetic data;
+tests check what is drawn (line data, fill bounds, labels, legend entries,
+arrow components). NCL_cmap runs with pandas.read_csv stubbed to a local
+table, so no network is needed.
 """
 
 import matplotlib
@@ -42,6 +43,36 @@ class TestColormapsAndFormatters:
         cmap = plotter.truncate_colormap(base, 0.1, 0.9)
         assert isinstance(cmap, matplotlib.colors.LinearSegmentedColormap)
 
+    def test_truncate_colormap_spans_the_requested_range(self):
+        base = plt.get_cmap("viridis")
+        cmap = plotter.truncate_colormap(base, 0.2, 0.8, n=61)
+        np.testing.assert_allclose(cmap(0.0), base(0.2), atol=1e-6)
+        np.testing.assert_allclose(cmap(1.0), base(0.8), atol=1e-6)
+        assert cmap.name == "trunc(viridis,0.20,0.80)"
+
+    def test_ncl_cmap_reads_table_from_ncl_site(self, monkeypatch):
+        import io
+
+        # NCL .rgb tables: an ncolors line, a '# r g b' header, then 0-255 rows
+        table = "ncolors= 3\n# r g b\n255 0 0\n0 255 0\n0 0 255\n"
+        read_csv = pd.read_csv
+        urls = []
+
+        def fake_read_csv(path, **kwargs):
+            urls.append(path)
+            return read_csv(io.StringIO(table), **kwargs)
+
+        monkeypatch.setattr(pd, "read_csv", fake_read_csv)
+        cmap = plotter.NCL_cmap("BlueRed")
+        assert urls == [
+            "https://www.ncl.ucar.edu/Document/Graphics/ColorTables/Files/BlueRed.rgb"
+        ]
+        assert cmap.name == "BlueRed"
+        assert cmap.N == 100
+        np.testing.assert_allclose(cmap(0.0), (1, 0, 0, 1))
+        np.testing.assert_allclose(cmap(0.5), (0, 1, 0, 1), atol=0.02)
+        np.testing.assert_allclose(cmap(1.0), (0, 0, 1, 1))
+
     def test_terrain_cmap(self):
         assert isinstance(
             plotter.terrain_cmap(), matplotlib.colors.LinearSegmentedColormap
@@ -52,6 +83,75 @@ class TestPolarHelpers:
     def test_create_polar_ax(self):
         ax = plotter.create_polar_ax()
         assert ax.name == "polar"
+
+    @pytest.mark.parametrize("angle, ha", [(45.0, "left"), (270.0, "right")])
+    def test_format_radial_axis(self, angle, ha):
+        ax = plotter.create_polar_ax()
+        ax.set_ylim(0, 8)
+        plotter.format_radial_axis(ax, "WS [m/s]", angle)
+        assert ax.get_rlabel_position() == pytest.approx(angle)
+        (label,) = [t for t in ax.texts if t.get_text() == "WS [m/s]"]
+        theta, r = label.get_position()
+        assert theta == pytest.approx(np.deg2rad(angle))
+        assert r == pytest.approx(max(ax.get_yticks()))
+        assert label.get_ha() == ha
+
+    def test_format_radial_axis_keeps_default_angle(self):
+        ax = plotter.create_polar_ax()
+        before = ax.get_rlabel_position()
+        plotter.format_radial_axis(ax, "WS", None)
+        assert ax.get_rlabel_position() == pytest.approx(before)
+
+
+class TestDiurnalPlotValues:
+    """diurnalPlot draws the hourly statistics of the data it is given."""
+
+    @staticmethod
+    def _two_days():
+        # Day 1 = hour of day, day 2 = hour + 2 -> mean = median = hour + 1,
+        # std (ddof=1) = sqrt(2) at every hour
+        idx = pd.date_range("2024-01-01", periods=48, freq="h")
+        return pd.DataFrame({"CH4": idx.hour + 2.0 * (idx.day - 1)}, index=idx)
+
+    @staticmethod
+    def _lines(ax):
+        return {line.get_color(): line for line in ax.get_lines()}
+
+    def test_mean_median_and_std_band(self):
+        ax = plotter.diurnalPlot(self._two_days(), "CH4", units="ppm", tz="MST")
+        lines = self._lines(ax)
+        hours = np.arange(24)
+        np.testing.assert_allclose(lines["black"].get_ydata(), hours + 1)  # mean
+        np.testing.assert_allclose(lines["blue"].get_ydata(), hours + 1)  # median
+        # x is the time of day (on a dummy date)
+        x = pd.DatetimeIndex(lines["black"].get_xdata())
+        assert list(x.hour) == list(hours)
+
+        (band,) = ax.collections
+        y = band.get_paths()[0].vertices[:, 1]
+        assert y.min() == pytest.approx(1 - np.sqrt(2))
+        assert y.max() == pytest.approx(24 + np.sqrt(2))
+
+        labels = [t.get_text() for t in ax.get_legend().get_texts()]
+        assert labels == ["median", r"mean $\pm$1$\sigma$"]
+        assert ax.get_ylabel() == "CH4 [ppm]"
+        assert ax.get_xlabel() == "Time [MST]"
+
+    def test_count_is_plotted_when_asked_for(self):
+        ax = plotter.diurnalPlot(
+            self._two_days(), "CH4", stats=["count"], colors={"count": "red"}
+        )
+        (line,) = ax.get_lines()
+        np.testing.assert_array_equal(line.get_ydata(), np.full(24, 2))
+        assert ax.get_ylabel() == "CH4"  # no units given
+
+    def test_min_count_blanks_sparse_hours(self):
+        df = self._two_days()
+        df = df[~((df.index.hour == 5) & (df.index.day == 2))]  # hour 5: 1 value
+        ax = plotter.diurnalPlot(df, "CH4", stats=["mean"], min_count=2)
+        y = ax.get_lines()[0].get_ydata()
+        assert np.isnan(y[5])
+        assert np.isfinite(np.delete(y, 5)).all()
 
 
 class TestPlots:
@@ -252,3 +352,101 @@ class TestPlots:
         )
         ax = plotter.windvectorPlot(df)
         assert ax.has_data()
+
+    def test_windvector_components(self):
+        # From the north at 4 m/s blows toward -v; from the west at 2 m/s
+        # toward +u. Arrows sit at (time, speed).
+        idx = pd.date_range("2024-01-01", periods=2, freq="h")
+        df = pd.DataFrame({"WD": [0.0, 270.0], "WS": [4.0, 2.0]}, index=idx)
+        (q,) = plotter.windvectorPlot(df).collections
+        np.testing.assert_allclose(q.U, [0.0, 2.0], atol=1e-12)
+        np.testing.assert_allclose(q.V, [-4.0, 0.0], atol=1e-12)
+        np.testing.assert_allclose(q.Y, [4.0, 2.0])
+
+    def test_windvector_unit_length(self):
+        idx = pd.date_range("2024-01-01", periods=3, freq="h")
+        df = pd.DataFrame({"WD": [0.0, 135.0, 270.0], "WS": [4.0, 7.0, 2.0]}, index=idx)
+        (q,) = plotter.windvectorPlot(df, unit_length=True).collections
+        np.testing.assert_allclose(np.hypot(q.U, q.V), 1.0)
+        np.testing.assert_allclose(q.V[0], -1.0, atol=1e-12)  # direction kept
+
+
+class TestHandlerDashedLines:
+    """The legend handler draws one line per LineCollection segment."""
+
+    @staticmethod
+    def _artists(lc):
+        from matplotlib.transforms import IdentityTransform
+
+        fig, ax = plt.subplots()
+        ax.add_collection(lc)
+        handler = plotter.HandlerDashedLines()
+        legend = ax.legend([lc], ["two styles"], handler_map={type(lc): handler})
+        return handler.create_artists(
+            legend, lc, 0.0, 0.0, 20.0, 9.0, 10.0, IdentityTransform()
+        )
+
+    def test_one_line_per_segment_with_its_style(self):
+        from matplotlib.collections import LineCollection
+
+        lc = LineCollection(
+            [[(0, 0), (1, 0)], [(0, 1), (1, 1)]],
+            colors=["red", "blue"],
+            linestyles=["solid", "dashed"],
+            linewidths=[3.0, 1.0],
+        )
+        top, bottom = self._artists(lc)
+        assert matplotlib.colors.to_hex(top.get_color()) == "#ff0000"
+        assert matplotlib.colors.to_hex(bottom.get_color()) == "#0000ff"
+        assert top.get_linewidth() == 3.0
+        assert bottom.get_linewidth() == 1.0
+        # get_linestyle() reports '--' for any tuple style, so compare the
+        # dash patterns: none (solid) on top, the collection's dashes below
+        assert top._dash_pattern[1] is None
+        assert bottom._dash_pattern[1] == pytest.approx(lc.get_dashes()[1][1])
+        # Segments split the 9-unit-high box into thirds, first one on top
+        assert set(top.get_ydata()) == {6.0}
+        assert set(bottom.get_ydata()) == {3.0}
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="HandlerDashedLines passes the collection's dashes, already "
+        "scaled by its linewidth, to Line2D.set_dashes, which scales them by "
+        "the linewidth again: a lw=3 dashed segment gets 3x longer dashes in "
+        "the legend",
+    )
+    def test_dash_length_matches_a_thick_dashed_segment(self):
+        from matplotlib.collections import LineCollection
+
+        lc = LineCollection(
+            [[(0, 0), (1, 0)]], colors=["k"], linestyles=["dashed"], linewidths=[3.0]
+        )
+        (line,) = self._artists(lc)
+        assert line._dash_pattern[1] == pytest.approx(lc.get_dashes()[0][1])
+
+    def test_single_style_is_reused_for_every_segment(self):
+        from matplotlib.collections import LineCollection
+
+        lc = LineCollection(
+            [[(0, 0), (1, 0)], [(0, 1), (1, 1)], [(0, 2), (1, 2)]],
+            colors=["green"],
+            linewidths=[2.0],
+        )
+        lines = self._artists(lc)
+        assert len(lines) == 3
+        assert {matplotlib.colors.to_hex(line.get_color()) for line in lines} == {
+            "#008000"
+        }
+        assert {line.get_linewidth() for line in lines} == {2.0}
+
+    def test_legend_renders(self):
+        from matplotlib.collections import LineCollection
+
+        fig, ax = plt.subplots()
+        lc = LineCollection([[(0, 0), (1, 0)], [(0, 1), (1, 1)]], colors=["k", "r"])
+        ax.add_collection(lc)
+        legend = ax.legend(
+            [lc], ["pair"], handler_map={LineCollection: plotter.HandlerDashedLines()}
+        )
+        fig.canvas.draw()
+        assert [t.get_text() for t in legend.get_texts()] == ["pair"]
