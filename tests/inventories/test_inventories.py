@@ -1,9 +1,10 @@
 """Tests for lair.inventories.
 
 Requires the `geo` extra (imports lair.geo) plus molmass. The base Inventory
-machinery and unit/sector helpers are tested on synthetic data, and Vulcan on a
-tiny synthetic archive shaped like the real v3 files. The other concrete loaders
-(EDGAR/EPA/GFEI/WetCHARTs) need the real archive (LAIR_INVENTORY_DIR).
+machinery and unit/sector helpers are tested on synthetic data, and the concrete
+loaders (Vulcan, EDGAR, EPA v2, WetCHARTs) on tiny synthetic archives shaped like
+the real files. GFEI and EPA v1 are not covered: they need the real archive
+(LAIR_INVENTORY_DIR).
 """
 
 import numpy as np
@@ -343,41 +344,315 @@ class TestPollutantNames:
         assert inv.pollutant == kept
 
 
-class TestEPAv2ExpressMonthly:
-    """express + scale_by_month: after 2018 only three sectors keep a monthly
-    pattern; the other scaled sectors fall back to their annual rate."""
+def _epa_v2(express):
+    """An uninitialized EPAv2, for exercising _scale_by_month directly."""
+    epa = inventories.EPAv2.__new__(inventories.EPAv2)
+    epa.express = express
+    epa._lat_deci = epa._lon_deci = 2
+    return epa
 
-    def test_no_nan_after_2018(self):
-        import pandas as pd
 
-        epa = inventories.EPAv2.__new__(inventories.EPAv2)
-        epa.express = True
-        epa._lat_deci = epa._lon_deci = 2
-        lat, lon = [40.0, 40.1], [-112.0, -111.9]
-        scalable = inventories.EPAv2._express_vars_scalable_past_2018
-        names = scalable + ["Enteric_Fermentation", "Landfills_MSW"]
-        annual = xr.Dataset(
-            {n: (("time", "lat", "lon"), np.full((2, 2, 2), 3.0)) for n in names},
-            coords={
-                "time": pd.to_datetime(["2018-01-01", "2019-01-01"]),
-                "lat": lat,
-                "lon": lon,
-            },
-        )
-        sf = xr.Dataset(
-            {n: (("time", "lat", "lon"), np.full((12, 2, 2), 2.0)) for n in names},
-            coords={
-                "time": pd.date_range("2018-01-01", periods=12, freq="MS"),
-                "lat": lat,
-                "lon": lon,
-            },
-        )
+#: Like the real v2 files, only some sectors have monthly scale factors
+EPA_SCALED = inventories.EPAv2._express_vars_scalable_past_2018 + [
+    "Combustion_Stationary"
+]
+EPA_ANNUAL_ONLY = ["Enteric_Fermentation", "Landfills_MSW"]
+
+
+def _epa_annual_and_sf(years):
+    import pandas as pd
+
+    lat, lon = [40.0, 40.1], [-112.0, -111.9]
+    annual = xr.Dataset(
+        {
+            n: (("time", "lat", "lon"), np.full((len(years), 2, 2), 3.0))
+            for n in EPA_SCALED + EPA_ANNUAL_ONLY
+        },
+        coords={
+            "time": pd.to_datetime([f"{y}-01-01" for y in years]),
+            "lat": lat,
+            "lon": lon,
+        },
+    )
+    sf = xr.Dataset(
+        {n: (("time", "lat", "lon"), np.full((12, 2, 2), 2.0)) for n in EPA_SCALED},
+        coords={
+            "time": pd.date_range("2018-01-01", periods=12, freq="MS"),
+            "lat": lat,
+            "lon": lon,
+        },
+    )
+    return annual, sf
+
+
+class TestEPAv2Monthly:
+    """scale_by_month keeps every sector: those with monthly scale factors are
+    scaled, the rest (enteric fermentation, landfills, coal, ...) hold their
+    annual rate in every month."""
+
+    def test_keeps_sectors_without_scale_factors(self):
+        epa = _epa_v2(express=False)
+        annual, sf = _epa_annual_and_sf([2018])
         epa.get_monthly_scale_factors = lambda: sf
 
         out = epa._scale_by_month(annual)
+        assert set(out.data_vars) == set(EPA_SCALED + EPA_ANNUAL_ONLY)
+        assert out.sizes["time"] == 12
+        assert float(out["Manure_Management"].max()) == 6.0  # scaled
+        assert float(out["Enteric_Fermentation"].min()) == 3.0  # annual rate
+        assert float(out["Enteric_Fermentation"].max()) == 3.0
+
+    def test_express_no_nan_after_2018(self):
+        epa = _epa_v2(express=True)
+        annual, sf = _epa_annual_and_sf([2018, 2019])
+        epa.get_monthly_scale_factors = lambda: sf
+
+        out = epa._scale_by_month(annual)
+        assert set(out.data_vars) == set(EPA_SCALED + EPA_ANNUAL_ONLY)
         y2019 = out.sel(time="2019")
         assert y2019.sizes["time"] == 12
-        for n in names:
-            assert not bool(y2019[n].isnull().any()), n
-        assert float(y2019["Manure_Management"].max()) == 6.0  # scaled
+        for n in out.data_vars:
+            assert not bool(out[n].isnull().any()), n
+        # after 2018 only the three express sectors keep a monthly pattern
+        assert float(y2019["Manure_Management"].max()) == 6.0
+        assert float(y2019["Combustion_Stationary"].max()) == 3.0  # annual rate
         assert float(y2019["Enteric_Fermentation"].max()) == 3.0  # annual rate
+        assert float(out.sel(time="2018")["Combustion_Stationary"].max()) == 6.0
+
+
+@pytest.fixture
+def epa_v2_dir(tmp_path):
+    """A tiny EPA v2 archive shaped like the real files: one annual file per year
+    with ``emi_ch4_<code>_<name>`` variables, and monthly scale factors for only
+    some of the sectors."""
+    import pandas as pd
+
+    lat, lon = np.array([40.05, 40.15]), np.array([-111.95, -111.85])
+    d = tmp_path / "EPA" / "v2"
+    (d / "monthly_scale_factors").mkdir(parents=True)
+    names = ["1A_Combustion_Stationary", "3B_Manure_Management"]
+    names += ["3A_Enteric_Fermentation", "5A1_Landfills_MSW"]
+    for year in [2017, 2018]:
+        ds = xr.Dataset(
+            {
+                f"emi_ch4_{n}": (("time", "lat", "lon"), np.ones((1, 2, 2)))
+                for n in names + ["grid_cell_area"]
+            },
+            coords={"time": [pd.Timestamp(f"{year}-01-01")], "lat": lat, "lon": lon},
+        )
+        ds = ds.rename({"emi_ch4_grid_cell_area": "grid_cell_area"})
+        ds.to_netcdf(d / f"Gridded_GHGI_Methane_v2_{year}.nc")
+        sf = xr.Dataset(
+            {
+                f"monthly_scale_factor_{n}": (
+                    ("time", "lat", "lon"),
+                    np.ones((12, 2, 2)),
+                )
+                for n in names[:2]
+            },
+            coords={
+                "time": pd.date_range(f"{year}-01-01", periods=12, freq="MS"),
+                "lat": lat,
+                "lon": lon,
+            },
+        )
+        sf.to_netcdf(
+            d
+            / "monthly_scale_factors"
+            / f"Gridded_GHGI_Methane_v2_Monthly_Scale_Factors_{year}.nc"
+        )
+    return tmp_path
+
+
+class TestEPAv2:
+    def test_monthly_total_matches_annual(self, epa_v2_dir):
+        annual = inventories.EPAv2(inventory_dir=epa_v2_dir)
+        monthly = inventories.EPAv2(scale_by_month=True, inventory_dir=epa_v2_dir)
+        assert set(monthly.data.data_vars) == set(annual.data.data_vars)
+        # scale factors of 1: the months of a year add up to the annual total
+        a = float(annual.integrate().sel(time="2018").sum())
+        m = float(monthly.integrate().sel(time="2018").sum())
+        assert m == pytest.approx(a, rel=1e-6)
+
+
+def _edgar_v8_file(path, long_name, year, monthly):
+    import pandas as pd
+
+    lat, lon = np.array([40.05, 40.15]), np.array([-111.95, -111.85])
+    attrs = {"long_name": long_name, "year": str(year), "units": "kg m-2 s-1"}
+    if monthly:
+        time = pd.date_range(f"{year}-01-01", periods=12, freq="MS")
+        fluxes = (("time", "lat", "lon"), np.ones((12, 2, 2)), attrs)
+        coords = {"time": time, "lat": lat, "lon": lon}
+    else:
+        fluxes = (("lat", "lon"), np.ones((2, 2)), attrs)
+        coords = {"lat": lat, "lon": lon}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    xr.Dataset({"fluxes": fluxes}, coords=coords).to_netcdf(path)
+
+
+class TestEDGARv8:
+    def test_annual_drops_fuel_exploitation_total(self, tmp_path):
+        # Annual CH4 has PRO_FFF alongside its COAL/GAS/OIL components
+        d = tmp_path / "EDGAR" / "v8" / "CH4"
+        for code, name in [
+            ("PRO_FFF", "Fuel exploitation"),
+            ("PRO_COAL", "Fuel exploitation COAL"),
+            ("PRO_GAS", "Fuel exploitation GAS"),
+            ("PRO_OIL", "Fuel exploitation OIL"),
+            ("ENF", "Enteric fermentation"),
+        ]:
+            f = d / code / f"v8.0_FT2022_GHG_CH4_2020_{code}_flx.nc"
+            _edgar_v8_file(f, name, 2020, monthly=False)
+        e = inventories.EDGARv8("CH4", inventory_dir=tmp_path)
+        assert set(e.data.data_vars) == {
+            "Fuel_exploitation_COAL",
+            "Fuel_exploitation_GAS",
+            "Fuel_exploitation_OIL",
+            "Enteric_fermentation",
+        }
+
+    def test_monthly_keeps_fuel_exploitation(self, tmp_path):
+        # Monthly CH4 has only FUEL_EXPLOITATION (no COAL/GAS/OIL split)
+        d = tmp_path / "EDGAR" / "v8" / "monthly" / "CH4"
+        for code, name in [
+            ("FUEL_EXPLOITATION", "Fuel exploitation"),
+            ("AGRICULTURE", "Agriculture"),
+        ]:
+            f = d / code / f"v8.0_FT2022_GHG_CH4_2020_{code}_flx.nc"
+            _edgar_v8_file(f, name, 2020, monthly=True)
+        e = inventories.EDGARv8("CH4", time_step="monthly", inventory_dir=tmp_path)
+        assert set(e.data.data_vars) == {"Fuel_exploitation", "Agriculture"}
+
+
+class TestEDGARv7:
+    @staticmethod
+    def _write(root, pollutant, code):
+        d = root / "EDGAR" / "v7" / pollutant / code
+        d.mkdir(parents=True)
+        var = f"emi_{pollutant.lower()}"
+        xr.Dataset(
+            {var: (("lat", "lon"), np.ones((2, 2)), {"units": "kg m-2 s-1"})},
+            coords={"lat": [40.05, 40.15], "lon": [-111.95, -111.85]},
+        ).to_netcdf(d / f"v7.0_FT2021_{pollutant}_2021_{code}.0.1x0.1.nc")
+
+    def test_other_pollutant(self, tmp_path):
+        self._write(tmp_path, "N2O", "AGS")
+        e = inventories.EDGARv7("N2O", inventory_dir=tmp_path)
+        assert set(e.data.data_vars) == {"Agricultural_soils"}
+
+    def test_supersonic_aviation_sector(self, tmp_path):
+        self._write(tmp_path, "CH4", "TNR_Aviation_SPS")
+        e = inventories.EDGARv7("CH4", inventory_dir=tmp_path)
+        assert set(e.data.data_vars) == {"Aviation_supersonic"}
+
+
+class TestEDGARSectorNames:
+    def test_known_sector(self):
+        edgar = inventories.EDGARv8.__new__(inventories.EDGARv8)
+        assert edgar.get_sector_name("TNR_Aviation_SPS") == "Aviation_supersonic"
+
+    def test_unknown_sector_falls_back_to_code(self):
+        edgar = inventories.EDGARv8.__new__(inventories.EDGARv8)
+        assert edgar.get_sector_name("NEW_SECTOR") == "NEW_SECTOR"
+
+
+class TestPerVariableUnits:
+    def _ds(self, units_b):
+        import pandas as pd
+
+        ds = xr.Dataset(
+            {
+                "a": (("time", "lat", "lon"), np.ones((1, 2, 2))),
+                "b": (("time", "lat", "lon"), np.ones((1, 2, 2))),
+            },
+            coords={
+                "time": [pd.Timestamp("2020-01-01")],
+                "lat": [40.0, 41.0],
+                "lon": [-112.0, -111.0],
+            },
+        )
+        ds["a"].attrs["units"] = "kg m-2 s-1"
+        if units_b is not None:
+            ds["b"].attrs["units"] = units_b
+        return ds
+
+    def test_each_variable_keeps_its_units(self):
+        inv = inventories.Inventory(self._ds("mol m-2 s-1"), pollutant="CH4")
+        assert inv._data["a"].pint.units == inventories.units("kg m-2 s-1")
+        assert inv._data["b"].pint.units == inventories.units("mol m-2 s-1")
+
+    def test_common_units_become_src_units(self):
+        inv = inventories.Inventory(self._ds("kg m-2 s-1"), pollutant="CH4")
+        assert inv.src_units == "kg m-2 s-1"
+
+    def test_variable_without_units_raises(self):
+        with pytest.raises(ValueError, match="b"):
+            inventories.Inventory(self._ds(None), pollutant="CH4")
+
+    def test_src_units_overrides_attrs(self):
+        inv = inventories.Inventory(
+            self._ds("mol m-2 s-1"), pollutant="CH4", src_units="kg m-2 s-1"
+        )
+        assert inv._data["b"].pint.units == inventories.units("kg m-2 s-1")
+
+
+@pytest.fixture
+def wetcharts_dir(tmp_path):
+    """A tiny WetCHARTs v1.3.1 file: int32 model codes, mid-month times and
+    NaN outside wetlands (most of the real grid)."""
+    import pandas as pd
+
+    lat = np.arange(40.25, 42, 0.5)
+    lon = np.arange(-112.75, -111, 0.5)
+    t = pd.date_range("2010-01-01", periods=12, freq="MS") + pd.Timedelta("14D")
+    emis = np.ones((2, 12, lat.size, lon.size))
+    emis[1] *= 3.0
+    emis[:, :, 0, 0] = np.nan  # a non-wetland cell
+    ds = xr.Dataset(
+        {
+            "wetland_CH4_emissions": (
+                ("model", "time", "lat", "lon"),
+                emis,
+                {"units": "mg m-2 d-1"},
+            ),
+            "time_bnds": (("time", "nv"), np.stack([t, t], axis=1)),
+            "crs": ((), "a"),
+        },
+        coords={
+            "model": np.array([1913, 1914], dtype="int32"),
+            "time": t,
+            "lat": lat,
+            "lon": lon,
+        },
+    )
+    d = tmp_path / "WetCHARTs" / "v1.3.1"
+    d.mkdir(parents=True)
+    ds.to_netcdf(d / "WetCHARTs_v1_3_1_2010.nc")
+    return tmp_path
+
+
+class TestWetCHARTs:
+    @pytest.mark.parametrize("model", [1914, "1914"])
+    def test_select_model(self, wetcharts_dir, model):
+        w = inventories.WetCHARTs(model=model, inventory_dir=wetcharts_dir)
+        assert float(w.data["wetlands"].max()) == 3.0
+
+    @pytest.mark.parametrize("model, value", [(None, 2.0), ("median", 2.0)])
+    def test_ensemble_statistic(self, wetcharts_dir, model, value):
+        w = inventories.WetCHARTs(model=model, inventory_dir=wetcharts_dir)
+        assert float(w.data["wetlands"].max()) == value
+
+    def test_non_wetland_cells_are_zero(self, wetcharts_dir):
+        w = inventories.WetCHARTs(model=1913, inventory_dir=wetcharts_dir)
+        wetlands = w.data["wetlands"]
+        assert not bool(wetlands.isnull().any())
+        assert float(wetlands.isel(time=0, lat=0, lon=0)) == 0.0
+
+    def test_resample_conserves_total(self, wetcharts_dir):
+        # NaN cells must not poison the coarse cells they fall in
+        pytest.importorskip("xesmf")
+        w = inventories.WetCHARTs(model=1913, inventory_dir=wetcharts_dir)
+        before = float(w.integrate().isel(time=0))
+        after = float(w.resample(1.0).integrate().isel(time=0))
+        assert after == pytest.approx(before, rel=0.01)

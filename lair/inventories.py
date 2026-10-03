@@ -182,7 +182,9 @@ class Inventory(BaseGrid):
         pollutant : str
             The pollutant.
         src_units : str, optional
-            The source units of the data, by default None. If None, the units are extracted from the data attributes.
+            The source units of the data, by default None. If given, every variable
+            is taken to be in these units. If None, each variable's own ``units``
+            attribute is used (and every variable must have one).
         time_step : str, optional
             The time step of the data, by default 'annual'.
         crs : str, optional
@@ -221,22 +223,27 @@ class Inventory(BaseGrid):
         elif isinstance(data, Dataset):
             self.path = None
             ds = data
-            if src_units is None:
-                var = list(ds.data_vars)[0]
-                src_units = ds[var].attrs.get("units")
         else:
             raise ValueError("Data must be a path to a file or an xarray Dataset")
         if src_units is None:
-            raise ValueError(
-                "Units must be provided in the data attributes or as an argument"
-            )
+            # Each variable keeps the units in its own attributes
+            var_units = {var: ds[var].attrs.get("units") for var in ds.data_vars}
+            missing = [var for var, u in var_units.items() if u is None]
+            if missing:
+                raise ValueError(
+                    "Units must be provided in the data attributes or as an "
+                    f"argument (no units attribute on {missing})"
+                )
+            if len(set(var_units.values())) == 1:
+                src_units = next(iter(var_units.values()))
 
         # Standardize units
         # - Requirements:
         #   - all variables are emissions
         #   - all in the same units
-        self.src_units: str | pint.registry.Unit = src_units
-        ds = self._quantify(ds)  # quantify using provided src_units
+        # src_units is None only when the variables carry different units
+        self.src_units: str | pint.registry.Unit | None = src_units
+        ds = self._quantify(ds)
         if standardize_units:
             ds = convert_units(ds, pollutant=self.pollutant, dst_units=DST_UNITS)
 
@@ -617,7 +624,10 @@ class Inventory(BaseGrid):
 
     def _quantify(self, data: Dataset) -> Dataset:
         # Quantify the entire dataset at once to keep coord indexes consistent.
-        units_map = {var: self.src_units for var in data.data_vars}
+        # Without src_units, pint-xarray reads each variable's units attribute.
+        units_map = None
+        if self.src_units is not None:
+            units_map = {var: self.src_units for var in data.data_vars}
         return _quantify_data_only(data, units_map)
 
 
@@ -636,7 +646,7 @@ class MultiModelInventory(Inventory):
         time_step: str = "annual",
         crs: str = "EPSG:4326",
         version: str | None = None,
-        model: str | None = None,
+        model: int | str | None = None,
     ) -> None:
         """
         Initialize the multi-model inventory.
@@ -657,9 +667,11 @@ class MultiModelInventory(Inventory):
             The CRS of the data, by default 'EPSG:4326'.
         version : str, optional
             The version of the inventory, by default None.
-        model : str, optional
+        model : int | str, optional
             The model to select from the multimodel data, by default None.
-            If None, the mean of all models is used.
+            Either a value of the ``model`` coordinate (a numeric string is cast
+            to match an integer coordinate), ``'mean'`` or ``'median'`` for the
+            ensemble mean or median. If None, the mean of all models is used.
         """
         self.model = model or "mean"
         super().__init__(
@@ -678,8 +690,10 @@ class MultiModelInventory(Inventory):
             return data.mean(dim="model")
         elif self.model == "median":
             return data.median(dim="model")
-        else:
-            return data.sel(model=self.model)
+        model = self.model
+        if np.issubdtype(data["model"].dtype, np.integer):
+            model = int(model)  # e.g. WetCHARTs codes: '1913' -> 1913
+        return data.sel(model=model)
 
 
 class EDGAR(Inventory, metaclass=ABCMeta):
@@ -821,6 +835,11 @@ class EDGAR(Inventory, metaclass=ABCMeta):
             "IPCC_1996_code": "1A3a_LTO",
             "IPCC_2006_code": "1A3a_LTO",
         },
+        "TNR_Aviation_SPS": {
+            "description": "Aviation supersonic",
+            "IPCC_1996_code": "1A3a_SPS",
+            "IPCC_2006_code": "1A3a_SPS",
+        },
         "TNR_Other": {
             "description": "Railways, pipelines, off-road transport",
             "IPCC_1996_code": "1A3c+1A3e",
@@ -871,8 +890,10 @@ class EDGAR(Inventory, metaclass=ABCMeta):
         Returns
         -------
         str
-            The formatted name.
+            The formatted name. Sectors missing from ``sectors`` keep their code.
         """
+        if sector not in self.sectors:
+            return sector
         # Retrieve the description from the sectors dictionary
         description = self.sectors[sector]["description"]
         # Substitute unwanted characters in the 'description' key to create 'name'
@@ -930,7 +951,7 @@ class EDGARv7(EDGAR):
 
         var = self.get_sector_name(sector_code)
 
-        ds = ds.rename({"emi_ch4": var})
+        ds = ds.rename({f"emi_{self.pollutant.lower()}": var})
         ds[var].attrs["long_name"] = f"{var}_Emissions"
         ds[var].attrs["standard_name"] = self.get_standard_name()
 
@@ -1018,8 +1039,14 @@ class EDGARv8(EDGAR):
         return ds
 
     def _process(self, data: Dataset) -> Dataset:
-        # Fuel_exploitation is the sum of Fuel_exploitation_COAL, Fuel_exploitation_GAS, and Fuel_exploitation_OIL
-        data = data.drop_vars(["Fuel_exploitation"], errors="ignore")
+        # Annual files have Fuel_exploitation (PRO_FFF) alongside its COAL, GAS
+        # and OIL components; drop it so the sectors don't double count. PRO_FFF
+        # also includes fossil fuel fires (7A/5B), which have no file of their
+        # own, so the components fall slightly short of it (CH4 2020: 109.27 vs
+        # 109.42 Mt). Monthly files only have Fuel_exploitation: keep it there.
+        components = [f"Fuel_exploitation_{f}" for f in ("COAL", "GAS", "OIL")]
+        if all(var in data.data_vars for var in components):
+            data = data.drop_vars(["Fuel_exploitation"], errors="ignore")
         return data
 
 
@@ -1218,6 +1245,18 @@ class EPAv2(EPA):
         )
         return ds
 
+    @staticmethod
+    def _apply_monthly_scale_factors(data: Dataset, sf: Dataset) -> Dataset:
+        # Expand every sector to the months of `sf` at its annual rate (repeat
+        # each year's Jan value), then scale the sectors that have monthly scale
+        # factors. Only some sectors have them (petroleum/gas systems, stationary
+        # combustion, manure, rice, field burning); the rest (enteric
+        # fermentation, landfills, coal, ...) keep their annual rate.
+        monthly = data.reindex(time=sf["time"], method="ffill")
+        scaled = monthly[list(sf.data_vars)]
+        scaled *= sf
+        return monthly.assign(scaled.data_vars)
+
     def _scale_by_month(self, data: Dataset) -> Dataset:
         self.time_step = "monthly"
         sf = self.get_monthly_scale_factors()
@@ -1225,10 +1264,7 @@ class EPAv2(EPA):
         # Round grid coordinates due to floating point errors
         sf = round_latlon(sf, self._lat_deci, self._lon_deci)
 
-        # Filter to variables with strong interannual variability and
-        # expand time dimension by repeating Jan values
-        monthly = data[list(sf.data_vars)].reindex(time=sf["time"], method="ffill")
-        monthly *= sf  # multiply by scale factors
+        monthly = self._apply_monthly_scale_factors(data, sf)
 
         if self.express:
             # Only scale _express_vars_scalable_past_2018 past 2018:
@@ -1248,21 +1284,9 @@ class EPAv2(EPA):
                 dim="time",
             )
 
-            express_monthly = data[self._express_vars_scalable_past_2018].reindex(
-                time=express_sf["time"], method="ffill"
-            )
-            express_monthly *= express_sf
-            monthly = monthly.combine_first(express_monthly)
-
-            # The other scaled sectors keep their annual rate in every month
-            # after 2018 (they would otherwise be NaN, which sums as zero)
-            others = [
-                var
-                for var in sf.data_vars
-                if var not in self._express_vars_scalable_past_2018
-            ]
-            annual_rate = data[others].reindex(time=express_sf["time"], method="ffill")
-            monthly = monthly.combine_first(annual_rate)
+            # Every other sector keeps its annual rate in every month after 2018
+            express_monthly = self._apply_monthly_scale_factors(data, express_sf)
+            monthly = xr.concat([monthly, express_monthly], dim="time")
 
         return monthly
 
@@ -1530,8 +1554,9 @@ class Vulcan(Inventory):
         Returns
         -------
         xr.Dataset
-            The bound for each sector over the full (unclipped) domain, in the
-            source units (not pint-quantified).
+            The bound for each sector over the full (unclipped) domain, in
+            tonnes of CO2 per km2 per time step (converted from tonnes of carbon
+            like the central estimate; not pint-quantified).
         """
         if self.time_step != "annual":
             raise ValueError("Uncertainties are only available for annual data")
@@ -1680,15 +1705,18 @@ class WetCHARTs(MultiModelInventory):
     src_units: str = "mg m-2 d-1"
     time_step = "monthly"
 
-    def __init__(self, model: str | None = None, inventory_dir: str | None = None):
+    def __init__(
+        self, model: int | str | None = None, inventory_dir: str | None = None
+    ):
         """
         Initialize the WetCHARTs inventory.
 
         Parameters
         ----------
-        model : str | None, optional
-            The model to select, by default None.
-            If None, the mean of all models is used.
+        model : int | str | None, optional
+            The model to select, by default None: a four-digit ensemble member
+            code (e.g. ``1913`` or ``'1913'``), ``'mean'`` or ``'median'``.
+            If None, the ensemble mean is used.
         inventory_dir : str, optional
             Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
         """
@@ -1721,5 +1749,11 @@ class WetCHARTs(MultiModelInventory):
         data = data.rename({"wetland_CH4_emissions": "wetlands"})
         data.wetlands.attrs["long_name"] = "Wetland_CH4_Emissions"
         data.wetlands.attrs["standard_name"] = self.get_standard_name()
+
+        # Cells outside wetlands are NaN (most of the grid). Treat them as zero,
+        # as for Vulcan: otherwise conservative regridding turns every coarse
+        # cell touching one into NaN and drops its emissions. Filling before the
+        # ensemble statistic also counts a model's non-wetland cell as zero.
+        data = data.fillna(0)
 
         return super()._process(data)  # select a single model

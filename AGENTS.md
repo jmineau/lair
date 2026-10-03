@@ -284,9 +284,16 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   with 2D lat/lon, so `Inventory.__init__` picks x/y spatial dims when there's
   no `lon` dim. `Vulcan.clip`/`reproject` follow the base-class API (return the
   result, `inplace=` optional; reproject refuses an unclipped grid unless
-  `force=True`). **Units caveat:** Vulcan stores *tonnes of carbon*
-  (`Mg km-2 year-1`, tC), but the class says pollutant CO2, so mass↔mole
-  conversions use the CO2 molar mass — flagged to the user, not changed.
+  `force=True`). **Units:** Vulcan stores *tonnes of carbon*; `_process`
+  converts to tonnes of CO2 (x M(CO2)/M(C)) and fills NaN with 0.
+- **Inventory loaders (2026-10):** NaN "no emission" cells must be 0 before any
+  conservative regrid (Vulcan, WetCHARTs), or each coarse cell touching one goes
+  NaN. Without `src_units`, each variable is quantified with its own `units`
+  attr. EPA v2 monthly scale factors cover only 10 of ~28 sectors:
+  `scale_by_month` keeps the rest at their annual rate. EDGAR v8 drops
+  `Fuel_exploitation` (PRO_FFF) only when its COAL/GAS/OIL parts are loaded
+  (monthly has no split). Test loaders on tiny synthetic archives shaped like
+  the real files (check layouts with `ncdump -h`).
 - **Docs:** `just build-docs` (or `sphinx-build -M html docs docs/_build`).
   They build in the lean uv env because `docs/conf.py` mocks every optional
   extra via `autodoc_mock_imports` — add new optional imports there. Mocked
