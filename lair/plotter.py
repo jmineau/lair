@@ -393,7 +393,8 @@ def polarPlot(
     min_bin : int, optional
         Minimum count in each bin to plot. Defaults to 1.
     xbins : int, optional
-        Number of bins in the radial axis. Defaults to 30.
+        Number of bin edges in the radial axis (``xbins - 1`` bins), or explicit
+        edges; see :func:`lair.air.bin_polar`. Defaults to 30.
     scale_angle : float | None, optional
         Angle to position the radial axis label. Defaults to None.
 
@@ -450,7 +451,8 @@ def polarFreq(
     wd : str, optional
         Variable to bin in the angular axis. Defaults to 'wd'.
     xbins : int, optional
-        Number of bins in the radial axis. Defaults to 30.
+        Number of bin edges in the radial axis (``xbins - 1`` bins), or explicit
+        edges; see :func:`lair.air.bin_polar`. Defaults to 30.
     scale_angle : float | None, optional
         Angle to position the radial axis label. Defaults to None.
 

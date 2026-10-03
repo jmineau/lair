@@ -23,8 +23,10 @@ def bin_polar(
         Variable to bin. Default is 'ws'.
     wd : str, optional
         Wind direction column name. Default is 'wd'.
-    xbins : int, optional
-        Number of bins for x. Default is 30.
+    xbins : int | list, optional
+        Bin edges for x. An int is the number of evenly spaced edges from the
+        minimum to the maximum of x (so ``xbins - 1`` bins); a list gives the
+        edges explicitly. Default is 30.
 
     Returns
     -------
@@ -57,18 +59,13 @@ def bin_polar(
     data["wd_bin"] = pd.cut(data[wd], wd_bins, labels=directions.keys())  # pyrefly: ignore[no-matching-overload]
     data["wd_bin"] = data["wd_bin"].replace("N2", "N")
 
-    def direction_to_radians(direction):
-        degrees = directions.get(direction.upper())
-        if degrees is None:
-            raise ValueError("Invalid direction")
-        radians = np.deg2rad(degrees)
-        return float(radians)
+    # Missing (or out of range) directions have no sector and map to NaN
+    degrees = data["wd_bin"].astype(object).map(directions).astype(float)
+    data["radian_bin"] = np.deg2rad(degrees)
 
-    data["radian_bin"] = data.wd_bin.apply(direction_to_radians).astype(float)
-
-    # Bin x (speed)
+    # Bin x (speed); Series.min/max skip NaN, the builtins do not
     if isinstance(xbins, int):
-        x_bins = np.linspace(min(data[x]), max(data[x]), xbins)
+        x_bins = np.linspace(data[x].min(), data[x].max(), xbins)
     elif isinstance(xbins, (list, tuple, range)):
         x_bins = xbins
     else:
@@ -170,8 +167,8 @@ def rotate_winds(u, v, lon) -> tuple[Any, Any]:
         u component of wind
     v : np.array
         v component of wind
-    lon : float
-        longitude of point
+    lon : float | np.array
+        longitude of point, in -180..180 or 0..360
 
     Returns
     -------
@@ -184,8 +181,10 @@ def rotate_winds(u, v, lon) -> tuple[Any, Any]:
     lon_xx_p = -97.5
     # lat_tan_p  =  25.0 (np.sin(lat_tan_p/180*np.pi)) to get rotcon_p
 
-    # Calc right grid_angle
-    angle2 = rotcon_p * (lon - lon_xx_p) * 0.017453  # convert to radian
+    # Calc right grid_angle. The offset from the reference longitude must be
+    # in -180..180, whichever convention lon uses (e.g. 248 vs -112).
+    dlon = (lon - lon_xx_p + 180) % 360 - 180
+    angle2 = rotcon_p * dlon * 0.017453  # convert to radian
     sinx2 = np.sin(angle2)
     cosx2 = np.cos(angle2)
 
