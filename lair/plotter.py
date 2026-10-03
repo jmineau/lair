@@ -409,7 +409,9 @@ def polarPlot(
 
     agg = (
         binned_data[[param, "radian_bin", "x_bin"]]
-        .groupby(["radian_bin", "x_bin"])
+        # observed=False keeps empty speed bins in the grid (pandas 3 defaults
+        # to True, which would drop them before the unstack)
+        .groupby(["radian_bin", "x_bin"], observed=False)
         .agg([statistic, "count"])[param]
         .unstack()
     )
@@ -465,19 +467,16 @@ def polarFreq(
 
     binned_data = bin_polar(data, x=x, wd=wd, xbins=xbins)
 
-    binned_data["count"] = 1
+    # observed=False keeps empty speed bins in the grid (count 0); pandas 3
+    # defaults to True, which would drop them before the unstack
     counts = (
-        binned_data[["count", "radian_bin", "x_bin"]]
-        .groupby(["radian_bin", "x_bin"])["count"]
-        .sum()
-        .unstack()
+        binned_data.groupby(["radian_bin", "x_bin"], observed=False).size().unstack()
     )
 
     theta, r, c = circularize_radial_data(counts)
 
-    # Convert to percent and set 0 to nan. Use nansum: empty (direction, speed)
-    # bins are NaN after the unstack, and a plain c.sum() over them is NaN,
-    # which would blank the whole plot.
+    # Convert to percent and set empty bins (0) to nan. nansum guards against a
+    # NaN in the grid, which would make a plain c.sum() NaN and blank the plot.
     c = c / np.nansum(c) * 100
     c[c == 0] = np.nan
 
