@@ -160,6 +160,24 @@ class TestPlots:
         monkeypatch.setattr(lair.air, "circularize_radial_data", spy)
         return captured
 
+    @staticmethod
+    def _spy_contourf(monkeypatch):
+        """Capture the (theta, r, c) arrays each polar plot passes to contourf."""
+        from matplotlib.projections.polar import PolarAxes
+
+        captured = {}
+        contourf = PolarAxes.contourf
+
+        def spy(self, theta, r, c, *args, **kwargs):
+            captured.update(theta=theta, r=r, c=c)
+            return contourf(self, theta, r, c, *args, **kwargs)
+
+        monkeypatch.setattr(PolarAxes, "contourf", spy)
+        return captured
+
+    #: The 16 direction sectors (N, NNE, ..., NNW) in radians
+    _sectors = np.deg2rad(np.arange(16) * 22.5)
+
     # Speed edges 0-1-2-3-4: the (1, 2] bin is empty. Directions only N and E.
     _sparse = {
         "ws": [0.5, 0.0, 0.5, 2.5, 2.5, 4.0],
@@ -177,12 +195,12 @@ class TestPlots:
         plotter.polarPlot(df, "CH4", xbins=[0, 1, 2, 3, 4])
         pd.testing.assert_frame_equal(df, before)  # caller's frame untouched
         agg = captured["agg"]
-        assert agg.index.tolist() == pytest.approx([0.0, np.pi / 2])
+        np.testing.assert_allclose(agg.index.to_numpy(dtype=float), self._sectors)
         assert agg.columns.tolist() == [1, 2, 3, 4]
-        np.testing.assert_array_equal(
-            agg.to_numpy(dtype=float),
-            [[1.0, np.nan, 3.0, 5.0], [4.0, np.nan, 4.0, np.nan]],
-        )
+        expected = np.full((16, 4), np.nan)
+        expected[0] = [1.0, np.nan, 3.0, 5.0]  # N
+        expected[4] = [4.0, np.nan, 4.0, np.nan]  # E
+        np.testing.assert_array_equal(agg.to_numpy(dtype=float), expected)
 
     @pytest.mark.filterwarnings("error::FutureWarning")
     def test_polar_freq_grid_keeps_empty_speed_bins(self, monkeypatch):
@@ -192,11 +210,29 @@ class TestPlots:
         plotter.polarFreq(df, xbins=[0, 1, 2, 3, 4])
         pd.testing.assert_frame_equal(df, before)  # no 'count' etc. added
         agg = captured["agg"]
-        assert agg.index.tolist() == pytest.approx([0.0, np.pi / 2])
+        np.testing.assert_allclose(agg.index.to_numpy(dtype=float), self._sectors)
         assert agg.columns.tolist() == [1, 2, 3, 4]
-        np.testing.assert_array_equal(
-            agg.to_numpy(dtype=float), [[1, 0, 1, 1], [2, 0, 1, 0]]
-        )
+        expected = np.zeros((16, 4))
+        expected[0] = [1, 0, 1, 1]  # N
+        expected[4] = [2, 0, 1, 0]  # E
+        np.testing.assert_array_equal(agg.to_numpy(dtype=float), expected)
+
+    @pytest.mark.parametrize("plot", ["polarPlot", "polarFreq"])
+    def test_polar_grid_wraps_at_north_with_empty_sectors(self, monkeypatch, plot):
+        # Data only at N and E: the 14 empty sectors must stay in the grid, or
+        # the wrap-around row lands at 180 deg instead of closing at 360 (#58)
+        captured = self._spy_contourf(monkeypatch)
+        df = pd.DataFrame(self._sparse)
+        if plot == "polarPlot":
+            plotter.polarPlot(df, "CH4", xbins=[0, 1, 2, 3, 4])
+        else:
+            plotter.polarFreq(df, xbins=[0, 1, 2, 3, 4])
+        theta, c = captured["theta"], captured["c"]
+        assert theta.shape == (17, 4)  # 16 sectors + the closing row
+        np.testing.assert_allclose(theta[:, 0], np.append(self._sectors, 2 * np.pi))
+        np.testing.assert_array_equal(c[-1], c[0])  # closes back onto N
+        assert np.isfinite(c[[0, 4]]).any(axis=1).all()  # N and E have data
+        assert np.isnan(np.delete(c[:-1], [0, 4], axis=0)).all()  # others empty
 
     def test_windvector_plot(self, rng):
         df = pd.DataFrame(

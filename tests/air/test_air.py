@@ -134,6 +134,16 @@ def test_bin_polar_wd_bin_is_16_ordered_sectors():
     ]  # fmt: skip
 
 
+def test_sector_radians_match_radian_bin_exactly():
+    # The polar plots reindex their grid to sector_radians(), which only lines
+    # up if radian_bin takes exactly these float values
+    sectors = air.sector_radians()
+    np.testing.assert_allclose(sectors, np.deg2rad(np.arange(16) * 22.5))
+    df = pd.DataFrame({"ws": np.ones(16), "wd": np.arange(16) * 22.5 + 3.0})
+    out = air.bin_polar(df, xbins=[0, 2])
+    assert out["radian_bin"].tolist() == sectors.tolist()
+
+
 def test_bin_polar_explicit_bin_edges():
     df = pd.DataFrame({"ws": [1, 2, 3, 4], "wd": [10, 100, 190, 280]})
     out = air.bin_polar(df, xbins=[0, 2, 4])
