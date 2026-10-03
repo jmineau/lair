@@ -284,6 +284,17 @@ class TestVulcan:
         # one source cell, 2 years, converted from tC to CO2
         assert float(elec.sum()) == pytest.approx(2 * 200.0 * C_TO_CO2, rel=1e-4)
 
+    def test_data_stays_lazy(self, vulcan_dir):
+        # The full US grid is ~20 GB in memory: nothing up to integrate()
+        # should load it (#27)
+        dask_array = pytest.importorskip("dask.array")
+        v = inventories.Vulcan(inventory_dir=vulcan_dir)
+        clipped = v.clip(bbox=(-1.5e6, 4e5, -1.5e6 + 9_000, 4e5 + 7_000))
+        for inv in (v, clipped):
+            for var in inv.data.data_vars.values():
+                assert isinstance(var.data, dask_array.Array)
+        assert isinstance(clipped.integrate().data, dask_array.Array)
+
     def test_reproject_returns_latlon(self, vulcan_dir):
         pytest.importorskip("xesmf")
         v = inventories.Vulcan(inventory_dir=vulcan_dir)
