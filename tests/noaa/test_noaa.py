@@ -380,3 +380,24 @@ class TestApplyQAQC:
         )
         out = GMLData.apply_qaqc(ds, driver="xarray")
         assert out["value"].values.tolist() == [1.0, 3.0]
+
+    def test_xarray_driver_netcdf_char_flags(self, tmp_path):
+        # GML/ObsPack netCDF files store qcflag as a char array (obs, nchar) with
+        # no _Encoding attribute, so xarray decodes it to bytes (b'...').
+        netCDF4 = pytest.importorskip("netCDF4")
+        g = GMLData("ch4", "xxx", driver="xarray", gml_dir=str(tmp_path))
+        g.directory.mkdir(parents=True, exist_ok=True)
+        with netCDF4.Dataset(g.filepath, "w") as nc:
+            nc.createDimension("obs", 3)
+            nc.createDimension("string_of_3chars", 3)
+            time = nc.createVariable("time", "f8", ("obs",))
+            time.units = "seconds since 1970-01-01"
+            time[:] = [0.0, 60.0, 120.0]
+            nc.createVariable("value", "f8", ("obs",))[:] = [1.0, 2.0, 3.0]
+            chars = np.array([list(f) for f in ["...", ".X.", "..."]], dtype="S1")
+            nc.createVariable("qcflag", "S1", ("obs", "string_of_3chars"))[:] = chars
+        assert g.data["qcflag"].dtype.kind == "S"
+        out = GMLData.apply_qaqc(g.data, driver="xarray")
+        assert out["value"].values.tolist() == [1.0, 3.0]
+        out = GMLData.apply_qaqc(g.data, flags=".X.", driver="xarray")
+        assert out["value"].values.tolist() == [1.0, 2.0, 3.0]
