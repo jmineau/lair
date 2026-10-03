@@ -4,6 +4,7 @@ NOTE: importing lair.config has side effects (creates CACHE_DIR, sets a pandas
 option). Verbosity is a plain boolean, not the stdlib logging module.
 """
 
+import importlib
 import os
 from pathlib import Path
 
@@ -43,6 +44,19 @@ def test_cache_dir_created_on_import():
     assert os.path.isdir(config.CACHE_DIR)
 
 
+def test_cache_dir_creation_tolerates_concurrent_import(monkeypatch, tmp_path):
+    # Many SLURM tasks importing lair at once: another process can create
+    # CACHE_DIR between an exists() check and makedirs(). Simulate that race.
+    monkeypatch.setenv("LAIR_CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(os.path, "exists", lambda path: False)
+    try:
+        importlib.reload(config)
+        assert config.CACHE_DIR == str(tmp_path)
+    finally:
+        monkeypatch.undo()
+        importlib.reload(config)
+
+
 def test_verbose_is_boolean():
     assert isinstance(config.verbose, bool)
 
@@ -57,5 +71,15 @@ def test_vprint_respects_verbose_flag(capsys):
         config.verbose = False
         config.vprint("silent")
         assert capsys.readouterr().out == ""
+    finally:
+        config.verbose = original
+
+
+def test_vprint_accepts_flush_kwarg(capsys):
+    original = config.verbose
+    try:
+        config.verbose = True
+        config.vprint("no flush", flush=False)
+        assert "no flush" in capsys.readouterr().out
     finally:
         config.verbose = original

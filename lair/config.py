@@ -56,8 +56,8 @@ LAIR_DIR = os.path.dirname(__file__)
 CACHE_DIR = os.getenv(
     "LAIR_CACHE_DIR", os.path.join(os.path.expanduser("~"), ".cache", "lair")
 )
-if not os.path.exists(CACHE_DIR):
-    os.makedirs(CACHE_DIR)
+# exist_ok: many processes (e.g. SLURM tasks) may import lair at once
+os.makedirs(CACHE_DIR, exist_ok=True)
 
 ##########
 # PANDAS #
@@ -82,7 +82,8 @@ class _Printer:
     @staticmethod
     def vprint(*args, **kwargs):
         if verbose:
-            print(*args, **kwargs, flush=True)
+            kwargs.setdefault("flush", True)
+            print(*args, **kwargs)
 
 
 vprint = _Printer().vprint
