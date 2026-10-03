@@ -76,32 +76,36 @@ def ideal_gas_law(
     moles, or number of molecules.
     """
 
+    # Compare against None (not truthiness) so array inputs and zero values
+    # (e.g. n=0) work
     if solve_for in ["pressure", "pres", "p"]:
-        if not V:
-            rho = rho or 1 / alpha
+        if V is None:
+            if rho is None:
+                rho = 1 / alpha
             x = rho * R * T
         else:
-            if n:
+            if n is not None:
                 x = n * Rstar * T / V
-            elif m:
+            elif m is not None:
                 x = m * R * T / V
             else:
                 x = N * kb * T / V
     elif solve_for in ["volume", "vol", "V"]:
-        if n:
+        if n is not None:
             x = n * Rstar * T / p
-        elif m:
+        elif m is not None:
             x = m * R * T / p
         else:
             x = N * kb * T / p
     elif solve_for in ["temperature", "temp", "T"]:
-        if not V:
-            rho = rho or 1 / alpha
+        if V is None:
+            if rho is None:
+                rho = 1 / alpha
             x = p / (rho * R)
         else:
-            if n:
+            if n is not None:
                 x = p * V / (n * Rstar)
-            elif m:
+            elif m is not None:
                 x = p * V / (m * R)
             else:
                 x = p * V / (N * kb)
@@ -259,7 +263,8 @@ def sat_vapor_pres_ice(T: Numeric) -> Numeric:
     float
         Saturation vapor pressure over ice in Pascals.
     """
-    return 3.41e11 * np.exp(-6130 / T)
+    # Petty: e_si = 3.41e12 Pa exp(-6130 K / T); ~611 Pa at the triple point
+    return 3.41e12 * np.exp(-6130 / T)
 
 
 def mixing_ratio(e: Numeric, p: Numeric) -> Numeric:
