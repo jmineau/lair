@@ -58,6 +58,16 @@ _XarrayT = TypeVar("_XarrayT", bound=DataArray | Dataset)
 #: Pollutants whose emissions are reported as the mass of another species
 _MASS_BASIS = {"NOX": "NO2"}  # NOx is conventionally reported as NO2 mass
 
+#: The pint unit of one time step. A flux per this unit integrates over exactly
+#: one step (quarterly has no pint unit and always goes through seconds).
+_STEP_UNITS = {
+    "annual": "year",
+    "monthly": "month",
+    "biweekly": "fortnight",
+    "daily": "day",
+    "hourly": "hour",
+}
+
 
 def molecular_weight(pollutant: str) -> pint.Quantity:
     """
@@ -323,6 +333,19 @@ class Inventory(BaseGrid):
         """
         Calculate the absolute emissions (total per gridcell for time step by variable).
 
+        Fluxes are multiplied by the gridcell area and by the length of each
+        time step:
+
+        - When the flux is a rate per time step (``a-1`` with annual data,
+          ``month-1`` with monthly, ``d-1`` with daily, ``hr-1`` with hourly
+          ...), each value is multiplied by exactly one step. This avoids
+          pint's Julian year (365.25 d) and month (1/12 of that), so
+          1 Mg km-2 a-1 over 1 km2 is exactly 1 Mg in every year.
+        - Any other rate (e.g. ``s-1``) is multiplied by the true calendar
+          length of each step: 366 days in leap years, the actual days in each
+          month. This matches EDGAR, whose leap-year files state
+          ``interval: 1 year, 366 days``.
+
         Returns
         -------
         xr.DataArray
@@ -334,10 +357,29 @@ class Inventory(BaseGrid):
         # Multiply by the gridcell area to get mass|substance per time per time step
         absolute = self._data * (self.gridcell_area * units("km**2")).pint.to(area_unit)
 
-        # Get the number of seconds in each time step
-        # - I am calculating the exact number of seconds in each time step.
-        #   Inventory providers may have used a simpler method of avg secs per time step.
-        #   However, its probably close enough to not matter  TODO check this
+        # A rate per time step covers exactly one step: cancel the time unit
+        step_unit = _STEP_UNITS.get(self.time_step)
+        if step_unit is not None and units.Unit(time_unit) == units.Unit(step_unit):
+            absolute = absolute * units(time_unit)
+        else:
+            seconds_per_step = self._seconds_per_step()
+            # Multiply by the time in the time step to get mass|substance per gridcell
+            absolute = absolute * (seconds_per_step * units("s")).pint.to(time_unit)
+
+        absolute.attrs = {
+            "long_name": "Absolute Emissions",
+            "standard_name": f"{self.time_step.lower()}_emissions_per_gridcell",
+        }
+        return absolute.pint.dequantify(DEFAULT_PINT_FMT)
+
+    def _seconds_per_step(self) -> DataArray:
+        """
+        The true calendar length of each time step in seconds.
+
+        Leap years have 366 days and months their actual number of days. lair
+        follows the calendar rather than any product's own convention; EDGAR
+        (v7 ``cell_method``, v8 ``global_total``) uses the calendar too.
+        """
         time = self._data.time
         if self.time_step == "annual":
             seconds_per_step = (
@@ -360,18 +402,7 @@ class Inventory(BaseGrid):
             raise ValueError(f"Time step {self.time_step} not supported")
         if isinstance(seconds_per_step, xr.DataArray):
             seconds_per_step = seconds_per_step.data
-        seconds_per_step = self._data.assign(
-            sec_per_step=("time", seconds_per_step)
-        ).sec_per_step
-
-        # Then multiply by the time in the time step to get mass|substance per gridcell
-        absolute = absolute * (seconds_per_step * units("s")).pint.to(time_unit)
-
-        absolute.attrs = {
-            "long_name": "Absolute Emissions",
-            "standard_name": f"{self.time_step.lower()}_emissions_per_gridcell",
-        }
-        return absolute.pint.dequantify(DEFAULT_PINT_FMT)
+        return self._data.assign(sec_per_step=("time", seconds_per_step)).sec_per_step
 
     @property
     def total_emissions(self) -> DataArray:
@@ -710,6 +741,12 @@ class EDGAR(Inventory, metaclass=ABCMeta):
 
     EDGAR provides both emissions as national totals and gridmaps at 0.1 x 0.1 degree
     resolution at global level, with yearly, monthly and up to hourly data.
+
+    Fluxes are annual or monthly means in kg m-2 s-1, so totals depend on the
+    year length. lair uses the true calendar (366 days in leap years), which is
+    also EDGAR's: v7 files state ``cell_method = "time: mean (interval: 1 year,
+    366 days)"`` in leap years (365 otherwise) and v8's ``global_total``
+    attributes match a 366-day integration (CH4 2020: 375.98 Mt).
     """
 
     src_units: str = "kg m-2 s-1"
@@ -979,6 +1016,12 @@ class EDGARv8(EDGAR):
     Research Centre (JRC), the International Energy Agency (IEA), and
     comprising IEA-EDGAR CO2, EDGAR CH4, EDGAR N2O, EDGAR F-GASES
     version 8.0, (2023) European Commission, JRC (Datasets).
+
+    Annual data drop EDGAR's combined fuel-exploitation file ``PRO_FFF``
+    (CH4 2020: 109.42 Mt) in favour of its COAL/GAS/OIL parts (109.27 Mt). The
+    0.15 Mt gap is an inconsistency within EDGAR's own files, not data lair
+    fails to read; EDGAR's ``TOTALS`` follow ``PRO_FFF``, so the sum of the
+    sectors is 0.15 Mt below them (see GitHub issue #37).
     """
 
     version: str = "v8"
@@ -1040,10 +1083,10 @@ class EDGARv8(EDGAR):
 
     def _process(self, data: Dataset) -> Dataset:
         # Annual files have Fuel_exploitation (PRO_FFF) alongside its COAL, GAS
-        # and OIL components; drop it so the sectors don't double count. PRO_FFF
-        # also includes fossil fuel fires (7A/5B), which have no file of their
-        # own, so the components fall slightly short of it (CH4 2020: 109.27 vs
-        # 109.42 Mt). Monthly files only have Fuel_exploitation: keep it there.
+        # and OIL components; drop it so the sectors don't double count. The
+        # components fall slightly short of it (CH4 2020: 109.27 vs 109.42 Mt),
+        # an inconsistency in EDGAR's files (see the class docstring). Monthly
+        # files only have Fuel_exploitation: keep it there.
         components = [f"Fuel_exploitation_{f}" for f in ("COAL", "GAS", "OIL")]
         if all(var in data.data_vars for var in components):
             data = data.drop_vars(["Fuel_exploitation"], errors="ignore")

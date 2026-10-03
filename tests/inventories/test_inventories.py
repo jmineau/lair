@@ -168,6 +168,49 @@ class TestBaseInventory:
         expected = inv.gridcell_area.values * 1e6 * seconds
         np.testing.assert_allclose(absolute["energy"].isel(time=0).values, expected)
 
+    @pytest.mark.parametrize(
+        "time_step, freq, src_units",
+        [
+            ("annual", "YS", "Mg km-2 a-1"),
+            ("monthly", "MS", "Mg km-2 month-1"),
+            ("daily", "D", "Mg km-2 d-1"),
+            ("hourly", "h", "Mg km-2 hr-1"),
+        ],
+    )
+    def test_rate_per_step_is_one_step(self, time_step, freq, src_units):
+        # A rate per time step integrates over exactly one step: no round trip
+        # through seconds and pint's Julian (365.25-day) year or month.
+        import pandas as pd
+
+        time = pd.date_range("2019-01-01", periods=2, freq=freq)
+        if time_step == "annual":
+            assert time.year.tolist() == [2019, 2020]  # non-leap and leap year
+        ds = xr.Dataset(
+            {"energy": (("time", "lat", "lon"), np.ones((2, 2, 2)))},
+            coords={"time": time, "lat": [40.0, 41.0], "lon": [-112.0, -111.0]},
+        )
+        inv = inventories.Inventory(
+            ds, pollutant="CH4", src_units=src_units, time_step=time_step
+        )
+        absolute = inv.absolute_emissions["energy"]
+        assert absolute.attrs["units"] == "Mg"
+        # 1 Mg km-2 per step over each gridcell's area in km2
+        expected = np.broadcast_to(inv.gridcell_area.values, absolute.shape)
+        np.testing.assert_allclose(absolute.values, expected, rtol=1e-12)
+
+    def test_per_second_rate_uses_calendar_year(self, inventory):
+        # Sub-step rates use the true calendar: 365 days in 2019, 366 in 2020.
+        import pandas as pd
+
+        time = pd.date_range("2019-01-01", periods=2, freq="YS")
+        ds = inventory.data.pint.dequantify().assign_coords(time=time)
+        inv = inventories.Inventory(ds, pollutant="CH4", src_units="kg/m**2/s")
+        absolute = inv.absolute_emissions["energy"]
+        per_m2 = absolute / (inv.gridcell_area * 1e6)
+        np.testing.assert_allclose(
+            per_m2.isel(lat=0, lon=0).values, [365 * 86400, 366 * 86400]
+        )
+
     def test_missing_units_raises(self):
         import pandas as pd
 
