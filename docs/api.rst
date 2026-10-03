@@ -37,6 +37,7 @@ Measurements
    :toctree: _autosummary
    :nosignatures:
 
+   lair.pollutants
    lair.transects
 
 Geospatial & Plotting
