@@ -2,6 +2,7 @@
 Functions for calculating the valley heat deficit (VHD) and determining persistent cold air pool (PCAP) events.
 """
 
+import numpy as np
 import pandas as pd
 import xarray as xr
 
@@ -43,18 +44,25 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray
     theta = poisson(T=T, p=p, p0=1e5 * units("Pa"))
     theta_h = theta.sel(height=integration_height, method="nearest")
 
-    # Calculate virtual temperature to account for water vapor
-    Tv = hypsometric(
+    # Calculate virtual temperature to account for water vapor: the
+    # hypsometric equation gives the mean Tv of each layer between levels
+    Tv_layer = hypsometric(
         p1=p.isel(height=slice(0, -1)).values,
         p2=p.isel(height=slice(1, None)).values,
         deltaz=data.interpolation_interval * units("m"),
+    ).m_as("K")
+    # Layer means sit at the layer midpoints. Average adjacent layers to get Tv
+    # at the levels (linear in height), and use the end layers' means at the
+    # surface and top levels so they aren't lost
+    Tv = np.concatenate(
+        [
+            Tv_layer[:, :1],
+            (Tv_layer[:, :-1] + Tv_layer[:, 1:]) / 2,
+            Tv_layer[:, -1:],
+        ],
+        axis=1,
     )
-    layer_heights = T.height.values[:-1] + data.interpolation_interval / 2
-    Tv = (
-        xr.DataArray(Tv, coords=[data.time, layer_heights], dims=["time", "height"])
-        .interp_like(T, method="linear")
-        .pint.quantify("degK")
-    )
+    Tv = xr.DataArray(Tv, coords=T.coords, dims=T.dims).pint.quantify("degK")
 
     # Calculate the density using the ideal gas law
     rho = ideal_gas_law(solve_for="rho", p=p, T=Tv, R=Rd)
@@ -64,11 +72,12 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray
     rho = rho.pint.to("kg/m^3")
 
     # Calculate the heat deficit by integrating using the trapezoid method
-    heat_deficit = (cp * rho * (theta_h - theta)).dropna("height", how="all").integrate(
-        "height"
-    ) * (1 * units("m"))  # J/m2
+    integrand = (cp * rho * (theta_h - theta)).dropna("height", how="all")
+    heat_deficit = integrand.integrate("height") * (1 * units("m"))  # J/m2
 
     heat_deficit = heat_deficit.pint.to("MJ/m^2").pint.dequantify()
+    # A sounding with no valid levels integrates to 0; report it as missing
+    heat_deficit = heat_deficit.where(integrand.notnull().any("height"))
 
     vhd = heat_deficit.to_series()
     vhd.name = "VHD_MJ_m2"

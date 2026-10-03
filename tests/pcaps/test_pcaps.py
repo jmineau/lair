@@ -1,14 +1,87 @@
 """Tests for lair.pcaps (valley heat deficit + PCAP detection).
 
-The PCAP event/masking helpers are pure pandas and tested here. The headline
-``valleyheatdeficit`` integrator needs a pint-quantified sounding Dataset and is
-left as a TODO.
+The PCAP event/masking helpers are pure pandas. ``valleyheatdeficit`` is checked
+against an independent trapezoid integration of a synthetic hydrostatic
+sounding.
 """
 
+import numpy as np
 import pandas as pd
 import pytest
+import xarray as xr
 
 from lair import pcaps
+
+# Same values as lair.constants (SI)
+RD, CP, G = 287.05, 1005.0, 9.81
+
+
+def _sounding(times, interval=10.0):
+    """Synthetic dry sounding shaped like soundings.Sounding.interpolate output.
+
+    A surface inversion (-5 C at 1290 m warming to 3 C at 1700 m) under a
+    -6.5 K/km lapse rate, with pressure built hydrostatically so the
+    hypsometric layer temperatures are exact.
+    """
+    z = np.arange(1290.0, 2500.0 + 1, interval)
+    T = np.where(z < 1700, 268.15 + 8 * (z - 1290) / 410, 276.15 - 6.5e-3 * (z - 1700))
+    p = np.empty_like(z)
+    p[0] = 87000.0
+    for i in range(1, z.size):
+        p[i] = p[i - 1] * np.exp(-G * interval / (RD * 0.5 * (T[i] + T[i - 1])))
+    n = len(times)
+    ds = xr.Dataset(
+        {
+            "temperature": (("time", "height"), np.tile(T - 273.15, (n, 1))),
+            "pressure": (("time", "height"), np.tile(p / 100, (n, 1))),
+        },
+        coords={"time": times, "height": z},
+    )
+    ds.attrs.update(elevation=1290.0, interpolation_interval=interval)
+    return ds, z, T, p
+
+
+def _reference_vhd(z, T, p, top=2200.0):
+    """Independent VHD [MJ/m2]: trapezoid of cp * rho * (theta_top - theta)."""
+    keep = z <= top
+    z, T, p = z[keep], T[keep], p[keep]
+    theta = T * (1e5 / p) ** (RD / CP)
+    rho = p / (RD * T)
+    f = CP * rho * (theta[-1] - theta)
+    return float(np.sum((f[1:] + f[:-1]) / 2 * np.diff(z))) / 1e6
+
+
+class TestValleyHeatDeficit:
+    def test_matches_independent_trapezoid(self):
+        times = pd.date_range("2024-01-01", periods=2, freq="12h")
+        ds, z, T, p = _sounding(times)
+        vhd = pcaps.valleyheatdeficit(ds)
+        expected = _reference_vhd(z, T, p)
+        assert vhd.name == "VHD_MJ_m2"
+        assert vhd.index.name == "Time_UTC"
+        assert len(vhd) == 2
+        np.testing.assert_allclose(vhd.to_numpy(), expected, rtol=1e-3)
+
+    def test_single_sounding(self):
+        # One time step must not be interpolated along time (-> all NaN -> 0)
+        ds, z, T, p = _sounding(pd.DatetimeIndex(["2024-01-01"]))
+        vhd = pcaps.valleyheatdeficit(ds)
+        assert vhd.iloc[0] == pytest.approx(_reference_vhd(z, T, p), rel=1e-3)
+
+    def test_missing_sounding_is_nan_not_zero(self):
+        times = pd.date_range("2024-01-01", periods=2, freq="12h")
+        ds, z, T, p = _sounding(times)
+        ds["temperature"][1] = np.nan
+        ds["pressure"][1] = np.nan
+        vhd = pcaps.valleyheatdeficit(ds)
+        assert vhd.iloc[0] == pytest.approx(_reference_vhd(z, T, p), rel=1e-3)
+        assert np.isnan(vhd.iloc[1])
+
+    def test_all_missing_single_sounding_is_nan(self):
+        ds, *_ = _sounding(pd.DatetimeIndex(["2024-01-01"]))
+        ds["temperature"][:] = np.nan
+        ds["pressure"][:] = np.nan
+        assert np.isnan(pcaps.valleyheatdeficit(ds).iloc[0])
 
 
 @pytest.fixture
