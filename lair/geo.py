@@ -7,7 +7,7 @@ from __future__ import (
 )  # keep optional-dep annotations (e.g. shapely Polygon) lazy
 
 import copy
-from typing import Any, Literal, Sequence, TypeVar, cast
+from typing import Any, Literal, TypeVar, cast
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -176,6 +176,10 @@ def dms2dd(d: float = 0.0, m: float = 0.0, s: float = 0.0) -> float:
     """
     Degree-minute-second to decimal degree
 
+    The sign of ``d`` applies to the whole angle (``m`` and ``s`` are
+    magnitudes), so ``dms2dd(-40, 30)`` is -40.5. For angles between 0 and
+    -1 degree pass ``d=-0.0``.
+
     Parameters
     ----------
     d : float, optional
@@ -188,36 +192,33 @@ def dms2dd(d: float = 0.0, m: float = 0.0, s: float = 0.0) -> float:
     Returns
     -------
     float
-        Decimal degrees
-
-    Raises
-    ------
-    ValueError
-        If any of the inputs are not floats
+        Decimal degrees, or NaN if any input cannot be converted to a float
+        (e.g. ``None`` or a non-numeric string).
     """
     try:
-        dd = float(d) + float(m) / 60 + float(s) / 3600
-        return dd
-    except ValueError:
+        d, m, s = float(d), float(m), float(s)
+    except (TypeError, ValueError):
         return np.nan
+    # copysign keeps the sign of -0.0
+    return float(np.copysign(abs(d) + m / 60 + s / 3600, d))
 
 
 def wrap_lons(
     longitudes: npt.ArrayLike, base: float = -180.0, period: float = 360.0
 ) -> np.ndarray:
     """
-    Transform the longitude values to be within the closed interval
-    [base, base + period].
+    Transform the longitude values to be within the half-open interval
+    [base, base + period).
 
     Parameters
     ----------
     longitudes : ArrayLike
         One or more longitude values (degrees) to be wrapped.
     base : float, default=-180.0
-        The start limit (degrees) of the closed interval.
+        The start limit (degrees) of the interval (included).
     period : float, default=360.0
-        The end limit (degrees) of the closed interval expressed as a length
-        from the `base`.
+        The length of the interval (degrees); ``base + period`` itself wraps
+        to ``base``.
 
     Returns
     -------
@@ -265,7 +266,8 @@ def add_lat_ticks(
     None
     """
     fig = cast(Figure, ax.figure)
-    bins = (fig.get_size_inches()[1] * fig.dpi / 100).astype(int) + 1
+    # One tick per inch of axis height (independent of dpi)
+    bins = int(fig.get_size_inches()[1]) + 1
 
     y_ticks = LatitudeLocator(nbins=bins + more_ticks, prune="both").tick_values(
         ylims[0], ylims[1]
@@ -309,7 +311,8 @@ def add_lon_ticks(
     None
     """
     fig = cast(Figure, ax.figure)
-    bins = (fig.get_size_inches()[0] * fig.dpi / 100).astype(int) + 1
+    # One tick per inch of axis width (independent of dpi)
+    bins = int(fig.get_size_inches()[0]) + 1
 
     x_ticks = LongitudeLocator(nbins=bins + more_ticks, prune="both").tick_values(
         xlims[0], xlims[1]
@@ -402,9 +405,9 @@ def add_extent_map(
     extent_map_crs : ccrs.CRS
         CRS of the extent map
     color : str
-        Color of the extent map
+        Color of the main-extent outline drawn on the extent map
     linewidth : int
-        Line width of the extent map
+        Line width of the main-extent outline
     zorder : int, optional
         Zorder of the extent map, by default None
 
@@ -438,8 +441,13 @@ def add_extent_map(
 
     main_poly = box(*extent2bbox(main_extent))
 
+    # Outline only: `color=` would also fill the box
     extent_map_ax.add_geometries(
-        [main_poly], crs=main_extent_crs, color=color, linewidth=linewidth
+        [main_poly],
+        crs=main_extent_crs,
+        facecolor="none",
+        edgecolor=color,
+        linewidth=linewidth,
     )
 
     return extent_map_ax
@@ -462,8 +470,9 @@ class BaseGrid:
     Base class for working with gridded data.
 
     This class is a wrapper around xarray DataArray and Dataset objects, with additional methods
-    for clipping, regridding, resampling, and reprojection. All operations are performed inplace,
-    but return the grid object for chaining.
+    for clipping, regridding, resampling, and reprojection. Operations return a new
+    grid by default; pass ``inplace=True`` to modify this one instead. Either way the
+    grid object is returned, for chaining.
     """
 
     def __init__(self, data, crs, **kwargs):
@@ -520,9 +529,9 @@ class BaseGrid:
             The geometry to clip the data to.
         crs : Any
             The CRS of the input geometries. If not provided, the CRS of the data is used.
-            inplace : bool, optional
-                Whether to modify the data in place. Default is False (returns a
-                new copy with the clipped data).
+        inplace : bool, optional
+            Whether to modify the data in place. Default is False (returns a
+            new copy with the clipped data).
         kwargs : Any
             Additional keyword arguments to pass to the rioxarray clip method.
 
@@ -572,7 +581,6 @@ class BaseGrid:
         BaseGrid
             The regridded grid
         """
-        # default behavior: modify in place for backward compatibility
         data = regrid(self.data, out_grid=out_grid, method=method)
         if inplace:
             self.data = data
@@ -660,7 +668,7 @@ def clip(
     data: DataArray | Dataset,
     bbox: list[float] | tuple[float, float, float, float] | None = None,
     extent: list[float] | tuple[float, float, float, float] | None = None,
-    geom: Polygon | list[Polygon] | None = None,
+    geom: Polygon | Iterable[Polygon] | None = None,
     crs: Any = "EPSG:4326",
     **kwargs: Any,
 ) -> DataArray | Dataset:
@@ -680,8 +688,9 @@ def clip(
         The bounding box to clip the data to.
     extent : tuple[minx, maxx, miny, maxy]
         The extent to clip the data to.
-    geom : shapely.Polygon
-        The geometry or geometries to clip the data to.
+    geom : shapely.Polygon | Iterable[shapely.Polygon]
+        The geometry, or a collection of geometries (list, array, GeoSeries),
+        to clip the data to.
     crs : Any, optional
         The CRS of the input geometries. Default is 'EPSG:4326'.
     kwargs : Any
@@ -702,7 +711,8 @@ def clip(
     if bbox is not None:
         data = data.rio.clip_box(*bbox, crs=crs, **kwargs)
     elif geom is not None:
-        if not isinstance(geom, Sequence):
+        # rio.clip takes a collection of geometries; wrap a single one
+        if isinstance(geom, shapely.Geometry):
             geom = [geom]
 
         data = data.rio.clip(geom, crs=crs, **kwargs)
@@ -725,25 +735,30 @@ def gridcell_area(
     ----------
     grid : xr.DataArray | xr.Dataset
         Grid data. `rioxarray` coords must be set.
-    R : float, optional
-        Radius of earth in kilometers, by default calculated based on the latitude.
+    R : float | array-like, optional
+        Radius of earth in kilometers (lat-lon grids only), by default
+        calculated based on the latitude. An array must broadcast against the
+        grid, e.g. a DataArray along ``lat``.
 
     Returns
     -------
-    np.ndarray | xr.DataArray
-        grid-cell area in square-kilometers
+    xr.DataArray
+        grid-cell area in square-kilometers, with the grid's (y, x) dims
     """
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
 
     if grid.rio.crs == "EPSG:4326":
-        R = R or earth_radius(grid["lat"])
+        if R is None:
+            R = earth_radius(grid["lat"])
         area = xe.util.cell_area(grid, earth_radius=R)
     elif grid.rio.crs.linear_units == "metre":
         bounds = grid.cf.add_bounds(["x", "y"])
-        dx = bounds.x_bounds.diff("bounds").squeeze()
-        dy = bounds.y_bounds.diff("bounds").squeeze()
-        cell_area_m2 = dx * dy
+        dx = bounds.x_bounds.diff("bounds").squeeze("bounds", drop=True)
+        dy = bounds.y_bounds.diff("bounds").squeeze("bounds", drop=True)
+        # abs: north-up rasters store y descending (negative dy).
+        # dy first so the result is (y, x) like the data.
+        cell_area_m2 = abs(dy * dx)
         area = cell_area_m2.pint.quantify("m2").pint.to("km2").pint.dequantify()
     else:
         raise ValueError("Only lat-lon and meter grids are supported.")
@@ -755,7 +770,7 @@ def plot_grid(
     lw: float = 1,
     ax: plt.Axes | None = None,
     extent: list[float] | None = None,
-    crs: ccrs.CRS | None = None,
+    crs: Any = None,
     **kwargs: Any,
 ) -> plt.Axes:
     """
@@ -764,13 +779,18 @@ def plot_grid(
     Parameters
     ----------
     grid : xr.DataArray | xr.Dataset
-        The grid to plot.
+        The grid to plot. Must have 1D ``lat`` and ``lon`` coordinates.
+    lw : float, optional
+        Line width of the cell edges, by default 1.
     ax : plt.Axes, optional
-        Axes object to plot to, by default None.
+        Axes object to plot to, by default None (a new map in ``crs``).
     extent : list[minx, maxx, miny, maxy], optional
-        Extent of the plot, by default None.
-    crs : ccrs.CRS, optional
-        CRS of the plot, by default None.
+        Extent of the plot in longitude/latitude degrees, whatever the map
+        projection, by default None.
+    crs : Any, optional
+        Map projection for a new axes: a cartopy projection, or anything
+        :class:`CRS` accepts (EPSG code, "EPSG:..." string, pyproj CRS, ...).
+        By default PlateCarree. Ignored when ``ax`` is given.
     kwargs : Any
         Additional keyword arguments to pass to the pcol
         or pcolormesh method.
@@ -782,15 +802,16 @@ def plot_grid(
     """
     if crs is None:
         crs = PC
-    elif isinstance(crs, CRS):
-        crs = crs.to_cartopy()
+    elif not isinstance(crs, ccrs.Projection):
+        # A GeoAxes needs a cartopy Projection (CRS.to_cartopy gives a plain CRS)
+        crs = ccrs.Projection(CRS(crs).to_pyproj())
 
     if ax is None:
         fig, ax = plt.subplots(subplot_kw={"projection": crs})
     ax = cast(GeoAxes, ax)
 
     if extent is not None:
-        ax.set_extent(extent, crs=crs)
+        ax.set_extent(extent, crs=PC)
 
     lat, lon = grid["lat"], grid["lon"]
 
@@ -819,6 +840,12 @@ def generate_regular_grid(
     """
     Generate a regular grid. Grid points are cell centers.
 
+    Cells start at ``xmin``/``ymin`` and continue while their centre is below
+    ``xmax``/``ymax`` (a centre landing exactly on the max edge may or may not
+    be included, depending on float error). Centres are
+    ``min + d * (i + 0.5)``, rounded to 10 decimals only to drop float noise
+    (``40.35``, not ``40.349999999999994``), which matches PYSTILT's grid axes.
+
     Parameters
     ----------
     xmin : float
@@ -837,23 +864,31 @@ def generate_regular_grid(
         Name of the x coordinate, by default 'x'
     y_label : str, optional
         Name of the y coordinate, by default 'y'
+    chunks : dict, optional
+        If given, chunk the grid with dask (``DataArray.chunk(chunks)``).
 
     Returns
     -------
     xr.DataArray
-        The generated grid
+        The generated grid, dims (y_label, x_label)
     """
-    x0 = xmin + dx / 2
-    y0 = ymin + dy / 2
-
-    # Determine number of decimal places to round to
-    x_deci = max(0, -int(np.floor(np.log10(dx))) + 1)
-    y_deci = max(0, -int(np.floor(np.log10(dy))) + 1)
-
-    x = np.round(np.arange(x0, xmax, dx), x_deci)
-    y = np.round(np.arange(y0, ymax, dy), y_deci)
+    x = _cell_centers(xmin, xmax, dx)
+    y = _cell_centers(ymin, ymax, dy)
     zeros = np.zeros((len(y), len(x)))
-    return DataArray(zeros, coords={y_label: y, x_label: x})
+    grid = DataArray(zeros, coords={y_label: y, x_label: x})
+    if chunks is not None:
+        grid = grid.chunk(chunks)
+    return grid
+
+
+def _cell_centers(vmin: float, vmax: float, d: float) -> np.ndarray:
+    """Centres of the cells of size ``d`` from ``vmin`` whose centre is below ``vmax``."""
+    vmin, vmax, d = float(vmin), float(vmax), float(d)
+    # Cell count exactly as before (np.arange). Where the last centre lands on
+    # vmax, float error decides whether that cell is included.
+    n = len(np.arange(vmin + d / 2, vmax, d))
+    # Each centre from vmin directly (no accumulated error), then drop float noise
+    return np.round(vmin + d * (np.arange(n) + 0.5), 10)
 
 
 def regrid(
@@ -923,7 +958,8 @@ def resample(
     regrid_method: XESMF_Regrid_Methods = "bilinear",
 ) -> DataArray | Dataset:
     """
-    Resample the data to a new resolution. Modifies the data in place.
+    Resample the data to a new resolution. Returns new data; the input is
+    not modified.
 
     Parameters
     ----------
@@ -1106,7 +1142,7 @@ def cosine_weights(lats: np.ndarray) -> np.ndarray:
     Examples
     --------
     >>> ds: xr.Dataset
-    >>> weights = cosine_weighting(ds.lat)
+    >>> weights = cosine_weights(ds.lat)
     >>> ds_weighted = ds.weighted(weights)
     """
     return np.cos(np.deg2rad(lats))
@@ -1162,15 +1198,20 @@ def gridcell_area_from_latlon(
         Latitude array
     lon : ArrayLike
         Longitude array
+    R : float, optional
+        Radius of earth in kilometers, by default calculated based on the latitude.
 
     Returns
     -------
     np.ndarray
-        Grid-cell area in square-kilometers
+        Grid-cell area in square-kilometers, shape (len(lat), len(lon))
     """
-    lat, lon = np.array(lat), np.array(lon)
-    grid = DataArray(coords={"lat": lat, "lon": lon}, dims=["lat", "lon"])
-    grid.rio.set_spatial_dims("lon", "lat", inplace=True)
+    lat, lon = np.asarray(lat), np.asarray(lon)
+    # gridcell_area needs a Dataset (cf bounds) with cf-recognisable lat/lon
+    grid = Dataset(coords={"lat": lat, "lon": lon})
+    grid.lat.attrs["units"] = "degrees_north"
+    grid.lon.attrs["units"] = "degrees_east"
+    grid = grid.rio.set_spatial_dims(x_dim="lon", y_dim="lat")
     grid = write_rio_crs(grid, crs="EPSG:4326")
 
     area = gridcell_area(grid, R=R)
@@ -1209,6 +1250,8 @@ def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
     dlon = lon2 - lon1
 
     a = np.sin((dlat) / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin((dlon) / 2) ** 2
+    # Rounding can push a just outside [0, 1] for (near-)antipodal points
+    a = np.clip(a, 0, 1)
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
     d = R * c
     return d

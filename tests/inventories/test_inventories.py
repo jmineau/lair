@@ -244,7 +244,8 @@ class TestVulcan:
         assert set(v.data.data_vars) == {"onroad", "elec"}  # 'total' excluded
         assert v.data.rio.x_dim == "x" and v.data.rio.y_dim == "y"
         assert v.data.time.dt.month.values.tolist() == [1, 1]
-        # 1 km^2 cells on the projected grid
+        # 1 km^2 cells on the projected grid, in the data's (y, x) order
+        assert v.gridcell_area.dims == ("y", "x")
         np.testing.assert_allclose(v.gridcell_area.values, 1.0)
 
     def test_env_var_fallback(self, vulcan_dir, monkeypatch):
