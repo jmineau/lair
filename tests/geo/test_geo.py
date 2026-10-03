@@ -37,11 +37,28 @@ class TestDMS:
         assert geo.dms2dd(0, 0, 3600) == pytest.approx(1.0)
 
     def test_dms2dd_negative_degrees(self):
-        # d + m/60 + s/3600 (sign carried by d only).
-        assert geo.dms2dd(-40, 30, 0) == pytest.approx(-39.5)
+        # The sign of d applies to the whole angle: -40 deg 30' is -40.5, not -39.5.
+        assert geo.dms2dd(-40, 30, 0) == pytest.approx(-40.5)
+        assert geo.dms2dd(-111, 30, 36) == pytest.approx(-111.51)
+
+    def test_dms2dd_negative_zero_degrees(self):
+        # -0 deg 30' (a float -0.0 keeps its sign)
+        assert geo.dms2dd(-0.0, 30) == pytest.approx(-0.5)
+
+    def test_dms2dd_strings(self):
+        assert geo.dms2dd("40", "30", "0") == pytest.approx(40.5)
+
+    @pytest.mark.parametrize("bad", ["abc", None])
+    def test_dms2dd_unparseable_is_nan(self, bad):
+        assert np.isnan(geo.dms2dd(40, bad))
 
 
 class TestWrapLons:
+    def test_interval_is_half_open(self):
+        # [base, base + period): 180 wraps to -180.
+        out = np.asarray(geo.wrap_lons(np.array([-180.0, 180.0])))
+        np.testing.assert_allclose(out, [-180.0, -180.0])
+
     def test_wraps_into_180_range(self):
         out = np.asarray(geo.wrap_lons(np.array([10.0, 190.0, 350.0])))
         np.testing.assert_allclose(out, [10.0, -170.0, -10.0])
@@ -66,6 +83,12 @@ class TestDistanceHelpers:
     def test_bearing_final_bearing_in_range(self):
         b = geo.bearing(40, -111, 41, -110, final=True)
         assert 0.0 <= b < 360.0
+
+    def test_haversine_near_antipodal_is_not_nan(self):
+        # Rounding can push the haversine term a just above 1 -> sqrt(1 - a) NaN.
+        d = geo.haversine(-87.5, -180.0, 87.5, 0.0)  # exact antipodes
+        assert not np.isnan(d)
+        assert d == pytest.approx(np.pi * 6371, rel=1e-6)
 
     def test_haversine_broadcasts_scalar_against_array(self):
         # A fixed point against many points (e.g. distance from a site).
@@ -208,6 +231,33 @@ def test_generate_regular_grid_returns_dataarray():
     assert grid.dims == ("y", "x")
 
 
+class TestGenerateRegularGrid:
+    def test_quarter_degree_centres_not_rounded(self):
+        grid = geo.generate_regular_grid(0, 1, 0.25, 0, 1, 0.25)
+        np.testing.assert_allclose(grid.x.values, [0.125, 0.375, 0.625, 0.875])
+        np.testing.assert_allclose(np.diff(grid.y.values), 0.25)
+
+    def test_large_spacing_centres_not_rounded(self):
+        grid = geo.generate_regular_grid(0, 100, 25, 0, 100, 25)
+        np.testing.assert_allclose(grid.x.values, [12.5, 37.5, 62.5, 87.5])
+
+    def test_offset_origin(self):
+        grid = geo.generate_regular_grid(-112.0125, -111.0, 0.1, 40.0, 41.0, 0.1)
+        assert grid.x.values[0] == pytest.approx(-111.9625, abs=1e-12)
+        np.testing.assert_allclose(np.diff(grid.x.values), 0.1)
+        assert grid.y.values.tolist()[:3] == [40.05, 40.15, 40.25]
+
+    def test_cell_count(self):
+        # Cells whose centre falls inside [min, max)
+        grid = geo.generate_regular_grid(-112.2, -111.75, 0.05, 40.45, 40.93, 0.05)
+        assert grid.sizes == {"y": 10, "x": 9}
+
+    def test_chunks(self):
+        pytest.importorskip("dask")
+        grid = geo.generate_regular_grid(0, 4, 1, 0, 4, 1, chunks={"x": 2, "y": 2})
+        assert grid.chunks == ((2, 2), (2, 2))
+
+
 def test_round_latlon():
     import numpy as np
     import xarray as xr
@@ -270,6 +320,20 @@ class TestClip:
         # geom clipping is exclusive of the outer bounds -> smaller than bbox.
         assert clipped.sizes["lat"] <= 3 and clipped.sizes["lon"] <= 4
 
+    @pytest.mark.parametrize("container", ["list", "ndarray", "geoseries"])
+    def test_clip_geom_collections(self, latlon_grid, container):
+        from shapely.geometry import box
+
+        geoms = [box(-113, 41, -110, 43)]
+        if container == "ndarray":
+            geoms = np.array(geoms)
+        elif container == "geoseries":
+            gpd = pytest.importorskip("geopandas")
+            geoms = gpd.GeoSeries(geoms)
+        clipped = geo.clip(latlon_grid, geom=geoms, crs=4326)
+        single = geo.clip(latlon_grid, geom=box(-113, 41, -110, 43), crs=4326)
+        assert clipped.sizes == single.sizes
+
     def test_requires_exactly_one_selector(self, latlon_grid):
         with pytest.raises(AssertionError):
             geo.clip(
@@ -290,8 +354,48 @@ class TestGridcellArea:
         # Cell area shrinks with latitude (cos weighting).
         assert float(area.isel(lat=0).mean()) > float(area.isel(lat=-1).mean())
 
+    def test_radius_array(self, latlon_grid):
+        # An array R (e.g. per-latitude radius) must not be truth-tested.
+        R = geo.earth_radius(latlon_grid["lat"])
+        area = geo.gridcell_area(latlon_grid, R=R)
+        np.testing.assert_allclose(area, geo.gridcell_area(latlon_grid))
+
+    def test_radius_scalar(self, latlon_grid):
+        a1 = geo.gridcell_area(latlon_grid, R=1.0)
+        a2 = geo.gridcell_area(latlon_grid, R=2.0)
+        np.testing.assert_allclose(a2, 4 * a1)
+
+    @pytest.mark.parametrize("descending_y", [False, True])
+    def test_metre_grid(self, descending_y):
+        # A 3 x 4 grid of 2 km x 1 km cells in UTM 12N; north-up rasters store
+        # y descending, which must not give negative areas.
+        import xarray as xr
+
+        x = 4e5 + 2000.0 * np.arange(4)
+        y = 4.5e6 + 1000.0 * np.arange(3)
+        if descending_y:
+            y = y[::-1]
+        ds = xr.Dataset(
+            {"v": (("y", "x"), np.ones((3, 4)))}, coords={"y": y, "x": x}
+        ).rio.set_spatial_dims(x_dim="x", y_dim="y")
+        ds = geo.write_rio_crs(ds, 32612)
+        area = geo.gridcell_area(ds)
+        assert area.dims == ("y", "x")
+        np.testing.assert_allclose(area.values, 2.0)
+
+    def test_from_latlon(self, latlon_grid):
+        area = geo.gridcell_area_from_latlon(latlon_grid.lat, latlon_grid.lon)
+        assert isinstance(area, np.ndarray)
+        np.testing.assert_allclose(area, geo.gridcell_area(latlon_grid).values)
+
 
 class TestResampleRegrid:
+    def test_resample_centres_not_rounded(self, latlon_grid):
+        # 0.25 deg cells starting at the 39.5 edge are centred on 39.625, not 39.62
+        fine = geo.resample(latlon_grid, 0.25)
+        assert fine.lat.values[0] == pytest.approx(39.625, abs=1e-12)
+        np.testing.assert_allclose(np.diff(fine.lat.values), 0.25)
+
     def test_resample_coarsens(self, latlon_grid):
         coarse = geo.resample(latlon_grid, 2.0)
         # Coarser resolution -> fewer cells than the 1-degree input.
@@ -378,7 +482,69 @@ class TestTickHelpers:
         ax = self._geo_ax([-113, -110, 39, 42])
         geo.add_latlon_ticks(ax, extent=[-113, -110, 39, 42])
 
+    @pytest.mark.parametrize("dpi", [100, 300])
+    def test_tick_count_ignores_dpi(self, dpi):
+        ax = self._geo_ax([-113, -110, 39, 42])
+        ax.figure.set_dpi(dpi)
+        geo.add_latlon_ticks(ax, extent=[-113, -110, 39, 42])
+        # Same as at the default 100 dpi
+        ref = self._geo_ax([-113, -110, 39, 42])
+        geo.add_latlon_ticks(ref, extent=[-113, -110, 39, 42])
+        assert len(ax.get_xticks()) == len(ref.get_xticks())
+        assert len(ax.get_yticks()) == len(ref.get_yticks())
+
     def test_add_lat_and_lon_ticks(self):
         ax = self._geo_ax([-113, -110, 39, 42])
         geo.add_lat_ticks(ax, ylims=[39, 42])
         geo.add_lon_ticks(ax, xlims=[-113, -110])
+
+
+class TestPlotting:
+    @pytest.fixture(autouse=True)
+    def _agg(self):
+        import matplotlib
+        import matplotlib.pyplot as plt
+
+        matplotlib.use("Agg")
+        yield
+        plt.close("all")
+
+    @pytest.mark.parametrize("crs", [None, 4326, "EPSG:4326", 5070])
+    def test_plot_grid_crs_inputs(self, latlon_grid, crs):
+        ax = geo.plot_grid(latlon_grid, crs=crs)
+        assert ax is not None
+
+    def test_plot_grid_accepts_crs_wrapper(self, latlon_grid):
+        assert geo.plot_grid(latlon_grid, crs=geo.CRS(5070)) is not None
+
+    def test_plot_grid_extent_is_lonlat(self, latlon_grid):
+        # extent is lon/lat even when the map is projected
+        import cartopy.crs as ccrs
+
+        extent = [-113, -110, 41, 43]
+        ax = geo.plot_grid(latlon_grid, extent=extent, crs=ccrs.LambertConformal())
+        x0, x1, y0, y1 = ax.get_extent(crs=ccrs.PlateCarree())
+        # The projected view encloses the requested lon/lat box (not metres)
+        assert -115 < x0 <= -113 and -110 <= x1 < -108
+        assert 39 < y0 <= 41 and 43 <= y1 < 45
+
+    def test_add_extent_map_outlines_box(self):
+        import cartopy.crs as ccrs
+        import matplotlib.pyplot as plt
+
+        fig = plt.figure()
+        ax = geo.add_extent_map(
+            fig,
+            main_extent=[-113, -110, 39, 42],
+            main_extent_crs=ccrs.PlateCarree(),
+            extent_map_rect=(0.0, 0.0, 0.3, 0.3),
+            extent_map_extent=[-125, -100, 30, 50],
+            extent_map_crs=ccrs.PlateCarree(),
+            color="red",
+            linewidth=2,
+        )
+        box_artist = ax.collections[-1]
+        # An outline: red edge, no fill
+        np.testing.assert_allclose(box_artist.get_edgecolor(), [[1, 0, 0, 1]])
+        face = np.asarray(box_artist.get_facecolor())
+        assert face.size == 0 or np.all(face[:, 3] == 0)
