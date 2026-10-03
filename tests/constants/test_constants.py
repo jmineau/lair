@@ -21,6 +21,7 @@ from lair import units
         ("Rv", 461.5, "J / kg / K"),
         ("g", 9.81, "m / s**2"),
         ("cp", 1005, "J / kg / K"),
+        ("cv", 718, "J / kg / K"),
         ("h", 6.62607015e-34, "J * s"),
         ("R_earth", 6371, "km"),
         ("c", 299792458, "m / s"),
@@ -40,6 +41,11 @@ def test_epsilon_is_ratio_of_gas_constants():
     assert c.epsilon.check("[]")  # dimensionless
     assert c.epsilon.magnitude == pytest.approx((c.Rd / c.Rv).magnitude)
     assert c.epsilon.magnitude == pytest.approx(0.622, abs=1e-3)
+
+
+def test_cv_is_dry_air():
+    """cv is dry air at constant volume (Mayer's relation cp - cv ~ Rd)."""
+    assert (c.cp - c.cv).magnitude == pytest.approx(c.Rd.magnitude, rel=0.01)
 
 
 def test_latent_heat_of_sublimation_is_sum():
