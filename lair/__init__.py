@@ -50,41 +50,65 @@ if sort_by_dimensionality is not None:
     units.formatter.default_sort_func = sort_by_dimensionality
 
 
-def setup_ccg_filter():
+def setup_ccg_filter(lair_dir: str | None = None) -> None:
     """
     Setup the CCG filter module from NOAA GML.
-    Downloads the necessary files from the FTP server and unzip them if not already present.
+
+    If ``_ccg_filter.py`` is not already present, download NOAA's
+    ``ccg_filter.zip`` into a temporary directory, take ``ccg_filter.py`` from
+    it (other zip members are ignored), and move it into place as
+    ``_ccg_filter.py`` with an atomic :func:`os.replace`. A failed download or
+    unusable zip raises and leaves no partial file behind. Concurrent first
+    imports (e.g. a SLURM array) are safe: each installs a complete file
+    atomically, and one that finds the file already installed uses it.
 
     Set the environment variable ``LAIR_SKIP_CCG_DOWNLOAD`` to skip the network
     download (e.g. for testing, CI, or read-only/offline environments). When
     skipped and the file is absent, ``lair.background`` will not be importable.
+
+    Parameters
+    ----------
+    lair_dir : str, optional
+        Directory to install ``_ccg_filter.py`` into. Defaults to the lair
+        package directory.
     """
-    # Define the path for the CCG filter file
-    lair_dir = os.path.dirname(__file__)
+    import tempfile
+    import zipfile
+
+    if lair_dir is None:
+        lair_dir = os.path.dirname(__file__)
     ccg_filter_file = os.path.join(lair_dir, "_ccg_filter.py")
 
-    # Check if the CCG filter file already exists
-    if not os.path.exists(ccg_filter_file):
-        if os.getenv("LAIR_SKIP_CCG_DOWNLOAD"):
-            # Offline/CI/read-only: skip the FTP download (see docstring)
+    if os.path.exists(ccg_filter_file):
+        return
+    if os.getenv("LAIR_SKIP_CCG_DOWNLOAD"):
+        # Offline/CI/read-only: skip the FTP download (see docstring)
+        return
+
+    # The temporary directory sits next to the target so os.replace stays on one
+    # filesystem (atomic); it is removed on exit, whether or not we succeed.
+    with tempfile.TemporaryDirectory(prefix=".ccg_filter-", dir=lair_dir) as tmp:
+        ftp_download("ftp.gml.noaa.gov", "user/thoning/ccgcrv/ccg_filter.zip", tmp)
+        zf = os.path.join(tmp, "ccg_filter.zip")
+
+        with zipfile.ZipFile(zf) as z:
+            members = [
+                m for m in z.namelist() if os.path.basename(m) == "ccg_filter.py"
+            ]
+            if not members:
+                raise FileNotFoundError(
+                    f"No ccg_filter.py in NOAA's {os.path.basename(zf)}"
+                )
+            source = z.read(members[0])
+
+        staged = os.path.join(tmp, "_ccg_filter.py")
+        with open(staged, "wb") as f:
+            f.write(source)
+
+        if os.path.exists(ccg_filter_file):
+            # Another process installed it while we were downloading
             return
-
-        remote_zf = "user/thoning/ccgcrv/ccg_filter.zip"
-        zf = os.path.join(lair_dir, "ccg_filter.zip")
-
-        # Download the zip file from the FTP server
-        ftp_download("ftp.gml.noaa.gov", remote_zf, lair_dir)
-
-        # Unzip the downloaded file
-        unzip(zf, lair_dir)
-
-        # Cleanup: remove the downloaded zip and unnecessary files
-        os.remove(zf)
-        os.remove(os.path.join(lair_dir, "ccg_dates.py"))
-        os.remove(os.path.join(lair_dir, "ccgcrv.py"))
-
-        # Rename the original file with leading underscore (private module)
-        os.rename(os.path.join(lair_dir, "ccg_filter.py"), ccg_filter_file)
+        os.replace(staged, ccg_filter_file)
 
 
 setup_ccg_filter()

@@ -11,6 +11,7 @@ docs/_build/
 docs/_autosummary/
 
 lair/_ccg_filter.py
+lair/.ccg_filter-*/
 
 # Environments
 .venv/
