@@ -415,7 +415,7 @@ def polarPlot(
 
     # Filter by count in each bin
     bins_n = agg["count"]
-    agg = cast(pd.DataFrame, agg[statistic]).where(bins_n > min_bin)
+    agg = cast(pd.DataFrame, agg[statistic]).where(bins_n >= min_bin)
 
     theta, r, c = circularize_radial_data(agg)
 
