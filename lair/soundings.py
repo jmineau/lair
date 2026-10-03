@@ -119,21 +119,19 @@ class Sounding:
         xr.Dataset
             The interpolated sounding data.
         """
-        height = range(start, stop, interval)
-        df = pd.DataFrame(index=height)
-        data_height = self.data.dropna(subset="height").set_index("height")
-        data_height["raw"] = True
-        merged = pd.concat([df, data_height])
-        merged.index.name = "height"
-        merged = merged.sort_values(["height", "raw"])
+        height = pd.Index(range(start, stop, interval), dtype=float, name="height")
+        raw = self.data.dropna(subset="height").set_index("height").sort_index()
+        # One row per raw level (keep the first of any repeats) so a target
+        # height that equals a raw level shares its row and takes its values.
+        # A separate target row there would sort before or after the raw row
+        # and be left NaN at the bottom or top level (#45).
+        raw = raw[~raw.index.duplicated()]
 
-        # Keep the object-dtype 'raw' flag out of the interpolation (pandas 3
-        # refuses object columns) and only fill between observed levels, so
-        # heights above the sounding top stay NaN instead of being extrapolated
-        raw = merged.pop("raw")
-        data = merged.interpolate(method="index", limit_area="inside")
-
-        data = data[raw.isna().to_numpy() & (data.index >= start) & (data.index < stop)]
+        # Only fill between observed levels, so heights above the sounding top
+        # stay NaN instead of being extrapolated
+        data = raw.reindex(raw.index.union(height))
+        data = data.interpolate(method="index", limit_area="inside")
+        data = data.reindex(height)
 
         # Direction can't be interpolated linearly (350 and 10 deg would give
         # 180), so rebuild direction and speed from the interpolated u/v
