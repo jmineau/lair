@@ -571,7 +571,11 @@ class GMLData:
         if driver == 'pandas':
             data = data[data.qcflag.isin(allowed_flags)]
         elif driver == 'xarray':
-            data = data.where(data.qcflag.isin(allowed_flags), drop=True)
+            qcflag = data.qcflag
+            if qcflag.dtype.kind == 'S':
+                # netCDF char arrays (no _Encoding) decode to bytes, e.g. b'...'
+                qcflag = qcflag.str.decode('ascii')
+            data = data.where(qcflag.isin(allowed_flags), drop=True)
         else:
             raise ValueError("Invalid driver")
         return data
