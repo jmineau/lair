@@ -94,6 +94,14 @@ class TestTimeRangeMembership:
         start, stop = dt.datetime(2024, 1, 1), dt.datetime(2024, 1, 2)
         assert list(clock.TimeRange(start=start, stop=stop)) == [start, stop]
 
+    @pytest.mark.parametrize(
+        "kwargs", [{"start": "2024-01-01"}, {"stop": "2024-02-01"}]
+    )
+    def test_time_range_with_start_or_stop_raises(self, kwargs):
+        # A ValueError, not an assert (asserts vanish under python -O)
+        with pytest.raises(ValueError, match="time_range"):
+            clock.TimeRange("2024", **kwargs)
+
 
 class TestLeapYearSeconds:
     def test_leap_year(self):
@@ -354,6 +362,23 @@ class TestAggregation:
         )
         out = clock.seasonal(df)
         assert "season" in out.index.names
+
+    def test_seasonal_labels_djf_by_january_year(self):
+        # Two years of monthly values equal to the month number
+        idx = pd.date_range("2023-01-31", "2024-12-31", freq="ME")
+        df = pd.DataFrame({"v": idx.month.astype(float)}, index=idx)
+        out = clock.seasonal(df)["v"]
+
+        assert out.index.names == ["season", "year"]
+        # DJF 2024 = Dec 2023 + Jan 2024 + Feb 2024
+        assert out["DJF", 2024] == pytest.approx((12 + 1 + 2) / 3)
+        # Partial edge seasons are kept: Jan-Feb 2023 and Dec 2024 only
+        assert out["DJF", 2023] == pytest.approx((1 + 2) / 2)
+        assert out["DJF", 2025] == pytest.approx(12)
+        # Other seasons keep their calendar year
+        assert out["MAM", 2024] == pytest.approx((3 + 4 + 5) / 3)
+        assert out["SON", 2023] == pytest.approx((9 + 10 + 11) / 3)
+        assert sorted(out.xs("JJA").index) == [2023, 2024]
 
 
 class TestTimerAccumulation:

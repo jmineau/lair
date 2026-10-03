@@ -273,6 +273,12 @@ def seasonalPlot(
     """
     Plot the seasonal cycle of data by year.
 
+    Each season is one line, with a +/- 1 std band, plotted against its
+    season-year from :func:`lair.clock.seasonal`. DJF is labelled (and placed
+    on the x axis) by its January/February year, so DJF 2024 (Dec 2023 -
+    Feb 2024) sits at x = 2024. Partial seasons at the edges of the data are
+    plotted.
+
     Parameters
     ----------
     data : pd.DataFrame
