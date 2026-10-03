@@ -3,10 +3,6 @@
 Network/disk paths (download, .data, .molefractions, full sample() over real
 files) are not exercised here. The pure logic is tested directly, and the field
 sampler is checked against a tiny synthetic CarbonTracker-like grid.
-
-NOTE: lair.noaa is partially WIP (the CarbonTrackerCO2 branch is a stub) and is
-excluded from the ruff/pyrefly gate; these tests cover the implemented CH4/GML
-surface.
 """
 
 import numpy as np

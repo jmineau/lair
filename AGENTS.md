@@ -96,10 +96,10 @@ justfile             dev tasks (uv-based): sync/lint/type-check/test/...
 
 There are no subpackages; everything is a top-level module.
 
-> **WIP modules:** `noaa.py` is unfinished (the `CarbonTrackerCO2` branch is a
-> stub) and excluded from ruff/pyrefly, but its implemented CH4/GML surface is
-> tested in `tests/noaa/`. The SODAR reader (`lair.mesowest`) moved to the
-> `uataq` package on 2026-09-21 (CHPC-archive readers don't belong in lair).
+> **No WIP modules left:** `noaa.py` (CarbonTracker CH4/CO2 + GML) was the last
+> one excluded from ruff/pyrefly; it is fully linted and type-checked since #25.
+> The SODAR reader (`lair.mesowest`) moved to the `uataq` package on 2026-09-21
+> (CHPC-archive readers don't belong in lair).
 
 ## Public API surface
 
@@ -198,7 +198,7 @@ pre-commit `ruff-format` hook formats on commit, or run `just format`.
 Suppression comments must sit on the line the tool reports; after a reflow,
 put `# pyrefly: ignore[...]` on its own line *above* the flagged line (the
 formatter never moves those), and `# noqa` on the first line of a multi-line
-statement. WIP/generated modules are in `extend-exclude`.
+statement. Generated/vendored modules are in `extend-exclude`.
 
 **Typing (pyrefly): enforced gate since 2026-09-21** (CI Code Quality job,
 `just quality-check`, pre-commit hook). It passes with 0 errors on both the
