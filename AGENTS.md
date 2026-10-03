@@ -69,6 +69,10 @@ lair/
   parallel.py        parallelize() wrapper around multiprocessing
   pcaps.py           valley heat deficit (VHD) + PCAP detection
   plotter.py         matplotlib helpers (log formatter, legend handlers, ...)
+  pollutants.py      Pollutant metadata registry (long name, LaTeX name/units,
+                     expected ambient range, molar mass via the `science`
+                     extra's molmass); get_pollutant() is case-insensitive.
+                     Instrument/archive column naming stays out (uataq.pollutants).
   records.py         file/dir utilities (ftp_download, unzip)
   soundings.py       upper-air sounding fetch/parse
   synoptic.py        Synoptic Data API (MesoWest successor): metadata, timeseries,
