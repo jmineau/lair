@@ -165,9 +165,39 @@ def sum_sectors(data: Dataset) -> DataArray:
     return total
 
 
+def _label_period_starts(data: Dataset, bounds: str = "time_bnds") -> Dataset:
+    """
+    Label each time step by the start of its period, read from CF time bounds.
+
+    Some providers label a step by its middle (Vulcan, WetCHARTs); lair labels
+    every step by its start (see :class:`Inventory`).
+
+    Parameters
+    ----------
+    data : xr.Dataset
+        Data with a ``time`` coordinate and a decoded ``(time, 2)`` bounds variable.
+    bounds : str, optional
+        The name of the bounds variable, by default 'time_bnds'.
+
+    Returns
+    -------
+    xr.Dataset
+        The data with ``time`` set to the lower bound of each step.
+    """
+    start = data[bounds][:, 0]
+    if not np.issubdtype(start.dtype, np.datetime64):
+        raise ValueError(f"{bounds!r} was not decoded to datetimes ({start.dtype})")
+    return data.assign_coords(time=start.values)
+
+
 class Inventory(BaseGrid):
     """
     Base class for inventories.
+
+    Time labels mark the **start** of each time step, whatever the provider
+    uses: Jan 1 for annual data, the 1st of the month for monthly, 00:00 for
+    daily and the top of the hour for hourly. So ``sel(time="2020-01-01")``
+    selects January 2020 in every monthly inventory.
     """
 
     def __init__(
@@ -1079,6 +1109,11 @@ class EDGARv8(EDGAR):
         if self.time_step == "annual":
             # Add time coordinate to annual data
             ds = ds.expand_dims(time=[dt.datetime(int(attrs["year"]), 1, 1)])
+        else:
+            # Monthly files label each month by its 15th and have no time
+            # bounds: label by the 1st instead
+            time = pd.DatetimeIndex(ds.indexes["time"])
+            ds = ds.assign_coords(time=time.to_period("M").to_timestamp())
         return ds
 
     def _process(self, data: Dataset) -> Dataset:
@@ -1697,6 +1732,8 @@ class Vulcan(Inventory):
         parts = filename.split(self._sep)
         sector = "_".join(parts[5:-1]) if self._sep == "_" else parts[5]
         ds = ds.rename({"carbon_emissions": sector})
+        # Times are mid-year / mid-hour: label by the start of each step
+        ds = _label_period_starts(ds)
         # Drop unnecessary variables and dims
         ds = ds.drop_vars(["time_bnds", "crs"])
         return ds
@@ -1705,12 +1742,6 @@ class Vulcan(Inventory):
         return xr.open_mfdataset(files, preprocess=self._preprocess)
 
     def _process(self, data: Dataset) -> Dataset:
-        if self.time_step == "annual":
-            # Set time to first day of year
-            data = data.assign_coords(
-                time=[dt.datetime(int(year), 1, 1) for year in data.time.dt.year]
-            )
-
         # Vulcan marks cells without emissions as NaN (most cells of the point
         # source sectors). Treat them as zero: otherwise every regridded cell
         # touching a NaN becomes NaN and conservative regridding drops most of
@@ -1783,16 +1814,11 @@ class WetCHARTs(MultiModelInventory):
         )
 
     def _process(self, data: Dataset) -> Dataset:
+        # Times are mid-month: label by the first of the month
+        data = _label_period_starts(data)
+
         # Drop unnecessary variables and dims
         data = data.drop_vars(["time_bnds", "crs"])
-
-        # Set time to first day of month
-        data = data.assign_coords(
-            time=[
-                dt.datetime(int(year), int(month), 1)
-                for year, month in zip(data.time.dt.year, data.time.dt.month)
-            ]
-        )
 
         # Rename variables
         data = data.rename({"wetland_CH4_emissions": "wetlands"})

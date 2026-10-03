@@ -2,9 +2,8 @@
 
 Requires the `geo` extra (imports lair.geo) plus molmass. The base Inventory
 machinery and unit/sector helpers are tested on synthetic data, and the concrete
-loaders (Vulcan, EDGAR, EPA v2, WetCHARTs) on tiny synthetic archives shaped like
-the real files. GFEI and EPA v1 are not covered: they need the real archive
-(LAIR_INVENTORY_DIR).
+loaders (EDGAR, EPA, GFEI, Vulcan, WetCHARTs) on tiny synthetic archives shaped
+like the real files, including their time encodings (checked with ncdump -h).
 """
 
 import numpy as np
@@ -239,11 +238,8 @@ VULCAN_SECTORS = ["onroad", "elec_prod"]
 C_TO_CO2 = 44.0095 / 12.0107
 
 
-@pytest.fixture
-def vulcan_dir(tmp_path):
-    """A tiny Vulcan v3 archive shaped like the real files: (time, y, x) on the
-    Vulcan LCC grid with 2D lat/lon coords, one file per sector and bound."""
-    import pandas as pd
+def _vulcan_grid():
+    """A 10 x 8 km patch of the Vulcan LCC grid with its 2D lat/lon."""
     from pyproj import Transformer
 
     x = np.arange(-1.5e6, -1.5e6 + 10_000, 1000.0)  # 10 x 1 km cells
@@ -252,34 +248,91 @@ def vulcan_dir(tmp_path):
         inventories.Vulcan.native_crs, "EPSG:4326", always_xy=True
     )
     lon, lat = to_ll.transform(*np.meshgrid(x, y))
-    time = pd.to_datetime(["2014-07-02T12:00", "2015-07-02T12:00"])
+    return x, y, lat, lon
 
-    d = tmp_path / "vulcan" / "v3" / "data" / "native" / "annual"
+
+def _cf_time(starts, step, units):
+    """Time and time_bnds variables encoded like the Vulcan/WetCHARTs files:
+    ``time`` at the middle of each step with ``bounds = "time_bnds"``, and the
+    bounds without units of their own (CF: they take those of ``time``)."""
+    starts = np.asarray(starts, dtype=float)
+    bnds = np.stack([starts, starts + step], axis=1)
+    time = (
+        "time",
+        bnds.mean(axis=1),
+        {"units": units, "calendar": "standard", "bounds": "time_bnds"},
+    )
+    return time, (("time", "nv"), bnds)
+
+
+def _write_vulcan(root, time_step, sectors, bounds=("mn",)):
+    """Write a tiny Vulcan v3 archive shaped like the real files: (time, y, x)
+    on the Vulcan LCC grid with 2D lat/lon coords, one file per sector and
+    bound (annual) or per sector and day (hourly)."""
+    x, y, lat, lon = _vulcan_grid()
+    d = root / "vulcan" / "v3" / "data" / "native" / time_step
     d.mkdir(parents=True)
-    for sector in VULCAN_SECTORS + ["total"]:
-        for bound, value in [("mn", 2.0), ("lo", 1.0), ("hi", 3.0)]:
-            emis = np.full((2, y.size, x.size), value)
-            if sector == "elec_prod":
-                # Point-source sectors are NaN except where there are sources
-                emis[:] = np.nan
-                emis[:, 4, 5] = 100 * value
-            ds = xr.Dataset(
-                {
-                    "carbon_emissions": (("time", "y", "x"), emis),
-                    "time_bnds": (("time", "nv"), np.stack([time, time], axis=1)),
-                    "crs": ((), np.int16(0)),
-                },
-                coords={
-                    "time": time,
-                    "y": y,
-                    "x": x,
-                    "lat": (("y", "x"), lat),
-                    "lon": (("y", "x"), lon),
-                },
+    if time_step == "annual":
+        # 2014 and 2015: days since 2010-01-01, labelled mid-year
+        files = {
+            (sector, bound, value): _cf_time(
+                [1461, 1826], [365, 365], "days since 2010-01-01 00:00:00 UTC"
             )
-            ds.carbon_emissions.attrs["units"] = "Mg km-2 year-1"
-            ds.to_netcdf(d / f"Vulcan_v3_US_annual_1km_{sector}_{bound}.nc4")
-    return tmp_path
+            for sector in sectors
+            for bound, value in [("mn", 2.0), ("lo", 1.0), ("hi", 3.0)]
+            if bound in bounds
+        }
+        names = {k: f"Vulcan_v3_US_annual_1km_{k[0]}_{k[1]}.nc4" for k in files}
+    else:
+        # 2015-01-01 and 02, 24 hours each, labelled at the half hour
+        files, names = {}, {}
+        for sector in sectors:
+            for day in (1, 2):
+                key = (sector, day, 2.0)
+                start = 43824 + 24 * (day - 1)  # hours since 2010-01-01
+                files[key] = _cf_time(
+                    start + np.arange(24), 1, "hours since 2010-01-01 00:00:00 UTC"
+                )
+                names[key] = f"Vulcan.v3.US.hourly.1km.{sector}.mn.2015.d{day:03d}.nc4"
+    for key, (time, time_bnds) in files.items():
+        sector, _, value = key
+        nt = time[1].size
+        emis = np.full((nt, y.size, x.size), value)
+        if sector == "elec_prod":
+            # Point-source sectors are NaN except where there are sources
+            emis[:] = np.nan
+            emis[:, 4, 5] = 100 * value
+        ds = xr.Dataset(
+            {
+                "carbon_emissions": (("time", "y", "x"), emis),
+                "time_bnds": time_bnds,
+                "crs": ((), np.int16(0)),
+            },
+            coords={
+                "time": time,
+                "y": y,
+                "x": x,
+                "lat": (("y", "x"), lat),
+                "lon": (("y", "x"), lon),
+            },
+        )
+        ds.carbon_emissions.attrs["units"] = "Mg km-2 year-1"
+        ds.to_netcdf(d / names[key])
+    return root
+
+
+@pytest.fixture
+def vulcan_dir(tmp_path):
+    """A tiny annual Vulcan v3 archive (2014-2015, all three bounds)."""
+    return _write_vulcan(
+        tmp_path, "annual", VULCAN_SECTORS + ["total"], ("mn", "lo", "hi")
+    )
+
+
+@pytest.fixture
+def vulcan_hourly_dir(tmp_path):
+    """A tiny hourly Vulcan v3 archive (2015-01-01 and 02, central estimate)."""
+    return _write_vulcan(tmp_path, "hourly", VULCAN_SECTORS)
 
 
 class TestVulcan:
@@ -524,7 +577,13 @@ def _edgar_v8_file(path, long_name, year, monthly):
     lat, lon = np.array([40.05, 40.15]), np.array([-111.95, -111.85])
     attrs = {"long_name": long_name, "year": str(year), "units": "kg m-2 s-1"}
     if monthly:
-        time = pd.date_range(f"{year}-01-01", periods=12, freq="MS")
+        # Real monthly files label each month by its 15th, as float days since
+        # Jan 1 (2000: 14, 45, 74, ...), and have no time bounds
+        mid = pd.date_range(f"{year}-01-01", periods=12, freq="MS") + pd.Timedelta(
+            "14D"
+        )
+        days = (mid - pd.Timestamp(f"{year}-01-01")).days.to_numpy(dtype="float32")
+        time = ("time", days, {"units": f"days since {year}-01-01 00:00:00"})
         fluxes = (("time", "lat", "lon"), np.ones((12, 2, 2)), attrs)
         coords = {"time": time, "lat": lat, "lon": lon}
     else:
@@ -648,7 +707,13 @@ def wetcharts_dir(tmp_path):
 
     lat = np.arange(40.25, 42, 0.5)
     lon = np.arange(-112.75, -111, 0.5)
-    t = pd.date_range("2010-01-01", periods=12, freq="MS") + pd.Timedelta("14D")
+    # Like the real files: int days since 2001-01-01, `time` at mid-month
+    # ("middle of each month") and bounds with units of their own
+    units = "days since 2001-01-01 00:00:00"
+    edges = pd.date_range("2010-01-01", periods=13, freq="MS")
+    edges = (edges - pd.Timestamp("2001-01-01")).days.to_numpy(dtype="int32")
+    bnds = np.stack([edges[:-1], edges[1:]], axis=1)
+    mid = bnds.mean(axis=1).astype("int32")
     emis = np.ones((2, 12, lat.size, lon.size))
     emis[1] *= 3.0
     emis[:, :, 0, 0] = np.nan  # a non-wetland cell
@@ -659,12 +724,16 @@ def wetcharts_dir(tmp_path):
                 emis,
                 {"units": "mg m-2 d-1"},
             ),
-            "time_bnds": (("time", "nv"), np.stack([t, t], axis=1)),
+            "time_bnds": (("time", "nv"), bnds, {"units": units}),
             "crs": ((), "a"),
         },
         coords={
             "model": np.array([1913, 1914], dtype="int32"),
-            "time": t,
+            "time": (
+                "time",
+                mid,
+                {"units": units, "bounds": "time_bnds", "calendar": "standard"},
+            ),
             "lat": lat,
             "lon": lon,
         },
@@ -699,3 +768,169 @@ class TestWetCHARTs:
         before = float(w.integrate().isel(time=0))
         after = float(w.resample(1.0).integrate().isel(time=0))
         assert after == pytest.approx(before, rel=0.01)
+
+
+# --- Time labels -------------------------------------------------------------
+# Every inventory labels each time step by the START of its period (GitHub
+# issue #37): annual -> Jan 1, monthly -> the 1st, daily -> 00:00, hourly ->
+# the top of the hour. Providers differ (EDGAR monthly at the 15th, Vulcan and
+# WetCHARTs at the middle of each step), so sel(time="2020-01-01") only works
+# for all of them if lair relabels.
+
+
+@pytest.fixture
+def edgar_dir(tmp_path):
+    """EDGAR v7 annual, v8 annual and v8 monthly CH4 files for 2020."""
+    d7 = tmp_path / "EDGAR" / "v7" / "CH4" / "ENF"
+    d7.mkdir(parents=True)
+    xr.Dataset(
+        {"emi_ch4": (("lat", "lon"), np.ones((2, 2)), {"units": "kg m-2 s-1"})},
+        coords={"lat": [40.05, 40.15], "lon": [-111.95, -111.85]},
+    ).to_netcdf(d7 / "v7.0_FT2021_CH4_2020_ENF.0.1x0.1.nc")
+    d8 = tmp_path / "EDGAR" / "v8"
+    f = d8 / "CH4" / "ENF" / "v8.0_FT2022_GHG_CH4_2020_ENF_flx.nc"
+    _edgar_v8_file(f, "Enteric fermentation", 2020, monthly=False)
+    for code, name in [
+        ("FUEL_EXPLOITATION", "Fuel exploitation"),
+        ("AGRICULTURE", "Agriculture"),
+    ]:
+        f = d8 / "monthly" / "CH4" / code / f"v8.0_FT2022_GHG_CH4_2020_{code}_flx.nc"
+        _edgar_v8_file(f, name, 2020, monthly=True)
+    return tmp_path
+
+
+@pytest.fixture
+def epa_v1_dir(tmp_path):
+    """EPA v1 (2012) annual, monthly and daily files. Like the real ones, the
+    monthly and daily files number their steps 1..n with units of "months"."""
+    lat, lon = np.array([40.05, 40.15]), np.array([-111.95, -111.85])
+    d = tmp_path / "EPA" / "v1"
+    d.mkdir(parents=True)
+    var = "emissions_1A_Combustion_Mobile"
+    xr.Dataset(
+        {var: (("lat", "lon"), np.ones((2, 2)))}, coords={"lat": lat, "lon": lon}
+    ).to_netcdf(d / "GEPA_Annual.nc")
+    for name, n in [("Monthly", 12), ("Daily", 366)]:
+        time = ("time", np.arange(1, n + 1, dtype="float32"), {"units": "months"})
+        xr.Dataset(
+            {var: (("time", "lat", "lon"), np.ones((n, 2, 2)))},
+            coords={"time": time, "lat": lat, "lon": lon},
+        ).to_netcdf(d / f"GEPA_{name}.nc")
+    return tmp_path
+
+
+@pytest.fixture
+def gfei_dir(tmp_path):
+    """GFEI v2 (2019) files: one `emis_ch4` per file, the year as an attribute."""
+    d = tmp_path / "GFEI" / "v2"
+    d.mkdir(parents=True)
+    lat = ("lat", [40.05, 40.15], {"units": "degrees_north"})
+    lon = ("lon", [-111.95, -111.85], {"units": "degrees_east"})
+    for sector in ["Coal", "Gas_Production", "Total_Fuel_Exploitation"]:
+        xr.Dataset(
+            {"emis_ch4": (("lat", "lon"), np.ones((2, 2)))},
+            coords={"lat": lat, "lon": lon},
+            attrs={"year": "2019"},
+        ).to_netcdf(d / f"Global_Fuel_Exploitation_Inventory_v2_2019_{sector}.nc")
+    return tmp_path
+
+
+#: name -> (archive fixture, constructor)
+INVENTORY_CASES = {
+    "EDGARv7": ("edgar_dir", lambda d: inventories.EDGARv7("CH4", inventory_dir=d)),
+    "EDGARv8 annual": (
+        "edgar_dir",
+        lambda d: inventories.EDGARv8("CH4", inventory_dir=d),
+    ),
+    "EDGARv8 monthly": (
+        "edgar_dir",
+        lambda d: inventories.EDGARv8("CH4", time_step="monthly", inventory_dir=d),
+    ),
+    "EPAv1 annual": ("epa_v1_dir", lambda d: inventories.EPAv1(inventory_dir=d)),
+    "EPAv1 monthly": (
+        "epa_v1_dir",
+        lambda d: inventories.EPAv1("Monthly", inventory_dir=d),
+    ),
+    "EPAv1 daily": (
+        "epa_v1_dir",
+        lambda d: inventories.EPAv1("Daily", inventory_dir=d),
+    ),
+    "EPAv2 annual": ("epa_v2_dir", lambda d: inventories.EPAv2(inventory_dir=d)),
+    "EPAv2 monthly": (
+        "epa_v2_dir",
+        lambda d: inventories.EPAv2(scale_by_month=True, inventory_dir=d),
+    ),
+    "GFEIv2": ("gfei_dir", lambda d: inventories.GFEIv2(inventory_dir=d)),
+    "Vulcan annual": ("vulcan_dir", lambda d: inventories.Vulcan(inventory_dir=d)),
+    "Vulcan hourly": (
+        "vulcan_hourly_dir",
+        lambda d: inventories.Vulcan("hourly", inventory_dir=d),
+    ),
+    "WetCHARTs": ("wetcharts_dir", lambda d: inventories.WetCHARTs(inventory_dir=d)),
+}
+
+#: pandas period alias of each time step
+_PERIOD = {"annual": "Y", "monthly": "M", "daily": "D", "hourly": "h"}
+
+
+def _load(request, case):
+    fixture, make = INVENTORY_CASES[case]
+    return make(request.getfixturevalue(fixture))
+
+
+class TestTimeLabels:
+    @pytest.mark.parametrize("case", list(INVENTORY_CASES))
+    def test_labels_are_period_starts(self, request, case):
+        inv = _load(request, case)
+        t = inv.data.indexes["time"]
+        starts = t.to_period(_PERIOD[inv.time_step]).to_timestamp()
+        assert t.equals(starts), t[:3]
+
+    @pytest.mark.parametrize(
+        "case, day",
+        [
+            ("EDGARv8 monthly", "2020-01-01"),
+            ("EPAv1 monthly", "2012-01-01"),
+            ("EPAv2 monthly", "2018-01-01"),
+            ("WetCHARTs", "2010-01-01"),
+        ],
+    )
+    def test_sel_first_of_month(self, request, case, day):
+        inv = _load(request, case)
+        assert inv.time_step == "monthly"
+        jan = inv.data.sel(time=day)
+        assert "time" not in jan.dims  # an exact match, not a partial slice
+        assert jan.time.values == np.datetime64(day)
+
+    def test_sel_top_of_hour(self, vulcan_hourly_dir):
+        v = inventories.Vulcan("hourly", inventory_dir=vulcan_hourly_dir)
+        assert v.data.sizes["time"] == 48
+        one_am = v.data.sel(time=np.datetime64("2015-01-02T01:00"))
+        assert "time" not in one_am.dims
+
+    @pytest.mark.parametrize(
+        "case, provider_offset",
+        [
+            ("EDGARv8 monthly", "14D"),  # the 15th of each month
+            ("Vulcan hourly", "30min"),  # the half hour
+            ("WetCHARTs", "15D"),  # mid-month
+        ],
+    )
+    def test_totals_do_not_depend_on_labels(self, request, case, provider_offset):
+        # Relabelling is only a relabelling: absolute_emissions and integrate
+        # give bit-identical totals with the provider's mid-step labels.
+        import pandas as pd
+
+        inv = _load(request, case)
+        provider = inv.copy()
+        provider._data = inv._data.assign_coords(
+            time=inv._data.indexes["time"] + pd.Timedelta(provider_offset)
+        )
+        np.testing.assert_array_equal(
+            provider.integrate().values, inv.integrate().values
+        )
+        for var in inv.data.data_vars:
+            np.testing.assert_array_equal(
+                provider.absolute_emissions[var].values,
+                inv.absolute_emissions[var].values,
+            )
