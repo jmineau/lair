@@ -6,9 +6,12 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from lair import units
-from lair.constants import Rd, cp
+from lair.constants import Rd as _Rd, cp as _cp
 from lair.meteorology import ideal_gas_law, hypsometric, poisson
+
+# Plain SI floats (lair.meteorology is plain SI in, plain SI out)
+Rd = _Rd.m_as("J / kg / K")
+cp = _cp.m_as("J / kg / K")
 
 
 def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray:
@@ -37,11 +40,12 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray
     # Subset to the heights between the surface and the integration height
     data = data.sel(height=slice(h0, integration_height))
 
-    T = data.temperature.pint.quantify("degC").pint.to("degK")
-    p = data.pressure.pint.quantify("hPa").pint.to("Pa")
+    # lair.meteorology works in plain SI: convert the sounding units here
+    T = data.temperature + 273.15  # degC -> K
+    p = data.pressure * 100  # hPa -> Pa
 
     # Calculate potential temperature using poisson's equation
-    theta = poisson(T=T, p=p, p0=1e5 * units("Pa"))
+    theta = poisson(T=T, p=p, p0=1e5)  # K
     theta_h = theta.sel(height=integration_height, method="nearest")
 
     # Calculate virtual temperature to account for water vapor: the
@@ -49,8 +53,8 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray
     Tv_layer = hypsometric(
         p1=p.isel(height=slice(0, -1)).values,
         p2=p.isel(height=slice(1, None)).values,
-        deltaz=data.interpolation_interval * units("m"),
-    ).m_as("K")
+        deltaz=data.interpolation_interval,  # m
+    )  # K
     # Layer means sit at the layer midpoints. Average adjacent layers to get Tv
     # at the levels (linear in height), and use the end layers' means at the
     # surface and top levels so they aren't lost
@@ -62,20 +66,16 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray
         ],
         axis=1,
     )
-    Tv = xr.DataArray(Tv, coords=T.coords, dims=T.dims).pint.quantify("degK")
+    Tv = xr.DataArray(Tv, coords=T.coords, dims=T.dims)
 
     # Calculate the density using the ideal gas law
-    rho = ideal_gas_law(solve_for="rho", p=p, T=Tv, R=Rd)
-    # Set pint units - Setting units to kg/m3 doesnt change the numbers
-    # pint-xarray hasnt implemented .to_base_units() yet
-    # when they do, we can change this to .pint.to_base_units()
-    rho = rho.pint.to("kg/m^3")
+    rho = ideal_gas_law(solve_for="rho", p=p, T=Tv, R=Rd)  # kg/m3
 
     # Calculate the heat deficit by integrating using the trapezoid method
     integrand = (cp * rho * (theta_h - theta)).dropna("height", how="all")
-    heat_deficit = integrand.integrate("height") * (1 * units("m"))  # J/m2
+    heat_deficit = integrand.integrate("height")  # J/m2
 
-    heat_deficit = heat_deficit.pint.to("MJ/m^2").pint.dequantify()
+    heat_deficit = heat_deficit * 1e-6  # J/m2 -> MJ/m2
     # A sounding with no valid levels integrates to 0; report it as missing
     heat_deficit = heat_deficit.where(integrand.notnull().any("height"))
 

@@ -1,20 +1,21 @@
 """Tests for lair.meteorology.
 
-All functions assume SI inputs (the module deliberately does not wrap with pint;
-see its docstring). Some return plain floats, some return numpy floats, and a
-few that combine with pint constants return pint quantities — the tests handle
-each accordingly.
+Contract: plain SI in, plain SI out. pint Quantity inputs are converted to SI
+magnitudes first, so every function returns plain numbers / arrays, never a
+Quantity.
 """
 
 import numpy as np
 import pytest
 
+import pint
+import xarray as xr
+
 from lair import meteorology as met
+from lair import units
 
-
-def _mag(x):
-    """Magnitude of x whether it's a pint Quantity or a plain number."""
-    return x.magnitude if hasattr(x, "magnitude") else x
+# Same values as lair.constants (SI)
+RD, G, RSTAR, KB = 287.05, 9.81, 1.380649e-23 * 6.02214076e23, 1.380649e-23
 
 
 class TestVirtualTemperature:
@@ -69,21 +70,28 @@ class TestSaturationVaporPressure:
 
 
 class TestMixingRatio:
-    def test_proportional_to_vapor_pressure(self):
-        # w = epsilon * e / p  (epsilon ~ 0.622)
-        w = met.mixing_ratio(2000.0, 1e5)
-        assert _mag(w) == pytest.approx(0.622 * 2000.0 / 1e5, rel=1e-3)
+    def test_exact_form(self):
+        # w = epsilon * e / (p - e), epsilon = Rd / Rv = 287.05 / 461.5.
+        # By hand: 0.621993 * 2000 / 83000 = 0.0149878 kg/kg (the e/p
+        # approximation would give 0.0146351, 2.4% low)
+        w = met.mixing_ratio(2000.0, 85000.0)
+        assert isinstance(w, float)
+        assert w == pytest.approx(0.0149878, rel=1e-5)
+        assert w == pytest.approx(287.05 / 461.5 * 2000.0 / 83000.0)
+
+    def test_dry_air_is_zero(self):
+        assert met.mixing_ratio(0.0, 85000.0) == 0.0
 
 
 class TestIdealGasLaw:
     def test_density_form(self):
         # rho = p / (R T)
         rho = met.ideal_gas_law("density", p=1e5, R=287.05, T=300.0)
-        assert _mag(rho) == pytest.approx(1e5 / (287.05 * 300.0))
+        assert rho == pytest.approx(1e5 / (287.05 * 300.0))
 
     def test_temperature_from_density(self):
         T = met.ideal_gas_law("temp", p=1e5, rho=1.2, R=287.05)
-        assert _mag(T) == pytest.approx(1e5 / (1.2 * 287.05))
+        assert T == pytest.approx(1e5 / (1.2 * 287.05))
 
     def test_invalid_solve_for_raises(self):
         with pytest.raises(ValueError):
@@ -92,87 +100,81 @@ class TestIdealGasLaw:
     def test_mass_form(self):
         # m = p V / (R T)
         m = met.ideal_gas_law("mass", p=1e5, V=1.0, R=287.05, T=300.0)
-        assert _mag(m) == pytest.approx(1e5 / (287.05 * 300.0))
+        assert m == pytest.approx(1e5 / (287.05 * 300.0))
 
     def test_moles_form(self):
         # n = p V / (R* T)
-        from lair.constants import Rstar
 
         n = met.ideal_gas_law("moles", p=1e5, V=1.0, T=300.0)
-        assert _mag(n) == pytest.approx(1e5 / (_mag(Rstar) * 300.0))
+        assert n == pytest.approx(1e5 / (RSTAR * 300.0))
 
     def test_number_form(self):
         # N = p V / (kb T)
-        from lair.constants import kb
 
         N = met.ideal_gas_law("number", p=1e5, V=1.0, T=300.0)
-        assert _mag(N) == pytest.approx(1e5 / (_mag(kb) * 300.0))
+        assert N == pytest.approx(1e5 / (KB * 300.0))
 
     def test_volume_from_moles(self):
-        from lair.constants import Rstar
 
         V = met.ideal_gas_law("volume", p=1e5, n=1.0, T=300.0)
-        assert _mag(V) == pytest.approx(_mag(Rstar) * 300.0 / 1e5)
+        assert V == pytest.approx(RSTAR * 300.0 / 1e5)
 
     def test_volume_from_mass(self):
         # V = m R T / p
         V = met.ideal_gas_law("volume", p=1e5, m=1.0, R=287.05, T=300.0)
-        assert _mag(V) == pytest.approx(287.05 * 300.0 / 1e5)
+        assert V == pytest.approx(287.05 * 300.0 / 1e5)
 
     def test_pressure_from_moles_and_volume(self):
         # p = n R* T / V
-        from lair.constants import Rstar
 
         p = met.ideal_gas_law("pressure", V=1.0, n=1.0, T=300.0)
-        assert _mag(p) == pytest.approx(_mag(Rstar) * 300.0)
+        assert p == pytest.approx(RSTAR * 300.0)
 
     def test_pressure_from_mass_and_volume(self):
         # p = m R T / V
         p = met.ideal_gas_law("pressure", V=1.0, m=1.0, R=287.05, T=300.0)
-        assert _mag(p) == pytest.approx(287.05 * 300.0)
+        assert p == pytest.approx(287.05 * 300.0)
 
     def test_temperature_from_volume_and_moles(self):
-        from lair.constants import Rstar
 
         T = met.ideal_gas_law("temperature", p=1e5, V=1.0, n=1.0)
-        assert _mag(T) == pytest.approx(1e5 / _mag(Rstar))
+        assert T == pytest.approx(1e5 / RSTAR)
 
     def test_pressure_from_density_arrays(self):
         # Array inputs must not be tested for truthiness
         rho = np.array([1.2, 1.1])
         T = np.array([290.0, 280.0])
         p = met.ideal_gas_law("pressure", rho=rho, R=287.05, T=T)
-        np.testing.assert_allclose(_mag(p), rho * 287.05 * T)
+        np.testing.assert_allclose(p, rho * 287.05 * T)
 
     def test_pressure_from_specific_volume_arrays(self):
         alpha = np.array([0.8, 0.9])
         p = met.ideal_gas_law("pressure", alpha=alpha, R=287.05, T=300.0)
-        np.testing.assert_allclose(_mag(p), 287.05 * 300.0 / alpha)
+        np.testing.assert_allclose(p, 287.05 * 300.0 / alpha)
 
     def test_temperature_from_volume_arrays(self):
-        from lair.constants import Rstar
 
         V = np.array([1.0, 2.0])
         n = np.array([1.0, 3.0])
         T = met.ideal_gas_law("temperature", p=1e5, V=V, n=n)
-        np.testing.assert_allclose(_mag(T), 1e5 * V / (n * _mag(Rstar)))
+        np.testing.assert_allclose(T, 1e5 * V / (n * RSTAR))
 
     def test_volume_from_mass_arrays(self):
         m = np.array([1.0, 2.0])
         V = met.ideal_gas_law("volume", p=1e5, m=m, R=287.05, T=300.0)
-        np.testing.assert_allclose(_mag(V), m * 287.05 * 300.0 / 1e5)
+        np.testing.assert_allclose(V, m * 287.05 * 300.0 / 1e5)
 
     def test_zero_moles_is_a_value_not_missing(self):
         # n = 0 is valid input (zero pressure), not "n not given"
         p = met.ideal_gas_law("pressure", V=1.0, n=0.0, T=300.0)
-        assert _mag(p) == pytest.approx(0.0)
+        assert p == pytest.approx(0.0)
 
 
 class TestHypsometric:
     def test_thickness_positive_for_decreasing_pressure(self):
         # Solve for layer thickness given Tv and bounding pressures.
         deltaz = met.hypsometric(Tv=288.0, p1=1e5, p2=9e4)
-        assert _mag(deltaz) == pytest.approx(
+        assert deltaz == pytest.approx(
             287.05 * 288.0 * np.log(1e5 / 9e4) / 9.81, rel=1e-6
         )
 
@@ -180,19 +182,35 @@ class TestHypsometric:
         # Z1 = 0 m is a valid height, not a missing value
         dz = 287.05 * 288.0 * np.log(1e5 / 9e4) / 9.81
         Tv = met.hypsometric(p1=1e5, p2=9e4, Z1=0.0, Z2=dz)
-        assert _mag(Tv) == pytest.approx(288.0, rel=1e-6)
+        assert Tv == pytest.approx(288.0, rel=1e-6)
+
+    def test_thickness_is_plain_metres(self):
+        # By hand: 287.05 * 280 * ln(1e5 / 9e4) / 9.81 = 863.226 m
+        deltaz = met.hypsometric(Tv=280.0, p1=1e5, p2=9e4)
+        assert isinstance(deltaz, float)
+        assert deltaz == pytest.approx(863.2259, rel=1e-6)
 
     def test_top_height_from_bottom_height(self):
-        # Adding to Z1 needs unit-carrying inputs: the constants are pint
-        # quantities, so a bare-float Tv leaves the thickness in odd units
-        from lair import units
+        # Plain floats: Z1 adds to the thickness in metres
+        Z2 = met.hypsometric(Tv=280.0, p1=1e5, p2=9e4, Z1=1289.0)
+        assert isinstance(Z2, float)
+        assert Z2 == pytest.approx(1289.0 + 863.2259, rel=1e-6)
 
-        Z2 = met.hypsometric(
-            Tv=288.0 * units("K"), p1=1e5, p2=9e4, Z1=100.0 * units("m")
-        )
-        assert Z2.to("m").magnitude == pytest.approx(
-            100.0 + 287.05 * 288.0 * np.log(1e5 / 9e4) / 9.81, rel=1e-6
-        )
+    def test_bottom_height_from_top_height(self):
+        Z1 = met.hypsometric(Tv=280.0, p1=1e5, p2=9e4, Z2=2152.2259)
+        assert Z1 == pytest.approx(1289.0, rel=1e-6)
+
+    def test_pressure_from_thickness(self):
+        p2 = met.hypsometric(Tv=280.0, p1=1e5, deltaz=863.2259)
+        p1 = met.hypsometric(Tv=280.0, p2=9e4, deltaz=863.2259)
+        assert p2 == pytest.approx(9e4, rel=1e-6)
+        assert p1 == pytest.approx(1e5, rel=1e-6)
+
+    def test_array_inputs(self):
+        Tv = np.array([280.0, 290.0])
+        deltaz = met.hypsometric(Tv=Tv, p1=1e5, p2=9e4)
+        assert not isinstance(deltaz, pint.Quantity)
+        np.testing.assert_allclose(deltaz, RD * Tv * np.log(1e5 / 9e4) / G)
 
     def test_invalid_combination_raises(self):
         # Over-specified inputs (heights *and* a full pressure/temperature set)
@@ -201,8 +219,71 @@ class TestHypsometric:
             met.hypsometric(Tv=288.0, p1=1e5, p2=9e4, Z1=100.0, Z2=1000.0)
 
 
+class TestPlainSIOutputs:
+    """Plain SI in gives plain SI out with sensible magnitudes (issue #41)."""
+
+    def test_pressure_from_moles_is_pascals(self):
+        # By hand: 1 mol * 8.314463 J/mol/K * 300 K / 1 m3 = 2494.34 Pa
+        p = met.ideal_gas_law("p", n=1.0, V=1.0, T=300.0)
+        assert isinstance(p, float)
+        assert p == pytest.approx(2494.3388, rel=1e-6)
+
+    def test_potential_temperature_is_kelvin(self):
+        # By hand: 273.15 * (1e5 / 85000) ** (287.05 / 1005) = 286.128 K
+        theta = met.poisson(273.15, 85000.0)
+        assert isinstance(theta, float)
+        assert theta == pytest.approx(286.1282, rel=1e-6)
+
+    def test_xarray_in_xarray_out(self):
+        T = xr.DataArray([270.0, 280.0], dims="height")
+        theta = met.poisson(T, xr.DataArray([85000.0, 80000.0], dims="height"))
+        assert isinstance(theta, xr.DataArray)
+        assert not isinstance(theta.data, pint.Quantity)
+
+
+class TestQuantityInputs:
+    """pint Quantities are converted to SI magnitudes; outputs are plain."""
+
+    def test_hypsometric_converts_to_si(self):
+        deltaz = met.hypsometric(
+            Tv=280.0 * units("K"), p1=1000.0 * units("hPa"), p2=900.0 * units("hPa")
+        )
+        assert isinstance(deltaz, float)
+        assert deltaz == pytest.approx(863.2259, rel=1e-6)
+
+    def test_offset_units_convert(self):
+        # 0 degC -> 273.15 K, 850 hPa -> 85000 Pa
+        theta = met.poisson(
+            units.Quantity(0.0, "degC"), 850.0 * units("hPa"), p0=1e5 * units("Pa")
+        )
+        assert theta == pytest.approx(286.1282, rel=1e-6)
+
+    def test_heights_in_km(self):
+        Z2 = met.hypsometric(Tv=280.0, p1=1e5, p2=9e4, Z1=1.289 * units("km"))
+        assert Z2 == pytest.approx(1289.0 + 863.2259, rel=1e-6)
+
+    def test_ideal_gas_law_with_constant_quantity(self):
+        from lair.constants import Rd
+
+        rho = met.ideal_gas_law("rho", p=850.0 * units("hPa"), T=270.0, R=Rd)
+        assert isinstance(rho, float)
+        assert rho == pytest.approx(85000.0 / (RD * 270.0))
+
+    def test_quantified_dataarray(self):
+        p = xr.DataArray([850.0, 800.0], dims="height").pint.quantify("hPa")
+        T = xr.DataArray([-3.15, 6.85], dims="height").pint.quantify("degC")
+        theta = met.poisson(T, p)
+        assert isinstance(theta, xr.DataArray)
+        assert not isinstance(theta.data, pint.Quantity)
+        np.testing.assert_allclose(
+            theta.values,
+            [270.0, 280.0] * (1e5 / np.array([85000.0, 80000.0])) ** (RD / 1005),
+        )
+
+
 def test_standard_atmosphere_values():
-    """The standard-atmosphere dict carries the documented surface values."""
-    assert met.standard["T"].to("K").magnitude == pytest.approx(288.15)
-    assert met.standard["p"].to("hPa").magnitude == pytest.approx(1013.25)
-    assert met.standard["rho"].to("kg / m**3").magnitude == pytest.approx(1.225)
+    """The standard atmosphere is plain SI: K, Pa, kg/m3, m."""
+    assert met.standard == pytest.approx(
+        {"T": 288.15, "p": 101325.0, "rho": 1.225, "z": 0.0}
+    )
+    assert all(isinstance(v, float) for v in met.standard.values())
