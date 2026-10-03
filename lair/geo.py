@@ -1263,13 +1263,15 @@ def points_along_line(
     multiline: LineString | MultiLineString,
     spacing: float,
     resolution_factor: float | None = None,
+    decimals: int | None = None,
 ) -> list[Point]:
     """
     Generate points spaced along a line or a network of lines.
 
     Every pair of points is at least ``spacing`` apart (Euclidean distance, in
     the units of the coordinates), across the whole network, including between
-    disconnected lines.
+    disconnected lines. Distances within float rounding of ``spacing`` count
+    as ``spacing``, so points on a straight line come out evenly spaced.
 
     The algorithm works as follows:
 
@@ -1278,8 +1280,8 @@ def points_along_line(
        paths back together.
     2. **Graph construction**: each line is segmentized into steps of at most
        ``spacing * resolution_factor``, and the vertices become the nodes of a
-       graph whose edges follow the lines. Node coordinates are rounded to 5
-       decimal places, which snaps microscopic gaps between lines together.
+       graph whose edges follow the lines. Node coordinates are rounded to
+       ``decimals`` places, which snaps microscopic gaps between lines together.
     3. **Point placement**: each connected component is walked breadth-first
        from an endpoint (any node for a closed loop), visiting each node once.
        The walk carries the last point placed behind it as its "origin". A node
@@ -1300,6 +1302,10 @@ def points_along_line(
         Graph step size as a fraction of ``spacing``, by default 0.1. Smaller
         values make a denser graph, which follows curves more closely and
         places points closer to exactly ``spacing`` apart, but is slower.
+    decimals : int, optional
+        Number of decimal places node coordinates are rounded to. By default
+        two places finer than the step size (``spacing * resolution_factor``),
+        and at least 5.
 
     Returns
     -------
@@ -1316,6 +1322,16 @@ def points_along_line(
     if resolution_factor is None:
         resolution_factor = 0.1
     step_size = spacing * resolution_factor
+    if decimals is None:
+        # Rounding error at most step_size / 200, so neighbouring nodes never
+        # collapse together. Never coarser than the original fixed 5 places.
+        decimals = max(5, math.ceil(-math.log10(step_size)) + 2)
+    # Distances within `tol` of `spacing` count as `spacing`: float error in
+    # differences of rounded coordinates (e.g. 1.5e-4 - 1e-4 < 5e-5) must not
+    # push a node that is exactly `spacing` away on to the next node. A
+    # thousandth of the rounding precision: far above that float error, far
+    # below the step between nodes.
+    tol = 1e-3 * 10.0**-decimals
 
     # --- Topology Fixing ---
     # unary_union splits lines at intersections, creating nodes where lines cross.
@@ -1330,9 +1346,9 @@ def points_along_line(
     # --- Build High-Res Graph ---
     G = nx.Graph()
 
-    # We round coordinates to 5 decimal places to "snap" microscopic gaps
+    # Round coordinates to "snap" microscopic gaps
     def round_coord(c):
-        return (round(c[0], 5), round(c[1], 5))
+        return (round(c[0], decimals), round(c[1], decimals))
 
     def distance(a, b):
         return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
@@ -1373,7 +1389,7 @@ def points_along_line(
         for i in (cx - 1, cx, cx + 1):
             for j in (cy - 1, cy, cy + 1):
                 for k in cells.get((i, j), ()):
-                    if k != skip and distance(c, placed[k]) < spacing:
+                    if k != skip and distance(c, placed[k]) < spacing - tol:
                         return True
         return False
 
@@ -1404,7 +1420,7 @@ def points_along_line(
 
             # Attempt to place a point, checking against ALL placed points
             # (except the origin, which we know is far enough)
-            if origin == -1 or distance(node, placed[origin]) >= spacing:
+            if origin == -1 or distance(node, placed[origin]) >= spacing - tol:
                 if not too_close(node, skip=origin):
                     origin = place(node)
                 # Otherwise we are blocked by a neighbour: KEEP WALKING, still
