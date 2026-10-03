@@ -326,7 +326,7 @@ class Cacher:
     cache_file : str
         The name of the file to cache results to.
     reload : bool
-        Whether to reload the cache index from the index file.
+        Whether to re-run the function instead of returning cached results.
     """
 
     import pickle as pkl
@@ -342,7 +342,11 @@ class Cacher:
         cache_file : str
             The name of the file to cache results to.
         reload : bool, optional
-            Whether to reload the cache index from the index file. Defaults to False.
+            Whether to re-run the function instead of returning cached results.
+            Each set of arguments is re-run once per Cacher; the fresh result
+            replaces the old one in the index and every other cached entry is
+            kept. (The old result stays in ``cache_file`` but is no longer
+            referenced.) Defaults to False.
         """
         assert cache_file.endswith(".pkl")
 
@@ -356,6 +360,7 @@ class Cacher:
 
         self.index_file = os.path.join(head, f".{tail}.index")
         self.cache_index = self.load_cache_index()
+        self._refreshed = set()  # keys re-run by this Cacher when reload=True
 
     def load_cache_index(self):
         """
@@ -367,13 +372,6 @@ class Cacher:
             A dictionary of cached results and their corresponding file
             positions.
         """
-        if self.reload:
-            # TODO causes previous caches to become unreadable
-            #   need to delete previous cache or append to index_file
-            # Force func to be executed by setting cache_index to empty
-            vprint(f"Forcing {self.func.__name__} to execute")
-            return {}
-
         try:
             with open(self.index_file, "rb") as f:
                 cache_index = self.pkl.load(f)
@@ -407,7 +405,13 @@ class Cacher:
 
         key = self.pkl.dumps((args, kwargs))  # serialize func args
 
-        if key in self.cache_index:
+        if self.reload and key not in self._refreshed:
+            vprint(f"Forcing {self.func.__name__} to execute")
+            cached = False
+        else:
+            cached = key in self.cache_index
+
+        if cached:
             # Load the result from the cache_file using its index
             vprint(
                 f"Returning cached result for {self.func.__name__} with args: {args} {kwargs}"
@@ -429,6 +433,7 @@ class Cacher:
                 self.pkl.dump(result, f, protocol=self.pkl.HIGHEST_PROTOCOL)
 
             self.cache_index[key] = pos
+            self._refreshed.add(key)
 
             vprint(f"Added {args} {kwargs} to cache")
 

@@ -101,6 +101,37 @@ class TestCacher:
         assert records.Cacher(square, cache_file)(5) == 25
         assert calls["n"] == 1
 
+    def test_reload_reruns_once_and_keeps_other_entries(self, tmp_path):
+        calls = []
+
+        def square(x):
+            calls.append(x)
+            return x * x
+
+        cache_file = str(tmp_path / "cache.pkl")
+        cached = records.Cacher(square, cache_file)
+        cached(1)
+        cached(2)
+
+        # reload=True re-runs each set of args once, then serves the fresh result.
+        reloaded = records.Cacher(square, cache_file, reload=True)
+        assert reloaded(1) == 1
+        assert reloaded(1) == 1
+        assert calls == [1, 2, 1]
+
+        # Entries that were not refreshed are still readable afterwards (#26).
+        assert records.Cacher(square, cache_file)(2) == 4
+        assert calls == [1, 2, 1]
+
+    def test_reload_result_replaces_old_one(self, tmp_path):
+        value = {"v": "old"}
+        cache_file = str(tmp_path / "cache.pkl")
+        records.Cacher(lambda: value["v"], cache_file)()
+
+        value["v"] = "new"
+        assert records.Cacher(lambda: value["v"], cache_file, reload=True)() == "new"
+        assert records.Cacher(lambda: value["v"], cache_file)() == "new"
+
     def test_bare_filename_uses_cwd(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         cacher = records.Cacher(lambda x: x, "cache.pkl")
