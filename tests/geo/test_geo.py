@@ -224,6 +224,140 @@ def test_points_along_line():
     assert len(pts) == 5
 
 
+def _points_along_line_cases():
+    from shapely import LineString, MultiLineString
+
+    curve = [(np.cos(t), np.sin(t)) for t in np.linspace(0, np.pi, 25)]
+    lasso = [(0, 0), (1, 0), (1.5, 0.5), (1, 1), (1, 0), (1.2, -0.7)]
+    return {
+        "straight": (LineString([(0, 0), (0, 1)]), 0.25),
+        "diagonal": (LineString([(0, 0), (1, 1)]), 0.3),
+        "branch": (MultiLineString([[(0, 0), (2, 0)], [(1, 0), (1, 1.5)]]), 0.4),
+        "cross": (MultiLineString([[(-1, 0), (1, 0)], [(0, -1), (0, 1)]]), 0.35),
+        "loop": (LineString([(0, 0), (1, 0), (1, 1), (0, 1), (0, 0)]), 0.3),
+        "curve": (LineString(curve), 0.2),
+        "disjoint": (MultiLineString([[(0, 0), (1, 0)], [(0, 0.1), (1, 0.1)]]), 0.25),
+        "lasso": (LineString(lasso), 0.3),
+    }
+
+
+# Output of the original (state-level BFS) implementation, before the #35
+# rewrite. The rewrite must reproduce it exactly.
+_POINTS_ALONG_LINE_EXPECTED = {
+    "straight": [
+        (0.0, 0.0),
+        (0.0, 0.25),
+        (0.0, 0.5),
+        (0.0, 0.75),
+        (0.0, 1.0),
+    ],
+    "diagonal": [
+        (0.0, 0.0),
+        (0.22917, 0.22917),
+        (0.45833, 0.45833),
+        (0.6875, 0.6875),
+        (0.91667, 0.91667),
+    ],
+    "branch": [
+        (0.0, 0.0),
+        (0.4, 0.0),
+        (0.8, 0.0),
+        (1.24, 0.0),
+        (1.0, 0.35526),
+        (1.68, 0.0),
+        (1.0, 0.78947),
+        (1.0, 1.22368),
+    ],
+    "cross": [
+        (-1.0, 0.0),
+        (-0.62069, 0.0),
+        (-0.24138, 0.0),
+        (0.13793, 0.0),
+        (0.0, -0.34483),
+        (0.0, 0.34483),
+        (0.51724, 0.0),
+        (0.0, -0.72414),
+        (0.0, 0.72414),
+        (0.89655, 0.0),
+    ],
+    "loop": [
+        (0.0, 0.0),
+        (0.32353, 0.0),
+        (0.0, 0.32353),
+        (0.64706, 0.0),
+        (0.0, 0.64706),
+        (0.97059, 0.0),
+        (0.0, 0.97059),
+        (1.0, 0.32353),
+        (0.32353, 1.0),
+        (1.0, 0.64706),
+        (0.64706, 1.0),
+        (1.0, 0.97059),
+    ],
+    "curve": [
+        (1.0, 0.0),
+        (0.97686, 0.20384),
+        (0.91561, 0.39944),
+        (0.81412, 0.57769),
+        (0.67901, 0.73175),
+        (0.51554, 0.85564),
+        (0.3296, 0.9419),
+        (0.13053, 0.99144),
+        (-0.07459, 0.99511),
+        (-0.27651, 0.95992),
+        (-0.46648, 0.88256),
+        (-0.63686, 0.76871),
+        (-0.78103, 0.62281),
+        (-0.89082, 0.44972),
+        (-0.96593, 0.25882),
+        (-0.99633, 0.05594),
+    ],
+    "disjoint": [
+        (0.0, 0.0),
+        (0.25, 0.0),
+        (0.5, 0.0),
+        (0.75, 0.0),
+        (1.0, 0.0),
+    ],
+    "lasso": [
+        (0.0, 0.0),
+        (0.32353, 0.0),
+        (0.64706, 0.0),
+        (0.97059, 0.0),
+        (1.20833, 0.20833),
+        (1.08, -0.28),
+        (1.0, 0.44118),
+        (1.4375, 0.4375),
+        (1.168, -0.588),
+        (1.0, 0.76471),
+    ],
+}
+
+
+class TestPointsAlongLine:
+    @pytest.mark.parametrize("case", list(_POINTS_ALONG_LINE_EXPECTED))
+    def test_matches_reference(self, case):
+        line, spacing = _points_along_line_cases()[case]
+        pts = geo.points_along_line(line, spacing=spacing)
+        assert [(p.x, p.y) for p in pts] == _POINTS_ALONG_LINE_EXPECTED[case]
+
+    @pytest.mark.parametrize("case", list(_POINTS_ALONG_LINE_EXPECTED))
+    def test_points_at_least_spacing_apart(self, case):
+        line, spacing = _points_along_line_cases()[case]
+        xy = np.array([(p.x, p.y) for p in geo.points_along_line(line, spacing)])
+        d = np.hypot(*(xy[:, None, :] - xy[None, :, :]).transpose(2, 0, 1))
+        assert d[np.triu_indices(len(xy), k=1)].min() >= spacing
+
+    def test_long_line(self):
+        # Runtime is near-linear in the number of points; this took tens of
+        # minutes with the original state-level BFS (#35)
+        from shapely import LineString
+
+        pts = geo.points_along_line(LineString([(0, 0), (1000, 0)]), spacing=1.0)
+        assert len(pts) == 1001
+        np.testing.assert_allclose([p.x for p in pts], np.arange(1001))
+
+
 def test_generate_regular_grid_returns_dataarray():
     from xarray import DataArray
 
