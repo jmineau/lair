@@ -106,6 +106,38 @@ class TestPlots:
         ax = plotter.polarPlot(df, "CH4")
         assert ax.name == "polar"
 
+    @pytest.mark.parametrize("min_bin", [1, 3])
+    def test_polar_plot_min_bin_is_inclusive(self, rng, monkeypatch, min_bin):
+        # min_bin is the minimum count a bin needs to be plotted: bins with
+        # exactly min_bin observations are kept.
+        import lair.air
+
+        df = pd.DataFrame(
+            {
+                "ws": rng.uniform(0, 10, 500),
+                "wd": rng.uniform(0, 360, 500),
+                "CH4": rng.normal(2, 0.3, 500),
+            }
+        )
+        captured = {}
+        circularize = lair.air.circularize_radial_data
+
+        def spy(agg):
+            captured["agg"] = agg
+            return circularize(agg)
+
+        monkeypatch.setattr(lair.air, "circularize_radial_data", spy)
+        plotter.polarPlot(df, "CH4", min_bin=min_bin)
+
+        counts = (
+            lair.air.bin_polar(df, xbins=30)
+            .groupby(["radian_bin", "x_bin"], observed=True)["CH4"]
+            .count()
+        )
+        assert (counts == min_bin).any()  # the boundary case is exercised
+        n_plotted = int(captured["agg"].notna().to_numpy().sum())
+        assert n_plotted == int((counts >= min_bin).sum())
+
     def test_polar_freq(self, rng):
         df = pd.DataFrame(
             {"ws": rng.uniform(0, 10, 500), "wd": rng.uniform(0, 360, 500)}
