@@ -242,7 +242,7 @@ def vulcan_dir(tmp_path):
 class TestVulcan:
     def test_loads_projected_grid(self, vulcan_dir):
         v = inventories.Vulcan(inventory_dir=vulcan_dir)
-        assert set(v.data.data_vars) == {"onroad", "elec"}  # 'total' excluded
+        assert set(v.data.data_vars) == {"onroad", "elec_prod"}  # 'total' excluded
         assert v.data.rio.x_dim == "x" and v.data.rio.y_dim == "y"
         assert v.data.time.dt.month.values.tolist() == [1, 1]
         # 1 km^2 cells on the projected grid, in the data's (y, x) order
@@ -281,7 +281,7 @@ class TestVulcan:
 
     def test_no_emission_cells_are_zero(self, vulcan_dir):
         v = inventories.Vulcan(inventory_dir=vulcan_dir)
-        elec = v.data["elec"].pint.dequantify()
+        elec = v.data["elec_prod"].pint.dequantify()
         assert not bool(elec.isnull().any())
         # one source cell, 2 years, converted from tC to CO2
         assert float(elec.sum()) == pytest.approx(2 * 200.0 * C_TO_CO2, rel=1e-4)
@@ -312,7 +312,7 @@ class TestVulcan:
         out = clipped.reproject(0.02)
 
         def elec_total(inv, dims):
-            absolute = inv.absolute_emissions["elec"].pint.quantify()
+            absolute = inv.absolute_emissions["elec_prod"].pint.quantify()
             return float(absolute.sum(dims).pint.to("Mg").pint.dequantify().sum())
 
         src = elec_total(clipped, ["x", "y"])
@@ -323,7 +323,7 @@ class TestVulcan:
         v = inventories.Vulcan(inventory_dir=vulcan_dir)
         lower = v.get_uncertainties("lower")
         upper = v.get_uncertainties("upper")
-        assert set(lower.data_vars) == {"onroad", "elec"}
+        assert set(lower.data_vars) == {"onroad", "elec_prod"}
         assert float(lower["onroad"].max()) == pytest.approx(1.0 * C_TO_CO2, rel=1e-4)
         assert float(upper["onroad"].max()) == pytest.approx(3.0 * C_TO_CO2, rel=1e-4)
 

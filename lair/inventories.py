@@ -1645,8 +1645,14 @@ class Vulcan(Inventory):
 
     def _preprocess(self, ds: Dataset) -> Dataset:
         # Rename variables
+        # Annual: Vulcan_v3_US_annual_1km_elec_prod_mn.nc4
+        # Hourly: Vulcan.v3.US.hourly.1km.elec_prod.mn.2015.d001.nc4
+        # The sector sits between the resolution and the uncertainty code. It
+        # can contain underscores, so rejoin the annual parts (which are
+        # separated by underscores too)
         filename = os.path.basename(ds.encoding["source"])
-        sector = filename.split(self._sep)[5]
+        parts = filename.split(self._sep)
+        sector = "_".join(parts[5:-1]) if self._sep == "_" else parts[5]
         ds = ds.rename({"carbon_emissions": sector})
         # Drop unnecessary variables and dims
         ds = ds.drop_vars(["time_bnds", "crs"])
@@ -1665,7 +1671,7 @@ class Vulcan(Inventory):
         # Vulcan marks cells without emissions as NaN (most cells of the point
         # source sectors). Treat them as zero: otherwise every regridded cell
         # touching a NaN becomes NaN and conservative regridding drops most of
-        # the airport/cement/cmv/elec emissions.
+        # the airport/cement/cmv/elec_prod emissions.
         data = data.fillna(0)
 
         # The files are mass of carbon (tC); express them as mass of CO2 to
