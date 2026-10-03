@@ -286,6 +286,12 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   is gone (use `sep=r'\s+'`), `DataFrame.interpolate` refuses object-dtype
   columns, and `pd.options.mode.copy_on_write` is always on (config only sets
   it on pandas < 3).
+- **Timezones in `clock`:** naive times are UTC by convention.
+  `dt2decimalDate` converts tz-aware input to UTC first (same answer under
+  pytz/pandas 2 and zoneinfo/pandas 3). `convert_timezones` raises if a naive
+  time has no `fromtz` (it never guesses the machine's zone), and localizes
+  naive times with pandas `tz_localize` semantics in both drivers, so a DST
+  ambiguous/nonexistent time raises unless `ambiguous=`/`nonexistent=` is given.
 - **Vulcan (fixed 2026-09-21):** the files are `(time, y, x)` on an LCC grid
   with 2D lat/lon, so `Inventory.__init__` picks x/y spatial dims when there's
   no `lon` dim. `Vulcan.clip`/`reproject` follow the base-class API (return the
