@@ -306,6 +306,12 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   `Fuel_exploitation` (PRO_FFF) only when its COAL/GAS/OIL parts are loaded
   (monthly has no split). Test loaders on tiny synthetic archives shaped like
   the real files (check layouts with `ncdump -h`).
+- **Inventory time labels (2026-10, #37):** every loader labels a step by the
+  *start* of its period (Jan 1 / the 1st / 00:00 / top of the hour). Use the
+  file's CF `time_bnds` when it has them (`_label_period_starts`: Vulcan,
+  WetCHARTs); EDGAR v8 monthly has none (15th of each month) and is floored to
+  the month. `tests/inventories` checks every loader (`INVENTORY_CASES`) and
+  that totals don't depend on the labels; add new loaders there.
 - **Docs:** `just build-docs` (or `sphinx-build -M html docs docs/_build`).
   They build in the lean uv env because `docs/conf.py` mocks every optional
   extra via `autodoc_mock_imports` — add new optional imports there. Mocked
