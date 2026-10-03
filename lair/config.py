@@ -68,22 +68,3 @@ pandas_CoW = True
 if int(pd.__version__.split(".")[0]) < 3:
     # Always on (and no longer settable) from pandas 3.0
     pd.options.mode.copy_on_write = pandas_CoW
-
-
-###################
-# Verbose Printer #
-###################
-
-#: Print progress messages (set ``lair.config.verbose = False`` to silence)
-verbose = True  # FIXME
-
-
-class _Printer:
-    @staticmethod
-    def vprint(*args, **kwargs):
-        if verbose:
-            kwargs.setdefault("flush", True)
-            print(*args, **kwargs)
-
-
-vprint = _Printer().vprint

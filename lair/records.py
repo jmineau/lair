@@ -3,15 +3,17 @@ Utilities for working with files and directories.
 """
 
 import fnmatch
+import logging
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
-from lair.config import vprint
 from lair._optional import import_optional_dependency
 
 if TYPE_CHECKING:
     from fastkml.kml import KML
+
+logger = logging.getLogger(__name__)
 
 
 def unzip(zf: str, dir_path: str | None = None):
@@ -174,16 +176,16 @@ def wget_download(
         output_dir = os.path.dirname(local_path)
         os.makedirs(output_dir, exist_ok=True)
 
-        vprint(f"Downloading: {url} to {local_path}")
+        logger.info("Downloading: %s to %s", url, local_path)
         try:
             # Use wget with the -O option to specify the output file
             subprocess.run(["wget", "-O", local_path, url], check=True)
         except subprocess.CalledProcessError as e:
-            vprint(f"Failed to download {url}: {e}")
+            logger.warning("Failed to download %s: %s", url, e)
             return
 
         if unzip and local_path.endswith(".zip"):
-            vprint("Unzipping...")
+            logger.info("Unzipping %s", local_path)
             subprocess.run(["unzip", "-d", output_dir, local_path], check=True)
             os.remove(local_path)
 
@@ -270,7 +272,7 @@ def ftp_download(
 
                 if pattern is not None and not _path_matches(path, pattern):
                     # Exit if pattern is not in path
-                    vprint(f"Skipping {path} - pattern does not match")
+                    logger.debug("Skipping %s - pattern does not match", path)
                     return None
 
                 # Get common path to append to download_dir
@@ -291,7 +293,7 @@ def ftp_download(
 
                 # Download the file
                 with open(local, "wb") as local_file:
-                    vprint(f"Downloading {path} to {os.path.dirname(local)}")
+                    logger.info("Downloading %s to %s", path, os.path.dirname(local))
                     ftp.retrbinary(f"RETR {path}", local_file.write)
 
                 return "f"
@@ -406,15 +408,18 @@ class Cacher:
         key = self.pkl.dumps((args, kwargs))  # serialize func args
 
         if self.reload and key not in self._refreshed:
-            vprint(f"Forcing {self.func.__name__} to execute")
+            logger.info("Forcing %s to execute", self.func.__name__)
             cached = False
         else:
             cached = key in self.cache_index
 
         if cached:
             # Load the result from the cache_file using its index
-            vprint(
-                f"Returning cached result for {self.func.__name__} with args: {args} {kwargs}"
+            logger.debug(
+                "Returning cached result for %s with args: %s %s",
+                self.func.__name__,
+                args,
+                kwargs,
             )
 
             with open(self.cache_file, "rb") as f:
@@ -435,7 +440,7 @@ class Cacher:
             self.cache_index[key] = pos
             self._refreshed.add(key)
 
-            vprint(f"Added {args} {kwargs} to cache")
+            logger.debug("Added %s %s to cache", args, kwargs)
 
             self.save_cache_index()  # update cache_index
         return result

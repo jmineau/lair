@@ -4,6 +4,7 @@ Upper air sounding data.
 
 from collections import deque
 import datetime as dt
+import logging
 import os
 import numpy as np
 import pandas as pd
@@ -18,6 +19,8 @@ from lair._optional import import_optional_dependency
 # Optional dependency
 siphon = import_optional_dependency("siphon")
 from siphon.simplewebservice.wyoming import WyomingUpperAir
+
+logger = logging.getLogger(__name__)
 
 
 #: Environment variable holding the sounding archive root (one subdirectory per station)
@@ -213,11 +216,11 @@ def download_sounding(station, date, dst=None) -> str:
 
     path = os.path.join(dst, f"{station}_{date:%Y%m%d%H}.csv")
     if not os.path.exists(path):
-        print(f"Downloading {station} on {date:%Y-%m-%d %H:%M}...")
+        logger.info("Downloading %s on %s...", station, f"{date:%Y-%m-%d %H:%M}")
         df = WyomingUpperAir.request_data(date, station)
         df.to_csv(path, index=False)
     else:
-        print(f"{station} on {date:%Y-%m-%d %H:%M} already exists.")
+        logger.debug("%s on %s already exists.", station, f"{date:%Y-%m-%d %H:%M}")
 
     return path
 
@@ -241,7 +244,7 @@ def download_soundings(station, start, end, dst=None, months=None):
     months : list
         The months to download.
     """
-    print("Downloading soundings...")
+    logger.info("Downloading soundings...")
 
     # Snap to the 00/12 UTC synoptic times; date_range would otherwise anchor
     # on start (start=06:00 -> 06Z, 18Z, ...)
@@ -258,18 +261,24 @@ def download_soundings(station, start, end, dst=None, months=None):
         try:
             download_sounding(station, date, dst)
         except IndexError as e:
-            print(f"Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}")
+            logger.warning(
+                "Error downloading %s on %s: %s", station, f"{date:%Y-%m-%d %H:%M}", e
+            )
             continue
         except ValueError as e:
-            print(f"Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}")
+            logger.warning(
+                "Error downloading %s on %s: %s", station, f"{date:%Y-%m-%d %H:%M}", e
+            )
             if "No data available" in str(e):
                 continue
             else:
                 raise e
         except requests.exceptions.HTTPError as e:
-            print(f"Error downloading {station} on {date:%Y-%m-%d %H:%M}: {e}")
+            logger.warning(
+                "Error downloading %s on %s: %s", station, f"{date:%Y-%m-%d %H:%M}", e
+            )
             if "Please try again later" in str(e):
-                print("Trying again in 2 seconds...")
+                logger.info("Trying again in 2 seconds...")
                 to_download.appendleft(date)
                 sleep(2)
             else:
@@ -321,7 +330,7 @@ def get_soundings(
 
     files = os.listdir(sounding_dir) if os.path.isdir(sounding_dir) else []
     if len(files) == 0:
-        print("No soundings found. Downloading...")
+        logger.info("No soundings found. Downloading...")
 
         if not all([start, end]):
             raise ValueError(
@@ -352,7 +361,7 @@ def get_soundings(
         try:
             soundings.append(Sounding(path))
         except Exception as e:
-            print(f"Error reading file {path}: {e}")
+            logger.warning("Error reading file %s: %s", path, e)
             continue
 
     if not soundings:
