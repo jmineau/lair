@@ -640,7 +640,8 @@ def convert_timezones(
     ------
     ValueError
         If there are naive times and no ``fromtz``, or a naive time is ambiguous
-        or nonexistent in ``fromtz`` and ``ambiguous``/``nonexistent`` is 'raise'.
+        or nonexistent in ``fromtz`` and ``ambiguous``/``nonexistent`` is 'raise',
+        or ``driver='pandas'`` and ``x`` is not a DataFrame or Series.
     """
     if driver is None:
         times = list(x)
@@ -678,6 +679,9 @@ def convert_timezones(
 
         return converted_times
     elif driver == "pandas":
+        # Check the type before copying: a list's copy() takes no 'deep'
+        if not isinstance(x, (pd.DataFrame, pd.Series)):
+            raise ValueError("x is not a DataFrame or Series")
         data = x.copy(deep=True)
 
         # If x is a DataFrame, convert DateTimeIndex
@@ -685,11 +689,9 @@ def convert_timezones(
         if isinstance(data, pd.DataFrame):
             times = data.index
             index = True
-        elif isinstance(data, pd.Series):
+        else:
             times = data
             index = False
-        else:
-            raise ValueError("x is not a DataFrame or Series")
 
         # If the times are not tz-aware, assign them the fromtz timezone.
         if datetime_accessor(times).tz is None:

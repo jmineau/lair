@@ -410,6 +410,12 @@ class TestConvertTimezonesPandas:
         with pytest.raises(ValueError):
             clock.convert_timezones([], totz="MST", driver="bogus")
 
+    def test_list_with_pandas_driver_raises(self):
+        with pytest.raises(ValueError, match="DataFrame or Series"):
+            clock.convert_timezones(
+                [dt.datetime(2024, 1, 1)], totz="MST", fromtz="UTC", driver="pandas"
+            )
+
     def test_unknown_fromtz_is_not_reported_as_dst(self):
         # Only DST errors are re-raised as ValueError; anything else (here an
         # unknown zone, a KeyError under both pytz and zoneinfo) passes through
