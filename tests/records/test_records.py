@@ -1,8 +1,9 @@
 """Tests for lair.records (file/dir utilities).
 
 Network helpers (ftp_download, wget_download) are not exercised against real
-servers; wget_download is checked with subprocess.run stubbed out, and the pure
-filesystem helpers are tested against tmp_path fixtures.
+servers: wget_download runs with subprocess.run stubbed out and ftp_download
+against an in-memory fake of ftplib.FTP. The pure filesystem helpers are tested
+against tmp_path fixtures.
 """
 
 import os
@@ -58,6 +59,12 @@ class TestListFiles:
 
     def test_all_files_includes_hidden(self, tree):
         assert ".hidden" in records.list_files(tree, all_files=True)
+
+    def test_ignore_case(self, tree):
+        (tree / "D.TXT").write_text("")
+        assert records.list_files(tree, pattern="*.txt") == ["a.txt"]
+        found = records.list_files(tree, pattern="*.Txt", ignore_case=True)
+        assert sorted(found) == ["D.TXT", "a.txt"]  # original case is returned
 
     def test_recursive_full_names(self, tree):
         found = records.list_files(
@@ -152,7 +159,10 @@ def test_read_kml(tmp_path):
         "<Document><name>t</name></Document></kml>"
     )
     k = records.read_kml(str(kml_path))
-    assert k is not None
+    # fastkml < 1.0 has a features() method, >= 1.0 a features list
+    features = k.features() if callable(k.features) else k.features
+    (document,) = list(features)
+    assert document.name == "t"
 
 
 class TestWgetDownload:
@@ -185,6 +195,208 @@ class TestWgetDownload:
         monkeypatch.setattr(subprocess, "run", fake_run)
         with pytest.raises(subprocess.CalledProcessError):
             records.wget_download(["https://example.com/a.zip"], str(tmp_path))
+
+    def _fake_wget(self, monkeypatch, fail=()):
+        """Stub subprocess.run: wget writes a file, unzip is recorded."""
+        import subprocess
+
+        calls = []
+
+        def run(cmd, check):
+            calls.append(cmd)
+            if cmd[0] == "wget":
+                if cmd[3] in fail:
+                    raise subprocess.CalledProcessError(8, cmd)
+                with open(cmd[2], "w") as f:
+                    f.write("downloaded")
+
+        monkeypatch.setattr(subprocess, "run", run)
+        return calls
+
+    def test_zip_is_unzipped_and_removed(self, tmp_path, monkeypatch):
+        calls = self._fake_wget(monkeypatch)
+        records.wget_download("https://example.com/pub/a.zip", str(tmp_path))
+        zip_path = str(tmp_path / "a.zip")
+        assert calls == [
+            ["wget", "-O", zip_path, "https://example.com/pub/a.zip"],
+            ["unzip", "-d", str(tmp_path), zip_path],
+        ]
+        assert not os.path.exists(zip_path)
+
+    def test_unzip_false_keeps_the_zip(self, tmp_path, monkeypatch):
+        calls = self._fake_wget(monkeypatch)
+        records.wget_download(
+            "https://example.com/pub/a.zip", str(tmp_path), unzip=False
+        )
+        assert [c[0] for c in calls] == ["wget"]
+        assert (tmp_path / "a.zip").read_text() == "downloaded"
+
+    def test_failed_download_is_skipped(self, tmp_path, monkeypatch, caplog):
+        bad = "https://example.com/pub/bad.zip"
+        good = "https://example.com/pub/good.csv"
+        calls = self._fake_wget(monkeypatch, fail={bad})
+        records.wget_download([bad, good], str(tmp_path))
+        # No unzip of the failed zip; the other file still downloads
+        assert [c[0] for c in calls] == ["wget", "wget"]
+        assert (tmp_path / "good.csv").exists()
+        assert "Failed to download" in caplog.text
+
+    def test_empty_prefix_recreates_remote_tree(self, tmp_path, monkeypatch):
+        self._fake_wget(monkeypatch)
+        records.wget_download(
+            "https://example.com/pub/data/2024/f.csv", str(tmp_path), prefix=""
+        )
+        assert (tmp_path / "pub" / "data" / "2024" / "f.csv").exists()
+
+
+class _FakeFTP:
+    """In-memory stand-in for ``ftplib.FTP``.
+
+    ``tree`` maps absolute remote paths to bytes (files) or None (directories,
+    whose children are the paths directly beneath them). cwd() into a file or a
+    missing path raises error_perm 550, like a real server.
+    """
+
+    instances: list = []
+
+    def __init__(self, tree, host):
+        self.tree = {"/": None, **tree}
+        self.host = host
+        self.cwd_path = "/"
+        self.logged_in = None
+        self.quit_called = False
+        self.retrieved = []
+        _FakeFTP.instances.append(self)
+
+    def login(self, user, passwd):
+        self.logged_in = (user, passwd)
+
+    def cwd(self, path):
+        import ftplib
+
+        path = "/" + path.strip("/") if path != "/" else "/"
+        if self.tree.get(path, b"") is not None:  # a file, or missing
+            raise ftplib.error_perm(f"550 {path}: No such directory")
+        self.cwd_path = path
+
+    def nlst(self):
+        here = self.cwd_path.rstrip("/")
+        return sorted(
+            p.rsplit("/", 1)[1]
+            for p in self.tree
+            if p != "/" and p.rsplit("/", 1)[0] == here
+        )
+
+    def retrbinary(self, cmd, callback):
+        verb, path = cmd.split(" ", 1)
+        assert verb == "RETR"
+        self.retrieved.append(path)
+        callback(self.tree[path])
+
+    def quit(self):
+        self.quit_called = True
+
+
+class TestFtpDownload:
+    TREE = {
+        "/pub": None,
+        "/pub/data": None,
+        "/pub/data/2015": None,
+        "/pub/data/2015/a_2015-06.nc": b"a",
+        "/pub/data/2015/b_2015-07.nc": b"b",
+        "/pub/data/2016": None,
+        "/pub/data/2016/c_2016-06.nc": b"c",
+        "/pub/data/readme.txt": b"r",
+    }
+
+    @pytest.fixture
+    def ftp(self, monkeypatch):
+        import ftplib
+
+        _FakeFTP.instances = []
+        monkeypatch.setattr(
+            ftplib, "FTP", lambda host: _FakeFTP(self.TREE, host), raising=True
+        )
+        return _FakeFTP.instances
+
+    @staticmethod
+    def _local(root):
+        return {
+            p.relative_to(root).as_posix(): p.read_bytes()
+            for p in root.rglob("*")
+            if p.is_file()
+        }
+
+    def test_directory_is_mirrored_under_its_name(self, tmp_path, ftp):
+        assert records.ftp_download("ftp.example.com", "/pub/data", str(tmp_path))
+        assert self._local(tmp_path) == {
+            "data/2015/a_2015-06.nc": b"a",
+            "data/2015/b_2015-07.nc": b"b",
+            "data/2016/c_2016-06.nc": b"c",
+            "data/readme.txt": b"r",
+        }
+        (conn,) = ftp
+        assert conn.host == "ftp.example.com"
+        assert conn.logged_in == ("anonymous", "anonymous@")
+        assert conn.quit_called
+
+    def test_credentials_are_passed_through(self, tmp_path, ftp):
+        records.ftp_download(
+            "h", "pub/data/readme.txt", str(tmp_path), username="me", password="pw"
+        )
+        assert ftp[0].logged_in == ("me", "pw")
+
+    def test_single_file_lands_in_download_dir(self, tmp_path, ftp):
+        # No leading slash on the remote path is fine: it is taken from root
+        records.ftp_download("h", "pub/data/readme.txt", str(tmp_path))
+        assert self._local(tmp_path) == {"readme.txt": b"r"}
+
+    def test_prefix_strips_the_common_part(self, tmp_path, ftp):
+        records.ftp_download("h", "/pub/data/2015", str(tmp_path), prefix="/pub/data")
+        assert set(self._local(tmp_path)) == {
+            "2015/a_2015-06.nc",
+            "2015/b_2015-07.nc",
+        }
+
+    def test_empty_prefix_recreates_the_remote_tree(self, tmp_path, ftp):
+        records.ftp_download("h", "/pub/data/2016", str(tmp_path), prefix="")
+        assert set(self._local(tmp_path)) == {"pub/data/2016/c_2016-06.nc"}
+
+    def test_pattern_filters_files_not_directories(self, tmp_path, ftp):
+        # The directories don't match '*-06*' but are still descended into
+        records.ftp_download("h", "/pub/data", str(tmp_path), pattern="*-06*")
+        assert set(self._local(tmp_path)) == {
+            "data/2015/a_2015-06.nc",
+            "data/2016/c_2016-06.nc",
+        }
+        assert sorted(ftp[0].retrieved) == [
+            "/pub/data/2015/a_2015-06.nc",
+            "/pub/data/2016/c_2016-06.nc",
+        ]
+
+    def test_several_paths_one_connection(self, tmp_path, ftp):
+        records.ftp_download(
+            "h", ["/pub/data/2015", "/pub/data/2016"], str(tmp_path), prefix="/pub"
+        )
+        assert set(self._local(tmp_path)) == {
+            "data/2015/a_2015-06.nc",
+            "data/2015/b_2015-07.nc",
+            "data/2016/c_2016-06.nc",
+        }
+        assert len(ftp) == 1
+
+    def test_other_permission_errors_are_raised(self, tmp_path, monkeypatch):
+        import ftplib
+
+        class _Denied(_FakeFTP):
+            def cwd(self, path):
+                if path != "/":
+                    raise ftplib.error_perm("530 Login incorrect.")
+
+        monkeypatch.setattr(ftplib, "FTP", lambda host: _Denied(self.TREE, host))
+        with pytest.raises(ftplib.error_perm, match="530"):
+            records.ftp_download("h", "/pub/data", str(tmp_path))
+        assert self._local(tmp_path) == {}
 
 
 class TestPathMatches:
