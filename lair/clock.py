@@ -130,13 +130,15 @@ class TimeRange:
         if not any([self.start, self.stop]):
             # Entire Period - True
             return True
+        # stop is exclusive: TimeRange('2024') stops at 2025-01-01 00:00,
+        # which belongs to the next period
         if not self.start:
-            # Before stop - True if item <= stop
-            return item <= self.stop
+            # Before stop - True if item < stop
+            return item < self.stop
         if not self.stop:
             # After start - True if start <= item
             return self.start <= item
-        return self.start <= item <= self.stop
+        return self.start <= item < self.stop
 
     @property
     def start(self) -> dt.datetime | None:
@@ -195,22 +197,31 @@ class TimeRange:
         ValueError
             If the time_str format is invalid.
         """
-        # Parse time_range string using regex assuming ISO8601 format
+        # Parse time_range string using regex assuming ISO8601 format.
+        # Each component is only allowed after the one before it, and the
+        # whole string must match, so e.g. '2024-1' is rejected instead of
+        # being read as hour 1 of 2024.
         iso8601 = (
-            r"^(?P<year>\d{4})-?(?P<month>\d{2})?-?(?P<day>\d{2})?"
-            r"[T\s]?(?P<hour>\d{1,2})?:?(?:\d{2})?"
+            r"(?P<year>\d{4})"
+            r"(?:-?(?P<month>\d{2})"
+            r"(?:-?(?P<day>\d{2})"
+            r"(?:[T\s]?(?P<hour>\d{2})"
+            r"(?::?(?P<minute>\d{2})"
+            r"(?::?(?P<second>\d{2}))?)?)?)?)?"
         )
-        match = re.match(iso8601, string)
+        match = re.fullmatch(iso8601, string.strip())
         if not match:
-            raise ValueError("Invalid time string format")
+            raise ValueError(f"Invalid time string format: {string!r}")
 
         components = match.groupdict()
         year = int(components["year"])
         month = int(components["month"] or 1)
         day = int(components["day"] or 1)
         hour = int(components["hour"] or 0)
+        minute = int(components["minute"] or 0)
+        second = int(components["second"] or 0)
 
-        start = dt.datetime(year, month, day, hour)
+        start = dt.datetime(year, month, day, hour, minute, second)
 
         # Determine the stop time based on the inclusive flag
         if inclusive:
@@ -225,9 +236,15 @@ class TimeRange:
             elif components["day"] and not components["hour"]:
                 "YYYY-MM-DD"
                 stop = start + dt.timedelta(days=1)
-            elif components["hour"]:
+            elif components["hour"] and not components["minute"]:
                 "YYYY-MM-DDTHH"
                 stop = start + dt.timedelta(hours=1)
+            elif components["minute"] and not components["second"]:
+                "YYYY-MM-DDTHH:MM"
+                stop = start + dt.timedelta(minutes=1)
+            elif components["second"]:
+                "YYYY-MM-DDTHH:MM:SS"
+                stop = start + dt.timedelta(seconds=1)
             else:
                 raise ValueError("Invalid time string format")
 
@@ -280,13 +297,14 @@ class Timer(ContextDecorator):
         if self.logger:
             self.logger(self.text.format(elapsed_time))
         if self.name:
-            self.timers[self.name] += elapsed_time
+            self.timers[self.name] = self.timers.get(self.name, 0) + elapsed_time
 
         return elapsed_time
 
     def reset_timers(self):
         """Reset class timers"""
-        Timer.timers = {}
+        # Clear in place: existing Timer instances share this dict
+        Timer.timers.clear()
 
     def __enter__(self) -> "Timer":
         """Start a new timer as a context manager"""
@@ -529,7 +547,10 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
 
     this_year = dt.datetime(year, 1, 1)
     total_seconds_year = TimeRange(str(year)).total_seconds
-    return this_year + dt.timedelta(seconds=total_seconds_year * rem)
+    # Round to the millisecond: the float year term only carries ~1e-5 s of
+    # precision, and without rounding midnight comes back as 23:59:59.999998
+    # of the day before
+    return this_year + dt.timedelta(seconds=round(total_seconds_year * rem, 3))
 
 
 # ----- Time Zones ----- #
