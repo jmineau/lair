@@ -129,8 +129,14 @@ from lair.noaa import ...
    molecular weight.
 3. Sets pint's default sort to `sort_by_dimensionality`.
 4. Calls `setup_ccg_filter()` which, **on first import**, FTP-downloads
-   `ccg_filter.zip` from `ftp.gml.noaa.gov`, unzips it, renames to
-   `_ccg_filter.py`, and cleans up. After that it's a no-op.
+   `ccg_filter.zip` from `ftp.gml.noaa.gov` into a temporary directory
+   (`lair/.ccg_filter-*`, removed afterwards), takes only `ccg_filter.py` from
+   it (other zip members are ignored, so NOAA can change them), and moves it
+   into place as `_ccg_filter.py` with an atomic `os.replace`. A failed
+   download raises (so `import lair` fails) but leaves no partial file;
+   concurrent first imports (SLURM arrays) are safe. After that it's a no-op.
+   Tests call it with `lair_dir=` and a stubbed `lair.ftp_download`
+   (`tests/test_pkg.py`).
 
 Implications:
 - First import does network I/O. Don't `import lair` inside a tight test
