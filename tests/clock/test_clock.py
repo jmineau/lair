@@ -31,6 +31,25 @@ class TestTimeRangeParsing:
         with pytest.raises(ValueError):
             clock.TimeRange.parse_iso("not-a-date")
 
+    @pytest.mark.parametrize("bad", ["2024-1", "2024-1-5", "20241", "2024-01-15junk"])
+    def test_unpadded_or_trailing_input_raises(self, bad):
+        # These used to parse as hour 1 of 2024 (or silently drop the tail)
+        with pytest.raises(ValueError):
+            clock.TimeRange.parse_iso(bad)
+
+    @pytest.mark.parametrize(
+        "string, start, stop",
+        [
+            ("2024-01-15T12", (2024, 1, 15, 12), (2024, 1, 15, 13)),
+            ("2024011512", (2024, 1, 15, 12), (2024, 1, 15, 13)),
+            ("2024-01-15T12:30", (2024, 1, 15, 12, 30), (2024, 1, 15, 12, 31)),
+            ("2024-01-15 12:30:05", (2024, 1, 15, 12, 30, 5), (2024, 1, 15, 12, 30, 6)),
+        ],
+    )
+    def test_sub_day_precision(self, string, start, stop):
+        assert clock.TimeRange.parse_iso(string) == dt.datetime(*start)
+        assert clock.TimeRange.parse_iso(string, inclusive=True) == dt.datetime(*stop)
+
 
 class TestTimeRangeMembership:
     def test_contains_within_bounds(self):
@@ -39,6 +58,13 @@ class TestTimeRangeMembership:
         )
         assert dt.datetime(2024, 1, 2) in tr
         assert dt.datetime(2024, 2, 1) not in tr
+
+    def test_stop_is_exclusive(self):
+        # The stop of a string range is the start of the next period
+        assert dt.datetime(2024, 12, 31, 23, 59) in clock.TimeRange("2024")
+        assert dt.datetime(2025, 1, 1) not in clock.TimeRange("2024")
+        assert dt.datetime(2024, 1, 16) not in clock.TimeRange("2024-01-15")
+        assert dt.datetime(2024, 1, 1) not in clock.TimeRange(stop="2023")
 
     def test_open_ended_ranges(self):
         after = clock.TimeRange(start=dt.datetime(2024, 1, 1))
@@ -77,6 +103,18 @@ class TestDecimalDate:
         # Round-trip is accurate to within a second.
         recovered = clock.decimalDate2dt(decimal)
         assert abs((recovered - d).total_seconds()) < 1.0
+
+    @pytest.mark.parametrize(
+        "d",
+        [
+            dt.datetime(2023, 3, 1),
+            dt.datetime(2024, 12, 31),
+            dt.datetime(2020, 7, 4, 6),
+        ],
+    )
+    def test_round_trip_is_exact(self, d):
+        # Midnight used to come back as 23:59:59.999998 of the previous day
+        assert clock.decimalDate2dt(clock.dt2decimalDate(d)) == d
 
 
 class TestTimer:
@@ -204,6 +242,13 @@ class TestTimerAccumulation:
             pass
         assert "acc" in clock.Timer.timers
         assert clock.Timer.timers["acc"] >= 0.0
+
+    def test_existing_timer_survives_reset(self):
+        t = clock.Timer(name="survivor", logger=None)
+        t.reset_timers()
+        with t:  # used to raise KeyError: the name was gone from the new dict
+            pass
+        assert clock.Timer.timers["survivor"] >= 0.0
 
 
 def test_datetime_accessor_passthrough_without_dt():
