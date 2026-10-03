@@ -8,6 +8,7 @@ are not.
 
 import numpy as np
 import pytest
+from xarray import DataArray
 
 # exc_type=ImportError: lair._optional re-raises missing extras as a plain
 # ImportError (not ModuleNotFoundError), which importorskip ignores by default.
@@ -282,9 +283,9 @@ def test_basegrid_construction():
 def latlon_grid():
     """A 5x6 regular lat/lon Dataset (1 deg) with rio CRS + cf-recognisable axes.
 
-    This is the shape the clip/regrid/resample helpers expect: a Dataset (not a
-    DataArray — cf.add_bounds is Dataset-only) with 1D lat/lon carrying
-    degrees_north/east units, rio spatial dims set, and an EPSG:4326 CRS.
+    This is the shape the clip/regrid/resample helpers expect: 1D lat/lon
+    carrying degrees_north/east units, rio spatial dims set, and an EPSG:4326
+    CRS. (``latlon_grid.emis`` is the DataArray version.)
     """
     import xarray as xr
 
@@ -412,6 +413,87 @@ class TestResampleRegrid:
         regridded = geo.regrid(latlon_grid, out_grid)
         assert regridded.sizes["lat"] == out_grid.sizes["lat"]
         assert regridded.sizes["lon"] == out_grid.sizes["lon"]
+
+
+class TestDataArrayInput:
+    """DataArray in -> DataArray out for the cf-bounds helpers (#34).
+
+    cf_xarray's bounds helpers are Dataset-only, so these used to raise
+    AttributeError on a DataArray.
+    """
+
+    @pytest.fixture
+    def da(self, latlon_grid):
+        da = latlon_grid.emis
+        da.attrs["units"] = "kg m-2 s-1"
+        return da
+
+    def test_gridcell_area(self, latlon_grid, da):
+        area = geo.gridcell_area(da)
+        np.testing.assert_allclose(area, geo.gridcell_area(latlon_grid))
+
+    def test_gridcell_area_metre_grid(self):
+        import xarray as xr
+
+        x = 4e5 + 2000.0 * np.arange(4)
+        y = 4.5e6 + 1000.0 * np.arange(3)
+        da = xr.DataArray(
+            np.ones((3, 4)), coords={"y": y, "x": x}, dims=("y", "x"), name="v"
+        )
+        da = geo.write_rio_crs(da.rio.set_spatial_dims(x_dim="x", y_dim="y"), 32612)
+        np.testing.assert_allclose(geo.gridcell_area(da).values, 2.0)
+
+    def test_resample(self, latlon_grid, da):
+        out = geo.resample(da, 2.0)
+        assert isinstance(out, DataArray)
+        assert out.name == "emis"
+        assert out.attrs["units"] == "kg m-2 s-1"
+        assert out.rio.crs is not None
+        np.testing.assert_allclose(out, geo.resample(latlon_grid, 2.0).emis)
+
+    def test_resample_unnamed(self, da):
+        out = geo.resample(da.rename(None), 2.0)
+        assert isinstance(out, DataArray)
+        assert out.name is None
+
+    def test_regrid(self, latlon_grid, da):
+        out_grid = geo.generate_regular_grid(
+            -114, -108, 2.0, 40, 45, 2.0, x_label="lon", y_label="lat"
+        )
+        out_grid.lat.attrs["units"] = "degrees_north"
+        out_grid.lon.attrs["units"] = "degrees_east"
+        out = geo.regrid(da, out_grid)
+        assert isinstance(out, DataArray)
+        assert out.name == "emis"
+        np.testing.assert_allclose(out, geo.regrid(latlon_grid, out_grid).emis)
+
+    def test_basegrid(self, da):
+        bgrid = geo.BaseGrid(da, crs=4326)
+        coarse = bgrid.resample(2.0)
+        assert isinstance(coarse.data, DataArray)
+        assert coarse.data.sizes["lat"] < da.sizes["lat"]
+        assert float(bgrid.gridcell_area.min()) > 0
+
+
+class TestGridcellAreaCRS:
+    """Any geographic CRS is lat/lon, not only EPSG:4326 (#34)."""
+
+    @pytest.mark.parametrize("crs", ["OGC:CRS84", 4269])
+    def test_geographic_crs(self, latlon_grid, crs):
+        area = geo.gridcell_area(geo.write_rio_crs(latlon_grid, crs))
+        np.testing.assert_allclose(area, geo.gridcell_area(latlon_grid))
+
+    def test_no_crs_is_value_error(self, latlon_grid):
+        grid = latlon_grid.drop_vars("spatial_ref")
+        assert grid.rio.crs is None
+        with pytest.raises(ValueError, match="no CRS"):
+            geo.gridcell_area(grid)
+
+    def test_non_metre_projected_crs(self, latlon_grid):
+        # Utah Central in US survey feet: projected, but not metres
+        grid = geo.write_rio_crs(latlon_grid, 3566)
+        with pytest.raises(ValueError, match="Only lat-lon and meter grids"):
+            geo.gridcell_area(grid)
 
 
 class TestBaseGridOperations:

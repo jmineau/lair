@@ -464,6 +464,30 @@ XESMF_Regrid_Methods = Literal[
     "patch",
 ]
 
+#: Name of the variable a DataArray is stored under while it is a temporary Dataset
+_TMP_VAR = "__lair_data__"
+
+
+def _as_dataset(data: DataArray | Dataset) -> Dataset:
+    """
+    Wrap a DataArray in a one-variable Dataset; a Dataset is returned as is.
+
+    cf_xarray's bounds helpers (``cf.add_bounds``/``cf.get_bounds``, also used
+    by xesmf) only exist on Datasets. Undo with :func:`_like_input`.
+    """
+    if isinstance(data, DataArray):
+        return data.to_dataset(name=_TMP_VAR)
+    return data
+
+
+def _like_input(result: Dataset, data: _XarrayT) -> _XarrayT:
+    """Undo :func:`_as_dataset`: a DataArray input gets a DataArray back, with its name."""
+    if isinstance(data, DataArray):
+        out = result[_TMP_VAR]
+        out.name = data.name
+        return cast(_XarrayT, out)
+    return cast(_XarrayT, result)
+
 
 class BaseGrid:
     """
@@ -734,7 +758,9 @@ def gridcell_area(
     Parameters
     ----------
     grid : xr.DataArray | xr.Dataset
-        Grid data. `rioxarray` coords must be set.
+        Grid data with a `rioxarray` CRS: geographic (any datum, e.g.
+        EPSG:4326, OGC:CRS84, EPSG:4269) with ``lat``/``lon`` coordinates,
+        or projected in metres.
     R : float | array-like, optional
         Radius of earth in kilometers (lat-lon grids only), by default
         calculated based on the latitude. An array must broadcast against the
@@ -748,11 +774,18 @@ def gridcell_area(
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
 
-    if grid.rio.crs == "EPSG:4326":
+    crs = grid.rio.crs
+    if crs is None:
+        raise ValueError("grid has no CRS; set one with write_rio_crs(grid, crs).")
+
+    # Only the coordinates matter, and cf bounds need a Dataset
+    grid = _as_dataset(grid)
+
+    if crs.is_geographic:
         if R is None:
             R = earth_radius(grid["lat"])
         area = xe.util.cell_area(grid, earth_radius=R)
-    elif grid.rio.crs.linear_units == "metre":
+    elif crs.linear_units == "metre":
         bounds = grid.cf.add_bounds(["x", "y"])
         dx = bounds.x_bounds.diff("bounds").squeeze("bounds", drop=True)
         dy = bounds.y_bounds.diff("bounds").squeeze("bounds", drop=True)
@@ -892,10 +925,10 @@ def _cell_centers(vmin: float, vmax: float, d: float) -> np.ndarray:
 
 
 def regrid(
-    data: DataArray | Dataset,
+    data: _XarrayT,
     out_grid: DataArray | Dataset,
     method: XESMF_Regrid_Methods = "bilinear",
-) -> DataArray | Dataset:
+) -> _XarrayT:
     """
     Regrid data to a new grid. Uses `xesmf` for regridding.
 
@@ -919,19 +952,20 @@ def regrid(
     Returns
     -------
     xr.DataArray | xr.Dataset
-        The regridded data.
+        The regridded data, the same type as ``data``.
     """
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
 
     out_crs = "EPSG:4326"
 
-    # Use cf-xarray to calculate the bounds of the grid cells
-    data = data.cf.add_bounds(["lat", "lon"])
+    # Use cf-xarray to calculate the bounds of the grid cells (Dataset only;
+    # a DataArray is turned back into one at the end)
+    ds = _as_dataset(data).cf.add_bounds(["lat", "lon"])
 
     # Regrid the data using `xesmf`
-    regridder = xe.Regridder(ds_in=data, ds_out=out_grid, method=method)
-    regridded = regridder(data, keep_attrs=True)
+    regridder = xe.Regridder(ds_in=ds, ds_out=out_grid, method=method)
+    regridded = regridder(ds, keep_attrs=True)
 
     if len(regridded.lon.dims) == 2:
         # New grid has 2D lat/lon, but lat is constant over x axis,
@@ -949,14 +983,14 @@ def regrid(
     regridded.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=True)
     regridded = write_rio_crs(regridded, out_crs)
 
-    return regridded
+    return _like_input(regridded, data)
 
 
 def resample(
-    data: DataArray | Dataset,
+    data: _XarrayT,
     resolution: float | tuple[float, float],
     regrid_method: XESMF_Regrid_Methods = "bilinear",
-) -> DataArray | Dataset:
+) -> _XarrayT:
     """
     Resample the data to a new resolution. Returns new data; the input is
     not modified.
@@ -974,7 +1008,7 @@ def resample(
     Returns
     -------
     xr.DataArray | xr.Dataset
-        The resampled data.
+        The resampled data, the same type as ``data``.
     """
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
@@ -983,7 +1017,7 @@ def resample(
         resolution = (resolution, resolution)
 
     # Calculate the new grid
-    bounds = data.cf.add_bounds(["lat", "lon"])
+    bounds = _as_dataset(data).cf.add_bounds(["lat", "lon"])
     xmin = bounds.lon_bounds.min()
     xmax = bounds.lon_bounds.max()
     ymin = bounds.lat_bounds.min()
@@ -1207,7 +1241,7 @@ def gridcell_area_from_latlon(
         Grid-cell area in square-kilometers, shape (len(lat), len(lon))
     """
     lat, lon = np.asarray(lat), np.asarray(lon)
-    # gridcell_area needs a Dataset (cf bounds) with cf-recognisable lat/lon
+    # A coordinate-only grid with cf-recognisable lat/lon
     grid = Dataset(coords={"lat": lat, "lon": lon})
     grid.lat.attrs["units"] = "degrees_north"
     grid.lon.attrs["units"] = "degrees_east"
