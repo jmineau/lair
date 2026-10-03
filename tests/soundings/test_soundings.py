@@ -61,6 +61,40 @@ class TestInterpolate:
         assert T.loc[:2900].notna().all()
         assert T.loc[3000:].isna().all()  # no extrapolation past the top (2989 m)
 
+    def test_wind_direction_interpolates_across_north(self, tmp_path):
+        # 350 deg below and 10 deg above: halfway is ~0/360 deg, not 180 deg
+        direction = np.array([350.0, 10.0])
+        speed = np.array([10.0, 10.0])
+        df = pd.DataFrame(
+            {
+                "pressure": [870.0, 860.0],
+                "height": [1300.0, 1400.0],
+                "temperature": [0.0, -1.0],
+                "dewpoint": [-5.0, -6.0],
+                "direction": direction,
+                "speed": speed,
+                "u_wind": -speed * np.sin(np.deg2rad(direction)),
+                "v_wind": -speed * np.cos(np.deg2rad(direction)),
+                "station": "SLC",
+                "time": pd.Timestamp("2024-01-01"),
+            }
+        )
+        path = tmp_path / "SLC_2024010100.csv"
+        df.to_csv(path, index=False)
+        ds = soundings.Sounding(str(path)).interpolate(
+            start=1300, stop=1400, interval=50
+        )
+        wd = ds.direction.isel(time=0).to_series()
+        ws = ds.speed.isel(time=0).to_series()
+        # Angular distance from north at the midpoint
+        assert min(wd.loc[1350] % 360, 360 - wd.loc[1350] % 360) == pytest.approx(
+            0.0, abs=1e-6
+        )
+        assert wd.loc[1300] == pytest.approx(350.0)
+        assert ws.loc[1300] == pytest.approx(10.0)
+        # Speed is the magnitude of the interpolated vector
+        assert ws.loc[1350] == pytest.approx(10.0 * np.cos(np.deg2rad(10.0)))
+
     def test_missing_pw_is_nan(self, tmp_path):
         path = _write_sounding(
             tmp_path, "SLC", pd.Timestamp("2024-01-01"), with_pw=False
@@ -100,6 +134,22 @@ class TestGetSoundings:
         )
         assert ds.sizes["time"] == 2
 
+    def test_tz_aware_start_end(self, tmp_path):
+        # tz-aware bounds are converted to UTC before comparing with the
+        # (naive UTC) file times
+        for t in pd.date_range("2024-01-01 00:00", periods=3, freq="12h"):
+            _write_sounding(tmp_path, "SLC", t)
+        ds = soundings.get_soundings(
+            "SLC",
+            start=pd.Timestamp("2024-01-01 05:00", tz="America/Denver"),  # 12Z
+            end=dt.datetime(2024, 1, 2, tzinfo=dt.timezone.utc),
+            sounding_dir=str(tmp_path),
+        )
+        assert list(pd.DatetimeIndex(ds.time.values)) == [
+            pd.Timestamp("2024-01-01 12:00"),
+            pd.Timestamp("2024-01-02 00:00"),
+        ]
+
     def test_missing_dir_without_dates_raises(self, tmp_path):
         with pytest.raises(ValueError, match="start and end"):
             soundings.get_soundings("SLC", sounding_dir=str(tmp_path / "missing"))
@@ -122,6 +172,47 @@ class TestGetSoundings:
             soundings.get_soundings(
                 "SLC", start=dt.datetime(2025, 1, 1), sounding_dir=str(tmp_path)
             )
+
+
+class TestDownloadSoundings:
+    @pytest.fixture
+    def requested(self, monkeypatch):
+        """Record the times download_soundings asks for, without any network."""
+        times = []
+        monkeypatch.setattr(
+            soundings,
+            "download_sounding",
+            lambda station, date, dst=None: times.append(pd.Timestamp(date)),
+        )
+        return times
+
+    def test_times_snap_to_00z_12z(self, requested):
+        soundings.download_soundings(
+            "SLC", dt.datetime(2024, 1, 1, 6), dt.datetime(2024, 1, 2, 6)
+        )
+        assert requested == [
+            pd.Timestamp("2024-01-01 12:00"),
+            pd.Timestamp("2024-01-02 00:00"),
+        ]
+
+    def test_bounds_on_synoptic_times_are_inclusive(self, requested):
+        soundings.download_soundings("SLC", "2024-01-01 00:00", "2024-01-01 12:00")
+        assert requested == [
+            pd.Timestamp("2024-01-01 00:00"),
+            pd.Timestamp("2024-01-01 12:00"),
+        ]
+
+    def test_tz_aware_bounds_are_utc(self, requested):
+        # 17:00 MST is 00Z the next day
+        soundings.download_soundings(
+            "SLC",
+            pd.Timestamp("2024-01-01 17:00", tz="America/Denver"),
+            pd.Timestamp("2024-01-02 05:00", tz="America/Denver"),
+        )
+        assert requested == [
+            pd.Timestamp("2024-01-02 00:00"),
+            pd.Timestamp("2024-01-02 12:00"),
+        ]
 
 
 # Live Wyoming upper-air fetches (download_sounding/download_soundings) would

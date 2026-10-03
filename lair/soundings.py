@@ -5,11 +5,13 @@ Upper air sounding data.
 from collections import deque
 import datetime as dt
 import os
+import numpy as np
 import pandas as pd
 import requests
 from time import sleep
 import xarray as xr
 
+from lair.air import wind_direction
 from lair.config import get_data_dir
 from lair._optional import import_optional_dependency
 
@@ -130,6 +132,12 @@ class Sounding:
 
         data = data[raw.isna().to_numpy() & (data.index >= start) & (data.index < stop)]
 
+        # Direction can't be interpolated linearly (350 and 10 deg would give
+        # 180), so rebuild direction and speed from the interpolated u/v
+        if "u_wind" in data.columns and "v_wind" in data.columns:
+            data["direction"] = wind_direction(data["u_wind"], data["v_wind"])
+            data["speed"] = np.hypot(data["u_wind"], data["v_wind"])
+
         ds = data.to_xarray().expand_dims(time=[self.time])
         ds["pw"] = (("time",), [getattr(self, "pw", float("nan"))])
 
@@ -174,6 +182,12 @@ def merge(soundings: list) -> pd.DataFrame:
     return pd.concat(dfs)
 
 
+def _naive_utc(t) -> pd.Timestamp:
+    """Timestamp in naive UTC (the sounding file times); naive input is taken as UTC."""
+    t = pd.Timestamp(t)
+    return t.tz_convert("UTC").tz_localize(None) if t.tz is not None else t
+
+
 def download_sounding(station, date, dst=None) -> str:
     """
     Download an upper air sounding from the Wyoming archive.
@@ -181,7 +195,8 @@ def download_sounding(station, date, dst=None) -> str:
     Parameters
     ----------
     station : str
-        The 4-letter station identifier.  # FIXME: 3-letter?
+        The 3-letter station identifier (e.g. ``'SLC'``) passed to the Wyoming
+        service via siphon. Also used as the file-name prefix.
     date : datetime
         The date and time.
     dst : str
@@ -214,11 +229,13 @@ def download_soundings(station, start, end, dst=None, months=None):
     Parameters
     ----------
     station : str
-        The 4-letter station identifier.
+        The 3-letter station identifier (e.g. ``'SLC'``).
     start : datetime
-        The start date and time.
+        The start date and time. Soundings are at 00 and 12 UTC, so the first
+        one requested is the first of those at or after ``start``.
     end : datetime
-        The end date and time.
+        The end date and time (inclusive). Naive times are taken as UTC;
+        tz-aware times are converted.
     dst : str
         The destination directory.
     months : list
@@ -226,6 +243,10 @@ def download_soundings(station, start, end, dst=None, months=None):
     """
     print("Downloading soundings...")
 
+    # Snap to the 00/12 UTC synoptic times; date_range would otherwise anchor
+    # on start (start=06:00 -> 06Z, 18Z, ...)
+    start = _naive_utc(start).ceil("12h")
+    end = _naive_utc(end).floor("12h")
     dates = pd.date_range(start, end, freq="12h")
 
     if months:
@@ -270,9 +291,11 @@ def get_soundings(
     Parameters
     ----------
     station : str
-        The 4-letter station identifier.
+        The 3-letter station identifier (e.g. ``'SLC'``). Names the
+        subdirectory of ``$LAIR_SOUNDING_DIR`` and the file prefix.
     start : datetime | str, optional
-        The start date and time (inclusive).
+        The start date and time (inclusive). Naive times are taken as UTC;
+        tz-aware times are converted.
     end : datetime | str, optional
         The end date and time (inclusive).
     sounding_dir : str
@@ -289,8 +312,9 @@ def get_soundings(
     xr.Dataset | pd.DataFrame
         The sounding data.
     """
-    start = pd.Timestamp(start).to_pydatetime() if start is not None else None
-    end = pd.Timestamp(end).to_pydatetime() if end is not None else None
+    # File times are naive UTC, so compare against naive UTC bounds
+    start = _naive_utc(start).to_pydatetime() if start is not None else None
+    end = _naive_utc(end).to_pydatetime() if end is not None else None
 
     if sounding_dir is None:
         sounding_dir = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)
