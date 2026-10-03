@@ -673,7 +673,9 @@ class BaseGrid:
         BaseGrid
             The reprojected grid
         """
-        assert self.crs.epsg != 4326, "Data is already in lat lon"
+        # Any geographic CRS (EPSG:4326, OGC:CRS84, NAD83, ...) is already lat/lon
+        if self.crs.to_pyproj().is_geographic:
+            raise ValueError("Data is already in lat lon")
 
         resampled_data = resample(
             self.data, resolution=resolution, regrid_method=regrid_method
@@ -727,9 +729,8 @@ def clip(
     xr.DataArray | xr.Dataset
         The clipped data.
     """
-    assert (bbox is not None) + (extent is not None) + (geom is not None) == 1, (
-        "Only one of bbox, extent, or geom must be provided."
-    )
+    if (bbox is not None) + (extent is not None) + (geom is not None) != 1:
+        raise ValueError("Exactly one of bbox, extent, or geom must be provided.")
 
     if extent is not None:
         # Convert extent to bbox

@@ -490,11 +490,11 @@ class TestClip:
         assert clipped.sizes == single.sizes
 
     def test_requires_exactly_one_selector(self, latlon_grid):
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match="Exactly one"):
             geo.clip(
                 latlon_grid, bbox=(-113, 41, -110, 43), extent=(-113, -110, 41, 43)
             )
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match="Exactly one"):
             geo.clip(latlon_grid)
 
 
@@ -684,10 +684,11 @@ class TestBaseGridOperations:
         bgrid = geo.BaseGrid(latlon_grid, crs=4326)
         assert float(bgrid.gridcell_area.min()) > 0
 
-    def test_reproject_rejects_latlon(self, latlon_grid):
-        # reproject asserts the source CRS is not already 4326.
-        bgrid = geo.BaseGrid(latlon_grid, crs=4326)
-        with pytest.raises(AssertionError):
+    @pytest.mark.parametrize("crs", [4326, "OGC:CRS84", "EPSG:4269"])
+    def test_reproject_rejects_latlon(self, latlon_grid, crs):
+        # Any geographic source CRS is already lat/lon
+        bgrid = geo.BaseGrid(latlon_grid, crs=crs)
+        with pytest.raises(ValueError, match="already in lat lon"):
             bgrid.reproject(2.0)
 
 

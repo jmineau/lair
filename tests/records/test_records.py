@@ -138,7 +138,7 @@ class TestCacher:
         assert cacher.index_file == ".cache.pkl.index"
 
     def test_requires_pkl_extension(self, tmp_path):
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match=".pkl"):
             records.Cacher(lambda x: x, str(tmp_path / "cache.txt"))
 
 

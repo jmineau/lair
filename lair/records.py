@@ -350,7 +350,8 @@ class Cacher:
             kept. (The old result stays in ``cache_file`` but is no longer
             referenced.) Defaults to False.
         """
-        assert cache_file.endswith(".pkl")
+        if not cache_file.endswith(".pkl"):
+            raise ValueError(f"cache_file must end in .pkl: {cache_file!r}")
 
         self.func = func
         self.cache_file = cache_file
