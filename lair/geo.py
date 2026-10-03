@@ -7,6 +7,8 @@ from __future__ import (
 )  # keep optional-dep annotations (e.g. shapely Polygon) lazy
 
 import copy
+import math
+from collections import deque
 from typing import Any, Literal, TypeVar, cast
 
 import matplotlib.pyplot as plt
@@ -1263,48 +1265,57 @@ def points_along_line(
     resolution_factor: float | None = None,
 ) -> list[Point]:
     """
-    Generates Euclidean spaced points covering a single Line or a MultiLineString network.
+    Generate points spaced along a line or a network of lines.
+
+    Every pair of points is at least ``spacing`` apart (Euclidean distance, in
+    the units of the coordinates), across the whole network, including between
+    disconnected lines.
 
     The algorithm works as follows:
-    1. **Topology Fixing**: The input MultiLineString is processed to ensure that all
-       intersections are properly represented as nodes in the graph. This is done using
-       `unary_union` to split lines at intersections, followed by `linemerge` to stitch
-       simple paths back together.
-    2. **Graph Construction**: A high-resolution graph is built from the cleaned geometry.
-       Each line is segmentized into small segments based on the `resolution_factor`, and
-       edges are added to the graph with weights corresponding to the Euclidean distance
-       between nodes.
-    3. **Point Generation**: A breadth-first search (BFS) is performed on the graph to
-       generate points. The BFS ensures that points are placed at least `spacing` distance
-       apart. When a point is placed, it becomes the "origin" for measuring distance to
-       subsequent points. If a candidate point is too close to any previously placed point
-       (not just the parent), it is skipped, but the BFS continues to explore neighbors to
-       find valid locations further along the network.
-    4. **Global State Management**: The function maintains a global list of placed points to
-       enforce the spacing constraint across the entire network, even between disconnected
-       components.
+
+    1. **Topology fixing**: ``union_all`` splits the lines where they cross, so
+       every intersection becomes a node, then ``line_merge`` stitches simple
+       paths back together.
+    2. **Graph construction**: each line is segmentized into steps of at most
+       ``spacing * resolution_factor``, and the vertices become the nodes of a
+       graph whose edges follow the lines. Node coordinates are rounded to 5
+       decimal places, which snaps microscopic gaps between lines together.
+    3. **Point placement**: each connected component is walked breadth-first
+       from an endpoint (any node for a closed loop), visiting each node once.
+       The walk carries the last point placed behind it as its "origin". A node
+       at least ``spacing`` from its origin gets a point, which becomes the new
+       origin. A node closer than ``spacing`` to any other placed point is
+       skipped, and the walk keeps going, still measuring from the old origin.
+    4. **Global spacing**: placed points are kept in a grid of square cells, so
+       checking a node against every placed point only looks at nearby cells.
+       Runtime is close to linear in the number of graph nodes.
 
     Parameters
     ----------
-    multiline : shapely.geometry.MultiLineString
-        The input MultiLineString geometry representing the network.
+    multiline : shapely.LineString | shapely.MultiLineString
+        The line, or network of lines.
     spacing : float
         The minimum Euclidean distance between generated points.
     resolution_factor : float, optional
-        A factor to control the density of the underlying graph.
-        Smaller values create a denser graph, which can better capture curves but may be slower to process. Default is 0.1.
+        Graph step size as a fraction of ``spacing``, by default 0.1. Smaller
+        values make a denser graph, which follows curves more closely and
+        places points closer to exactly ``spacing`` apart, but is slower.
 
     Returns
     -------
-    list[shapely.geometry.Point]
-        A list of Points generated along the MultiLineString network, spaced at least `spacing` distance apart.
+    list[shapely.Point]
+        Points along the network, in the order they were placed, each at least
+        ``spacing`` from every other.
     """
     import_optional_dependency("networkx")
     import networkx as nx
     from shapely import line_merge, segmentize, union_all
 
+    if spacing <= 0:
+        raise ValueError(f"spacing must be positive, got {spacing}")
     if resolution_factor is None:
         resolution_factor = 0.1
+    step_size = spacing * resolution_factor
 
     # --- Topology Fixing ---
     # unary_union splits lines at intersections, creating nodes where lines cross.
@@ -1318,11 +1329,13 @@ def points_along_line(
 
     # --- Build High-Res Graph ---
     G = nx.Graph()
-    step_size = spacing * resolution_factor
 
     # We round coordinates to 5 decimal places to "snap" microscopic gaps
     def round_coord(c):
         return (round(c[0], 5), round(c[1], 5))
+
+    def distance(a, b):
+        return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
     for line in lines:
         # Segmentize to ensure we can measure distance around curves
@@ -1334,13 +1347,35 @@ def points_along_line(
             v = round_coord(coords[i + 1])
 
             # Add edge with Euclidean weight
-            dist = np.sqrt((u[0] - v[0]) ** 2 + (u[1] - v[1]) ** 2)
-            G.add_edge(u, v, weight=dist)
+            G.add_edge(u, v, weight=distance(u, v))
 
     # --- Global State ---
-    final_points = []
-    # We maintain a simple list of accepted coordinates for checking distances
-    placed_coords = []
+    # Coordinates of the placed points, in order
+    placed: list[tuple[float, float]] = []
+    # Spatial index: grid cell -> indices into `placed`. Two points closer than
+    # `spacing` are less than half a cell apart, so they are in the same or
+    # adjacent cells (cells of exactly `spacing` could miss one by float error).
+    cell_size = 2 * spacing
+    cells: dict[tuple[int, int], list[int]] = {}
+
+    def cell_of(c):
+        return (math.floor(c[0] / cell_size), math.floor(c[1] / cell_size))
+
+    def place(c) -> int:
+        """Place a point at c; returns its index in `placed`."""
+        placed.append(c)
+        cells.setdefault(cell_of(c), []).append(len(placed) - 1)
+        return len(placed) - 1
+
+    def too_close(c, skip: int = -1) -> bool:
+        """Whether c is closer than `spacing` to a placed point (other than `skip`)."""
+        cx, cy = cell_of(c)
+        for i in (cx - 1, cx, cx + 1):
+            for j in (cy - 1, cy, cy + 1):
+                for k in cells.get((i, j), ()):
+                    if k != skip and distance(c, placed[k]) < spacing:
+                        return True
+        return False
 
     # --- Process Every Component ---
     # This loop ensures we jump to the top line even if it's disconnected
@@ -1350,82 +1385,34 @@ def points_along_line(
         # Pick a start node for this component (preferably an endpoint)
         degrees = dict(subgraph.degree())
         start_node = next(
-            (n for n, d in degrees.items() if d == 1), list(subgraph.nodes)[0]
+            (n for n, d in degrees.items() if d == 1), next(iter(subgraph.nodes))
         )
 
-        # Check if we should place a point at the start_node (might be too close to a different component)
-        start_ok = True
-        for p in placed_coords:
-            d_check = np.sqrt((start_node[0] - p[0]) ** 2 + (start_node[1] - p[1]) ** 2)
-            if d_check < spacing:
-                start_ok = False
-                break
+        # The start might be too close to a point on another component.
+        # Origin -1 means nothing placed behind us yet: place at the first
+        # node that is clear of all placed points.
+        start_origin = -1 if too_close(start_node) else place(start_node)
 
-        queue = []
-        visited_state = set()
-
-        if start_ok:
-            final_points.append(Point(start_node))
-            placed_coords.append(start_node)
-            # (current_node, index_of_last_valid_point_in_placed_coords)
-            queue.append((start_node, len(placed_coords) - 1))
-        else:
-            # If start is blocked, treat it as if we are searching for the first point
-            # We use -1 to indicate "no parent yet"
-            queue.append((start_node, -1))
-
-        # BFS Walker
+        # BFS walker over (node, index of its origin in `placed`)
+        queue = deque([(start_node, start_origin)])
+        visited = set()
         while queue:
-            current_node, origin_idx = queue.pop(0)
-
-            # State tracking: (Node, Which Point is the Parent)
-            state = (current_node, origin_idx)
-            if state in visited_state:
+            node, origin = queue.popleft()
+            if node in visited:
                 continue
-            visited_state.add(state)
+            visited.add(node)
 
-            # Determine reference point
-            if origin_idx == -1:
-                # We haven't placed a point on this component yet
-                dist = 0  # Arbitrary, effectively we are just walking until we find a clear spot
-            else:
-                origin_coord = placed_coords[origin_idx]
-                dist = np.sqrt(
-                    (current_node[0] - origin_coord[0]) ** 2
-                    + (current_node[1] - origin_coord[1]) ** 2
-                )
-
-            next_origin_idx = origin_idx
-
-            # Attempt to place point
-            if (origin_idx != -1 and dist >= spacing) or (origin_idx == -1):
-                # HARD CONSTRAINT: Check against ALL global points
-                is_safe = True
-                for i, p in enumerate(placed_coords):
-                    # Don't check against our own parent (we know it's valid)
-                    if i == origin_idx:
-                        continue
-
-                    d_global = np.sqrt(
-                        (current_node[0] - p[0]) ** 2 + (current_node[1] - p[1]) ** 2
-                    )
-                    if d_global < spacing:
-                        is_safe = False
-                        break
-
-                if is_safe:
-                    # Place the point!
-                    final_points.append(Point(current_node))
-                    placed_coords.append(current_node)
-                    next_origin_idx = len(placed_coords) - 1
-                else:
-                    # Logic: If we are blocked by a neighbor, we KEEP WALKING
-                    # but we keep the OLD origin (we are still measuring from the previous valid point)
-                    pass
+            # Attempt to place a point, checking against ALL placed points
+            # (except the origin, which we know is far enough)
+            if origin == -1 or distance(node, placed[origin]) >= spacing:
+                if not too_close(node, skip=origin):
+                    origin = place(node)
+                # Otherwise we are blocked by a neighbour: KEEP WALKING, still
+                # measuring from the old origin
 
             # Propagate
-            for neighbor in subgraph.neighbors(current_node):
-                if (neighbor, next_origin_idx) not in visited_state:
-                    queue.append((neighbor, next_origin_idx))
+            for neighbor in G.neighbors(node):
+                if neighbor not in visited:
+                    queue.append((neighbor, origin))
 
-    return final_points
+    return [Point(c) for c in placed]
