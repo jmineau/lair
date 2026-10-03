@@ -13,11 +13,13 @@ from __future__ import (
 )  # keep optional-dep annotations (e.g. shapely Polygon) lazy
 
 import datetime as dt
+import functools
 import os
 import re
 from abc import ABCMeta
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Literal, TypeVar
+from typing import Any, Literal, ParamSpec, TypeVar
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -38,8 +40,6 @@ shapely = import_optional_dependency("shapely")
 from molmass import Formula  # noqa: E402
 from shapely import Polygon  # noqa: E402
 
-xr.set_options(keep_attrs=True)
-
 
 #: Environment variable holding the inventory archive root
 #: (with EDGAR/, EPA/, GFEI/, vulcan/ and WetCHARTs/ subdirectories)
@@ -53,6 +53,26 @@ DEFAULT_PINT_FMT = "~C"
 Regrid_Methods = Literal["conservative", "conservative_normed"]
 
 _XarrayT = TypeVar("_XarrayT", bound=DataArray | Dataset)
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+def _keep_attrs(func: Callable[_P, _R]) -> Callable[_P, _R]:
+    """
+    Run ``func`` with xarray keeping attributes through its operations.
+
+    Inventory variables carry ``units``, ``long_name`` etc. that must survive
+    arithmetic and reductions (older xarray drops them by default). The option
+    is set only while ``func`` runs, never globally: user code keeps xarray's
+    own default (GitHub issue #38).
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+        with xr.set_options(keep_attrs=True):
+            return func(*args, **kwargs)
+
+    return wrapper
 
 
 #: Pollutants whose emissions are reported as the mass of another species
@@ -226,10 +246,13 @@ class Inventory(BaseGrid):
                 raise FileNotFoundError(
                     f"No {type(self).__name__} files found under {self.path}"
                 )
-            ds = self._open(files)
+            # Loaders' arithmetic (ensemble means, scale factors, unit
+            # factors) must keep the variables' attributes
+            with xr.set_options(keep_attrs=True):
+                ds = self._open(files)
 
-            # Apply inventory-specific processing
-            ds = self._process(ds)
+                # Apply inventory-specific processing
+                ds = self._process(ds)
         elif isinstance(data, Dataset):
             self.path = None
             ds = data
@@ -329,6 +352,7 @@ class Inventory(BaseGrid):
             return quantity_unit, area_unit, time_unit
 
     @property
+    @_keep_attrs
     def absolute_emissions(self) -> Dataset:
         """
         Calculate the absolute emissions (total per gridcell for time step by variable).
@@ -492,6 +516,7 @@ class Inventory(BaseGrid):
             new.src_units = dst_units
             return new
 
+    @_keep_attrs
     def integrate(self) -> DataArray:
         """
         Integrate the data over the spatial dimensions
@@ -597,6 +622,7 @@ class Inventory(BaseGrid):
         """
         return super().reproject(resolution, regrid_method, inplace=inplace)
 
+    @_keep_attrs
     def plot(
         self,
         ax: plt.Axes | None = None,
@@ -1603,7 +1629,8 @@ class Vulcan(Inventory):
         """
         if self.time_step != "annual":
             raise ValueError("Uncertainties are only available for annual data")
-        return self._process(self._open(self.get_files(uncertainty)))
+        with xr.set_options(keep_attrs=True):
+            return self._process(self._open(self.get_files(uncertainty)))
 
     def clip(
         self,
