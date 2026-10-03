@@ -1,5 +1,9 @@
 """Tests for lair.utils (tiny helpers: DotDict, updating_print)."""
 
+import copy
+
+import pytest
+
 from lair.utils import DotDict, updating_print
 
 
@@ -30,6 +34,27 @@ class TestDotDict:
         d = DotDict({"a": 1})
         assert isinstance(d, dict)
         assert d == {"a": 1}
+
+    def test_nested_attribute_write_sticks(self):
+        d = DotDict({"a": {"b": 1}})
+        d.a.b = 2
+        assert d["a"]["b"] == 2
+        assert d.a.b == 2
+
+    def test_missing_attribute_raises_attribute_error(self):
+        d = DotDict({"a": 1})
+        with pytest.raises(AttributeError, match="missing"):
+            d.missing
+        assert not hasattr(d, "missing")
+        assert getattr(d, "missing", "default") == "default"
+
+    def test_deepcopy(self):
+        d = DotDict({"a": {"b": [1, 2]}})
+        d2 = copy.deepcopy(d)
+        assert isinstance(d2, DotDict)
+        assert d2 == d
+        d2.a.b.append(3)
+        assert d.a.b == [1, 2]
 
     def test_dir_includes_keys(self):
         d = DotDict({"alpha": 1})

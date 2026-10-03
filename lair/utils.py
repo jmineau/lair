@@ -5,9 +5,17 @@ def updating_print(msg):
 class DotDict(dict):
     """dot.notation access to dictionary attributes"""
 
-    def __getattr__(*args):
-        val = dict.__getitem__(*args)
-        return DotDict(val) if type(val) is dict else val
+    def __getattr__(self, key):
+        try:
+            val = self[key]
+        except KeyError:
+            # AttributeError keeps hasattr, getattr(..., default), copy working
+            raise AttributeError(key) from None
+        if type(val) is dict:
+            # Store the wrapped dict back so writes like `d.a.b = 2` stick
+            val = DotDict(val)
+            self[key] = val
+        return val
 
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
