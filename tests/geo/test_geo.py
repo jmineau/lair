@@ -242,7 +242,9 @@ def _points_along_line_cases():
 
 
 # Output of the original (state-level BFS) implementation, before the #35
-# rewrite. The rewrite must reproduce it exactly.
+# rewrite. The rewrite must reproduce it exactly, except where float error in
+# the old exact distance comparisons skipped a node exactly `spacing` away
+# (branch: 1.2 - 0.8 = 0.3999999999999999 < 0.4 put the point at 1.24).
 _POINTS_ALONG_LINE_EXPECTED = {
     "straight": [
         (0.0, 0.0),
@@ -262,10 +264,11 @@ _POINTS_ALONG_LINE_EXPECTED = {
         (0.0, 0.0),
         (0.4, 0.0),
         (0.8, 0.0),
-        (1.24, 0.0),
+        (1.2, 0.0),
         (1.0, 0.35526),
-        (1.68, 0.0),
+        (1.6, 0.0),
         (1.0, 0.78947),
+        (2.0, 0.0),
         (1.0, 1.22368),
     ],
     "cross": [
@@ -346,7 +349,24 @@ class TestPointsAlongLine:
         line, spacing = _points_along_line_cases()[case]
         xy = np.array([(p.x, p.y) for p in geo.points_along_line(line, spacing)])
         d = np.hypot(*(xy[:, None, :] - xy[None, :, :]).transpose(2, 0, 1))
-        assert d[np.triu_indices(len(xy), k=1)].min() >= spacing
+        # Up to float error: distances of exactly `spacing` are allowed
+        assert d[np.triu_indices(len(xy), k=1)].min() >= spacing - 1e-12
+
+    def test_rejects_nonpositive_spacing(self):
+        from shapely import LineString
+
+        with pytest.raises(ValueError, match="spacing"):
+            geo.points_along_line(LineString([(0, 0), (1, 0)]), spacing=0)
+
+    def test_small_spacing_is_even(self):
+        # Sub-1e-5 steps used to collapse onto a fixed 5-decimal grid, giving
+        # 19 points spaced 5e-5 or 6e-5 (#35)
+        from shapely import LineString
+
+        pts = geo.points_along_line(LineString([(0, 0), (0.001, 0)]), spacing=5e-5)
+        x = np.array([p.x for p in pts])
+        assert len(pts) == 21
+        np.testing.assert_allclose(np.diff(np.sort(x)), 5e-5)
 
     def test_long_line(self):
         # Runtime is near-linear in the number of points; this took tens of
