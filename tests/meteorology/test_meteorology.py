@@ -54,6 +54,15 @@ class TestSaturationVaporPressure:
         # Over ice the saturation vapor pressure is lower than over water.
         assert met.sat_vapor_pres_ice(260.0) < met.sat_vapor_pres(260.0)
 
+    def test_ice_known_values(self):
+        # Petty: e_si = 3.41e12 Pa * exp(-6130 / T). ~611 Pa at the triple
+        # point (same as over liquid) and ~103 Pa at -20 C
+        assert met.sat_vapor_pres_ice(273.15) == pytest.approx(611.0, rel=0.01)
+        assert met.sat_vapor_pres_ice(273.15) == pytest.approx(
+            met.sat_vapor_pres(273.15), rel=0.01
+        )
+        assert met.sat_vapor_pres_ice(253.15) == pytest.approx(103.0, rel=0.02)
+
     def test_T_from_e_inverts_sat_vapor_pres(self):
         e = met.sat_vapor_pres(295.0)
         assert met.T_from_e(e) == pytest.approx(295.0)
@@ -127,6 +136,36 @@ class TestIdealGasLaw:
 
         T = met.ideal_gas_law("temperature", p=1e5, V=1.0, n=1.0)
         assert _mag(T) == pytest.approx(1e5 / _mag(Rstar))
+
+    def test_pressure_from_density_arrays(self):
+        # Array inputs must not be tested for truthiness
+        rho = np.array([1.2, 1.1])
+        T = np.array([290.0, 280.0])
+        p = met.ideal_gas_law("pressure", rho=rho, R=287.05, T=T)
+        np.testing.assert_allclose(_mag(p), rho * 287.05 * T)
+
+    def test_pressure_from_specific_volume_arrays(self):
+        alpha = np.array([0.8, 0.9])
+        p = met.ideal_gas_law("pressure", alpha=alpha, R=287.05, T=300.0)
+        np.testing.assert_allclose(_mag(p), 287.05 * 300.0 / alpha)
+
+    def test_temperature_from_volume_arrays(self):
+        from lair.constants import Rstar
+
+        V = np.array([1.0, 2.0])
+        n = np.array([1.0, 3.0])
+        T = met.ideal_gas_law("temperature", p=1e5, V=V, n=n)
+        np.testing.assert_allclose(_mag(T), 1e5 * V / (n * _mag(Rstar)))
+
+    def test_volume_from_mass_arrays(self):
+        m = np.array([1.0, 2.0])
+        V = met.ideal_gas_law("volume", p=1e5, m=m, R=287.05, T=300.0)
+        np.testing.assert_allclose(_mag(V), m * 287.05 * 300.0 / 1e5)
+
+    def test_zero_moles_is_a_value_not_missing(self):
+        # n = 0 is valid input (zero pressure), not "n not given"
+        p = met.ideal_gas_law("pressure", V=1.0, n=0.0, T=300.0)
+        assert _mag(p) == pytest.approx(0.0)
 
 
 class TestHypsometric:
