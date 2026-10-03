@@ -133,7 +133,9 @@ from lair.noaa import ...
    (`lair/.ccg_filter-*`, removed afterwards), takes only `ccg_filter.py` from
    it (other zip members are ignored, so NOAA can change them), and moves it
    into place as `_ccg_filter.py` with an atomic `os.replace`. A failed
-   download raises (so `import lair` fails) but leaves no partial file;
+   download leaves no partial file and, at import, only logs a WARNING
+   (`import lair` still works; `lair.background` then raises an `ImportError`
+   saying to run `lair.setup_ccg_filter()`, which raises when called directly);
    concurrent first imports (SLURM arrays) are safe. After that it's a no-op.
    Tests call it with `lair_dir=` and a stubbed `lair.ftp_download`
    (`tests/test_pkg.py`).

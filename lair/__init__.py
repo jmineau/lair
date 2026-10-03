@@ -1,3 +1,4 @@
+import logging
 import os
 from importlib.metadata import PackageNotFoundError, version as _version
 
@@ -20,6 +21,8 @@ except ImportError:
 
 from . import config
 from .records import ftp_download, unzip
+
+logger = logging.getLogger(__name__)
 
 try:
     __version__ = _version("lair")  # set by setuptools-scm from git tags
@@ -58,7 +61,9 @@ def setup_ccg_filter(lair_dir: str | None = None) -> None:
     ``ccg_filter.zip`` into a temporary directory, take ``ccg_filter.py`` from
     it (other zip members are ignored), and move it into place as
     ``_ccg_filter.py`` with an atomic :func:`os.replace`. A failed download or
-    unusable zip raises and leaves no partial file behind. Concurrent first
+    unusable zip raises and leaves no partial file behind (at ``import lair``
+    the failure is logged as a warning instead, and only ``lair.background``
+    is unavailable). Concurrent first
     imports (e.g. a SLURM array) are safe: each installs a complete file
     atomically, and one that finds the file already installed uses it.
 
@@ -111,4 +116,21 @@ def setup_ccg_filter(lair_dir: str | None = None) -> None:
         os.replace(staged, ccg_filter_file)
 
 
-setup_ccg_filter()
+def _setup_ccg_filter_or_warn() -> None:
+    """Install the CCG filter at import; a failure warns instead of raising.
+
+    Only ``lair.background`` needs the filter, so a NOAA outage or a node
+    without outbound FTP shouldn't break ``import lair``.
+    """
+    try:
+        setup_ccg_filter()
+    except Exception as e:
+        logger.warning(
+            "Could not install NOAA's CCG filter (%s: %s). lair.background is "
+            "unavailable until lair.setup_ccg_filter() succeeds.",
+            type(e).__name__,
+            e,
+        )
+
+
+_setup_ccg_filter_or_warn()

@@ -4,6 +4,7 @@ These guard the public surface set up in ``lair/__init__.py`` and the
 import-time side effects documented in AGENTS.md.
 """
 
+import logging
 import os
 
 import pint
@@ -190,3 +191,14 @@ class TestSetupCcgFilter:
         with pytest.raises(zipfile.BadZipFile):
             lair.setup_ccg_filter(lair_dir=str(tmp_path))
         assert list(tmp_path.iterdir()) == []
+
+    def test_failure_at_import_warns_instead_of_raising(self, monkeypatch, caplog):
+        # import lair must survive a NOAA outage; only lair.background needs it
+        def fail(lair_dir=None):
+            raise OSError("FTP unreachable")
+
+        monkeypatch.setattr(lair, "setup_ccg_filter", fail)
+        with caplog.at_level(logging.WARNING, logger="lair"):
+            lair._setup_ccg_filter_or_warn()
+        assert "FTP unreachable" in caplog.text
+        assert "lair.setup_ccg_filter()" in caplog.text

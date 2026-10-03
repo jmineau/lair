@@ -7,7 +7,15 @@ import logging
 import pandas as pd
 from typing import Any
 
-from lair._ccg_filter import ccgFilter  # make available to user
+try:
+    from lair._ccg_filter import ccgFilter  # make available to user
+except ModuleNotFoundError as e:
+    if e.name != "lair._ccg_filter":
+        raise
+    raise ImportError(
+        "lair.background needs NOAA's CCG filter, which isn't installed. Run "
+        "lair.setup_ccg_filter() (needs outbound FTP to ftp.gml.noaa.gov)."
+    ) from e
 from lair.clock import AFTERNOON, dt2decimalDate
 
 logger = logging.getLogger(__name__)
