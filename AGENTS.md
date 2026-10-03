@@ -303,8 +303,11 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - **pandas 3 idioms:** hourly alias is lowercase (`'1h'`; `'1H'` raises) and
   daily is uppercase (`'D'`; `'d'` is deprecated). `read_csv(delim_whitespace=)`
   is gone (use `sep=r'\s+'`), `DataFrame.interpolate` refuses object-dtype
-  columns, and `pd.options.mode.copy_on_write` is always on (config only sets
-  it on pandas < 3).
+  columns, and `pd.options.mode.copy_on_write` is always on. lair does not set
+  it on pandas 2 (that would change the caller's whole session; #40): write
+  code that is correct either way (no chained assignment, `.copy()` a slice
+  before setting values). Audit with the suite on pandas 2 under
+  `copy_on_write = "warn"` and `-W error::pandas.errors.SettingWithCopyWarning`.
 - **Timezones in `clock`:** naive times are UTC by convention.
   `dt2decimalDate` converts tz-aware input to UTC first (same answer under
   pytz/pandas 2 and zoneinfo/pandas 3). `convert_timezones` raises if a naive
