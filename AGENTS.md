@@ -224,7 +224,8 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - **Coverage so far:** every module has real tests (lair-dev: 268 passed,
   ~70% coverage; lean uv: 187 passed / 8 skipped). Thinnest: `soundings`
   (offline parsing/interpolation only; live fetches untested), `records`
-  (network helpers only via a stubbed `subprocess.run`), `pcaps.valleyheatdeficit`.
+  (network helpers only via a stubbed `subprocess.run`). `pcaps.valleyheatdeficit`
+  is checked against an independent trapezoid VHD of a synthetic sounding.
 - **Two pandas majors:** the lean uv env resolves pandas 3.x, `lair-dev` has
   pandas 2.2. Run both before calling a pandas change done.
 
