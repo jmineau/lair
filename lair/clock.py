@@ -513,6 +513,12 @@ def dt2decimalDate(datetime: dt.datetime) -> float:
     """
     Convert a datetime object to a decimal date.
 
+    Naive datetimes are used as-is (by convention they are UTC). Timezone-aware
+    datetimes (incl. tz-aware ``pd.Timestamp``) are converted to UTC first, so
+    the decimal date counts elapsed time from Jan 1 00:00 UTC of the UTC year.
+    This gives the same answer for pytz and zoneinfo zones, and keeps the two
+    instants of a DST fall-back hour distinct and in order.
+
     Parameters
     ----------
     datetime : dt.datetime
@@ -523,9 +529,10 @@ def dt2decimalDate(datetime: dt.datetime) -> float:
     float
         The decimal date.
     """
-    this_year = dt.datetime(
-        datetime.year, 1, 1, tzinfo=getattr(datetime, "tzinfo", None)
-    )
+    if datetime.utcoffset() is not None:
+        datetime = datetime.astimezone(dt.timezone.utc).replace(tzinfo=None)
+
+    this_year = dt.datetime(datetime.year, 1, 1)
     total_seconds = (datetime - this_year).total_seconds()
     total_seconds_year = TimeRange(str(datetime.year)).total_seconds
     return datetime.year + (total_seconds / total_seconds_year)
@@ -543,7 +550,8 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
     Returns
     -------
     dt.datetime
-        The datetime object.
+        The naive datetime object. For a decimal date made from a tz-aware
+        datetime by :func:`dt2decimalDate`, this is the UTC time.
     """
     year = int(decimalDate)
     rem = decimalDate - year
@@ -559,41 +567,104 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
 # ----- Time Zones ----- #
 
 
-def convert_timezones(x, totz, fromtz=None, localize=False, driver=None):
+def _tz_localize(times, tz, ambiguous, nonexistent):
+    """
+    ``tz_localize`` the naive ``times`` (DatetimeIndex or ``.dt`` accessor).
+
+    pandas < 3 (pytz) raises pytz's AmbiguousTimeError / NonExistentTimeError,
+    which are not ValueErrors; re-raise them as ValueError like pandas 3 does.
+    """
+    try:
+        return times.tz_localize(tz, ambiguous=ambiguous, nonexistent=nonexistent)
+    except Exception as e:
+        if type(e).__name__ in ("AmbiguousTimeError", "NonExistentTimeError"):
+            raise ValueError(
+                f"{e} is ambiguous or nonexistent in {tz} (DST transition). "
+                "Use the 'ambiguous' or 'nonexistent' argument."
+            ) from e
+        raise
+
+
+def convert_timezones(
+    x,
+    totz,
+    fromtz=None,
+    localize=False,
+    driver=None,
+    ambiguous="raise",
+    nonexistent="raise",
+):
     """
     Convert the times from one timezone to another.
 
     Parameters
     ----------
     x : list[dt.datetime] | pd.DataFrame | pd.Series
-        The times to convert.
+        The times to convert. With ``driver='pandas'``, the index of a
+        DataFrame or the values of a Series.
     totz : str
         The timezone to convert the times to.
     fromtz : str, optional
-        The timezone of the input times, by default None
+        The timezone of the naive input times. Required if any input time is
+        naive (tz-aware times are converted from their own timezone).
     localize : bool, optional
         If True, the times will be localized to the totz timezone, by default False
+    driver : None | 'pandas', optional
+        None for a list of datetimes, 'pandas' for a DataFrame or Series.
+    ambiguous : 'raise' | 'NaT' | 'infer' | bool | array of bool, optional
+        How to localize naive times that happen twice in ``fromtz`` (DST
+        fall-back), with pandas ``tz_localize`` semantics: True is the DST
+        (first) instant, False the standard-time (second) one, 'NaT' gives NaT,
+        and 'raise' (the default) raises a ValueError. An array gives one flag
+        per input time (for a list, aware elements' flags are ignored).
+    nonexistent : 'raise' | 'NaT' | 'shift_forward' | 'shift_backward' | timedelta, optional
+        How to localize naive times that don't exist in ``fromtz`` (DST
+        spring-forward), with pandas ``tz_localize`` semantics. Default 'raise'.
 
     Returns
     -------
     list[dt.datetime] | pd.DataFrame | pd.Series
         The converted times.
-    """
 
+    Raises
+    ------
+    ValueError
+        If there are naive times and no ``fromtz``, or a naive time is ambiguous
+        or nonexistent in ``fromtz`` and ``ambiguous``/``nonexistent`` is 'raise'.
+    """
     if driver is None:
-        times = x
-        # If the times are not tz-aware, assign them the fromtz timezone.
-        if fromtz is not None and not any(t.tzinfo for t in times):
-            fromtz = ZoneInfo(fromtz)
-            times = [t.replace(tzinfo=fromtz) for t in times]
+        times = list(x)
+
+        # Assign the fromtz timezone to the naive times (aware times keep theirs).
+        # Localize with pandas so DST transitions behave like the pandas driver.
+        naive = [i for i, t in enumerate(times) if t.tzinfo is None]
+        if naive:
+            if fromtz is None:
+                raise ValueError("Naive times need fromtz: the timezone they are in")
+            if np.ndim(ambiguous) > 0:
+                # one flag per input time -> keep the naive ones
+                ambiguous = np.asarray(ambiguous)[naive]
+            localized = _tz_localize(
+                pd.DatetimeIndex([times[i] for i in naive]),
+                fromtz,
+                ambiguous,
+                nonexistent,
+            )
+            for i, t in zip(naive, localized):
+                if t is pd.NaT or isinstance(times[i], pd.Timestamp):
+                    times[i] = t
+                else:
+                    times[i] = t.to_pydatetime()
 
         # Convert the times to the specified timezone.
         totz = ZoneInfo(totz)
-        converted_times = [t.astimezone(totz) for t in times]
+        converted_times = [t if t is pd.NaT else t.astimezone(totz) for t in times]
 
         # If localize is True, localize the times to the totz timezone.
         if localize:
-            converted_times = [t.replace(tzinfo=None) for t in converted_times]
+            converted_times = [
+                t if t is pd.NaT else t.replace(tzinfo=None) for t in converted_times
+            ]
 
         return converted_times
     elif driver == "pandas":
@@ -611,8 +682,12 @@ def convert_timezones(x, totz, fromtz=None, localize=False, driver=None):
             raise ValueError("x is not a DataFrame or Series")
 
         # If the times are not tz-aware, assign them the fromtz timezone.
-        if fromtz and datetime_accessor(times).tz is None:
-            times = datetime_accessor(times).tz_localize(fromtz)
+        if datetime_accessor(times).tz is None:
+            if fromtz is None:
+                raise ValueError("Naive times need fromtz: the timezone they are in")
+            times = _tz_localize(
+                datetime_accessor(times), fromtz, ambiguous, nonexistent
+            )
 
         # Convert the times to the specified timezone.
         times = datetime_accessor(times).tz_convert(totz)

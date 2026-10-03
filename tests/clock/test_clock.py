@@ -1,6 +1,7 @@
 """Tests for lair.clock (time/date utilities)."""
 
 import datetime as dt
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -126,6 +127,42 @@ class TestDecimalDate:
         # Midnight used to come back as 23:59:59.999998 of the previous day
         assert clock.decimalDate2dt(clock.dt2decimalDate(d)) == d
 
+    def test_aware_timestamp_is_converted_to_utc(self):
+        # 12:00 MDT is 18:00 UTC; pandas 2 (pytz) and 3 (zoneinfo) used to
+        # disagree here (wall clock vs elapsed-since-local-Jan-1)
+        t = pd.Timestamp("2024-06-01 12:00", tz="America/Denver")
+        expected = 2024 + (152 + 18 / 24) / 366
+        assert clock.dt2decimalDate(t) == pytest.approx(expected, abs=1e-12)
+        assert clock.dt2decimalDate(t) == clock.dt2decimalDate(
+            dt.datetime(2024, 6, 1, 18)
+        )
+
+    def test_aware_datetime_is_converted_to_utc(self):
+        d = dt.datetime(2024, 6, 1, 12, tzinfo=ZoneInfo("America/Denver"))
+        assert clock.dt2decimalDate(d) == clock.dt2decimalDate(
+            dt.datetime(2024, 6, 1, 18)
+        )
+
+    def test_aware_year_is_the_utc_year(self):
+        # 20:00 MST on Dec 31 is already 03:00 UTC on Jan 1
+        d = dt.datetime(2024, 12, 31, 20, tzinfo=ZoneInfo("America/Denver"))
+        assert clock.dt2decimalDate(d) == pytest.approx(2025 + 3 / 24 / 365, abs=1e-12)
+
+    def test_fall_back_instants_are_distinct_and_ordered(self):
+        # 01:30 happens twice on 2024-11-03 in Denver (fold=0 MDT, fold=1 MST)
+        first = dt.datetime(2024, 11, 3, 1, 30, tzinfo=ZoneInfo("America/Denver"))
+        second = first.replace(fold=1)
+        hour = 3600 / clock.TimeRange("2024").total_seconds
+        assert clock.dt2decimalDate(second) - clock.dt2decimalDate(first) == (
+            pytest.approx(hour, rel=1e-6)
+        )
+
+    def test_aware_round_trip_gives_naive_utc(self):
+        t = pd.Timestamp("2024-06-01 12:00", tz="America/Denver")
+        assert clock.decimalDate2dt(clock.dt2decimalDate(t)) == dt.datetime(
+            2024, 6, 1, 18
+        )
+
 
 class TestTimer:
     def test_context_manager_returns_timer(self):
@@ -160,6 +197,75 @@ class TestTimezones:
         converted = clock.UTC2MST([dt.datetime(2024, 1, 1, 18)], localize=True)
         assert converted[0].tzinfo is None
         assert converted[0].hour == 11
+
+    def test_naive_without_fromtz_raises(self):
+        # Used to silently assume the machine's local timezone
+        with pytest.raises(ValueError, match="fromtz"):
+            clock.convert_timezones([dt.datetime(2024, 1, 1, 18)], totz="UTC")
+
+    def test_aware_without_fromtz_is_fine(self):
+        d = dt.datetime(2024, 1, 1, 18, tzinfo=dt.timezone.utc)
+        assert clock.convert_timezones([d], totz="MST")[0].hour == 11
+
+    def test_mixed_list_naive_elements_use_fromtz(self):
+        aware = dt.datetime(2024, 1, 1, 18, tzinfo=dt.timezone.utc)
+        # Not the machine's zone, so local-time fallback can't pass by accident
+        naive = dt.datetime(2024, 1, 1, 18)  # EST -> 23:00 UTC
+        out = clock.convert_timezones(
+            [naive, aware], totz="UTC", fromtz="America/New_York", localize=True
+        )
+        assert out == [dt.datetime(2024, 1, 1, 23), dt.datetime(2024, 1, 1, 18)]
+
+    def test_ambiguous_nat_gives_nat(self):
+        out = clock.MTN2UTC([dt.datetime(2024, 11, 3, 1, 30)], ambiguous="NaT")
+        assert out[0] is pd.NaT
+
+    def test_ambiguous_array_is_per_element(self):
+        times = [dt.datetime(2024, 11, 3, 1, 30)] * 2
+        out = clock.MTN2UTC(times, ambiguous=[True, False], localize=True)
+        assert out == [dt.datetime(2024, 11, 3, 7, 30), dt.datetime(2024, 11, 3, 8, 30)]
+
+
+def _mtn2utc(times, driver, **kwargs):
+    """Run MTN2UTC with either driver and return naive UTC times as a list."""
+    if driver == "pandas":
+        times = pd.Series(pd.to_datetime(times))
+    return list(clock.MTN2UTC(times, driver=driver, localize=True, **kwargs))
+
+
+@pytest.mark.parametrize("driver", [None, "pandas"])
+class TestDST:
+    """Both drivers treat DST transitions the same way (pandas semantics)."""
+
+    fall_back = dt.datetime(2024, 11, 3, 1, 30)  # happens twice
+    spring_forward = dt.datetime(2024, 3, 10, 2, 30)  # never happens
+
+    def test_ambiguous_raises_by_default(self, driver):
+        with pytest.raises(ValueError):
+            _mtn2utc([self.fall_back], driver)
+
+    @pytest.mark.parametrize(
+        "ambiguous, hour",
+        [(True, 7), (False, 8)],  # True = DST (MDT, UTC-6)
+    )
+    def test_ambiguous_flag_picks_the_instant(self, driver, ambiguous, hour):
+        out = _mtn2utc([self.fall_back], driver, ambiguous=ambiguous)
+        assert out == [dt.datetime(2024, 11, 3, hour, 30)]
+
+    def test_nonexistent_raises_by_default(self, driver):
+        with pytest.raises(ValueError):
+            _mtn2utc([self.spring_forward], driver)
+
+    def test_nonexistent_shift_forward(self, driver):
+        # Shifted to 03:00 MDT = 09:00 UTC
+        out = _mtn2utc([self.spring_forward], driver, nonexistent="shift_forward")
+        assert out == [dt.datetime(2024, 3, 10, 9)]
+
+    def test_unaffected_times_unchanged(self, driver):
+        out = _mtn2utc(
+            [dt.datetime(2024, 6, 1, 12), dt.datetime(2024, 1, 1, 12)], driver
+        )
+        assert out == [dt.datetime(2024, 6, 1, 18), dt.datetime(2024, 1, 1, 19)]
 
 
 class TestTimeMatrices:
@@ -223,6 +329,11 @@ class TestConvertTimezonesPandas:
             df, totz="MST", fromtz="UTC", localize=True, driver="pandas"
         )
         assert out.index.tz is None
+
+    def test_naive_without_fromtz_raises(self):
+        s = pd.Series(pd.to_datetime(["2024-01-01 18:00"]))
+        with pytest.raises(ValueError, match="fromtz"):
+            clock.convert_timezones(s, totz="MST", driver="pandas")
 
     def test_invalid_driver_raises(self):
         with pytest.raises(ValueError):
