@@ -103,6 +103,60 @@ class TestTimeRangeMembership:
             clock.TimeRange("2024", **kwargs)
 
 
+class TestTimeRangeInputs:
+    def test_copy_of_a_time_range(self):
+        original = clock.TimeRange("2024-03")
+        copy = clock.TimeRange(original)
+        assert (copy.start, copy.stop) == (original.start, original.stop)
+
+    @pytest.mark.parametrize(
+        "time_range",
+        [["2024-01", "2024-02"], ("2024-01", "2024-02"), slice("2024-01", "2024-02")],
+        ids=["list", "tuple", "slice"],
+    )
+    def test_pair_of_strings_includes_the_stop_period(self, time_range):
+        tr = clock.TimeRange(time_range)
+        assert tr.start == dt.datetime(2024, 1, 1)
+        assert tr.stop == dt.datetime(2024, 3, 1)  # all of February
+
+    def test_datetime64_bounds(self):
+        tr = clock.TimeRange(
+            start=np.datetime64("2024-01-01T06:00"), stop=np.datetime64("2024-01-02")
+        )
+        assert tr.start == dt.datetime(2024, 1, 1, 6)
+        assert tr.stop == dt.datetime(2024, 1, 2)
+        assert isinstance(tr.start, dt.datetime)
+        assert tr.total_seconds == 18 * 3600
+
+    @pytest.mark.parametrize(
+        "kwargs, match",
+        [
+            ({"time_range": 2024}, "time_range"),
+            ({"time_range": ["2024", "2025", "2026"]}, "time_range"),
+            ({"start": 2024}, "start"),
+            ({"stop": 2024.5}, "stop"),
+        ],
+    )
+    def test_unrecognized_formats_raise(self, kwargs, match):
+        with pytest.raises(ValueError, match=match):
+            clock.TimeRange(**kwargs)
+
+    @pytest.mark.parametrize(
+        "kwargs, text",
+        [
+            ({}, "Entire Observation Period"),
+            ({"stop": "2023"}, "Before 2024-01-01 00:00:00"),
+            ({"start": "2024"}, "After 2024-01-01 00:00:00"),
+            (
+                {"time_range": "2024-02"},
+                "2024-02-01 00:00:00 to 2024-03-01 00:00:00",
+            ),
+        ],
+    )
+    def test_str(self, kwargs, text):
+        assert str(clock.TimeRange(**kwargs)) == text
+
+
 class TestLeapYearSeconds:
     def test_leap_year(self):
         assert clock.TimeRange("2024").total_seconds == 366 * 86400
@@ -187,6 +241,15 @@ class TestTimer:
         timer.start()
         with pytest.raises(clock.Timer.TimerError):
             timer.start()
+
+    def test_logger_gets_the_formatted_elapsed_time(self):
+        messages = []
+        with clock.Timer(text="took {:.1f} s", logger=messages.append) as t:
+            pass
+        assert t._start_time is None  # stopped on exit
+        assert len(messages) == 1
+        assert messages[0].startswith("took ") and messages[0].endswith(" s")
+        assert float(messages[0].split()[1]) >= 0.0
 
     def test_elapsed_is_nonnegative(self):
         timer = clock.Timer(logger=None)
@@ -346,6 +409,13 @@ class TestConvertTimezonesPandas:
     def test_invalid_driver_raises(self):
         with pytest.raises(ValueError):
             clock.convert_timezones([], totz="MST", driver="bogus")
+
+    def test_unknown_fromtz_is_not_reported_as_dst(self):
+        # Only DST errors are re-raised as ValueError; anything else (here an
+        # unknown zone, a KeyError under both pytz and zoneinfo) passes through
+        s = pd.Series(pd.to_datetime(["2024-01-01 18:00"]))
+        with pytest.raises(KeyError, match="Not/AZone"):
+            clock.convert_timezones(s, totz="MST", fromtz="Not/AZone", driver="pandas")
 
 
 class TestAggregation:
