@@ -207,7 +207,8 @@ class TimeRange:
             r"(?:-?(?P<day>\d{2})"
             r"(?:[T\s]?(?P<hour>\d{2})"
             r"(?::?(?P<minute>\d{2})"
-            r"(?::?(?P<second>\d{2}))?)?)?)?)?"
+            r"(?::?(?P<second>\d{2}(?:\.\d{1,6})?))?)?)?)?)?"
+            r"Z?"  # UTC designator; times are naive (UTC by convention)
         )
         match = re.fullmatch(iso8601, string.strip())
         if not match:
@@ -219,9 +220,10 @@ class TimeRange:
         day = int(components["day"] or 1)
         hour = int(components["hour"] or 0)
         minute = int(components["minute"] or 0)
-        second = int(components["second"] or 0)
+        second, _, fraction = (components["second"] or "0").partition(".")
+        microsecond = int(fraction.ljust(6, "0")) if fraction else 0
 
-        start = dt.datetime(year, month, day, hour, minute, second)
+        start = dt.datetime(year, month, day, hour, minute, int(second), microsecond)
 
         # Determine the stop time based on the inclusive flag
         if inclusive:
@@ -244,7 +246,8 @@ class TimeRange:
                 stop = start + dt.timedelta(minutes=1)
             elif components["second"]:
                 "YYYY-MM-DDTHH:MM:SS"
-                stop = start + dt.timedelta(seconds=1)
+                # one unit of the finest digit given, e.g. 12:30:45.5 -> +0.1 s
+                stop = start + dt.timedelta(seconds=10.0 ** -len(fraction))
             else:
                 raise ValueError("Invalid time string format")
 
