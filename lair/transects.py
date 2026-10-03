@@ -23,7 +23,9 @@ Mitchell et al. 2018's algorithm):
 - :func:`transect_matrix` — average the samples onto ``[transit, point]``
 
 Everything is plain numpy; the platform-specific file formats live in the calling package
-(e.g. ``slv.measurements.mobile`` for TRAX). Times are POSIX seconds (float) or datetime64.
+(e.g. ``slv.measurements.mobile`` for TRAX). Times are POSIX seconds (float) or
+datetime-like (datetime64, or pandas times with or without a time zone; naive times are
+taken as UTC). The builder skips samples without a time (NaN / NaT).
 """
 
 from __future__ import annotations
@@ -232,11 +234,16 @@ TRANSIT_COLUMNS = ["direction", "t_start", "t_end", "s_min", "s_max", "n"]
 
 
 def _time_seconds(time) -> np.ndarray:
-    """POSIX seconds (float) from datetime64 / pandas / numeric input."""
+    """POSIX seconds (float) from numeric or datetime-like input; NaN for NaT.
+
+    Datetime-like input goes through pandas, which handles tz-aware times (an object
+    array to numpy) and NaT. Naive times are taken as UTC.
+    """
     t = np.asarray(time)
-    if np.issubdtype(t.dtype, np.datetime64):
-        return t.astype("datetime64[ns]").astype("int64") / 1e9
-    return t.astype(float)
+    if t.dtype.kind in "biuf":
+        return t.astype(float)
+    dt = pd.DatetimeIndex(pd.to_datetime(t, utc=True))
+    return ((dt - pd.Timestamp(0, tz="UTC")) / pd.Timedelta(seconds=1)).to_numpy(float)
 
 
 def _runs(t: np.ndarray, max_gap_s: float) -> np.ndarray:
@@ -258,16 +265,23 @@ def lag_positions(time, xy: np.ndarray, lag_s, max_gap_s: float = 600.0) -> np.n
     allowed to reach back before the start of the sample's own run: the first seconds of a
     run keep its first position instead of being interpolated across the gap to wherever
     the previous run ended.
+
+    Samples without a time (NaN / NaT) get a NaN position and are left out of the
+    interpolation for the others.
     """
     t = _time_seconds(time)
     xy = np.asarray(xy, dtype=float)
     lag = np.broadcast_to(np.asarray(lag_s, dtype=float), t.shape)
+    out = np.full_like(xy, np.nan)
+    has_t = np.isfinite(t)
+    if not has_t.any():
+        return out
+    t, lag, xy_t = t[has_t], lag[has_t], xy[has_t]
     run = _runs(t, max_gap_s)
     starts = np.flatnonzero(np.r_[True, np.diff(run) != 0])
     t_lag = np.maximum(t - lag, t[starts][run])
-    out = np.empty_like(xy)
     for k in range(xy.shape[1]):
-        out[:, k] = np.interp(t_lag, t, xy[:, k])
+        out[has_t, k] = np.interp(t_lag, t, xy_t[:, k])
     return out
 
 
@@ -276,13 +290,19 @@ def snap_to_route(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Nearest route point of each sample: ``(index, distance)``, index -1 beyond ``max_dist``.
 
-    Both arrays are ``(n, 2)`` in the same projected metres.
+    Both arrays are ``(n, 2)`` in the same projected metres. A sample with a NaN position
+    (e.g. no time in :func:`lag_positions`) gets index -1 and distance NaN.
     """
     from scipy.spatial import cKDTree
 
-    d, idx = cKDTree(np.asarray(route_xy, dtype=float)).query(
-        np.asarray(xy, dtype=float)
-    )
+    xy = np.asarray(xy, dtype=float)
+    d = np.full(len(xy), np.nan)
+    idx = np.full(len(xy), -1)
+    finite = np.isfinite(xy).all(axis=1)
+    if finite.any():
+        d[finite], idx[finite] = cKDTree(np.asarray(route_xy, dtype=float)).query(
+            xy[finite]
+        )
     return np.where(d <= max_dist, idx, -1), d
 
 
@@ -309,7 +329,8 @@ def split_transits(
       not. A dwell at the terminus is cut at its middle, between the arriving and the
       departing transit (trim it with ``max_dwell_s`` in :func:`transect_matrix`).
 
-    Transits covering less than ``min_span_m`` of route are discarded.
+    Transits covering less than ``min_span_m`` of route are discarded. Samples without a
+    time (NaN / NaT) are skipped like samples off the route.
 
     Returns ``(transit, table)``: ``transit`` is the transit index per sample (-1 for
     samples not in a kept transit) and ``table`` has one row per transit, indexed by
@@ -321,7 +342,7 @@ def split_transits(
     t = _time_seconds(time)
     s = np.asarray(s, dtype=float)
     transit = np.full(len(t), -1, dtype=int)
-    idx_on = np.flatnonzero(np.isfinite(s))
+    idx_on = np.flatnonzero(np.isfinite(s) & np.isfinite(t))
     if len(idx_on) == 0:
         return transit, _empty_transit_table()
     t_on, s_on = t[idx_on], s[idx_on]
@@ -378,14 +399,14 @@ def transect_matrix(
     (-1 in either skips the sample); ``obs`` and ``time`` are per sample. With
     ``max_dwell_s``, samples at a point taken more than that long after the transit first
     reached the point are dropped, so a platform sitting at a stop contributes a pass, not
-    a long time-average, to that point.
+    a long time-average, to that point. Samples without a time (NaN / NaT) are skipped.
 
     Returns ``(obs, time, n)``: the mean observation, the mean POSIX time and the number of
     samples per cell, NaN where a transit has no sample at a point.
     """
     t = _time_seconds(time)
     obs = np.asarray(obs, dtype=float)
-    ok = (transit >= 0) & (point >= 0) & np.isfinite(obs)
+    ok = (transit >= 0) & (point >= 0) & np.isfinite(obs) & np.isfinite(t)
     df = pd.DataFrame(
         {"transit": transit[ok], "point": point[ok], "obs": obs[ok], "t": t[ok]}
     )

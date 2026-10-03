@@ -205,3 +205,77 @@ def test_transect_matrix_with_lag_and_dwell_trim(track):
     assert m_n[0, 100] <= 32 and m_n[1, 100] <= 32
     # time is the mean sample time of the cell
     assert m_t[0, 0] == pytest.approx(t[point == 0][transit[point == 0] == 0].mean())
+
+
+def _build(t, xy, obs, lag):
+    """Run the whole builder; returns (lagged, transit, table, matrix obs)."""
+    route_xy = np.c_[np.arange(0, 5001, 50.0), np.zeros(101)]
+    lagged = transects.lag_positions(t, xy, lag)
+    point, _ = transects.snap_to_route(lagged, route_xy, max_dist=60)
+    transit, table = transects.split_transits(t, lagged[:, 0], max_gap_s=600)
+    m_obs, m_t, _ = transects.transect_matrix(
+        transit, point, obs, t, len(table), len(route_xy), max_dwell_s=30
+    )
+    return lagged, transit, table, m_obs, m_t
+
+
+def test_builder_accepts_tz_aware_times(track):
+    pytest.importorskip("scipy")
+    t, xy, obs, lag = track
+    t0 = pd.Timestamp("2024-01-01 06:00", tz="America/Denver")
+    when = t0 + pd.to_timedelta(t, unit="s")
+    expected = _build(t, xy, obs, lag)
+    for time in (when, pd.Series(when)):
+        lagged, transit, table, m_obs, m_t = _build(time, xy, obs, lag)
+        np.testing.assert_allclose(lagged, expected[0])
+        np.testing.assert_array_equal(transit, expected[1])
+        np.testing.assert_allclose(m_obs, expected[3])
+        # times come back as POSIX seconds (UTC), not local wall-clock
+        assert table.loc[0, "t_start"] == pytest.approx(t0.timestamp())
+        np.testing.assert_allclose(m_t, expected[4] + t0.timestamp())
+
+
+@pytest.mark.parametrize("kind", ["seconds", "datetime64"])
+def test_builder_skips_samples_without_time(track, kind):
+    # A sample without a time can't be placed in time: it gets no lagged position, no
+    # transit and no cell, and the other samples come out as if it weren't there.
+    pytest.importorskip("scipy")
+    t, xy, obs, lag = track
+    missing = np.zeros(len(t), bool)
+    missing[[0, 200, 201, 700, len(t) - 1]] = True
+    expected = _build(t[~missing], xy[~missing], obs[~missing], lag)
+    if kind == "seconds":
+        time = np.where(missing, np.nan, t)
+    else:
+        time = (t * 1e9).astype("datetime64[ns]")
+        time[missing] = np.datetime64("NaT")
+    lagged, transit, table, m_obs, m_t = _build(time, xy, obs, lag)
+    assert np.isnan(lagged[missing]).all()
+    np.testing.assert_allclose(lagged[~missing], expected[0])
+    assert (transit[missing] == -1).all()
+    np.testing.assert_array_equal(transit[~missing], expected[1])
+    pd.testing.assert_frame_equal(table, expected[2])
+    np.testing.assert_allclose(m_obs, expected[3])
+    np.testing.assert_allclose(m_t, expected[4])
+
+
+def test_lag_positions_tz_aware_and_nat(track):
+    # No scipy needed, so this also runs in the lean (pandas 3) env.
+    t, xy, obs, lag = track
+    expected = transects.lag_positions(t, xy, lag)
+    when = pd.Series(pd.Timestamp("2024-07-01", tz="UTC") + pd.to_timedelta(t, "s"))
+    when = when.dt.tz_convert("America/Denver")
+    np.testing.assert_allclose(transects.lag_positions(when, xy, lag), expected)
+    when[50] = pd.NaT
+    lagged = transects.lag_positions(when, xy, lag)
+    assert np.isnan(lagged[50]).all()
+    np.testing.assert_allclose(lagged[51:], expected[51:])
+
+
+def test_snap_to_route_nan_position():
+    pytest.importorskip("scipy")
+    route_xy = np.c_[np.arange(0, 201, 50.0), np.zeros(5)]
+    xy = np.array([[1.0, 0.0], [np.nan, np.nan], [49.0, 0.0], [500.0, 0.0]])
+    idx, d = transects.snap_to_route(xy, route_xy, max_dist=10)
+    assert idx.tolist() == [0, -1, 1, -1]
+    assert np.isnan(d[1]) and d[3] == pytest.approx(300.0)
