@@ -107,3 +107,13 @@ class TestThoning:
         caplog.set_level(logging.DEBUG, logger="lair.background")
         background.thoning_filter(co2)
         assert seen == [False, True]
+
+
+def test_thoning_filter_rejects_nan():
+    import pandas as pd
+
+    data = pd.Series(
+        [400.0, float("nan"), 401.0], index=pd.date_range("2020-01-01", periods=3)
+    )
+    with pytest.raises(ValueError, match="NaN"):
+        background.thoning_filter(data)
