@@ -87,6 +87,20 @@ class TestInterpolate:
         assert T.index.is_unique
         assert T.loc[2989] == pytest.approx(-15.0)
 
+    def test_duplicate_raw_heights_keep_the_later_row(self, tmp_path):
+        # A level repeated with different values takes the later row's values
+        path = _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01"), top=3000.0)
+        df = pd.read_csv(path)
+        repeat = df[df["height"] == 1689.0].assign(temperature=99.0)
+        df = pd.concat([df, repeat]).sort_values("height", kind="stable")
+        df.to_csv(path, index=False)
+        ds = soundings.Sounding(str(path)).interpolate(
+            start=1289, stop=2990, interval=100
+        )
+        T = ds.temperature.isel(time=0).to_series()
+        assert T.index.is_unique
+        assert T.loc[1689] == pytest.approx(99.0)
+
     def test_wind_direction_interpolates_across_north(self, tmp_path):
         # 350 deg below and 10 deg above: halfway is ~0/360 deg, not 180 deg
         direction = np.array([350.0, 10.0])
