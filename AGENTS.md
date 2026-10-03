@@ -210,7 +210,7 @@ reason** (`# pyrefly: ignore[<kind>]`), not in config. Config only disables
 `bad-override-mutable-attribute` (subclass class constants like
 `version: str = 'v8'` over `str | None` base attrs). Optional extras are in
 `replace-imports-with-any` so both envs agree. `meteorology` uses a
-documented `Numeric = Any` alias (floats / numpy / xarray / pint);
+documented `Numeric = Any` alias (floats / numpy / xarray, plain SI);
 `geo`/`inventories` use a bound TypeVar `_XarrayT` so DataArray in ->
 DataArray out.
 
@@ -273,9 +273,14 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - `lair.constants` exists because pint hasn't shipped real constants
   support; if pint adds it (see linked issue 1078 in the module
   docstring), revisit.
-- `lair.meteorology` deliberately does *not* wrap with pint due to mixed
-  numpy/xarray inputs (see linked PR in docstring). All inputs are
-  assumed SI.
+- `lair.meteorology` is **plain SI in, plain SI out** (issue #41): it uses
+  the `lair.constants` values as plain SI floats (`.m_as(...)`), so float /
+  numpy / xarray inputs give plain numbers (`hypsometric` -> m,
+  `ideal_gas_law("p")` -> Pa). pint Quantity inputs (incl. pint-quantified
+  DataArrays) are converted to SI magnitudes by the `_si_inputs` decorator;
+  the result is never a Quantity. Callers that want units (e.g.
+  `pcaps.valleyheatdeficit`) convert at their own boundary.
+  `mixing_ratio` is the exact ε·e/(p − e).
 - **pandas 3 idioms:** hourly alias is lowercase (`'1h'`; `'1H'` raises) and
   daily is uppercase (`'D'`; `'d'` is deprecated). `read_csv(delim_whitespace=)`
   is gone (use `sep=r'\s+'`), `DataFrame.interpolate` refuses object-dtype

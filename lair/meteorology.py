@@ -3,39 +3,90 @@ Meteorological calculations.
 
 Inspired by AOS 330 at UW-Madison with Grant Petty.
 
+Units contract: **plain SI in, plain SI out.** Inputs are floats, numpy arrays
+or xarray DataArrays in SI units (K, Pa, m, kg, mol, m^3, J/kg/K, ...), and the
+results are the same kinds of plain numbers in SI units (e.g. ``hypsometric``
+returns metres, ``ideal_gas_law("p", ...)`` returns Pa). The physical constants
+are used as plain SI floats internally.
+
+pint Quantities (and pint-quantified xarray DataArrays) are accepted for
+convenience: they are converted to SI magnitudes on the way in (so
+``850 * units("hPa")`` becomes ``85000.0`` and ``0 degC`` becomes ``273.15``),
+and the result is still a plain SI number, never a Quantity. Attach units to the
+result yourself if you want them.
+
 .. note::
-    It would be nice to be able to wrap these funtions with `pint` - however,
-    because I input both numpy and xarray arrays, this will not work.
-    Waiting for https://github.com/xarray-contrib/pint-xarray/pull/143
-    For now, we will assume all inputs are in SI units.
+    It would be nice to wrap these functions with `pint` end to end, but numpy
+    and xarray inputs make that awkward.
+    See https://github.com/xarray-contrib/pint-xarray/pull/143
 """
 
-from typing import Any
+import functools
+from typing import Any, Callable, ParamSpec, TypeVar
 
 import numpy as np
+import pint
+import xarray as xr
 
-from lair.constants import Rstar, Rd, kb, cp, g, epsilon
-from lair import units
+from lair import constants
 
-
-#: Inputs/outputs: scalars, numpy arrays, xarray DataArrays or pint Quantities,
-#: in SI units
+#: Inputs/outputs: scalars, numpy arrays or xarray DataArrays in SI units
 Numeric = Any
 
+# Physical constants as plain SI floats
+Rstar = constants.Rstar.m_as("J / K / mol")
+Rd = constants.Rd.m_as("J / kg / K")
+kb = constants.kb.m_as("J / K")
+cp = constants.cp.m_as("J / kg / K")
+g = constants.g.m_as("m / s**2")
+epsilon = constants.epsilon.m_as("dimensionless")
 
-#: Standard Atmosphere
+
+#: Standard Atmosphere, in SI: T [K], p [Pa], rho [kg/m^3], z [m]
 standard: dict[str, float] = {
-    "T": 288.15 * units("K"),
-    "p": 1013.25 * units("hPa"),
-    "rho": 1.225 * units("kg / m**3"),
-    "z": 0 * units("m"),
+    "T": 288.15,
+    "p": 101325.0,
+    "rho": 1.225,
+    "z": 0.0,
 }
+
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+def _to_si(x: Any) -> Any:
+    """Return ``x`` as a plain SI magnitude if it carries pint units."""
+    # pint's stubs type pint.Quantity as a TypeVar; at runtime it is the class
+    # every registry's Quantity subclasses
+    # pyrefly: ignore[invalid-argument]
+    if isinstance(x, pint.Quantity):
+        return x.to_base_units().magnitude
+    # pyrefly: ignore[invalid-argument]
+    if isinstance(x, xr.DataArray) and isinstance(x.data, pint.Quantity):
+        return x.copy(data=x.data.to_base_units().magnitude)
+    return x
+
+
+def _si_inputs(func: Callable[_P, _R]) -> Callable[_P, _R]:
+    """Convert any pint Quantity arguments of ``func`` to SI magnitudes."""
+
+    @functools.wraps(func)
+    def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+        si_args = [_to_si(a) for a in args]
+        si_kwargs = {k: _to_si(v) for k, v in kwargs.items()}
+        # Same arguments, only their units stripped
+        # pyrefly: ignore[invalid-param-spec]
+        return func(*si_args, **si_kwargs)
+
+    return wrapper
+
 
 #############
 # Functions #
 #############
 
 
+@_si_inputs
 def ideal_gas_law(
     solve_for: str,
     p: Numeric = None,
@@ -60,7 +111,8 @@ def ideal_gas_law(
     pα = RT
 
     Input variables must be able to solve for the desired variable using the
-    above equations without intermediate steps. All inputs must be in SI.
+    above equations without intermediate steps. Inputs and the result are in
+    SI (pint Quantities are converted to SI first; see the module docstring).
 
     p : pressure (Pa)
     V : volume (m^3)
@@ -123,6 +175,7 @@ def ideal_gas_law(
     return x
 
 
+@_si_inputs
 def hypsometric(
     Tv: Numeric = None,
     p1: Numeric = None,
@@ -137,7 +190,8 @@ def hypsometric(
     Z2 - Z1 = Rd * Tv * ln(p1/p2) / g
 
     Input variables must be able to solve for the desired variable using the
-    above equation without intermediate steps. All inputs must be in SI.
+    above equation without intermediate steps. Inputs and the result are in
+    SI (pint Quantities are converted to SI first; see the module docstring).
 
     Tv : mean virtual temperature of layer (K)
     p1 : pressure at bottom of layer (Pa)
@@ -171,6 +225,7 @@ def hypsometric(
     raise ValueError("Invalid input combination")
 
 
+@_si_inputs
 def virt_T(T: Numeric, q: Numeric) -> Numeric:
     """
     Calculate the virtual temperature.
@@ -190,6 +245,7 @@ def virt_T(T: Numeric, q: Numeric) -> Numeric:
     return T * (1 + 0.61 * q)
 
 
+@_si_inputs
 def poisson(T: Numeric, p: Numeric, p0: Numeric = 1e5) -> Numeric:
     """
     Calculate the potential temperature. (Poission's equation)
@@ -211,6 +267,7 @@ def poisson(T: Numeric, p: Numeric, p0: Numeric = 1e5) -> Numeric:
     return T * (p0 / p) ** (Rd / cp)
 
 
+@_si_inputs
 def inv_poisson(p: Numeric, theta: Numeric, p0: Numeric = 1e5) -> Numeric:
     """
     Calculate the temperature from potential temperature. (Inverse Poission's equation)
@@ -232,6 +289,7 @@ def inv_poisson(p: Numeric, theta: Numeric, p0: Numeric = 1e5) -> Numeric:
     return theta * (p / p0) ** (Rd / cp)
 
 
+@_si_inputs
 def sat_vapor_pres(T: Numeric) -> Numeric:
     """
     Calculate the saturation vapor pressure.
@@ -249,6 +307,7 @@ def sat_vapor_pres(T: Numeric) -> Numeric:
     return 2.53e11 * np.exp(-5420 / T)
 
 
+@_si_inputs
 def sat_vapor_pres_ice(T: Numeric) -> Numeric:
     """
     Calculate the saturation vapor pressure over ice.
@@ -267,9 +326,13 @@ def sat_vapor_pres_ice(T: Numeric) -> Numeric:
     return 3.41e12 * np.exp(-6130 / T)
 
 
+@_si_inputs
 def mixing_ratio(e: Numeric, p: Numeric) -> Numeric:
     """
     Calculate the mixing ratio.
+
+    w = ε e / (p - e), with ε = Rd / Rv (exact; the common approximation
+    ε e / p is about 1-3% low near the surface).
 
     Parameters
     ----------
@@ -283,9 +346,10 @@ def mixing_ratio(e: Numeric, p: Numeric) -> Numeric:
     float
         Mixing ratio in kg/kg.
     """
-    return epsilon * e / p
+    return epsilon * e / (p - e)
 
 
+@_si_inputs
 def T_from_e(e: Numeric) -> Numeric:  # Pa
     """
     Calculate the temperature from vapor pressure.
