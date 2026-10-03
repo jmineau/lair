@@ -31,8 +31,11 @@ def bin_polar(
     Returns
     -------
     pd.DataFrame
-        Data with binned wind direction and speed.
+        A copy of ``data`` with binned wind direction and speed added as
+        ``wd_bin`` (compass sector), ``radian_bin`` and ``x_bin``. The
+        caller's frame is not modified.
     """
+    data = data.copy()
     directions = {
         "N": 0,
         "NNE": 22.5,
@@ -50,14 +53,16 @@ def bin_polar(
         "WNW": 292.5,
         "NW": 315,
         "NNW": 337.5,
-        "N2": 0,
     }
 
     wd_bins = np.linspace(0, 360, 17) + 11.25
     wd_bins = np.insert(wd_bins, 0, -0.1)
+    # The last interval (348.75-360) wraps round to N. pd.cut only accepts a
+    # repeated label for an unordered result, so restore the compass order after.
+    labels = [*directions, "N"]
     # pandas-stubs has no pd.cut overload for these argument types
-    data["wd_bin"] = pd.cut(data[wd], wd_bins, labels=directions.keys())  # pyrefly: ignore[no-matching-overload]
-    data["wd_bin"] = data["wd_bin"].replace("N2", "N")
+    wd_bin = pd.cut(data[wd], wd_bins, labels=labels, ordered=False)  # pyrefly: ignore[no-matching-overload]
+    data["wd_bin"] = wd_bin.cat.reorder_categories(list(directions), ordered=True)
 
     # Missing (or out of range) directions have no sector and map to NaN
     degrees = data["wd_bin"].astype(object).map(directions).astype(float)

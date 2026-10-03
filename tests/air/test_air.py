@@ -112,6 +112,28 @@ def test_bin_polar_adds_expected_columns():
     assert "N2" not in set(out["wd_bin"].dropna().unique())
 
 
+def test_bin_polar_does_not_mutate_caller():
+    df = pd.DataFrame({"ws": [1.0, 3.0], "wd": [10.0, 100.0]})
+    before = df.copy()
+    out = air.bin_polar(df, xbins=[0, 2, 4])
+    assert "wd_bin" in out.columns
+    pd.testing.assert_frame_equal(df, before)
+
+
+@pytest.mark.filterwarnings("error::FutureWarning")
+def test_bin_polar_wd_bin_is_16_ordered_sectors():
+    # 350 deg falls in the last cut interval and wraps round to N
+    df = pd.DataFrame({"ws": [1.0, 2.0, 3.0], "wd": [5.0, 350.0, 200.0]})
+    out = air.bin_polar(df, xbins=[0, 2, 4])
+    assert out["wd_bin"].tolist() == ["N", "N", "SSW"]
+    cats = out["wd_bin"].cat
+    assert cats.ordered
+    assert list(cats.categories) == [
+        "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+        "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
+    ]  # fmt: skip
+
+
 def test_bin_polar_explicit_bin_edges():
     df = pd.DataFrame({"ws": [1, 2, 3, 4], "wd": [10, 100, 190, 280]})
     out = air.bin_polar(df, xbins=[0, 2, 4])

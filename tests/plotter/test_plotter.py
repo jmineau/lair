@@ -145,6 +145,59 @@ class TestPlots:
         ax = plotter.polarFreq(df)
         assert ax.name == "polar"
 
+    @staticmethod
+    def _spy_grid(monkeypatch):
+        """Capture the (direction, speed) grid each polar plot contours."""
+        import lair.air
+
+        captured = {}
+        circularize = lair.air.circularize_radial_data
+
+        def spy(agg):
+            captured["agg"] = agg
+            return circularize(agg)
+
+        monkeypatch.setattr(lair.air, "circularize_radial_data", spy)
+        return captured
+
+    # Speed edges 0-1-2-3-4: the (1, 2] bin is empty. Directions only N and E.
+    _sparse = {
+        "ws": [0.5, 0.0, 0.5, 2.5, 2.5, 4.0],
+        "wd": [90.0, 90.0, 0.0, 0.0, 90.0, 0.0],
+        "CH4": [2.0, 6.0, 1.0, 3.0, 4.0, 5.0],
+    }
+
+    @pytest.mark.filterwarnings("error::FutureWarning")
+    def test_polar_plot_grid_keeps_empty_speed_bins(self, monkeypatch):
+        # pandas 3 defaults to groupby(observed=True), which dropped the empty
+        # speed bin from the grid; the plotted grid must not depend on pandas
+        captured = self._spy_grid(monkeypatch)
+        df = pd.DataFrame(self._sparse)
+        before = df.copy()
+        plotter.polarPlot(df, "CH4", xbins=[0, 1, 2, 3, 4])
+        pd.testing.assert_frame_equal(df, before)  # caller's frame untouched
+        agg = captured["agg"]
+        assert agg.index.tolist() == pytest.approx([0.0, np.pi / 2])
+        assert agg.columns.tolist() == [1, 2, 3, 4]
+        np.testing.assert_array_equal(
+            agg.to_numpy(dtype=float),
+            [[1.0, np.nan, 3.0, 5.0], [4.0, np.nan, 4.0, np.nan]],
+        )
+
+    @pytest.mark.filterwarnings("error::FutureWarning")
+    def test_polar_freq_grid_keeps_empty_speed_bins(self, monkeypatch):
+        captured = self._spy_grid(monkeypatch)
+        df = pd.DataFrame(self._sparse)
+        before = df.copy()
+        plotter.polarFreq(df, xbins=[0, 1, 2, 3, 4])
+        pd.testing.assert_frame_equal(df, before)  # no 'count' etc. added
+        agg = captured["agg"]
+        assert agg.index.tolist() == pytest.approx([0.0, np.pi / 2])
+        assert agg.columns.tolist() == [1, 2, 3, 4]
+        np.testing.assert_array_equal(
+            agg.to_numpy(dtype=float), [[1, 0, 1, 1], [2, 0, 1, 0]]
+        )
+
     def test_windvector_plot(self, rng):
         df = pd.DataFrame(
             {"WD": rng.uniform(0, 360, 24), "WS": rng.uniform(0, 10, 24)},
