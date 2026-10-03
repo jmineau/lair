@@ -1628,12 +1628,7 @@ class Vulcan(Inventory):
         return ds
 
     def _open(self, files: list[Path]) -> Dataset:
-        data = xr.open_mfdataset(
-            files, preprocess=self._preprocess, chunks=None
-        )  # load all data into memory
-        data.load()  # FIXME currently, cant have dask chunks and pint units
-        # and setting chunks=None is not working
-        return data
+        return xr.open_mfdataset(files, preprocess=self._preprocess)
 
     def _process(self, data: Dataset) -> Dataset:
         if self.time_step == "annual":
