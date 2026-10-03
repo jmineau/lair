@@ -245,11 +245,16 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 
 - **Markers** (`pyproject.toml`): `network`, `slow`, `chpc`. The hermetic CI
   subset is `-m "not network and not slow and not chpc"`.
-- **Coverage so far:** every module has real tests (lair-dev: 592 passed,
-  89% coverage; lean uv: 337 passed / 17 skipped, as of 2026-10-03). Thinnest: `soundings`
-  (offline parsing/interpolation only; live fetches untested), `records`
-  (network helpers only via a stubbed `subprocess.run`). `pcaps.valleyheatdeficit`
-  is checked against an independent trapezoid VHD of a synthetic sounding.
+- **Coverage so far:** every module has real tests (lair-dev: 673 passed /
+  1 xfailed, 97% coverage; lean uv: 393 passed / 17 skipped / 1 xfailed, as of
+  2026-10-03). Thinnest: `inventories` and `__init__` (93%), `meteorology` (94%).
+  Network code is tested against fakes, never live: HRRR chunks from a fake
+  boto3 resource, soundings with siphon's `WyomingUpperAir` stubbed,
+  `records.ftp_download` against an in-memory `ftplib.FTP`, CarbonTracker/GML
+  readers on small synthetic files. `pcaps.valleyheatdeficit` is checked
+  against an independent trapezoid VHD of a synthetic sounding. The one xfail
+  (`plotter.HandlerDashedLines` double-scales dashes by linewidth) is a known
+  bug left open.
 - **Two pandas majors:** the lean uv env resolves pandas 3.x, `lair-dev` has
   pandas 2.2. Run both before calling a pandas change done.
 
