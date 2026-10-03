@@ -78,11 +78,11 @@ class TimeRange:
         Raises
         ------
         ValueError
-            _description_
+            If ``time_range`` is given together with ``start`` or ``stop``, or
+            if any of them has an unrecognized format.
         """
-        assert not all([time_range, any([start, stop])]), (
-            "Cannot specify both time_range and start/stop"
-        )
+        if time_range and (start or stop):
+            raise ValueError("Cannot specify both time_range and start/stop")
 
         self._start = None
         self._stop = None
@@ -483,6 +483,15 @@ def seasonal(data: pd.DataFrame, statistic: str | list[str] = "mean") -> pd.Data
     """
     Aggregate data by season and year.
 
+    Seasons are DJF, MAM, JJA and SON. DJF is labelled by the year of its
+    January and February: DJF 2024 is Dec 2023 + Jan 2024 + Feb 2024 (December
+    rows count towards the next year). The other seasons keep their calendar
+    year.
+
+    Partial seasons at the edges of the data are kept, not dropped. For data
+    covering calendar year 2024, DJF 2024 is Jan-Feb 2024 only and DJF 2025 is
+    Dec 2024 only.
+
     Parameters
     ----------
     data : pd.DataFrame
@@ -493,15 +502,16 @@ def seasonal(data: pd.DataFrame, statistic: str | list[str] = "mean") -> pd.Data
     Returns
     -------
     pd.DataFrame
-        The aggregated data.
+        The aggregated data, indexed by (``season``, ``year``).
     """
-    # Resample the data to the start of quarters and group by year
+    # Quarters starting in Dec/Mar/Jun/Sep line up with DJF/MAM/JJA/SON
     df = data.resample("QS-DEC").agg(statistic)  # pyrefly: ignore[no-matching-overload]
     index = pd.DatetimeIndex(df.index)
     df["season"] = index.month.map(SEASONS)
 
-    # doesnt actually take the mean, just regroups them into season:year
-    df = df.set_index(["season", index.year])
+    # A DJF bin starts on Dec 1, so its label is the following (Jan/Feb) year
+    year = index.year + (index.month == 12)
+    df = df.set_index(["season", pd.Index(year, name="year")])
 
     return df
 

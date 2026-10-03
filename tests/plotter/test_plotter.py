@@ -95,6 +95,17 @@ class TestPlots:
         ax = plotter.seasonalPlot(df, "CH4")
         assert ax is not None
 
+    def test_seasonal_plot_djf_at_january_year(self):
+        # Constant within each DJF so the line value identifies the season-year
+        idx = pd.date_range("2023-01-31", "2024-12-31", freq="ME")
+        djf_year = idx.year + (idx.month == 12)
+        df = pd.DataFrame({"CH4": djf_year.astype(float)}, index=idx)
+        ax = plotter.seasonalPlot(df, "CH4")
+        lines = {line.get_label(): line for line in ax.get_lines()}
+        x, y = lines["DJF"].get_data()
+        assert list(x) == [2023, 2024, 2025]
+        assert list(y) == [2023.0, 2024.0, 2025.0]
+
     def test_polar_plot(self, rng):
         df = pd.DataFrame(
             {
