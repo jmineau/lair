@@ -81,7 +81,9 @@ def list_files(
         for file in files:
             if all_files or not file.startswith("."):
                 fn = file.lower() if ignore_case else file
-                if pattern is None or fnmatch.fnmatch(fn, pattern):
+                # fnmatchcase: plain fnmatch ignores case on Windows, so
+                # ignore_case=False would not be case-sensitive there
+                if pattern is None or fnmatch.fnmatchcase(fn, pattern):
                     if full_names:
                         result.append(os.path.abspath(os.path.join(root, file)))
                     else:
