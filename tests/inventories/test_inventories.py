@@ -44,6 +44,27 @@ class TestSumSectors:
         assert total.attrs["units"] == "kg/m2/s"
         assert total.attrs["long_name"] == "Total Emissions"
 
+    @staticmethod
+    def _three_sectors():
+        ds = xr.Dataset(
+            {
+                name: (("y", "x"), value * np.ones((2, 2)))
+                for name, value in [("energy", 1.0), ("waste", 2.0), ("PostMeter", 4.0)]
+            }
+        )
+        for v in ds.data_vars:
+            ds[v].attrs["units"] = "kg/m2/s"
+        return ds
+
+    def test_exclude_leaves_sectors_out(self):
+        total = inventories.sum_sectors(self._three_sectors(), exclude=["PostMeter"])
+        assert np.unique(total.values).tolist() == [3.0]
+        assert total.attrs["units"] == "kg/m2/s"
+
+    def test_exclude_unknown_sector_raises(self):
+        with pytest.raises(ValueError, match="Not sectors in this inventory"):
+            inventories.sum_sectors(self._three_sectors(), exclude=["Post_Meter"])
+
 
 class TestConvertUnits:
     def test_substance_to_mass_flux(self):
