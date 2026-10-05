@@ -164,20 +164,39 @@ def _quantify_data_only(
     return data.pint.quantify(mapping)
 
 
-def sum_sectors(data: Dataset) -> DataArray:
+def sum_sectors(data: Dataset, exclude: list[str] | None = None) -> DataArray:
     """
     Sum emissions from all sectors in the dataset.
+
+    What "all sectors" covers depends on the product: see each inventory's docstring
+    (e.g. EPA v1 annual includes ``Forest_Fires``, EPA v2 express includes the
+    supplemental ``PostMeter``).
 
     Parameters
     ----------
     data : xr.Dataset
         The inventory data with emissions from multiple sectors as different variables.
+    exclude : list of str, optional
+        Sectors to leave out of the sum, e.g. ``["Forest_Fires"]``.
 
     Returns
     -------
     xr.DataArray
-        The sum of emissions from all sectors.
+        The sum of emissions from the sectors.
+
+    Raises
+    ------
+    ValueError
+        If ``exclude`` names a sector that is not in ``data``.
     """
+    if exclude:
+        unknown = sorted(set(exclude) - set(data.data_vars))
+        if unknown:
+            raise ValueError(
+                f"Not sectors in this inventory: {unknown}. "
+                f"Sectors: {sorted(map(str, data.data_vars))}"
+            )
+        data = data.drop_vars(exclude)
     total = data.to_array(dim="sector", name="emissions").sum("sector")
     total.attrs["long_name"] = "Total Emissions"
     total.attrs["units"] = data[list(data.data_vars)[0]].attrs["units"]
@@ -462,6 +481,10 @@ class Inventory(BaseGrid):
     def total_emissions(self) -> DataArray:
         """
         Calculate the total emissions by summation over all variables.
+
+        Every sector in the product is summed, so what the total covers depends on the
+        product (see the inventory's docstring). To leave sectors out, use
+        ``sum_sectors(inventory.data, exclude=[...])``.
 
         Returns
         -------
@@ -1224,6 +1247,18 @@ class EPAv1(EPA):
     Bowman KW, Jeong S, Fischer ML. Gridded National Inventory of U.S.
     Methane Emissions. Environ Sci Technol. 2016 Dec 6;50(23):13123-13133.
     doi: 10.1021/acs.est.6b02878. Epub 2016 Nov 16. PMID: 27934278.
+
+    What ``total_emissions`` covers:
+
+    - ``time_step="annual"``: 22 sectors, including ``Forest_Fires`` (not from human
+      activity). Use ``sum_sectors(data, exclude=["Forest_Fires"])`` for an
+      anthropogenic total.
+    - ``"monthly"``: only the 6 sectors with monthly variation (``Combustion_Stationary``,
+      ``Field_Burning``, ``Manure_Management``, ``Natural_Gas_Production``,
+      ``Petroleum``, ``Rice_Cultivation``).
+    - ``"daily"``: ``Forest_Fires`` only.
+
+    So the monthly and daily totals are not U.S. totals.
     """
 
     version: str = "v1"
@@ -1291,6 +1326,18 @@ class EPAv2(EPA):
     B., & Weitz, M. (2023). Gridded EPA U.S. Anthropogenic Methane
     Greenhouse Gas Inventory (gridded GHGI) (v1.0) [Data set]. Zenodo.
     https://doi.org/10.5281/zenodo.8367082
+
+    What ``total_emissions`` covers:
+
+    - Base product (``express=False``): the 26 GHGI sectors, 2012-2018.
+    - Express extension (``express=True``): 2012-2020, revised, plus the supplemental
+      ``PostMeter`` sector (leaks downstream of customer meters: buildings and
+      appliances), which is outside the GHGI national total. In the Salt Lake Valley
+      it is ~7.5% of the express total. Use ``sum_sectors(data, exclude=["PostMeter"])``
+      for the GHGI sectors alone.
+
+    ``scale_by_month=True`` keeps every sector, holding those without monthly scale
+    factors at their annual rate, so its total covers the same sectors.
     """
 
     version: str = "v2"
