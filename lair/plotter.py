@@ -590,16 +590,18 @@ class HandlerDashedLines(HandlerLineCollection):
                 color = orig_handle.get_colors()[i]
             except IndexError:
                 color = orig_handle.get_colors()[0]
+            # The unscaled dash pattern, as matplotlib's own HandlerLineCollection
+            # uses: get_dashes() is already scaled by the collection's linewidth,
+            # and the Line2D scales it by its linewidth again
             try:
-                dashes = orig_handle.get_dashes()[i]
+                dashes = orig_handle._us_linestyles[i]
             except IndexError:
-                dashes = orig_handle.get_dashes()[0]
+                dashes = orig_handle._us_linestyles[0]
             try:
                 lw = orig_handle.get_linewidths()[i]
             except IndexError:
                 lw = orig_handle.get_linewidths()[0]
-            if dashes[1] is not None:
-                legline.set_dashes(dashes[1])
+            legline.set_linestyle(dashes)
             legline.set_color(color)
             legline.set_transform(trans)
             legline.set_linewidth(lw)
