@@ -408,14 +408,9 @@ class TestHandlerDashedLines:
         assert set(top.get_ydata()) == {6.0}
         assert set(bottom.get_ydata()) == {3.0}
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="HandlerDashedLines passes the collection's dashes, already "
-        "scaled by its linewidth, to Line2D.set_dashes, which scales them by "
-        "the linewidth again: a lw=3 dashed segment gets 3x longer dashes in "
-        "the legend",
-    )
     def test_dash_length_matches_a_thick_dashed_segment(self):
+        # The collection's dashes are already scaled by its linewidth; the
+        # legend line must not scale them again (lw=3 gave 3x longer dashes)
         from matplotlib.collections import LineCollection
 
         lc = LineCollection(
