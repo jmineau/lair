@@ -267,6 +267,7 @@ class _FakeFTP:
         self.cwd_path = "/"
         self.logged_in = None
         self.quit_called = False
+        self.closed = False
         self.retrieved = []
         _FakeFTP.instances.append(self)
 
@@ -297,6 +298,21 @@ class _FakeFTP:
 
     def quit(self):
         self.quit_called = True
+
+    def close(self):
+        self.closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        # As ftplib.FTP: send QUIT, ignore a server that does not answer, always close.
+        try:
+            self.quit()
+        except (OSError, EOFError):
+            pass
+        finally:
+            self.close()
 
 
 class TestFtpDownload:
@@ -395,10 +411,32 @@ class TestFtpDownload:
                 if path != "/":
                     raise ftplib.error_perm("530 Login incorrect.")
 
+        _FakeFTP.instances = []
         monkeypatch.setattr(ftplib, "FTP", lambda host: _Denied(self.TREE, host))
         with pytest.raises(ftplib.error_perm, match="530"):
             records.ftp_download("h", "/pub/data", str(tmp_path))
         assert self._local(tmp_path) == {}
+        assert _FakeFTP.instances[-1].closed  # not left open for the GC to warn about
+
+    def test_the_connection_is_closed(self, tmp_path, ftp):
+        records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert ftp[0].quit_called
+        assert ftp[0].closed
+
+    def test_a_quit_the_server_does_not_answer_still_closes(
+        self, tmp_path, monkeypatch
+    ):
+        import ftplib
+
+        class _Dropped(_FakeFTP):
+            def quit(self):
+                raise EOFError  # the server already closed the control connection
+
+        _FakeFTP.instances = []
+        monkeypatch.setattr(ftplib, "FTP", lambda host: _Dropped(self.TREE, host))
+        assert records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert self._local(tmp_path) == {"readme.txt": b"r"}
+        assert _FakeFTP.instances[-1].closed
 
 
 class TestPathMatches:
