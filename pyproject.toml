@@ -11,7 +11,7 @@ authors = [
 readme = "README.md"
 keywords = ["land-air interactions", "research", "pollution", "atmospheric science"]
 dynamic = ["version"]  # from git tags via setuptools-scm (see [tool.setuptools_scm])
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
   "cf_xarray",
   "dask",
@@ -21,7 +21,6 @@ dependencies = [
   "pandas",
   "pint",
   "pint-xarray",
-  "typing-extensions",  # needed to import Self before 3.11
   "xarray",
 ]
 license = "MIT"
@@ -31,6 +30,10 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
 
@@ -181,7 +184,7 @@ replace-imports-with-any = [
 ]
 
 [tool.ruff]
-target-version = "py310"
+# target-version comes from project.requires-python
 # Generated / vendored modules are not linted.
 extend-exclude = [
     "lair/_ccg_filter.py", # vendored from NOAA GML

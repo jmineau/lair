@@ -46,7 +46,7 @@ or clone the repository and install it as an editable package:
    cd lair
    pip install -e .
 
-``lair`` requires Python 3.10 or higher.
+``lair`` requires Python 3.11 or higher.
 
 .. _optional-dependencies:
 

@@ -31,7 +31,6 @@ dependencies:
   - shapely
   - siphon
   - sphinx
-  - typing-extensions
   - xarray
   - xesmf
   - zarr
