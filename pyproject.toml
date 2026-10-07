@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64", "setuptools-scm>=8"]
+requires = ["setuptools>=77", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -24,11 +24,11 @@ dependencies = [
   "typing-extensions",  # needed to import Self before 3.11
   "xarray",
 ]
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Atmospheric Science"
@@ -105,7 +105,10 @@ dev = [
 ]
 
 [tool.uv]
-required-version = ">=0.10.4"
+required-version = ">=0.12"
+# Rebuild the editable install when pyproject.toml or the git state changes, so
+# `__version__` follows new commits and tags.
+cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true } }]
 
 [tool.setuptools]
 include-package-data = true
