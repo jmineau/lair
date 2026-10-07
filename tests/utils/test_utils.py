@@ -44,7 +44,7 @@ class TestDotDict:
     def test_missing_attribute_raises_attribute_error(self):
         d = DotDict({"a": 1})
         with pytest.raises(AttributeError, match="missing"):
-            d.missing
+            _ = d.missing
         assert not hasattr(d, "missing")
         assert getattr(d, "missing", "default") == "default"
 

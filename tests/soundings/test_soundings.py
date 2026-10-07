@@ -185,7 +185,7 @@ class TestGetSoundings:
         ds = soundings.get_soundings(
             "SLC",
             start=pd.Timestamp("2024-01-01 05:00", tz="America/Denver"),  # 12Z
-            end=dt.datetime(2024, 1, 2, tzinfo=dt.timezone.utc),
+            end=dt.datetime(2024, 1, 2, tzinfo=dt.UTC),
             sounding_dir=str(tmp_path),
         )
         assert list(pd.DatetimeIndex(ds.time.values)) == [

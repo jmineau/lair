@@ -221,13 +221,17 @@ docstring-code-format = true
 exclude = ["README.md"]
 
 [tool.ruff.lint]
-# E and F, plus pydocstyle as in fips and uataq. Broaden to the template's
-# other rules (UP, B, SIM, I, NPY, RUF100) as modules get cleaned up.
 select = [
-    "E",  # pycodestyle errors
+    "E",  # pycodestyle
     "F",  # Pyflakes
+    "UP",  # pyupgrade
+    "B",  # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "I",  # isort
     "D",  # pydocstyle, numpy convention (below)
     "D213",  # docstring summary on the second line
+    "NPY",  # NumPy-specific, incl. NumPy 2 deprecations
+    "RUF100",  # unused noqa
 ]
 ignore = [
     "E501",  # line too long, handled by formatter

@@ -2,7 +2,8 @@
 
 import logging
 import os
-from importlib.metadata import PackageNotFoundError, version as _version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _version
 
 import cf_xarray.units  # must be imported before pint_xarray
 import pint
@@ -12,7 +13,8 @@ from pint_xarray import unit_registry as units
 # sort_by_dimensionality is private pint API and it moves between releases:
 # pint >= 0.26 keeps it in `sorting`, pint <= 0.25 in `_compound_unit_helpers`.
 try:
-    from pint.delegates.formatter.sorting import sort_by_dimensionality  # pyrefly: ignore[missing-import]
+    # pyrefly: ignore[missing-import]
+    from pint.delegates.formatter.sorting import sort_by_dimensionality
 except ImportError:
     try:
         from pint.delegates.formatter._compound_unit_helpers import (  # pyrefly: ignore[missing-import]

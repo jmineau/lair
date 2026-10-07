@@ -7,9 +7,8 @@ Quantity.
 """
 
 import numpy as np
-import pytest
-
 import pint
+import pytest
 import xarray as xr
 
 from lair import meteorology as met
@@ -92,7 +91,7 @@ class TestIdealGasLaw:
 
     def test_temperature_from_density(self):
         T = met.ideal_gas_law("temp", p=1e5, rho=1.2, R=287.05)
-        assert T == pytest.approx(1e5 / (1.2 * 287.05))
+        assert pytest.approx(1e5 / (1.2 * 287.05)) == T
 
     def test_invalid_solve_for_raises(self):
         with pytest.raises(ValueError):
@@ -113,17 +112,17 @@ class TestIdealGasLaw:
         # N = p V / (kb T)
 
         N = met.ideal_gas_law("number", p=1e5, V=1.0, T=300.0)
-        assert N == pytest.approx(1e5 / (KB * 300.0))
+        assert pytest.approx(1e5 / (KB * 300.0)) == N
 
     def test_volume_from_moles(self):
 
         V = met.ideal_gas_law("volume", p=1e5, n=1.0, T=300.0)
-        assert V == pytest.approx(RSTAR * 300.0 / 1e5)
+        assert pytest.approx(RSTAR * 300.0 / 1e5) == V
 
     def test_volume_from_mass(self):
         # V = m R T / p
         V = met.ideal_gas_law("volume", p=1e5, m=1.0, R=287.05, T=300.0)
-        assert V == pytest.approx(287.05 * 300.0 / 1e5)
+        assert pytest.approx(287.05 * 300.0 / 1e5) == V
 
     def test_pressure_from_moles_and_volume(self):
         # p = n R* T / V
@@ -139,7 +138,7 @@ class TestIdealGasLaw:
     def test_temperature_from_volume_and_moles(self):
 
         T = met.ideal_gas_law("temperature", p=1e5, V=1.0, n=1.0)
-        assert T == pytest.approx(1e5 / RSTAR)
+        assert pytest.approx(1e5 / RSTAR) == T
 
     def test_pressure_from_density_arrays(self):
         # Array inputs must not be tested for truthiness
@@ -195,11 +194,11 @@ class TestHypsometric:
         # Plain floats: Z1 adds to the thickness in metres
         Z2 = met.hypsometric(Tv=280.0, p1=1e5, p2=9e4, Z1=1289.0)
         assert isinstance(Z2, float)
-        assert Z2 == pytest.approx(1289.0 + 863.2259, rel=1e-6)
+        assert pytest.approx(1289.0 + 863.2259, rel=1e-6) == Z2
 
     def test_bottom_height_from_top_height(self):
         Z1 = met.hypsometric(Tv=280.0, p1=1e5, p2=9e4, Z2=2152.2259)
-        assert Z1 == pytest.approx(1289.0, rel=1e-6)
+        assert pytest.approx(1289.0, rel=1e-6) == Z1
 
     def test_pressure_from_thickness(self):
         p2 = met.hypsometric(Tv=280.0, p1=1e5, deltaz=863.2259)
@@ -261,7 +260,7 @@ class TestQuantityInputs:
 
     def test_heights_in_km(self):
         Z2 = met.hypsometric(Tv=280.0, p1=1e5, p2=9e4, Z1=1.289 * units("km"))
-        assert Z2 == pytest.approx(1289.0 + 863.2259, rel=1e-6)
+        assert pytest.approx(1289.0 + 863.2259, rel=1e-6) == Z2
 
     def test_ideal_gas_law_with_constant_quantity(self):
         from lair.constants import Rd

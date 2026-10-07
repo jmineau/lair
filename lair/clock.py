@@ -2,16 +2,18 @@
 Utility classes & functions for working with time and dates.
 """
 
-from contextlib import ContextDecorator
-from dataclasses import dataclass, field
 import datetime as dt
-from functools import partial
-import pandas as pd
 import re
 import time
-from typing import Any, Callable, ClassVar, Dict, Literal, Optional, Union
+from collections.abc import Callable
+from contextlib import ContextDecorator
+from dataclasses import dataclass, field
+from functools import partial
+from typing import Any, ClassVar, Literal, Union
 from zoneinfo import ZoneInfo
+
 import numpy as np
+import pandas as pd
 
 AFTERNOON = [12, 13, 14, 15, 16]  # HH Local Standard Time
 SEASONS = {
@@ -49,10 +51,12 @@ class TimeRange:
         Parse the ISO8601 formatted time string and return a datetime object.
     """
 
-    _input_types = Union[
+    # typing.Union, not X | Y: the annotation below adds the "TimeRange" forward
+    # reference to it at runtime, which only typing.Union accepts.
+    _input_types = Union[  # noqa: UP007
         str,
-        list[Union[str, dt.datetime, None]],
-        tuple[Union[str, dt.datetime, None], Union[str, dt.datetime, None]],
+        list[str | dt.datetime | None],
+        tuple[str | dt.datetime | None, str | dt.datetime | None],
         slice,
         None,
     ]
@@ -60,8 +64,8 @@ class TimeRange:
     def __init__(
         self,
         time_range: "TimeRange" | _input_types = None,
-        start: Union[_input_types, dt.datetime] = None,
-        stop: Union[_input_types, dt.datetime] = None,
+        start: _input_types | dt.datetime = None,
+        stop: _input_types | dt.datetime = None,
     ):
         """
         Initialize a TimeRange object with the specified time range.
@@ -267,11 +271,11 @@ class Timer(ContextDecorator):
     https://realpython.com/python-timer
     """
 
-    timers: ClassVar[Dict[str, float]] = {}
+    timers: ClassVar[dict[str, float]] = {}
     name: str | None = None
     text: str = "Elapsed time: {:0.4f} seconds"
-    logger: Optional[Callable[[str], None]] = print
-    _start_time: Optional[float] = field(default=None, init=False, repr=False)
+    logger: Callable[[str], None] | None = print
+    _start_time: float | None = field(default=None, init=False, repr=False)
 
     class TimerError(Exception):
         """A custom exception used to report errors in use of Timer class"""
@@ -543,7 +547,7 @@ def dt2decimalDate(datetime: dt.datetime) -> float:
         The decimal date.
     """
     if datetime.utcoffset() is not None:
-        datetime = datetime.astimezone(dt.timezone.utc).replace(tzinfo=None)
+        datetime = datetime.astimezone(dt.UTC).replace(tzinfo=None)
 
     this_year = dt.datetime(datetime.year, 1, 1)
     total_seconds = (datetime - this_year).total_seconds()
@@ -664,7 +668,7 @@ def convert_timezones(
                 ambiguous,
                 nonexistent,
             )
-            for i, t in zip(naive, localized):
+            for i, t in zip(naive, localized, strict=True):
                 if t is pd.NaT or isinstance(times[i], pd.Timestamp):
                     times[i] = t
                 else:

@@ -5,7 +5,6 @@ Config module for lair package
 import os
 from pathlib import Path
 
-
 ###############
 # Directories #
 ###############

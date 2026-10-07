@@ -29,16 +29,15 @@ import xarray as xr
 from xarray import DataArray, Dataset
 
 from lair import units
+from lair._optional import import_optional_dependency
 from lair.config import get_data_dir
 from lair.geo import CRS, PC, BaseGrid, round_latlon, wrap_lons, write_rio_crs
-from lair._optional import import_optional_dependency
 
 # Optional dependency for chemistry calculations
 molmass = import_optional_dependency("molmass")
 shapely = import_optional_dependency("shapely")
 from molmass import Formula  # noqa: E402
 from shapely import Polygon  # noqa: E402
-
 
 #: Environment variable holding the inventory archive root
 #: (with EDGAR/, EPA/, GFEI/, vulcan/ and WetCHARTs/ subdirectories)
@@ -704,10 +703,7 @@ class Inventory(BaseGrid):
         if ax is None:
             fig, ax = plt.subplots(subplot_kw={"projection": PC})
 
-        if sector is not None:
-            data = self.data[sector]
-        else:
-            data = self.total_emissions
+        data = self.data[sector] if sector is not None else self.total_emissions
 
         if time == "mean":
             data = data.mean("time")

@@ -55,4 +55,4 @@ class TestMolarMass:
 
     def test_aerosol_has_none(self):
         with pytest.raises(ValueError, match="no chemical formula"):
-            get_pollutant("PM2.5").molar_mass
+            _ = get_pollutant("PM2.5").molar_mass

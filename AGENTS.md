@@ -226,7 +226,8 @@ mamba install -c conda-forge esmpy   # only if you need the regridding extra
 pip install -e .                     # or: uv pip install -e .
 ```
 
-**Linting/formatting (ruff):** `ruff check` (E, F, and pydocstyle D) is an enforced gate, and
+**Linting/formatting (ruff):** `ruff check` (the template's rules: E, F, UP, B, SIM, I,
+D, NPY, RUF100) is an enforced gate, and
 since 2026-09-21 the whole of `lair/` and `tests/` is `ruff format`-ed (commit
 bc973df). Keep it that way: the
 pre-commit `ruff-format` hook formats on commit, or run `just format`.
@@ -278,9 +279,9 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 
 ## Conventions
 
-- **Style**: ruff-formatted; lint rules E, F and pydocstyle (`D`, NumPy
-  convention, summary on the line after the opening quotes: D213), as in fips
-  and uataq. Keep diffs focused; don't mix refactors into fixes.
+- **Style**: ruff-formatted; the template's lint rules (E, F, UP, B, SIM, I, NPY,
+  RUF100) and pydocstyle (`D`, NumPy convention, summary on the line after the
+  opening quotes: D213), as in the other packages. Keep diffs focused; don't mix refactors into fixes.
 - **Typing**: partial but checked, and shipped: `lair/py.typed` (PEP 561) tells
   users' type checkers to read lair's annotations. pyrefly must stay at 0 errors — annotate
   new code; don't add blanket `Any` to silence it.

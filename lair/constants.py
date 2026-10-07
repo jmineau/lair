@@ -9,7 +9,6 @@ Until then, I will keep them here.
 
 from lair import units
 
-
 Na = 6.02214076e23 * units("1 / mol")  #: Avogadro number [1/mol]
 kb = 1.380649e-23 * units("J / K")  #: Boltzmann constant [J/K]
 rho_w = 997 * units("kg / m**3")  #: Density of water [kg/m^3]

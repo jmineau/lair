@@ -88,7 +88,7 @@ class TestTimeRangeMembership:
 
     def test_total_seconds_requires_both_ends(self):
         with pytest.raises(ValueError):
-            clock.TimeRange(start=dt.datetime(2024, 1, 1)).total_seconds
+            _ = clock.TimeRange(start=dt.datetime(2024, 1, 1)).total_seconds
 
     def test_iter_yields_start_stop(self):
         start, stop = dt.datetime(2024, 1, 1), dt.datetime(2024, 1, 2)
@@ -275,11 +275,11 @@ class TestTimezones:
             clock.convert_timezones([dt.datetime(2024, 1, 1, 18)], totz="UTC")
 
     def test_aware_without_fromtz_is_fine(self):
-        d = dt.datetime(2024, 1, 1, 18, tzinfo=dt.timezone.utc)
+        d = dt.datetime(2024, 1, 1, 18, tzinfo=dt.UTC)
         assert clock.convert_timezones([d], totz="MST")[0].hour == 11
 
     def test_mixed_list_naive_elements_use_fromtz(self):
-        aware = dt.datetime(2024, 1, 1, 18, tzinfo=dt.timezone.utc)
+        aware = dt.datetime(2024, 1, 1, 18, tzinfo=dt.UTC)
         # Not the machine's zone, so local-time fallback can't pass by accident
         naive = dt.datetime(2024, 1, 1, 18)  # EST -> 23:00 UTC
         out = clock.convert_timezones(

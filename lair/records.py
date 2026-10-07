@@ -5,8 +5,9 @@ Utilities for working with files and directories.
 import fnmatch
 import logging
 import os
+from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from lair._optional import import_optional_dependency
 
@@ -113,7 +114,7 @@ def read_kml(path: str) -> "KML":
         return kml.KML.parse(path)
 
     # fastkml < 1.0: from_string fills the instance in place
-    with open(path, "rt") as f:
+    with open(path) as f:
         k = kml.KML()
         k.from_string(f.read().encode("utf-8"))
     return k
@@ -144,8 +145,8 @@ def wget_download(
     unzip : bool, optional
         Whether to unzip the downloaded files if they are ZIP files. Defaults to True.
     """
-    from concurrent.futures import ThreadPoolExecutor
     import subprocess
+    from concurrent.futures import ThreadPoolExecutor
     from urllib.parse import urlparse
 
     def download_file(url: str):
@@ -259,8 +260,8 @@ def ftp_download(
 
         PATH = "/" + path.strip("/")  # path should start from root on ftp
 
-        # Redefine download func for each path to pass PATH
-        def download(path):
+        # Redefine download func for each path; it is called within this iteration
+        def download(path, root=PATH):
             try:
                 # Try changing to the specified path
                 ftp.cwd(path)
@@ -286,7 +287,7 @@ def ftp_download(
                         common = os.path.relpath(path.strip("/"), prefix.strip("/"))
                 else:
                     # Drop each PATH directory into the download_dir
-                    common = os.path.relpath(path, os.path.dirname(PATH))
+                    common = os.path.relpath(path, os.path.dirname(root))
 
                 # Create the local directory structure
                 local = os.path.join(download_dir, common)

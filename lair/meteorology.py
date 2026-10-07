@@ -22,7 +22,8 @@ result yourself if you want them.
 """
 
 import functools
-from typing import Any, Callable, ParamSpec, TypeVar
+from collections.abc import Callable
+from typing import Any, ParamSpec, TypeVar
 
 import numpy as np
 import pint

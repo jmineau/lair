@@ -608,7 +608,7 @@ class TestMolefractionsProperty:
 
         monkeypatch.setattr(lair.config, "CACHE_DIR", str(tmp_path / "cache"))
         ct_co2.cache = True
-        ct_co2.molefractions
+        _ = ct_co2.molefractions
         assert (
             tmp_path / "cache/carbontracker/co2/CT2019B/molefractions_nam1x1.pkl"
         ).is_file()
@@ -616,7 +616,7 @@ class TestMolefractionsProperty:
     def test_co2_without_files_raises(self, tmp_path):
         ct = CarbonTrackerCO2("CT2019B", carbon_tracker_directory=tmp_path)
         with pytest.raises(FileNotFoundError, match="nam1x1"):
-            ct.molefractions
+            _ = ct.molefractions
 
 
 class TestDownloadRequests:
@@ -686,4 +686,4 @@ class TestGMLDataReading:
         g.directory.mkdir(parents=True)
         g.filepath.write_text("# no field list here\nUTA 1993 5 1788.16\n")
         with pytest.raises(ValueError, match="data_fields"):
-            g.data
+            _ = g.data
