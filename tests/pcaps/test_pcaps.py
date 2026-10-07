@@ -1,4 +1,5 @@
-"""Tests for lair.pcaps (valley heat deficit + PCAP detection).
+"""
+Tests for lair.pcaps (valley heat deficit + PCAP detection).
 
 The PCAP event/masking helpers are pure pandas. ``valleyheatdeficit`` is checked
 against an independent trapezoid integration of a synthetic hydrostatic
@@ -17,7 +18,8 @@ RD, CP, G = 287.05, 1005.0, 9.81
 
 
 def _sounding(times, interval=10.0):
-    """Synthetic dry sounding shaped like soundings.Sounding.interpolate output.
+    """
+    Synthetic dry sounding shaped like soundings.Sounding.interpolate output.
 
     A surface inversion (-5 C at 1290 m warming to 3 C at 1700 m) under a
     -6.5 K/km lapse rate, with pressure built hydrostatically so the

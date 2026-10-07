@@ -142,6 +142,7 @@ class TimeRange:
 
     @property
     def start(self) -> dt.datetime | None:
+        """The start of the range, or None if it is open at the start."""
         return self._start
 
     @start.setter
@@ -157,6 +158,7 @@ class TimeRange:
 
     @property
     def stop(self) -> dt.datetime | None:
+        """The end of the range, or None if it is open at the end."""
         return self._stop
 
     @stop.setter
@@ -172,6 +174,7 @@ class TimeRange:
 
     @property
     def total_seconds(self) -> float:
+        """The length of the range in seconds; both ends must be set."""
         if self.start is None or self.stop is None:
             raise ValueError("Both start and stop times must be specified")
         return (self.stop - self.start).total_seconds()
@@ -276,7 +279,7 @@ class Timer(ContextDecorator):
         pass
 
     def __post_init__(self) -> None:
-        """Initialization: add timer to dict of timers"""
+        """Add the timer to the dict of timers."""
         if self.name:
             self.timers.setdefault(self.name, 0)
 
@@ -321,7 +324,7 @@ class Timer(ContextDecorator):
 
 def datetime_accessor(obj, accessor="dt"):
     """
-    Returns the datetime accessor of the object.
+    Return the datetime accessor of the object.
     """
     if hasattr(obj, accessor):
         return getattr(obj, accessor)

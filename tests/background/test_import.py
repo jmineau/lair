@@ -1,4 +1,5 @@
-"""How lair.background fails to import without the NOAA CCG filter.
+"""
+How lair.background fails to import without the NOAA CCG filter.
 
 Kept apart from test_background.py, which skips entirely when the filter is not
 installed: these tests simulate its absence, so they run either way.

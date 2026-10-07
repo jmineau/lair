@@ -1,4 +1,8 @@
+"""Small helpers used across lair."""
+
+
 def updating_print(msg):
+    """Print *msg* over the current line (a carriage return, no newline)."""
     print(f"\r{msg}", end="")
 
 

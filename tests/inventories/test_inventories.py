@@ -1,4 +1,5 @@
-"""Tests for lair.inventories.
+"""
+Tests for lair.inventories.
 
 Requires the `geo` extra (imports lair.geo) plus molmass. The base Inventory
 machinery and unit/sector helpers are tested on synthetic data, and the concrete
@@ -276,8 +277,9 @@ def test_import_does_not_change_user_arithmetic():
 
 @pytest.fixture
 def described():
-    """An Inventory whose variables carry long_name/standard_name like the
-    loaders' do."""
+    """
+    An Inventory whose variables carry long_name/standard_name as the loaders' do.
+    """
     import pandas as pd
 
     time = pd.date_range("2020-01-01", periods=2, freq="YS")
@@ -421,9 +423,12 @@ def _vulcan_grid():
 
 
 def _cf_time(starts, step, units):
-    """Time and time_bnds variables encoded like the Vulcan/WetCHARTs files:
-    ``time`` at the middle of each step with ``bounds = "time_bnds"``, and the
-    bounds without units of their own (CF: they take those of ``time``)."""
+    """
+    Time and time_bnds variables encoded like the Vulcan/WetCHARTs files.
+
+    ``time`` is at the middle of each step with ``bounds = "time_bnds"``, and the
+    bounds without units of their own (CF: they take those of ``time``).
+    """
     starts = np.asarray(starts, dtype=float)
     bnds = np.stack([starts, starts + step], axis=1)
     time = (
@@ -435,9 +440,12 @@ def _cf_time(starts, step, units):
 
 
 def _write_vulcan(root, time_step, sectors, bounds=("mn",)):
-    """Write a tiny Vulcan v3 archive shaped like the real files: (time, y, x)
-    on the Vulcan LCC grid with 2D lat/lon coords, one file per sector and
-    bound (annual) or per sector and day (hourly)."""
+    """
+    Write a tiny Vulcan v3 archive shaped like the real files.
+
+    It is (time, y, x) on the Vulcan LCC grid with 2D lat/lon coords, one file per
+    sector and bound (annual) or per sector and day (hourly).
+    """
     x, y, lat, lon = _vulcan_grid()
     d = root / "vulcan" / "v3" / "data" / "native" / time_step
     d.mkdir(parents=True)
@@ -651,9 +659,12 @@ def _epa_annual_and_sf(years):
 
 
 class TestEPAv2Monthly:
-    """scale_by_month keeps every sector: those with monthly scale factors are
-    scaled, the rest (enteric fermentation, landfills, coal, ...) hold their
-    annual rate in every month."""
+    """
+    ``scale_by_month`` keeps every sector.
+
+    Those with monthly scale factors are scaled, the rest (enteric fermentation,
+    landfills, coal, ...) hold their annual rate in every month.
+    """
 
     def test_keeps_sectors_without_scale_factors(self):
         epa = _epa_v2(express=False)
@@ -687,9 +698,12 @@ class TestEPAv2Monthly:
 
 @pytest.fixture
 def epa_v2_dir(tmp_path):
-    """A tiny EPA v2 archive shaped like the real files: one annual file per year
-    with ``emi_ch4_<code>_<name>`` variables, and monthly scale factors for only
-    some of the sectors."""
+    """
+    A tiny EPA v2 archive shaped like the real files.
+
+    It has one annual file per year with ``emi_ch4_<code>_<name>`` variables, and
+    monthly scale factors for only some of the sectors.
+    """
     import pandas as pd
 
     lat, lon = np.array([40.05, 40.15]), np.array([-111.95, -111.85])
@@ -870,8 +884,12 @@ class TestPerVariableUnits:
 
 @pytest.fixture
 def wetcharts_dir(tmp_path):
-    """A tiny WetCHARTs v1.3.1 file: int32 model codes, mid-month times and
-    NaN outside wetlands (most of the real grid)."""
+    """
+    A tiny WetCHARTs v1.3.1 file.
+
+    It has int32 model codes, mid-month times and NaN outside wetlands (most of the real
+    grid).
+    """
     import pandas as pd
 
     lat = np.arange(40.25, 42, 0.5)
@@ -970,8 +988,12 @@ def edgar_dir(tmp_path):
 
 @pytest.fixture
 def epa_v1_dir(tmp_path):
-    """EPA v1 (2012) annual, monthly and daily files. Like the real ones, the
-    monthly and daily files number their steps 1..n with units of "months"."""
+    """
+    EPA v1 (2012) annual, monthly and daily files.
+
+    Like the real ones, the monthly and daily files number their steps 1..n with units
+    of "months".
+    """
     lat, lon = np.array([40.05, 40.15]), np.array([-111.95, -111.85])
     d = tmp_path / "EPA" / "v1"
     d.mkdir(parents=True)

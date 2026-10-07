@@ -148,7 +148,8 @@ def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
 def _quantify_data_only(
     data: Dataset, units_map: dict[Any, Any] | None = None
 ) -> Dataset:
-    """Attach pint units to a dataset's variables while leaving its coordinates alone.
+    """
+    Attach pint units to a dataset's variables while leaving its coordinates alone.
 
     Real inventory files carry ``units: degrees_north`` on lat/lon, and
     pint-xarray quantifies any variable with a ``units`` attribute unless it is
@@ -274,7 +275,6 @@ class Inventory(BaseGrid):
             If True, all variables are assumed to be emissions and in the same units.
             If False, the units of each variable are retained as-is.
         """
-
         # Upper-case all-lowercase names ('ch4' -> 'CH4') but keep mixed-case
         # formulas as given: 'NOx'.upper() would no longer be a formula
         self.pollutant: str = (
@@ -366,7 +366,7 @@ class Inventory(BaseGrid):
             return list(p.glob("*.nc"))
 
     def _file_root(self) -> Path:
-        """The inventory path, for subclasses that find their own files."""
+        """Return the inventory path, for subclasses that find their own files."""
         if self.path is None:
             raise ValueError(
                 f"This {type(self).__name__} was built from a Dataset and has no files."
@@ -446,7 +446,7 @@ class Inventory(BaseGrid):
 
     def _seconds_per_step(self) -> DataArray:
         """
-        The true calendar length of each time step in seconds.
+        Return the true calendar length of each time step, in seconds.
 
         Leap years have 366 days and months their actual number of days. lair
         follows the calendar rather than any product's own convention; EDGAR
@@ -571,8 +571,7 @@ class Inventory(BaseGrid):
     @_keep_attrs
     def integrate(self) -> DataArray:
         """
-        Integrate the data over the spatial dimensions
-        to get the total emissions per time step.
+        Integrate the data over the spatial dimensions: total emissions per time step.
 
         Returns
         -------
@@ -1483,6 +1482,7 @@ class GFEI(Inventory, metaclass=ABCMeta):
         )
 
     def get_files(self) -> list[Path]:
+        """Return the sector files, without the ``All``, ``gsd`` and ``rsd`` ones."""
         p = self._file_root()
         return [
             f
@@ -1684,6 +1684,7 @@ class Vulcan(Inventory):
         self._is_clipped = False
 
     def get_files(self, uncertainty="central") -> list[Path]:
+        """Return this region's sector files for one uncertainty (``central`` by default)."""
         p = self._file_root()
         uncertainty = self._uncertainties[uncertainty]
         return [

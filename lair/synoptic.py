@@ -45,7 +45,7 @@ def _token(token: str | None) -> str:
 
 
 def _time(t) -> str:
-    """API time format, YYYYmmddHHMM in UTC."""
+    """Format a time as the API takes it: YYYYmmddHHMM in UTC."""
     ts = pd.Timestamp(t)
     if ts.tzinfo is not None:
         ts = ts.tz_convert("UTC")
@@ -162,9 +162,12 @@ def timeseries(
 
 
 def _numeric_if_possible(values: pd.Series) -> pd.Series:
-    """Numbers where every non-missing value parses as one (some stations send numeric
-    strings, e.g. '0.51', mixed with floats, and '' for missing); text columns such as
-    cardinal wind directions are left alone."""
+    """
+    Numbers where every non-missing value parses as one.
+
+    Some stations send numeric strings, e.g. '0.51', mixed with floats, and '' for
+    missing. Text columns such as cardinal wind directions are left alone.
+    """
     blank = values.map(lambda x: isinstance(x, str) and not x.strip())
     values = values.where(~blank.astype(bool))
     converted = pd.to_numeric(values, errors="coerce")

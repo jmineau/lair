@@ -1,4 +1,5 @@
-"""Tests for lair.records (file/dir utilities).
+"""
+Tests for lair.records (file/dir utilities).
 
 Network helpers (ftp_download, wget_download) are not exercised against real
 servers: wget_download runs with subprocess.run stubbed out and ftp_download
@@ -250,7 +251,8 @@ class TestWgetDownload:
 
 
 class _FakeFTP:
-    """In-memory stand-in for ``ftplib.FTP``.
+    """
+    In-memory stand-in for ``ftplib.FTP``.
 
     ``tree`` maps absolute remote paths to bytes (files) or None (directories,
     whose children are the paths directly beneath them). cwd() into a file or a

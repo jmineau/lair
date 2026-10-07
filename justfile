@@ -32,7 +32,7 @@ type-check:
 
 # Require docstrings on the public API (raise --fail-under as docstrings are added)
 docstr:
-    uv run docstr-coverage lair --skip-magic --skip-init --exclude "lair/_ccg_filter.py" --fail-under 84
+    uv run docstr-coverage lair --skip-magic --skip-init --exclude "lair/_ccg_filter.py" --fail-under 88
 
 # Run the tests in parallel (up to 8 workers; `-n 0` for serial), skipping network and slow ones
 test *args:

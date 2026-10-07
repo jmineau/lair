@@ -205,7 +205,6 @@ def rotate_winds(u, v, lon) -> tuple[Any, Any]:
     tuple[np.array, np.array]
         u and v components of wind in earth coordinates
     """
-
     # Parameters
     rotcon_p = 0.622515
     lon_xx_p = -97.5

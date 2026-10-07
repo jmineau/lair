@@ -103,7 +103,8 @@ class Sounding:
                 self.data.drop(columns=attr, inplace=True)
 
     def interpolate(self, start=1289, stop=5000, interval=10):
-        """Interpolate sounding data to a specified height.
+        """
+        Interpolate sounding data to a specified height.
 
         Parameters
         ----------
@@ -160,7 +161,7 @@ class Sounding:
         return ds
 
     def plot(self):
-        # TODO
+        """Plot the sounding (not implemented yet)."""
         raise NotImplementedError
 
 

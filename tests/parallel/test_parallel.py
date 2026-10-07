@@ -1,4 +1,5 @@
-"""Tests for lair.parallel.
+"""
+Tests for lair.parallel.
 
 Only the sequential (num_processes=1) path is exercised here: it is
 deterministic and avoids spinning up a multiprocessing Pool in the test suite.

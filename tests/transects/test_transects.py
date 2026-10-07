@@ -9,9 +9,13 @@ from lair import transects
 
 @pytest.fixture
 def matrix():
-    """30 transits x 50 points: flat 2.0 ppm background with a transit-varying offset,
+    """
+    30 transits x 50 points with two sources and a missing transit.
+
+    A flat 2.0 ppm background with a transit-varying offset,
     a persistent +0.2 ppm source at point 10, an intermittent +0.5 ppm source at point 30
-    (on for 6 of 30 transits), and one transit with no data."""
+    (on for 6 of 30 transits), and one transit with no data.
+    """
     rng = np.random.default_rng(0)
     obs = np.full((30, 50), 2.0) + rng.normal(0, 0.001, (30, 50))
     obs += np.linspace(0, 0.3, 30)[:, None]  # boundary-layer-like offset per transit
@@ -111,10 +115,14 @@ def test_robust_z_is_transit_relative(matrix):
 
 @pytest.fixture
 def track():
-    """A 5-km straight route sampled every second at 10 m/s: out (s increasing), a
+    """
+    A 5-km straight route sampled every second at 10 m/s, with a dwell and a gap.
+
+    It goes out (s increasing), a
     120-s dwell at the far end, back, a 30-min gap, then out again but only 3 km.
     Obs = 2.0 ppm with a +0.3 ppm source at s = 2,000 m (sampled with a 10-s lag, i.e.
-    the value shows up 100 m further along in the direction of travel)."""
+    the value shows up 100 m further along in the direction of travel).
+    """
     v, L = 10.0, 5000.0
     out = np.arange(0, L + 1, v)
     s = np.r_[out, np.full(120, L), out[::-1]]

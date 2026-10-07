@@ -188,7 +188,8 @@ class CarbonTracker(metaclass=ABCMeta):
     def _sample_field(
         points: pd.DataFrame, ds: xr.Dataset, variable: str, units: str = "ppb"
     ) -> pd.DataFrame:
-        """Evaluate ``ds[variable]`` at each row's (datetime, lati, long, zagl).
+        """
+        Evaluate ``ds[variable]`` at each row's (datetime, lati, long, zagl).
 
         Vertical placement uses the geopotential-height (``gph``) layer bounds:
         the particle's height-above-ground is added to the surface gph and the
@@ -251,7 +252,8 @@ class CarbonTracker(metaclass=ABCMeta):
         return out
 
     def sample(self, points: pd.DataFrame) -> pd.DataFrame:
-        """Sample the molefraction field at ``points``.
+        """
+        Sample the molefraction field at ``points``.
 
         ``points`` is a DataFrame with columns ``datetime`` (UTC sample time),
         ``lati``, ``long``, ``zagl``, as in a PYSTILT particle table (for
@@ -281,7 +283,8 @@ class CarbonTracker(metaclass=ABCMeta):
             return self._sample_field(points, ds, self.specie, self.units)
 
     def background(self, points: pd.DataFrame, by: str | None = None) -> pd.DataFrame:
-        """Background mole fraction [ppm]: mean of the sampled field over ``points``.
+        """
+        Background mole fraction [ppm]: mean of the sampled field over ``points``.
 
         Samples the field at every point (e.g. trajectory endpoints) and averages
         over them. With ``by`` (e.g. ``'receptor'``) the mean and 1-sigma spread
@@ -354,7 +357,7 @@ class CarbonTrackerCH4(CarbonTracker):
 
     @cached_property
     def molefractions(self) -> xr.Dataset:
-        "Molefractions Dataset. Cached property."
+        """Molefractions Dataset. Cached property."""
         path = self.directory / "molefractions"
 
         files = list_files(str(path), "*nc", full_names=True, recursive=True)
@@ -454,7 +457,7 @@ class CarbonTrackerCO2(CarbonTracker):
 
     @cached_property
     def molefractions(self) -> xr.Dataset:
-        "Molefractions Dataset on ``self.grid`` (lazy). Cached property."
+        """Molefractions Dataset on ``self.grid`` (lazy). Cached property."""
         files = sorted(
             str(f) for f in self.molefractions_dir.glob(f"*molefrac_{self.grid}_*.nc")
         )
@@ -586,6 +589,7 @@ class GMLData:
         return f"NOAA GML Data({self.specie}, {self.site}, {self.sample_type})"
 
     def download(self):
+        """Download the file from NOAA GML's FTP server and return its path."""
         host = "ftp.gml.noaa.gov"
         path = f"/data/trace_gases/{self.specie}/{self.sample_type}/{self.platform}/{self.ext}/{self.filename}"
         ftp_download(host, path, str(self.directory))
@@ -593,6 +597,7 @@ class GMLData:
 
     @cached_property
     def data(self):
+        """The file's data, read once."""
         if self.driver == "pandas" and self.frequency == "month":
             data = self._read_monthly()
         elif self.driver == "pandas":
@@ -613,7 +618,8 @@ class GMLData:
         return data
 
     def _read_monthly(self) -> pd.DataFrame:
-        """Read a monthly-mean file, indexed by the first of each month.
+        """
+        Read a monthly-mean file, indexed by the first of each month.
 
         Unlike event files, monthly files have no header row: the column names
         are only given in a ``# data_fields:`` comment, and columns are aligned

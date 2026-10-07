@@ -1,4 +1,5 @@
-"""Tests for lair.plotter.
+"""
+Tests for lair.plotter.
 
 Plotting functions run on a headless (Agg) backend against synthetic data;
 tests check what is drawn (line data, fill bounds, labels, legend entries,

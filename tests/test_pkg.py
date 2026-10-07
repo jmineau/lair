@@ -1,4 +1,5 @@
-"""Package-level smoke tests for lair.
+"""
+Package-level smoke tests for lair.
 
 These guard the public surface set up in ``lair/__init__.py`` and the
 import-time side effects documented in AGENTS.md.
@@ -45,7 +46,8 @@ def test_reexports_present():
 
 
 def test_logging_is_left_to_the_application():
-    """lair adds no handlers and sets no level on its loggers.
+    """
+    ``lair`` adds no handlers and sets no level on its loggers.
 
     Without configuration, Python's last-resort handler then shows WARNING
     and above on stderr, and INFO progress messages stay hidden. (A
@@ -64,7 +66,8 @@ def test_version_from_metadata():
 
 
 class TestSetupCcgFilter:
-    """``setup_ccg_filter`` with the NOAA FTP download stubbed out.
+    """
+    ``setup_ccg_filter`` with the NOAA FTP download stubbed out.
 
     Each test installs into a temporary directory (``lair_dir=``), never into
     the package itself.

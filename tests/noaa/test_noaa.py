@@ -1,4 +1,5 @@
-"""Tests for lair.noaa (NOAA greenhouse-gas data: CarbonTracker + GML).
+"""
+Tests for lair.noaa (NOAA greenhouse-gas data: CarbonTracker + GML).
 
 No network: download() calls are checked with ftp_download stubbed out. The
 pure logic is tested directly, the field sampler against a tiny synthetic

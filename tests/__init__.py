@@ -1,4 +1,5 @@
-"""Test suite for lair.
+"""
+Test suite for lair.
 
 Tests are *containerized* by module: every ``lair`` submodule has its own
 self-contained directory under ``tests/`` (e.g. ``tests/clock/`` for
