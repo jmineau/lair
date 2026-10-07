@@ -2,10 +2,11 @@
 Parallelization utilities.
 """
 
-from functools import partial
 import logging
 import multiprocessing
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from functools import partial
+from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 

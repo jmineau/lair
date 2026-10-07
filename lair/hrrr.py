@@ -6,13 +6,14 @@ Documentation: https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/pytho
 
 import dataclasses
 import datetime as dt
+from typing import Literal
+
 import numpy as np
 import pandas as pd
-from typing import Literal, Tuple
 import xarray as xr
 
-from lair.air import wind_direction, rotate_winds
 from lair._optional import import_optional_dependency
+from lair.air import rotate_winds, wind_direction
 
 # Optional dependencies
 boto3 = import_optional_dependency("boto3")
@@ -21,10 +22,9 @@ s3fs = import_optional_dependency("s3fs")
 zarr = import_optional_dependency("zarr")  # needed by xr.open_zarr below
 ncd = import_optional_dependency("numcodecs")
 
-from botocore import UNSIGNED  # noqa: E402
 import cartopy.crs as ccrs  # noqa: E402
+from botocore import UNSIGNED  # noqa: E402
 from botocore.config import Config  # noqa: E402
-
 
 #: HRRR Projection
 PROJECTION: ccrs.CRS = ccrs.LambertConformal(
@@ -305,7 +305,7 @@ def retrieve_object(s3, s3_url: str):
 def generate_zarr_ids(
     times: list[dt.datetime],
     level_type: Literal["sfc", "prs"],
-    variables: list[Tuple[str, str]],
+    variables: list[tuple[str, str]],
     model_type: Literal["anl", "fcst"],
 ):
     """

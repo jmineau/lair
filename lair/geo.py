@@ -9,14 +9,14 @@ from __future__ import (
 import copy
 import math
 from collections import deque
+from collections.abc import Iterable
 from typing import Any, Literal, Self, TypeVar, cast
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 import numpy as np
 import numpy.typing as npt
+from matplotlib.figure import Figure
 from numpy.typing import ArrayLike
-from typing import Iterable
 from xarray import DataArray, Dataset
 
 from lair._optional import import_optional_dependency
@@ -31,17 +31,16 @@ rioxarray = import_optional_dependency("rioxarray")
 shapely = import_optional_dependency("shapely")
 
 import cartopy.crs as ccrs  # noqa: E402
-from cartopy.mpl.geoaxes import GeoAxes  # noqa: E402
 import rasterio.crs  # noqa: E402 F811
 import rioxarray as rxr  # noqa: E402 F401
+from cartopy.mpl.geoaxes import GeoAxes  # noqa: E402
 from cartopy.mpl.ticker import (  # noqa: E402
     LatitudeFormatter,
     LatitudeLocator,
     LongitudeFormatter,
     LongitudeLocator,
 )
-from shapely import LineString, Point, Polygon, MultiLineString  # noqa: E402
-
+from shapely import LineString, MultiLineString, Point, Polygon  # noqa: E402
 
 # ----- BOUNDS ----- #
 
@@ -375,7 +374,7 @@ def add_latlon_ticks(
 
 
 def add_extent_map(
-    fig: "plt.Figure",
+    fig: plt.Figure,
     main_extent: list[float],
     main_extent_crs: ccrs.CRS,
     extent_map_rect: tuple[float, float, float, float],
@@ -1453,11 +1452,11 @@ def points_along_line(
 
             # Attempt to place a point, checking against ALL placed points
             # (except the origin, which we know is far enough)
-            if origin == -1 or distance(node, placed[origin]) >= spacing - tol:
-                if not too_close(node, skip=origin):
-                    origin = place(node)
-                # Otherwise we are blocked by a neighbour: KEEP WALKING, still
-                # measuring from the old origin
+            far_enough = origin == -1 or distance(node, placed[origin]) >= spacing - tol
+            if far_enough and not too_close(node, skip=origin):
+                origin = place(node)
+            # Otherwise we are too near the origin or blocked by a neighbour:
+            # KEEP WALKING, still measuring from the old origin
 
             # Propagate
             for neighbor in G.neighbors(node):

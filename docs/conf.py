@@ -7,7 +7,8 @@ The full list of settings: https://www.sphinx-doc.org/en/master/usage/configurat
 import datetime as dt
 import os
 import sys
-from importlib.metadata import PackageNotFoundError, version as package_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as package_version
 
 sys.path.insert(0, os.path.abspath(".."))
 

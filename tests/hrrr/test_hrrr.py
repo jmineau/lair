@@ -267,7 +267,7 @@ def test_winds_end_to_end(monkeypatch):
     # Centre cell: chunk "2.2", in-chunk (y, x) = (20, 20)
     objects = {}
     for var, values in (("UGRD", u_grid), ("VGRD", v_grid)):
-        for t, value in zip(times, values):
+        for t, value in zip(times, values, strict=True):
             grid = np.full((150, 150), 99.0, dtype="<f2")
             grid[20, 20] = value
             zid = hrrr.ZarrId(t, "sfc", "10m_above_ground", var, "anl")

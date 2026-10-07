@@ -52,7 +52,7 @@ def test_cache_dir_creation_tolerates_concurrent_import(monkeypatch, tmp_path):
     monkeypatch.setattr(os.path, "exists", lambda path: False)
     try:
         importlib.reload(config)
-        assert config.CACHE_DIR == str(tmp_path)
+        assert str(tmp_path) == config.CACHE_DIR
     finally:
         monkeypatch.undo()
         importlib.reload(config)

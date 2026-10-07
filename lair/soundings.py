@@ -2,19 +2,20 @@
 Upper air sounding data.
 """
 
-from collections import deque
 import datetime as dt
 import logging
 import os
+from collections import deque
+from time import sleep
+
 import numpy as np
 import pandas as pd
 import requests
-from time import sleep
 import xarray as xr
 
+from lair._optional import import_optional_dependency
 from lair.air import wind_direction
 from lair.config import get_data_dir
-from lair._optional import import_optional_dependency
 
 # Optional dependency
 siphon = import_optional_dependency("siphon")
@@ -353,12 +354,10 @@ def get_soundings(
             continue
 
         # Skip files that don't match the date range
-        if start:
-            if date < start:
-                continue
-        if end:
-            if date > end:
-                continue
+        if start and date < start:
+            continue
+        if end and date > end:
+            continue
         if months and date.month not in months:
             continue
 

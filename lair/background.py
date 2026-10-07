@@ -4,8 +4,9 @@ Calculate background concentrations.
 
 import datetime as dt
 import logging
-import pandas as pd
 from typing import Any
+
+import pandas as pd
 
 try:
     from lair._ccg_filter import ccgFilter  # make available to user
@@ -123,7 +124,7 @@ def phase_shift_corrected_baseline(
         n += 1
 
     b = []
-    for index, y in data.groupby(pd.DatetimeIndex(data.index).floor("D")):
+    for _, y in data.groupby(pd.DatetimeIndex(data.index).floor("D")):
         hz = y.asfreq("s")
         left = hz.rolling(n, min_periods=1).quantile(q)
         right = hz.iloc[::-1].rolling(n, min_periods=1).quantile(q).iloc[::-1]

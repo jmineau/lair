@@ -6,8 +6,9 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from lair.constants import Rd as _Rd, cp as _cp
-from lair.meteorology import ideal_gas_law, hypsometric, poisson
+from lair.constants import Rd as _Rd
+from lair.constants import cp as _cp
+from lair.meteorology import hypsometric, ideal_gas_law, poisson
 
 # Plain SI floats (lair.meteorology is plain SI in, plain SI out)
 Rd = _Rd.m_as("J / kg / K")

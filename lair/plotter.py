@@ -4,14 +4,13 @@ Utility functions for plotting data.
 
 from typing import Any, cast
 
-import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 from matplotlib.legend_handler import HandlerLineCollection
 from matplotlib.projections.polar import PolarAxes
-
 
 #: Season colors (ColorBrewer Dark2) used for all season-keyed plots.
 SEASON_COLORS = {"DJF": "#e7298a", "MAM": "#1b9e77", "JJA": "#d95f02", "SON": "#7570b3"}
@@ -72,7 +71,7 @@ def truncate_colormap(
         cmap = plt.get_cmap(cmap)
 
     new_cmap = mcolors.LinearSegmentedColormap.from_list(
-        "trunc({n},{a:.2f},{b:.2f})".format(n=cmap.name, a=minval, b=maxval),
+        f"trunc({cmap.name},{minval:.2f},{maxval:.2f})",
         cmap(np.linspace(minval, maxval, n)),
     )
 
@@ -180,7 +179,9 @@ def diurnalPlot(
         Axis with the plot
     """
     import datetime as dt
+
     import matplotlib.dates as mdates
+
     from lair.clock import diurnal
 
     # Copy so appending 'count' below never touches the caller's list
@@ -254,7 +255,7 @@ def diurnalPlot(
         mean = legend_elements.pop("mean")
         legend_elements[r"mean $\pm$1$\sigma$"] = (std, mean)
     handles = [value for value in legend_elements.values()]
-    labels = [key for key in legend_elements.keys()]
+    labels = [key for key in legend_elements]
     ax.legend(handles, labels)
 
     ylabel = f"{param}"

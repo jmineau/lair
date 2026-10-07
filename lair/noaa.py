@@ -2,19 +2,19 @@
 NOAA greenhouse gas data.
 """
 
+import datetime as dt
 from abc import ABCMeta
 from collections.abc import Sequence
-import datetime as dt
 from functools import cached_property
 from pathlib import Path
-import pandas as pd
-from typing import Literal, Union, cast
+from typing import Literal, cast
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from lair.config import get_data_dir
-from lair.records import ftp_download, list_files, Cacher
+from lair.records import Cacher, ftp_download, list_files
 
 #: Environment variable holding the CarbonTracker data root
 CARBONTRACKER_DIR_ENV = "LAIR_CARBONTRACKER_DIR"
@@ -645,7 +645,7 @@ class GMLData:
 
     @staticmethod
     def apply_qaqc(
-        data: Union[pd.DataFrame, xr.Dataset],
+        data: pd.DataFrame | xr.Dataset,
         flags: None | str | list[str] = None,
         driver: str = "pandas",
     ):
