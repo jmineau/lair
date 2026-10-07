@@ -18,3 +18,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 - Python 3.11 or newer is required, and `typing-extensions` is no longer a
   dependency (breaking).
+
+### Fixed
+
+- `records.ftp_download` closes its FTP connection however the download ends.
+  It left the control socket open when a transfer failed or the server did not
+  answer QUIT (Python then warned of an unclosed socket, which fails strict test
+  runs downstream; seen on the first `import lair`, which downloads the CCG filter).

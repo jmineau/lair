@@ -248,74 +248,77 @@ def ftp_download(
     if username == "anonymous" and password == "":
         password = "anonymous@"
 
-    ftp = ftplib.FTP(host)
-    ftp.login(username, password)
+    # The with block closes the connection however the download ends (a failed
+    # transfer, or a QUIT the server never answers).
+    with ftplib.FTP(host) as ftp:
+        ftp.login(username, password)
 
-    if isinstance(paths, str):
-        paths = [paths]  # Convert a single path to a list
+        if isinstance(paths, str):
+            paths = [paths]  # Convert a single path to a list
 
-    for path in paths:
-        # Start in root for every path
-        ftp.cwd("/")
+        for path in paths:
+            # Start in root for every path
+            ftp.cwd("/")
 
-        PATH = "/" + path.strip("/")  # path should start from root on ftp
+            PATH = "/" + path.strip("/")  # path should start from root on ftp
 
-        # Redefine download func for each path; it is called within this iteration
-        def download(path, root=PATH):
-            try:
-                # Try changing to the specified path
-                ftp.cwd(path)
+            # Redefine download func for each path; it is called within this iteration
+            def download(path, root=PATH):
+                try:
+                    # Try changing to the specified path
+                    ftp.cwd(path)
 
-            except ftplib.error_perm as e:
-                # 550 = not a directory (the wording varies between servers)
-                if not str(e).startswith("550"):
-                    raise
-                # If it's not a directory, download the file
+                except ftplib.error_perm as e:
+                    # 550 = not a directory (the wording varies between servers)
+                    if not str(e).startswith("550"):
+                        raise
+                    # If it's not a directory, download the file
 
-                if pattern is not None and not _path_matches(path, pattern):
-                    # Exit if pattern is not in path
-                    logger.debug("Skipping %s - pattern does not match", path)
-                    return None
+                    if pattern is not None and not _path_matches(path, pattern):
+                        # Exit if pattern is not in path
+                        logger.debug("Skipping %s - pattern does not match", path)
+                        return None
 
-                # Get common path to append to download_dir
-                if prefix is not None:
-                    if prefix == "":
-                        # Recreate the entire structure
-                        common = path.strip("/")  # Remove leading '/'
+                    # Get common path to append to download_dir
+                    if prefix is not None:
+                        if prefix == "":
+                            # Recreate the entire structure
+                            common = path.strip("/")  # Remove leading '/'
+                        else:
+                            # Get the relative strucuture from prefix
+                            common = os.path.relpath(path.strip("/"), prefix.strip("/"))
                     else:
-                        # Get the relative strucuture from prefix
-                        common = os.path.relpath(path.strip("/"), prefix.strip("/"))
-                else:
-                    # Drop each PATH directory into the download_dir
-                    common = os.path.relpath(path, os.path.dirname(root))
+                        # Drop each PATH directory into the download_dir
+                        common = os.path.relpath(path, os.path.dirname(root))
 
-                # Create the local directory structure
-                local = os.path.join(download_dir, common)
-                os.makedirs(os.path.dirname(local), exist_ok=True)
+                    # Create the local directory structure
+                    local = os.path.join(download_dir, common)
+                    os.makedirs(os.path.dirname(local), exist_ok=True)
 
-                # Download the file
-                with open(local, "wb") as local_file:
-                    logger.info("Downloading %s to %s", path, os.path.dirname(local))
-                    ftp.retrbinary(f"RETR {path}", local_file.write)
+                    # Download the file
+                    with open(local, "wb") as local_file:
+                        logger.info(
+                            "Downloading %s to %s", path, os.path.dirname(local)
+                        )
+                        ftp.retrbinary(f"RETR {path}", local_file.write)
 
-                return "f"
+                    return "f"
 
-            else:  # path is a directory
-                files = ftp.nlst()  # Get a list of files in that directory
+                else:  # path is a directory
+                    files = ftp.nlst()  # Get a list of files in that directory
 
-                for file in files:
-                    # recursively download files
-                    f_d = download("/".join([path, file]))
+                    for file in files:
+                        # recursively download files
+                        f_d = download("/".join([path, file]))
 
-                    if f_d == "d":  # file is a directory
-                        # download changed to a subdirectory
-                        # restart in the above directory to be able to traverse multiple dirs
-                        ftp.cwd(path)
-                return "d"
+                        if f_d == "d":  # file is a directory
+                            # download changed to a subdirectory
+                            # restart in the above directory to be able to traverse multiple dirs
+                            ftp.cwd(path)
+                    return "d"
 
-        download(PATH)
+            download(PATH)
 
-    ftp.quit()
     return True
 
 
