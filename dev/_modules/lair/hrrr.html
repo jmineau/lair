@@ -37,7 +37,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=6cbec182"></script>
+    <script src="../../_static/documentation_options.js?v=06cca048"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev20+gab21df06f" />
+  <meta name="docsearch:version" content="2026.12.8.dev21+gabe84d1b9" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -396,13 +396,14 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Tuple</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">wind_direction</span><span class="p">,</span> <span class="n">rotate_winds</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair._optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional_dependency</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">rotate_winds</span><span class="p">,</span> <span class="n">wind_direction</span>
 
 <span class="c1"># Optional dependencies</span>
 <span class="n">boto3</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;boto3&quot;</span><span class="p">)</span>
@@ -411,10 +412,9 @@
 <span class="n">zarr</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;zarr&quot;</span><span class="p">)</span>  <span class="c1"># needed by xr.open_zarr below</span>
 <span class="n">ncd</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;numcodecs&quot;</span><span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">botocore</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSIGNED</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>  <span class="c1"># noqa: E402</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">botocore</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSIGNED</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">botocore.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>  <span class="c1"># noqa: E402</span>
-
 
 <span class="c1">#: HRRR Projection</span>
 <span class="n">PROJECTION</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">LambertConformal</span><span class="p">(</span>
@@ -724,7 +724,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_zarr_ids</span><span class="p">(</span>
     <span class="n">times</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">],</span>
     <span class="n">level_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sfc&quot;</span><span class="p">,</span> <span class="s2">&quot;prs&quot;</span><span class="p">],</span>
-    <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+    <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
     <span class="n">model_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;anl&quot;</span><span class="p">,</span> <span class="s2">&quot;fcst&quot;</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
