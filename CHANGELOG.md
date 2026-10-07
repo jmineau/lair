@@ -10,6 +10,7 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Added
 
+- lair ships `py.typed`, so type checkers read its annotations.
 - The documentation has a version dropdown. The site opens at the latest
   release, `dev/` follows `main`, and each release keeps its own pages.
 

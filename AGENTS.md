@@ -281,7 +281,8 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - **Style**: ruff-formatted; lint rules E, F and pydocstyle (`D`, NumPy
   convention, summary on the line after the opening quotes: D213), as in fips
   and uataq. Keep diffs focused; don't mix refactors into fixes.
-- **Typing**: partial but checked. pyrefly must stay at 0 errors — annotate
+- **Typing**: partial but checked, and shipped: `lair/py.typed` (PEP 561) tells
+  users' type checkers to read lair's annotations. pyrefly must stay at 0 errors — annotate
   new code; don't add blanket `Any` to silence it.
 - **Pint**: prefer pint-aware code where it already exists, but SI units
   are the implicit baseline (the meteorology module documents this).
