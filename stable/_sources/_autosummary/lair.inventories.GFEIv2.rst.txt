@@ -1,0 +1,8 @@
+lair.inventories.GFEIv2
+=======================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: GFEIv2
+   :members:
+   :show-inheritance:

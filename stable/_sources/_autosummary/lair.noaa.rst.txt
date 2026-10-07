@@ -1,0 +1,37 @@
+﻿lair.noaa
+=========
+
+.. automodule:: lair.noaa
+
+
+
+.. rubric:: Module Attributes
+
+.. autosummary::
+
+   CARBONTRACKER_DIR_ENV
+   GML_DIR_ENV
+
+
+
+
+
+
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   CarbonTracker
+   CarbonTrackerCH4
+   CarbonTrackerCO2
+   GMLData
+
+
+
+
+

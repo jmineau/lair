@@ -1,0 +1,34 @@
+﻿lair.config
+===========
+
+.. automodule:: lair.config
+
+
+
+.. rubric:: Module Attributes
+
+.. autosummary::
+
+   CACHE_DIR
+   pandas_CoW
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   get_data_dir
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+lair.geo.add\_lon\_ticks
+========================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: add_lon_ticks

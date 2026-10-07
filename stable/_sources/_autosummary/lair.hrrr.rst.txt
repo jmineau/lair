@@ -1,0 +1,50 @@
+﻿lair.hrrr
+=========
+
+.. automodule:: lair.hrrr
+
+
+
+.. rubric:: Module Attributes
+
+.. autosummary::
+
+   PROJECTION
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   create_s3_chunk_url
+   create_s3_group_url
+   create_s3_subgroup_url
+   decompress_chunk
+   generate_zarr_ids
+   get_nearest_point
+   get_value
+   retrieve_object
+   winds_frame
+
+
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   Winds
+   ZarrId
+
+
+
+
+

@@ -1,0 +1,8 @@
+lair.records.Cacher
+===================
+
+.. currentmodule:: lair.records
+
+.. autoclass:: Cacher
+   :members:
+   :show-inheritance:

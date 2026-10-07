@@ -1,0 +1,6 @@
+lair.pcaps.determine\_pcap\_events
+==================================
+
+.. currentmodule:: lair.pcaps
+
+.. autofunction:: determine_pcap_events

@@ -1,0 +1,6 @@
+lair.clock.regular\_times\_to\_intervals
+========================================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: regular_times_to_intervals

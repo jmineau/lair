@@ -1,0 +1,861 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lair.hrrr &#8212; LAIR 2026.12.7 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=e9942d84"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/hrrr';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.12.7" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/lair_forlight_r.png" class="logo__image only-light" alt="LAIR - Home"/>
+    <img src="../../_static/lair_fordark_r.png" class="logo__image only-dark pst-js-only" alt="LAIR - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.hrrr</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for lair.hrrr</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">HRRR winds at a point.</span>
+
+<span class="sd">Documentation: https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.html</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">wind_direction</span><span class="p">,</span> <span class="n">rotate_winds</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair._optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional_dependency</span>
+
+<span class="c1"># Optional dependencies</span>
+<span class="n">boto3</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;boto3&quot;</span><span class="p">)</span>
+<span class="n">cartopy</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;cartopy&quot;</span><span class="p">)</span>
+<span class="n">s3fs</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;s3fs&quot;</span><span class="p">)</span>
+<span class="n">zarr</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;zarr&quot;</span><span class="p">)</span>  <span class="c1"># needed by xr.open_zarr below</span>
+<span class="n">ncd</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;numcodecs&quot;</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">botocore</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSIGNED</span>  <span class="c1"># noqa: E402</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>  <span class="c1"># noqa: E402</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">botocore.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>  <span class="c1"># noqa: E402</span>
+
+
+<span class="c1">#: HRRR Projection</span>
+<span class="n">PROJECTION</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">LambertConformal</span><span class="p">(</span>
+    <span class="n">central_longitude</span><span class="o">=</span><span class="mf">262.5</span><span class="p">,</span>
+    <span class="n">central_latitude</span><span class="o">=</span><span class="mf">38.5</span><span class="p">,</span>
+    <span class="n">standard_parallels</span><span class="o">=</span><span class="p">(</span><span class="mf">38.5</span><span class="p">,</span> <span class="mf">38.5</span><span class="p">),</span>
+    <span class="n">globe</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Globe</span><span class="p">(</span><span class="n">semimajor_axis</span><span class="o">=</span><span class="mi">6371229</span><span class="p">,</span> <span class="n">semiminor_axis</span><span class="o">=</span><span class="mi">6371229</span><span class="p">),</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="ZarrId">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.ZarrId.html#lair.hrrr.ZarrId">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ZarrId</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to store information about a HRRR zarr file.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    run_hour : dt.datetime</span>
+<span class="sd">        run hour of the model</span>
+<span class="sd">    level_type : &#39;sfc&#39; | &#39;prs&#39;</span>
+<span class="sd">        vertical level</span>
+<span class="sd">    var_level : str</span>
+<span class="sd">        variable level</span>
+<span class="sd">    var_name : str</span>
+<span class="sd">        variable name</span>
+<span class="sd">    model_type : &#39;anl&#39; | &#39;fcst&#39;</span>
+<span class="sd">        analysis or forecast</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    format_chunk_id(chunk_id)</span>
+<span class="sd">        Format chunk_id for zarr url.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">run_hour</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span>
+    <span class="n">level_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sfc&quot;</span><span class="p">,</span> <span class="s2">&quot;prs&quot;</span><span class="p">]</span>
+    <span class="n">var_level</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">var_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">model_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;anl&quot;</span><span class="p">,</span> <span class="s2">&quot;fcst&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ZarrId.format_chunk_id">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.ZarrId.html#lair.hrrr.ZarrId.format_chunk_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_chunk_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Format chunk_id for zarr url.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        chunk_id : int</span>
+<span class="sd">            chunk_id</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            formatted chunk_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;fcst&quot;</span><span class="p">:</span>
+            <span class="c1"># Extra id part since forecasts have an additional (time) dimension</span>
+            <span class="k">return</span> <span class="s2">&quot;0.&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">chunk_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">chunk_id</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="winds_frame">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.winds_frame.html#lair.hrrr.winds_frame">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">winds_frame</span><span class="p">(</span><span class="n">u_grid</span><span class="p">,</span> <span class="n">v_grid</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Earth-relative 10 m winds at a point from HRRR grid-relative components.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    u_grid, v_grid : array-like</span>
+<span class="sd">        Grid-relative u and v components (m/s), one per time.</span>
+<span class="sd">    lon : float</span>
+<span class="sd">        Longitude of the point.</span>
+<span class="sd">    times : list[dt.datetime]</span>
+<span class="sd">        Valid times, used as the index.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        Columns ``u``, ``v`` (earth-relative, m/s), ``ws`` (speed from u and v,</span>
+<span class="sd">        m/s) and ``wd`` (direction, degrees).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">rotate_winds</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">u_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">lon</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">&quot;u&quot;</span><span class="p">:</span> <span class="n">u</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">:</span> <span class="n">v</span><span class="p">,</span> <span class="s2">&quot;ws&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="s2">&quot;wd&quot;</span><span class="p">:</span> <span class="n">wind_direction</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)},</span> <span class="n">index</span><span class="o">=</span><span class="n">times</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Winds">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.Winds.html#lair.hrrr.Winds">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Winds</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to download HRRR winds at a point.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lat : float</span>
+<span class="sd">        latitude of point</span>
+<span class="sd">    lon : float</span>
+<span class="sd">        longitude of point</span>
+<span class="sd">    times : list[dt.datetime]</span>
+<span class="sd">        list of times to download</span>
+<span class="sd">    nearest_point : xr.Dataset</span>
+<span class="sd">        nearest point to lat, lon</span>
+<span class="sd">    chunk_id : float</span>
+<span class="sd">        chunk id of nearest point</span>
+<span class="sd">    zarr_ids : dict[str, list[ZarrId]]</span>
+<span class="sd">        dictionary of zarr ids with var as key</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        10 m winds: ``u``, ``v`` (earth-relative), ``ws`` (speed from u and v)</span>
+<span class="sd">        and ``wd`` (see :func:`winds_frame`).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">lat</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">lon</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">times</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Connect to AWS servers</span>
+        <span class="n">fs</span> <span class="o">=</span> <span class="n">s3fs</span><span class="o">.</span><span class="n">S3FileSystem</span><span class="p">(</span><span class="n">anon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Don&#39;t recreate this resource in a loop! That caused a 3-4x slowdown for me.</span>
+        <span class="c1"># Not sure who the above is, but should be listened to.</span>
+        <span class="n">s3</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">resource</span><span class="p">(</span>
+            <span class="n">service_name</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span><span class="p">,</span>
+            <span class="n">region_name</span><span class="o">=</span><span class="s2">&quot;us-west-1&quot;</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">Config</span><span class="p">(</span><span class="n">signature_version</span><span class="o">=</span><span class="n">UNSIGNED</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Chunk Index</span>
+        <span class="n">chunk_index_url</span> <span class="o">=</span> <span class="s2">&quot;s3://hrrrzarr/grid/HRRR_chunk_index.zarr&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chunk_index</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_zarr</span><span class="p">(</span><span class="n">s3fs</span><span class="o">.</span><span class="n">S3Map</span><span class="p">(</span><span class="n">chunk_index_url</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="n">fs</span><span class="p">))</span>
+
+        <span class="c1"># Nearest Point to chunk_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nearest_point</span> <span class="o">=</span> <span class="n">get_nearest_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chunk_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nearest_point</span><span class="o">.</span><span class="n">chunk_id</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="c1"># Generate zarr ids</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;UGRD&quot;</span><span class="p">,</span> <span class="s2">&quot;10m_above_ground&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;VGRD&quot;</span><span class="p">,</span> <span class="s2">&quot;10m_above_ground&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zarr_ids</span> <span class="o">=</span> <span class="n">generate_zarr_ids</span><span class="p">(</span>
+            <span class="n">times</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">level_type</span><span class="o">=</span><span class="s2">&quot;sfc&quot;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;anl&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Download variables</span>
+        <span class="n">var_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">ids</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">zarr_ids</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">var_data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">get_value</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">zarr_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nearest_point</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">zarr_id</span> <span class="ow">in</span> <span class="n">ids</span>
+            <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">winds_frame</span><span class="p">(</span>
+            <span class="n">var_data</span><span class="p">[</span><span class="s2">&quot;UGRD&quot;</span><span class="p">],</span> <span class="n">var_data</span><span class="p">[</span><span class="s2">&quot;VGRD&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">times</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_s3_group_url">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.create_s3_group_url.html#lair.hrrr.create_s3_group_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_s3_group_url</span><span class="p">(</span><span class="n">zarr_id</span><span class="p">:</span> <span class="n">ZarrId</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the s3 group url for a zarr id.</span>
+
+<span class="sd">     - Start of the zarr array data format</span>
+<span class="sd">     - Includes metadata such as the grid</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    zarr_id : ZarrId</span>
+<span class="sd">        ZarrId instance</span>
+<span class="sd">    prefix : bool</span>
+<span class="sd">        include prefix</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        s3 group url</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;s3://hrrrzarr/&quot;</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Skip when using boto3</span>
+    <span class="n">url</span> <span class="o">+=</span> <span class="n">zarr_id</span><span class="o">.</span><span class="n">run_hour</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">level_type</span><span class="si">}</span><span class="s2">/%Y%m%d/%Y%m%d_%Hz_</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">model_type</span><span class="si">}</span><span class="s2">.zarr/&quot;</span>
+    <span class="p">)</span>
+    <span class="n">url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">var_level</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">var_name</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">url</span></div>
+
+
+
+<div class="viewcode-block" id="create_s3_subgroup_url">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.create_s3_subgroup_url.html#lair.hrrr.create_s3_subgroup_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_s3_subgroup_url</span><span class="p">(</span><span class="n">zarr_id</span><span class="p">:</span> <span class="n">ZarrId</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the s3 subgroup url for a zarr id.</span>
+
+<span class="sd">     - Where the actual data variable is stored</span>
+<span class="sd">     - While subgroups are part of the zarr spec, there&#39;s not necessarily a</span>
+<span class="sd">       good reason for the data in this case to have this extra level of nesting</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    zarr_id : ZarrId</span>
+<span class="sd">        ZarrId instance</span>
+<span class="sd">    prefix : bool</span>
+<span class="sd">        include prefix</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        s3 subgroup url</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">create_s3_group_url</span><span class="p">(</span><span class="n">zarr_id</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">var_level</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">url</span></div>
+
+
+
+<div class="viewcode-block" id="create_s3_chunk_url">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.create_s3_chunk_url.html#lair.hrrr.create_s3_chunk_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_s3_chunk_url</span><span class="p">(</span><span class="n">zarr_id</span><span class="p">:</span> <span class="n">ZarrId</span><span class="p">,</span> <span class="n">chunk_id</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the s3 chunk url for a zarr id.</span>
+
+<span class="sd">     - Contains just the data for the chunk (no metadata)</span>
+<span class="sd">     - Current APIs (zarr, xarray) don&#39;t support reading zarr data by chunks,</span>
+<span class="sd">       so we have to write relatively low-level code to load data on this level</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    zarr_id : ZarrId</span>
+<span class="sd">        ZarrId instance</span>
+<span class="sd">    chunk_id : int  # TODO check this</span>
+<span class="sd">        chunk id</span>
+<span class="sd">    prefix : bool</span>
+<span class="sd">        include prefix</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        s3 chunk url</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">create_s3_subgroup_url</span><span class="p">(</span><span class="n">zarr_id</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">var_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">format_chunk_id</span><span class="p">(</span><span class="n">chunk_id</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">url</span></div>
+
+
+
+<div class="viewcode-block" id="get_nearest_point">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.get_nearest_point.html#lair.hrrr.get_nearest_point">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_nearest_point</span><span class="p">(</span>
+    <span class="n">longitude</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">latitude</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">chunk_index</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the nearest point to a given latitude and longitude.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    longitude : float</span>
+<span class="sd">        longitude of point</span>
+<span class="sd">    latitude : float</span>
+<span class="sd">        latitude of point</span>
+<span class="sd">    chunk_index : xr.Dataset</span>
+<span class="sd">        chunk index dataset</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xr.Dataset</span>
+<span class="sd">        nearest point</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">PROJECTION</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">longitude</span><span class="p">,</span> <span class="n">latitude</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">chunk_index</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="retrieve_object">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.retrieve_object.html#lair.hrrr.retrieve_object">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">retrieve_object</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">s3_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve object from s3.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s3 : boto3.resource</span>
+<span class="sd">        s3 resource</span>
+<span class="sd">    s3_url : str</span>
+<span class="sd">        s3 url</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bytes</span>
+<span class="sd">        compressed object data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">s3</span><span class="o">.</span><span class="n">Object</span><span class="p">(</span><span class="s2">&quot;hrrrzarr&quot;</span><span class="p">,</span> <span class="n">s3_url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">()[</span><span class="s2">&quot;Body&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="generate_zarr_ids">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.generate_zarr_ids.html#lair.hrrr.generate_zarr_ids">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_zarr_ids</span><span class="p">(</span>
+    <span class="n">times</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">],</span>
+    <span class="n">level_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sfc&quot;</span><span class="p">,</span> <span class="s2">&quot;prs&quot;</span><span class="p">],</span>
+    <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+    <span class="n">model_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;anl&quot;</span><span class="p">,</span> <span class="s2">&quot;fcst&quot;</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate ZarrId instance for multiple times and variables</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : [dt.datetime]</span>
+<span class="sd">        list of datetime objects with hour specified [UTC]</span>
+<span class="sd">    level_type : str</span>
+<span class="sd">        veritical level</span>
+<span class="sd">    variables : [(str, str)]</span>
+<span class="sd">        list of tuples: (var_name, var_level)</span>
+<span class="sd">    model_type : str</span>
+<span class="sd">        &#39;anl&#39; | &#39;fcst&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ids : [ZarrId]</span>
+<span class="sd">        dictionary of zarr ids with var as key</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+        <span class="n">ids</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
+            <span class="n">ID</span> <span class="o">=</span> <span class="n">ZarrId</span><span class="p">(</span>
+                <span class="n">run_hour</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+                <span class="n">level_type</span><span class="o">=</span><span class="n">level_type</span><span class="p">,</span>
+                <span class="n">var_name</span><span class="o">=</span><span class="n">var</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">var_level</span><span class="o">=</span><span class="n">var</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ids</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ID</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ids</span></div>
+
+
+
+<div class="viewcode-block" id="decompress_chunk">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.decompress_chunk.html#lair.hrrr.decompress_chunk">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decompress_chunk</span><span class="p">(</span><span class="n">zarr_id</span><span class="p">:</span> <span class="n">ZarrId</span><span class="p">,</span> <span class="n">compressed_data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decompress s3 chunk data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    zarr_id : ZarrId</span>
+<span class="sd">        ZarrId instance</span>
+<span class="sd">    compressed_data : bytes</span>
+<span class="sd">        compressed data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        decompressed chunk</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">buffer</span> <span class="o">=</span> <span class="n">ncd</span><span class="o">.</span><span class="n">blosc</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">compressed_data</span><span class="p">)</span>
+
+    <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;&lt;f2&quot;</span>
+    <span class="k">if</span> <span class="n">zarr_id</span><span class="o">.</span><span class="n">var_level</span> <span class="o">==</span> <span class="s2">&quot;surface&quot;</span> <span class="ow">and</span> <span class="n">zarr_id</span><span class="o">.</span><span class="n">var_name</span> <span class="o">==</span> <span class="s2">&quot;PRES&quot;</span><span class="p">:</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;&lt;f4&quot;</span>
+
+    <span class="n">chunk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">zarr_id</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;anl&quot;</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">entry_size</span> <span class="o">=</span> <span class="mi">22500</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span> <span class="o">//</span> <span class="n">entry_size</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">arr</span></div>
+
+
+
+<div class="viewcode-block" id="get_value">
+<a class="viewcode-back" href="../../_autosummary/lair.hrrr.get_value.html#lair.hrrr.get_value">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">zarr_id</span><span class="p">:</span> <span class="n">ZarrId</span><span class="p">,</span> <span class="n">chunk_id</span><span class="p">,</span> <span class="n">nearest_point</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get an array of values from am s3 zarr chunk.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s3 : boto3.resource</span>
+<span class="sd">        s3 resource</span>
+<span class="sd">    zarr_id : ZarrId</span>
+<span class="sd">        ZarrId instance</span>
+<span class="sd">    chunk_id : float</span>
+<span class="sd">        chunk id</span>
+<span class="sd">    nearest_point : xr.Dataset</span>
+<span class="sd">        nearest point</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        array of values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">compressed_data</span> <span class="o">=</span> <span class="n">retrieve_object</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">create_s3_chunk_url</span><span class="p">(</span><span class="n">zarr_id</span><span class="p">,</span> <span class="n">chunk_id</span><span class="p">))</span>
+    <span class="n">chunk_data</span> <span class="o">=</span> <span class="n">decompress_chunk</span><span class="p">(</span><span class="n">zarr_id</span><span class="p">,</span> <span class="n">compressed_data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">zarr_id</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;fcst&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">chunk_data</span><span class="p">[</span>
+            <span class="p">:,</span> <span class="n">nearest_point</span><span class="o">.</span><span class="n">in_chunk_y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">nearest_point</span><span class="o">.</span><span class="n">in_chunk_x</span><span class="o">.</span><span class="n">values</span>
+        <span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">chunk_data</span><span class="p">[</span>
+            <span class="n">nearest_point</span><span class="o">.</span><span class="n">in_chunk_y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">nearest_point</span><span class="o">.</span><span class="n">in_chunk_x</span><span class="o">.</span><span class="n">values</span>
+        <span class="p">]</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, James Mineau.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

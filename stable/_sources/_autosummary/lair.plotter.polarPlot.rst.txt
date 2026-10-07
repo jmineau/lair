@@ -1,0 +1,6 @@
+lair.plotter.polarPlot
+======================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: polarPlot

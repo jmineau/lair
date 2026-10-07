@@ -1,0 +1,6 @@
+lair.plotter.create\_polar\_ax
+==============================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: create_polar_ax

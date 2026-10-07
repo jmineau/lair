@@ -1,0 +1,41 @@
+﻿lair.pollutants
+===============
+
+.. automodule:: lair.pollutants
+
+
+
+.. rubric:: Module Attributes
+
+.. autosummary::
+
+   POLLUTANTS
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   get_pollutant
+
+
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   Pollutant
+
+
+
+
+

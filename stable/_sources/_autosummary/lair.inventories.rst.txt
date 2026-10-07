@@ -1,0 +1,56 @@
+﻿lair.inventories
+================
+
+.. automodule:: lair.inventories
+
+
+
+.. rubric:: Module Attributes
+
+.. autosummary::
+
+   INVENTORY_DIR_ENV
+   DST_UNITS
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   convert_units
+   molecular_weight
+   sum_sectors
+
+
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   EDGAR
+   EDGARv7
+   EDGARv8
+   EPA
+   EPAv1
+   EPAv2
+   GFEI
+   GFEIv1
+   GFEIv2
+   Inventory
+   MultiModelInventory
+   Vulcan
+   WetCHARTs
+
+
+
+
+

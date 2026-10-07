@@ -1,0 +1,8 @@
+lair.soundings.Sounding
+=======================
+
+.. currentmodule:: lair.soundings
+
+.. autoclass:: Sounding
+   :members:
+   :show-inheritance:

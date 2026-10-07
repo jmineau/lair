@@ -1,0 +1,8 @@
+lair.plotter.HandlerDashedLines
+===============================
+
+.. currentmodule:: lair.plotter
+
+.. autoclass:: HandlerDashedLines
+   :members:
+   :show-inheritance:

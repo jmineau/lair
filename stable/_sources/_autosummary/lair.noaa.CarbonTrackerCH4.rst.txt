@@ -1,0 +1,8 @@
+lair.noaa.CarbonTrackerCH4
+==========================
+
+.. currentmodule:: lair.noaa
+
+.. autoclass:: CarbonTrackerCH4
+   :members:
+   :show-inheritance:

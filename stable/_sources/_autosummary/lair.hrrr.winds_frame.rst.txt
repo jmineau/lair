@@ -1,0 +1,6 @@
+lair.hrrr.winds\_frame
+======================
+
+.. currentmodule:: lair.hrrr
+
+.. autofunction:: winds_frame

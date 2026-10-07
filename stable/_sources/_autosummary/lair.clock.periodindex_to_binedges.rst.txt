@@ -1,0 +1,6 @@
+lair.clock.periodindex\_to\_binedges
+====================================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: periodindex_to_binedges

@@ -1,0 +1,6 @@
+lair.plotter.polarFreq
+======================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: polarFreq

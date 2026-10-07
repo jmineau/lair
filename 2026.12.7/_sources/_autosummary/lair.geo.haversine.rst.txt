@@ -1,0 +1,6 @@
+lair.geo.haversine
+==================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: haversine

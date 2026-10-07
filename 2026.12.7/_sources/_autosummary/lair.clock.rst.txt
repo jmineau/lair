@@ -1,0 +1,45 @@
+﻿lair.clock
+==========
+
+.. automodule:: lair.clock
+
+
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   convert_timezones
+   datetime_accessor
+   decimalDate2dt
+   diurnal
+   dt2decimalDate
+   periodindex_to_binedges
+   regular_times_to_intervals
+   seasonal
+   time_decay_matrix
+   time_difference_matrix
+
+
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   TimeRange
+   Timer
+
+
+
+
+

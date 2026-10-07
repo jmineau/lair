@@ -1,0 +1,8 @@
+lair.inventories.Vulcan
+=======================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: Vulcan
+   :members:
+   :show-inheritance:

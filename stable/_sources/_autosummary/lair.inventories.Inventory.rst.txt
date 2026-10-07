@@ -1,0 +1,8 @@
+lair.inventories.Inventory
+==========================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: Inventory
+   :members:
+   :show-inheritance:

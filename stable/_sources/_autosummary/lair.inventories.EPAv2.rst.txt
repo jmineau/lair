@@ -1,0 +1,8 @@
+lair.inventories.EPAv2
+======================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: EPAv2
+   :members:
+   :show-inheritance:

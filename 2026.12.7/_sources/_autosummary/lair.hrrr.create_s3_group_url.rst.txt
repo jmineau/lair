@@ -1,0 +1,6 @@
+lair.hrrr.create\_s3\_group\_url
+================================
+
+.. currentmodule:: lair.hrrr
+
+.. autofunction:: create_s3_group_url

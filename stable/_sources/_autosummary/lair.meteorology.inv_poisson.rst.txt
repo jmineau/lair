@@ -1,0 +1,6 @@
+lair.meteorology.inv\_poisson
+=============================
+
+.. currentmodule:: lair.meteorology
+
+.. autofunction:: inv_poisson

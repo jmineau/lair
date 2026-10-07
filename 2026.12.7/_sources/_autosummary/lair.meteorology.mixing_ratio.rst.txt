@@ -1,0 +1,6 @@
+lair.meteorology.mixing\_ratio
+==============================
+
+.. currentmodule:: lair.meteorology
+
+.. autofunction:: mixing_ratio

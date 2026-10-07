@@ -1,0 +1,8 @@
+lair.hrrr.ZarrId
+================
+
+.. currentmodule:: lair.hrrr
+
+.. autoclass:: ZarrId
+   :members:
+   :show-inheritance:

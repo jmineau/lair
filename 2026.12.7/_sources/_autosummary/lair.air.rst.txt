@@ -1,0 +1,38 @@
+﻿lair.air
+========
+
+.. automodule:: lair.air
+
+
+
+.. rubric:: Module Attributes
+
+.. autosummary::
+
+   WIND_SECTORS
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   bin_polar
+   circularize_radial_data
+   rotate_winds
+   sector_radians
+   wind_components
+   wind_direction
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,57 @@
+﻿lair.geo
+========
+
+.. automodule:: lair.geo
+
+
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   add_extent_map
+   add_lat_ticks
+   add_latlon_ticks
+   add_lon_ticks
+   bbox2extent
+   bearing
+   clip
+   cosine_weights
+   dms2dd
+   earth_radius
+   extent2bbox
+   generate_regular_grid
+   gridcell_area
+   gridcell_area_from_latlon
+   haversine
+   plot_grid
+   points_along_line
+   regrid
+   resample
+   round_latlon
+   wrap_lons
+   write_rio_crs
+
+
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   BaseGrid
+   CRS
+
+
+
+
+

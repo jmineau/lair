@@ -1,0 +1,27 @@
+﻿lair.dev
+========
+
+.. automodule:: lair.dev
+
+
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   public_attrs
+
+
+
+
+
+
+
+
+

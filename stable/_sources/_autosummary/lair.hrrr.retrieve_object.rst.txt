@@ -1,0 +1,6 @@
+lair.hrrr.retrieve\_object
+==========================
+
+.. currentmodule:: lair.hrrr
+
+.. autofunction:: retrieve_object

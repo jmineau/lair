@@ -1,0 +1,1136 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lair.noaa &#8212; LAIR 2026.12.7 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=e9942d84"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/noaa';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.12.7" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/lair_forlight_r.png" class="logo__image only-light" alt="LAIR - Home"/>
+    <img src="../../_static/lair_fordark_r.png" class="logo__image only-dark pst-js-only" alt="LAIR - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.noaa</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for lair.noaa</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">NOAA greenhouse gas data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_data_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.records</span><span class="w"> </span><span class="kn">import</span> <span class="n">ftp_download</span><span class="p">,</span> <span class="n">list_files</span><span class="p">,</span> <span class="n">Cacher</span>
+
+<span class="c1">#: Environment variable holding the CarbonTracker data root</span>
+<span class="n">CARBONTRACKER_DIR_ENV</span> <span class="o">=</span> <span class="s2">&quot;LAIR_CARBONTRACKER_DIR&quot;</span>
+
+<span class="c1">#: Environment variable holding the NOAA GML data root</span>
+<span class="n">GML_DIR_ENV</span> <span class="o">=</span> <span class="s2">&quot;LAIR_GML_DIR&quot;</span>
+
+
+<div class="viewcode-block" id="CarbonTracker">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CarbonTracker</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NOAA CarbonTracker</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    specie : Literal[&#39;ch4&#39;, &#39;co2&#39;]</span>
+<span class="sd">        The greenhouse gas specie.</span>
+<span class="sd">    version : str</span>
+<span class="sd">        The CarbonTracker version.</span>
+<span class="sd">    directory : str</span>
+<span class="sd">        The directory for the version.</span>
+<span class="sd">    cache : bool</span>
+<span class="sd">        Whether to cache the data.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_specie_from_version(version)</span>
+<span class="sd">        Get the specie from the version.</span>
+<span class="sd">    from_version(version, carbon_tracker_directory=None)</span>
+<span class="sd">        Create a CarbonTracker object from the version.</span>
+<span class="sd">    download(sub_dirs=[&#39;fluxes&#39;, &#39;molefractions&#39;], pattern=None)</span>
+<span class="sd">        Download CarbonTracker data from the NOAA GML FTP server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">specie</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ch4&quot;</span><span class="p">,</span> <span class="s2">&quot;co2&quot;</span><span class="p">]</span>
+    <span class="c1">#: Units of the molefraction field (&#39;ppb&#39; for CH4, &#39;ppm&#39; for CO2)</span>
+    <span class="n">units</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ppb&quot;</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">carbon_tracker_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a CarbonTracker object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        version : str</span>
+<span class="sd">            The version of CarbonTracker data to download.</span>
+<span class="sd">            Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.</span>
+<span class="sd">        carbon_tracker_directory : str, optional</span>
+<span class="sd">            The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.</span>
+<span class="sd">        cache : bool, optional</span>
+<span class="sd">            Whether to cache the data, by default True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;specie&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Use CarbonTrackerCH4 / CarbonTrackerCO2, or &quot;</span>
+                <span class="s2">&quot;CarbonTracker.from_version(version).&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
+
+        <span class="n">carbon_tracker_directory</span> <span class="o">=</span> <span class="n">get_data_dir</span><span class="p">(</span>
+            <span class="n">CARBONTRACKER_DIR_ENV</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">carbon_tracker_directory</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span> <span class="o">/</span> <span class="n">version</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span> <span class="o">=</span> <span class="n">cache</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(version=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">, directory=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+<div class="viewcode-block" id="CarbonTracker.get_specie_from_version">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.get_specie_from_version">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_specie_from_version</span><span class="p">(</span><span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ch4&quot;</span><span class="p">,</span> <span class="s2">&quot;co2&quot;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the specie from the version.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        version : str</span>
+<span class="sd">            The version of CarbonTracker data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Literal[&#39;ch4&#39;, &#39;co2&#39;]</span>
+<span class="sd">            The specie.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;ch4&quot;</span> <span class="k">if</span> <span class="s2">&quot;ch4&quot;</span> <span class="ow">in</span> <span class="n">version</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;co2&quot;</span></div>
+
+
+<div class="viewcode-block" id="CarbonTracker.from_version">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.from_version">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_version</span><span class="p">(</span><span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a CarbonTracker object from the version.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        version : str</span>
+<span class="sd">            The version of CarbonTracker data to download.</span>
+<span class="sd">            Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.</span>
+<span class="sd">        carbon_tracker_directory : str, optional</span>
+<span class="sd">            The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CarbonTracker</span>
+<span class="sd">            The CarbonTracker object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">specie</span> <span class="o">=</span> <span class="n">CarbonTracker</span><span class="o">.</span><span class="n">get_specie_from_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">specie</span> <span class="o">==</span> <span class="s2">&quot;co2&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CarbonTrackerCO2</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">specie</span> <span class="o">==</span> <span class="s2">&quot;ch4&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CarbonTrackerCH4</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid specie&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CarbonTracker.download">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.download">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sub_dirs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;fluxes&quot;</span><span class="p">,</span> <span class="s2">&quot;molefractions&quot;</span><span class="p">),</span>
+        <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download CarbonTracker data from the NOAA GML FTP server.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sub_dirs : list of str, optional</span>
+<span class="sd">            The subdirectories to download data from, by default [&#39;fluxes&#39;, &#39;molefractions&#39;].</span>
+<span class="sd">            If None, download the entire version data.</span>
+<span class="sd">        pattern : str, optional</span>
+<span class="sd">            Only download matching files: a glob against the remote path if it</span>
+<span class="sd">            has wildcards (e.g. ``&#39;*2015-06*&#39;``), else a substring. By default None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;ftp.gml.noaa.gov&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="s2">&quot;/products/carbontracker&quot;</span>
+
+        <span class="c1"># Build list of remote paths to download</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">sub_dirs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">sub_dir</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">sub_dir</span> <span class="ow">in</span> <span class="n">sub_dirs</span><span class="p">]</span>
+
+        <span class="c1"># Download the data</span>
+        <span class="n">ftp_download</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">),</span> <span class="n">prefix</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="c1"># --- sampling the concentration field at trajectory points ---------------</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molefractions_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Directory of the molefraction (concentration-field) files.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">&quot;molefractions&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize a molefraction dataset on open. Overridden per specie.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_molefraction_file_for_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Molefraction file covering a UTC ``date`` (newest match), if present.&quot;&quot;&quot;</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+        <span class="n">month_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molefractions_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">month_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;*molefrac*_</span><span class="si">{</span><span class="n">date</span><span class="si">}</span><span class="s2">.nc&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">matches</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">matches</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_field</span><span class="p">(</span>
+        <span class="n">points</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ppb&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate ``ds[variable]`` at each row&#39;s (datetime, lati, long, zagl).</span>
+
+<span class="sd">        Vertical placement uses the geopotential-height (``gph``) layer bounds:</span>
+<span class="sd">        the particle&#39;s height-above-ground is added to the surface gph and the</span>
+<span class="sd">        enclosing model level selected. Returns the input rows (index reset) with</span>
+<span class="sd">        ``ct_&lt;variable&gt;_&lt;units&gt;`` plus the CT cell/level actually used. Points</span>
+<span class="sd">        outside the horizontal grid (e.g. a regional CO2 grid) are NaN.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="s2">&quot;points&quot;</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">values</span>
+        <span class="p">)</span>
+        <span class="n">sel</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span>
+            <span class="n">time</span><span class="o">=</span><span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">latitude</span><span class="o">=</span><span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="s2">&quot;lati&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">dims</span><span class="o">=</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">longitude</span><span class="o">=</span><span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="s2">&quot;long&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">dims</span><span class="o">=</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">zagl</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="s2">&quot;zagl&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">dims</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+        <span class="n">gph</span> <span class="o">=</span> <span class="n">sel</span><span class="p">[</span><span class="s2">&quot;gph&quot;</span><span class="p">]</span>
+        <span class="n">gph_lo</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">gph</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">boundary</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s2">&quot;boundary&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">gph_hi</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">gph</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">boundary</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s2">&quot;boundary&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">z_asl</span> <span class="o">=</span> <span class="n">zagl</span> <span class="o">+</span> <span class="n">gph_lo</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">z_asl</span> <span class="o">&gt;=</span> <span class="n">gph_lo</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">z_asl</span> <span class="o">&lt;</span> <span class="n">gph_hi</span><span class="p">)</span>
+
+        <span class="c1"># Nearest-cell selection would clamp points outside the grid to its edge</span>
+        <span class="n">in_domain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">coord</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;lati&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;long&quot;</span><span class="p">)):</span>
+            <span class="n">centers</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">coord</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">if</span> <span class="n">centers</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">half</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">centers</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+                <span class="n">in_domain</span> <span class="o">&amp;=</span> <span class="p">(</span><span class="n">p</span> <span class="o">&gt;=</span> <span class="n">centers</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="n">half</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">p</span> <span class="o">&lt;=</span> <span class="n">centers</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">half</span><span class="p">)</span>
+        <span class="n">has_layer</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;level&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">in_domain</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">sel</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="n">skipna</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">has_layer</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">level_idx</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;level&quot;</span><span class="p">)</span>
+        <span class="n">used_level</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;level&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">level_idx</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">has_layer</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;ct_</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;ct_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">sel</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;ct_latitude&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sel</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;ct_longitude&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sel</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;ct_level&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">used_level</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<div class="viewcode-block" id="CarbonTracker.sample">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.sample">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample the molefraction field at ``points``.</span>
+
+<span class="sd">        ``points`` is a DataFrame with columns ``datetime`` (UTC sample time),</span>
+<span class="sd">        ``lati``, ``long``, ``zagl``, as in a PYSTILT particle table (for</span>
+<span class="sd">        example ``particles.stilt.endpoints()``); any other columns (e.g.</span>
+<span class="sd">        ``indx``, ``receptor``) are carried through for downstream grouping. Returns one row</span>
+<span class="sd">        per input point with ``ct_&lt;specie&gt;_&lt;units&gt;`` and the CT cell/level used.</span>
+<span class="sd">        Points whose UTC date has no molefraction file are dropped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">points</span>
+        <span class="n">dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+        <span class="n">file_for</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_molefraction_file_for_date</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dates</span><span class="o">.</span><span class="n">unique</span><span class="p">()}</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">dates</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">file_for</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">file_for</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">empty</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">points</span>
+        <span class="k">with</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span>
+            <span class="n">files</span><span class="p">,</span>
+            <span class="n">preprocess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">,</span>
+            <span class="n">data_vars</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
+            <span class="n">combine</span><span class="o">=</span><span class="s2">&quot;by_coords&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_field</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CarbonTracker.background">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.background">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Background mole fraction [ppm]: mean of the sampled field over ``points``.</span>
+
+<span class="sd">        Samples the field at every point (e.g. trajectory endpoints) and averages</span>
+<span class="sd">        over them. With ``by`` (e.g. ``&#39;receptor&#39;``) the mean and 1-sigma spread</span>
+<span class="sd">        are returned per group; otherwise a single-row summary. Output is ppm</span>
+<span class="sd">        (CT-CH4 mole fractions are stored in ppb, CO2 in ppm).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sampled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ct_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sampled</span><span class="p">:</span>
+            <span class="c1"># sample() returns no rows (and no ct_ columns) when no</span>
+            <span class="c1"># molefraction file covers the points</span>
+            <span class="n">sampled</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">ppm</span> <span class="o">=</span> <span class="n">sampled</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1000.0</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;ppb&quot;</span> <span class="k">else</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">by</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;background_ppm&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">ppm</span><span class="o">.</span><span class="n">mean</span><span class="p">()],</span>
+                    <span class="s2">&quot;sigma_ppm&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">ppm</span><span class="o">.</span><span class="n">std</span><span class="p">()],</span>
+                    <span class="s2">&quot;n_endpoints&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">ppm</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())],</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="n">grouped</span> <span class="o">=</span> <span class="n">ppm</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">sampled</span><span class="p">[</span><span class="n">by</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;background_ppm&quot;</span><span class="p">:</span> <span class="n">grouped</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                <span class="s2">&quot;sigma_ppm&quot;</span><span class="p">:</span> <span class="n">grouped</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span>
+                <span class="s2">&quot;n_endpoints&quot;</span><span class="p">:</span> <span class="n">grouped</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CarbonTrackerCH4">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.html#lair.noaa.CarbonTrackerCH4">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CarbonTrackerCH4</span><span class="p">(</span><span class="n">CarbonTracker</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NOAA CarbonTracker-CH4</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    molefractions : xr.Dataset</span>
+<span class="sd">        The molefractions Dataset.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    calc_molefractions_pressure(molefractions)</span>
+<span class="sd">        Calculate the pressure at each level in the molefractions Dataset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">specie</span> <span class="o">=</span> <span class="s2">&quot;ch4&quot;</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;ppb&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">version</span><span class="o">=</span><span class="s2">&quot;CT-CH4-2025&quot;</span><span class="p">,</span>
+        <span class="n">carbon_tracker_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">parallel_parse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallel_parse</span> <span class="o">=</span> <span class="n">parallel_parse</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+        <span class="c1"># CT-CH4-2025+ ships with a proper datetime64 time coordinate already;</span>
+        <span class="c1"># older versions (CT-CH4-2023) encode time in a `time_components` variable.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="n">time_components</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time_components&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">time_components</span><span class="p">]</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time_components&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+<div class="viewcode-block" id="CarbonTrackerCH4.molefractions">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.html#lair.noaa.CarbonTrackerCH4.molefractions">[docs]</a>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molefractions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+        <span class="s2">&quot;Molefractions Dataset. Cached property.&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">&quot;molefractions&quot;</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="n">list_files</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">&quot;*nc&quot;</span><span class="p">,</span> <span class="n">full_names</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CACHE_DIR</span>
+
+            <span class="n">cache_file</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">CACHE_DIR</span><span class="p">)</span>
+                <span class="o">/</span> <span class="s2">&quot;carbontracker&quot;</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
+                <span class="o">/</span> <span class="s2">&quot;molefractions.pkl&quot;</span>
+            <span class="p">)</span>
+            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">open_mfdataset</span><span class="p">(</span>
+            <span class="n">files</span><span class="p">,</span>
+            <span class="n">preprocess</span><span class="o">=</span><span class="n">CarbonTrackerCH4</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">,</span>
+            <span class="n">parallel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parallel_parse</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span></div>
+
+
+<div class="viewcode-block" id="CarbonTrackerCH4.calc_molefractions_pressure">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.html#lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calc_molefractions_pressure</span><span class="p">(</span><span class="n">molefractions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the pressure at each level in the molefractions Dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        molefractions : xr.Dataset</span>
+<span class="sd">            The molefractions Dataset.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.Dataset</span>
+<span class="sd">            The molefractions Dataset with the pressure calculated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">molefractions</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">molefractions</span><span class="o">.</span><span class="n">at</span> <span class="o">+</span> <span class="n">molefractions</span><span class="o">.</span><span class="n">bt</span> <span class="o">*</span> <span class="n">molefractions</span><span class="o">.</span><span class="n">surf_pressure</span>
+        <span class="p">)</span>
+        <span class="n">molefractions</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">100</span>  <span class="c1"># Convert to hPa</span>
+        <span class="n">molefractions</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Pressure&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;hPa&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="s2">&quot;Calculated from hybrid sigma-pressure coefficients and surface pressure.&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">molefractions</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CarbonTrackerCO2">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCO2.html#lair.noaa.CarbonTrackerCO2">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CarbonTrackerCO2</span><span class="p">(</span><span class="n">CarbonTracker</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NOAA CarbonTracker (CO2)</span>
+
+<span class="sd">    Mole fractions are in ppm (micromol mol-1). Releases such as CT2019B keep</span>
+<span class="sd">    the daily molefraction files flat in ``molefractions/co2_total/``, one file</span>
+<span class="sd">    per grid (``CT2019B.molefrac_nam1x1_2015-06-01.nc``, ``..._glb3x2_...``).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid : str</span>
+<span class="sd">        The molefraction grid to read, e.g. ``&#39;nam1x1&#39;`` (North America,</span>
+<span class="sd">        1x1 deg) or ``&#39;glb3x2&#39;`` (global, 3x2 deg). Points outside the grid</span>
+<span class="sd">        sample as NaN.</span>
+<span class="sd">    molefractions : xr.Dataset</span>
+<span class="sd">        The molefractions Dataset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">specie</span> <span class="o">=</span> <span class="s2">&quot;co2&quot;</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;ppm&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">carbon_tracker_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">grid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nam1x1&quot;</span><span class="p">,</span>
+        <span class="n">parallel_parse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallel_parse</span> <span class="o">=</span> <span class="n">parallel_parse</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molefractions_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Directory of the total-CO2 molefraction files.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">&quot;molefractions&quot;</span> <span class="o">/</span> <span class="s2">&quot;co2_total&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_molefraction_file_for_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Molefraction file on ``self.grid`` covering a UTC ``date``, if present.&quot;&quot;&quot;</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">molefractions_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;*molefrac_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">date</span><span class="si">}</span><span class="s2">.nc&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">matches</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">matches</span> <span class="k">else</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="CarbonTrackerCO2.molefractions">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCO2.html#lair.noaa.CarbonTrackerCO2.molefractions">[docs]</a>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">molefractions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+        <span class="s2">&quot;Molefractions Dataset on ``self.grid`` (lazy). Cached property.&quot;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molefractions_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;*molefrac_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2">_*.nc&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2"> molefraction files in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">molefractions_dir</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CACHE_DIR</span>
+
+            <span class="n">cache_file</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">CACHE_DIR</span><span class="p">)</span>
+                <span class="o">/</span> <span class="s2">&quot;carbontracker&quot;</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
+                <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;molefractions_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+            <span class="p">)</span>
+            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span>
+        <span class="k">return</span> <span class="n">open_mfdataset</span><span class="p">(</span>
+            <span class="n">files</span><span class="p">,</span>
+            <span class="n">preprocess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">,</span>
+            <span class="n">parallel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parallel_parse</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+        <span class="c1"># Times decode natively; drop the redundant component/decimal encodings</span>
+        <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">&quot;time_components&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal_date&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GMLData">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.html#lair.noaa.GMLData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GMLData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NOAA GML Data</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    specie : str</span>
+<span class="sd">        The greenhouse gas specie.</span>
+<span class="sd">    site : str</span>
+<span class="sd">        The site where the flask samples were collected.</span>
+<span class="sd">    platform : str, optional</span>
+<span class="sd">        The platform where the flask samples were collected, by default &#39;surface&#39;.</span>
+<span class="sd">    lab_id : int, optional</span>
+<span class="sd">        The lab ID, by default 1.</span>
+<span class="sd">    measurement_group : str, optional</span>
+<span class="sd">        The measurement group, by default &#39;ccgg&#39;.</span>
+<span class="sd">    frequency : str, optional</span>
+<span class="sd">        The frequency of the measurements, by default &#39;event&#39;.</span>
+<span class="sd">    driver : str, optional</span>
+<span class="sd">        The driver to use to read the data, by default &#39;pandas&#39;.</span>
+<span class="sd">    gml_dir : str, optional</span>
+<span class="sd">        The NOAA GML data root, by default ``$LAIR_GML_DIR``.</span>
+<span class="sd">    directory : str</span>
+<span class="sd">        The directory for the data.</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The filename for the data.</span>
+<span class="sd">    filepath : str</span>
+<span class="sd">        The filepath for the data.</span>
+<span class="sd">    data : pd.DataFrame | xr.Dataset</span>
+<span class="sd">        The data.</span>
+<span class="sd">    file_template : str</span>
+<span class="sd">        The template for the filename.</span>
+<span class="sd">    driver_ext : dict</span>
+<span class="sd">        The driver extensions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">file_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{specie}</span><span class="s2">_</span><span class="si">{site}</span><span class="s2">_</span><span class="si">{platform}</span><span class="s2">-</span><span class="si">{sample_type}</span><span class="s2">_</span><span class="si">{lab_id}</span><span class="s2">_</span><span class="si">{measurement_group}</span><span class="s2">_</span><span class="si">{frequency}</span><span class="s2">.</span><span class="si">{ext}</span><span class="s2">&quot;</span>
+
+    <span class="n">driver_ext</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;pandas&quot;</span><span class="p">:</span> <span class="s2">&quot;txt&quot;</span><span class="p">,</span> <span class="s2">&quot;xarray&quot;</span><span class="p">:</span> <span class="s2">&quot;nc&quot;</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">specie</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">site</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">platform</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;surface&quot;</span><span class="p">,</span> <span class="s2">&quot;shipboard&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;surface&quot;</span><span class="p">,</span>
+        <span class="n">sample_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;flask&quot;</span><span class="p">,</span> <span class="s2">&quot;pfp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;flask&quot;</span><span class="p">,</span>
+        <span class="n">lab_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">measurement_group</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ccgg&quot;</span><span class="p">,</span> <span class="s2">&quot;sil&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ccgg&quot;</span><span class="p">,</span>
+        <span class="n">frequency</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">,</span> <span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span>
+        <span class="n">driver</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="s2">&quot;xarray&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;pandas&quot;</span><span class="p">,</span>
+        <span class="n">gml_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a GMLData object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        specie : str</span>
+<span class="sd">            The greenhouse gas specie.</span>
+<span class="sd">        site : str</span>
+<span class="sd">            The site where the flask samples were collected.</span>
+<span class="sd">        platform : str, optional</span>
+<span class="sd">            The platform where the flask samples were collected, by default &#39;surface&#39;.</span>
+<span class="sd">        sample_type : str, optional</span>
+<span class="sd">            The sample type, by default &#39;flask&#39;. Use &#39;pfp&#39; for Portable Flask</span>
+<span class="sd">            Package data.</span>
+<span class="sd">        lab_id : int, optional</span>
+<span class="sd">            The lab ID, by default 1.</span>
+<span class="sd">        measurement_group : str, optional</span>
+<span class="sd">            The measurement group, by default &#39;ccgg&#39;.</span>
+<span class="sd">        frequency : str, optional</span>
+<span class="sd">            The frequency of the measurements, by default &#39;event&#39;.</span>
+<span class="sd">        driver : str, optional</span>
+<span class="sd">            The driver to use to read the data, by default &#39;pandas&#39;.</span>
+<span class="sd">        gml_dir : str, optional</span>
+<span class="sd">            The NOAA GML data root, by default ``$LAIR_GML_DIR``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">specie</span> <span class="o">=</span> <span class="n">specie</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">site</span> <span class="o">=</span> <span class="n">site</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="n">platform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_type</span> <span class="o">=</span> <span class="n">sample_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lab_id</span> <span class="o">=</span> <span class="n">lab_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measurement_group</span> <span class="o">=</span> <span class="n">measurement_group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="n">frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ext</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_ext</span><span class="p">[</span><span class="n">driver</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gml_dir</span> <span class="o">=</span> <span class="n">get_data_dir</span><span class="p">(</span><span class="n">GML_DIR_ENV</span><span class="p">,</span> <span class="n">gml_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gml_dir</span> <span class="o">/</span> <span class="n">specie</span> <span class="o">/</span> <span class="n">sample_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;GMLData(specie=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="si">}</span><span class="s2">, site=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="si">}</span><span class="s2">, platform=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="si">}</span><span class="s2">, sample_type=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_type</span><span class="si">}</span><span class="s2">, lab_id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lab_id</span><span class="si">}</span><span class="s2">, measurement_group=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">measurement_group</span><span class="si">}</span><span class="s2">, frequency=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency</span><span class="si">}</span><span class="s2">, driver=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NOAA GML Data(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;ftp.gml.noaa.gov&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/data/trace_gases/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_type</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ext</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">ftp_download</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GMLData.data">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.html#lair.noaa.GMLData.data">[docs]</a>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;pandas&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">==</span> <span class="s2">&quot;month&quot;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_monthly</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;pandas&quot;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;datetime&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;xarray&quot;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;obs&quot;</span><span class="p">,</span> <span class="n">times</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid driver&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_monthly</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a monthly-mean file, indexed by the first of each month.</span>
+
+<span class="sd">        Unlike event files, monthly files have no header row: the column names</span>
+<span class="sd">        are only given in a ``# data_fields:`` comment, and columns are aligned</span>
+<span class="sd">        with runs of spaces. There is no ``qcflag`` column.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;# data_fields:&quot;</span><span class="p">):</span>
+                    <span class="n">fields</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">fields</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No &quot;# data_fields:&quot; header line in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">fields</span>
+        <span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">],</span> <span class="n">month</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">],</span> <span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;datetime&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GMLData.apply_qaqc">
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.html#lair.noaa.GMLData.apply_qaqc">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_qaqc</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">],</span>
+        <span class="n">flags</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">driver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pandas&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply QA/QC filtering.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : pd.DataFrame | xr.Dataset</span>
+<span class="sd">            The data.</span>
+<span class="sd">        flags : None | str | list of str, optional</span>
+<span class="sd">            The allowed QA/QC flags. If None, only keep good data (qcflag == &#39;...&#39;).</span>
+<span class="sd">            By default None.</span>
+<span class="sd">        driver : str, optional</span>
+<span class="sd">            The driver to use to read the data, by default &#39;pandas&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame | xr.Dataset</span>
+<span class="sd">            The filtered data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allowed_flags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;...&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">flags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">flags</span> <span class="o">=</span> <span class="p">[</span><span class="n">flags</span><span class="p">]</span>
+            <span class="n">allowed_flags</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;pandas&quot;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">qcflag</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">allowed_flags</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;xarray&quot;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="n">qcflag</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">qcflag</span>
+            <span class="k">if</span> <span class="n">qcflag</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">:</span>
+                <span class="c1"># netCDF char arrays (no _Encoding) decode to bytes, e.g. b&#39;...&#39;</span>
+                <span class="n">qcflag</span> <span class="o">=</span> <span class="n">qcflag</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">qcflag</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">allowed_flags</span><span class="p">),</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid driver&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, James Mineau.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

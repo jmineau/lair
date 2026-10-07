@@ -1,0 +1,6 @@
+lair.geo.add\_lat\_ticks
+========================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: add_lat_ticks

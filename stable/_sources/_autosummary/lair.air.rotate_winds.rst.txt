@@ -1,0 +1,6 @@
+lair.air.rotate\_winds
+======================
+
+.. currentmodule:: lair.air
+
+.. autofunction:: rotate_winds

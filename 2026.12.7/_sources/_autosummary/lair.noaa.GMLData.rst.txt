@@ -1,0 +1,8 @@
+lair.noaa.GMLData
+=================
+
+.. currentmodule:: lair.noaa
+
+.. autoclass:: GMLData
+   :members:
+   :show-inheritance:

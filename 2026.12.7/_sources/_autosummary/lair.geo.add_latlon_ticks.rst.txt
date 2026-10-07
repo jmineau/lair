@@ -1,0 +1,6 @@
+lair.geo.add\_latlon\_ticks
+===========================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: add_latlon_ticks

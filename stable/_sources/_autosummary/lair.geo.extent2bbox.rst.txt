@@ -1,0 +1,6 @@
+lair.geo.extent2bbox
+====================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: extent2bbox

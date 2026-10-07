@@ -1,0 +1,6 @@
+lair.geo.points\_along\_line
+============================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: points_along_line

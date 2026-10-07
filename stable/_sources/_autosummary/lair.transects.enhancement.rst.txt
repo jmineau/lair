@@ -1,0 +1,6 @@
+lair.transects.enhancement
+==========================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: enhancement

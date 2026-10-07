@@ -1,0 +1,42 @@
+﻿lair.meteorology
+================
+
+.. automodule:: lair.meteorology
+
+
+
+.. rubric:: Module Attributes
+
+.. autosummary::
+
+   Numeric
+   standard
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   T_from_e
+   hypsometric
+   ideal_gas_law
+   inv_poisson
+   mixing_ratio
+   poisson
+   sat_vapor_pres
+   sat_vapor_pres_ice
+   virt_T
+
+
+
+
+
+
+
+
+
