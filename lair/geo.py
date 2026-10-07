@@ -208,8 +208,7 @@ def wrap_lons(
     longitudes: npt.ArrayLike, base: float = -180.0, period: float = 360.0
 ) -> np.ndarray:
     """
-    Transform the longitude values to be within the half-open interval
-    [base, base + period).
+    Transform the longitude values into the half-open interval [base, base + period).
 
     Parameters
     ----------
@@ -994,8 +993,9 @@ def resample(
     regrid_method: XESMF_Regrid_Methods = "bilinear",
 ) -> _XarrayT:
     """
-    Resample the data to a new resolution. Returns new data; the input is
-    not modified.
+    Resample the data to a new resolution.
+
+    Returns new data; the input is not modified.
 
     Parameters
     ----------
@@ -1203,7 +1203,6 @@ def earth_radius(lat: ArrayLike) -> ArrayLike:
      - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
      - WGS84: https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
     """
-
     # define oblate spheroid from WGS84
     a = 6378137
     b = 6356752.3142

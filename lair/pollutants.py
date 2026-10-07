@@ -1,4 +1,4 @@
-"""
+r"""
 Metadata for common trace gases and aerosols: names, LaTeX labels, units.
 
 A small registry of :class:`Pollutant` records for labeling plots and sanity
@@ -11,7 +11,7 @@ Examples
 >>> from lair.pollutants import get_pollutant
 >>> ch4 = get_pollutant("ch4")
 >>> ch4.label()
-'$\\mathrm{CH_4}$ [ppm]'
+'$\mathrm{CH_4}$ [ppm]'
 >>> ax.set_ylabel(get_pollutant("PM25").label())  # doctest: +SKIP
 """
 
@@ -28,7 +28,7 @@ _NG_M3 = r"ng m$^{-3}$"
 
 @dataclass(frozen=True)
 class Pollutant:
-    """
+    r"""
     Metadata for one pollutant.
 
     Attributes
@@ -38,7 +38,7 @@ class Pollutant:
     long_name : str
         Plain-language name, e.g. ``'methane'``.
     latex : str
-        Matplotlib mathtext for the name, e.g. ``r'$\\mathrm{CH_4}$'``.
+        Matplotlib mathtext for the name, e.g. ``r'$\mathrm{CH_4}$'``.
     units : str
         Usual units for ambient values, as plain text (``'ppm'``, ``'ppb'``,
         ``'ug/m3'``, ``'ng/m3'``). Gases are dry-air mole fractions.
@@ -78,8 +78,8 @@ class Pollutant:
         return molmass.Formula(self.formula).mass * ureg("g/mol")
 
     def label(self, units: bool = True, latex: bool = True) -> str:
-        """
-        Build an axis label, e.g. ``'$\\mathrm{CH_4}$ [ppm]'``.
+        r"""
+        Build an axis label, e.g. ``'$\mathrm{CH_4}$ [ppm]'``.
 
         Parameters
         ----------
@@ -107,7 +107,7 @@ def _gas(
     expected_range: tuple[float, float],
     formula: str | None = None,
 ) -> Pollutant:
-    """A gas: its units need no mathtext, and its formula defaults to its name."""
+    """Make a gas: its units need no mathtext, and its formula defaults to its name."""
     return Pollutant(
         name, long_name, latex, units, units, expected_range, formula or name
     )

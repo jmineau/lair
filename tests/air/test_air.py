@@ -1,4 +1,5 @@
-"""Tests for lair.air (wind math + polar binning).
+"""
+Tests for lair.air (wind math + polar binning).
 
 Meteorological wind-direction convention: direction is where the wind blows
 *from*, in degrees clockwise from North. So a wind FROM the north (0 deg) blows

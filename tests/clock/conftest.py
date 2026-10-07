@@ -1,4 +1,5 @@
-"""Fixtures local to the lair.clock tests.
+"""
+Fixtures local to the lair.clock tests.
 
 This conftest lives *inside* the clock test directory on purpose: it travels
 with the module if lair.clock is ever extracted into its own package. Don't

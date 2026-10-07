@@ -1,4 +1,5 @@
-"""Tests for lair.hrrr.
+"""
+Tests for lair.hrrr.
 
 Requires the `requests`/`formats`/`geo` extras (boto3/numcodecs/cartopy) —
 skipped when not installed (run in the conda lair-dev env for full coverage).
@@ -216,7 +217,8 @@ class TestGetValue:
 
 
 def _chunk_index(lon, lat, spacing=3000.0):
-    """A 5 x 5 chunk-index grid on the HRRR projection centred near (lon, lat).
+    """
+    A 5 x 5 chunk-index grid on the HRRR projection centred near (lon, lat).
 
     Each cell's chunk_id/in_chunk_* encode its (row, col) so the selected cell
     can be identified.

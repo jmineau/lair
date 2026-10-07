@@ -51,7 +51,8 @@ __all__ = [
 
 
 def enhancement(obs: np.ndarray, baseline_q: float = 5.0) -> np.ndarray:
-    """Enhancement above each transit's own ``baseline_q``-th percentile along the route.
+    """
+    Enhancement above each transit's own ``baseline_q``-th percentile along the route.
 
     Transits with no finite values return NaN throughout.
     """
@@ -63,8 +64,11 @@ def enhancement(obs: np.ndarray, baseline_q: float = 5.0) -> np.ndarray:
 
 
 def robust_z(enh: np.ndarray, min_points: int = 20) -> np.ndarray:
-    """Per-transit robust z-score of the enhancement: ``(enh - median) / (1.4826 * MAD)``,
-    median and MAD taken along each transit's route points.
+    """
+    Per-transit robust z-score of the enhancement.
+
+    The score is ``(enh - median) / (1.4826 * MAD)``, with the median and MAD taken
+    along each transit's route points.
 
     A point is then judged against the rest of *its own transit*, so a night with the whole
     route elevated does not read as detections everywhere. Transits with fewer than
@@ -87,7 +91,8 @@ def robust_z(enh: np.ndarray, min_points: int = 20) -> np.ndarray:
 def detection_frequency(
     enh: np.ndarray, threshold: float, min_transits: int = 10
 ) -> np.ndarray:
-    """Fraction of transits (with data at the point) whose enhancement exceeds ``threshold``.
+    """
+    Fraction of transits (with data at the point) whose enhancement exceeds ``threshold``.
 
     Points sampled by fewer than ``min_transits`` transits return NaN.
     """
@@ -106,8 +111,11 @@ def magnitude(
     stat: str = "median",
     min_transits: int = 10,
 ) -> np.ndarray:
-    """Per-point enhancement magnitude: ``stat`` ("median" | "mean") over detected transits
-    (``enh > threshold``) or over all transits with data (``threshold=None``).
+    """
+    Per-point enhancement magnitude.
+
+    It is ``stat`` ("median" | "mean") over detected transits (``enh > threshold``) or
+    over all transits with data (``threshold=None``).
 
     Points sampled by fewer than ``min_transits`` transits (with data, before thresholding)
     return NaN; so do points with no detection at all.
@@ -127,8 +135,11 @@ def magnitude(
 
 
 def transit_times(time: np.ndarray, stat: str = "median") -> pd.DatetimeIndex:
-    """One timestamp per transit from a ``time[transit, point]`` matrix (POSIX seconds or
-    datetime64); NaT for transits with no data."""
+    """
+    One timestamp per transit from a ``time[transit, point]`` matrix.
+
+    The matrix holds POSIX seconds or datetime64; transits with no data get NaT.
+    """
     t = np.asarray(time)
     if np.issubdtype(t.dtype, np.datetime64):
         t = t.astype("datetime64[s]").astype(float)
@@ -150,10 +161,10 @@ def profile(
     min_transits: int = 10,
     tz_offset_hours: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Detection frequency and median magnitude per point, binned by ``by``
-    ("hour", "weekday" or "month") of the transit time.
+    """
+    Return the detection frequency and median magnitude per point, binned by time.
 
-    Returns ``(bins, freq[bin, point], mag[bin, point])``. ``tz_offset_hours`` shifts the
+    ``by`` is the "hour", "weekday" or "month" of the transit time. Returns ``(bins, freq[bin, point], mag[bin, point])``. ``tz_offset_hours`` shifts the
     (UTC) transit times to local time before binning (e.g. -7 for MST).
     """
     t = times + pd.Timedelta(hours=tz_offset_hours)
@@ -184,7 +195,8 @@ def along_route_distance(lon: np.ndarray, lat: np.ndarray) -> np.ndarray:
 def merge_route_points(
     routes_xy: list[np.ndarray], tol: float
 ) -> tuple[np.ndarray, list[np.ndarray]]:
-    """Merge the fixed points of several routes into one network point set.
+    """
+    Merge the fixed points of several routes into one network point set.
 
     ``routes_xy`` are ``(n_i, 2)`` arrays of projected coordinates (metres). Points of the
     first route are kept; a point of a later route is added only if it is farther than
@@ -210,7 +222,8 @@ def merge_route_points(
 def pool_routes(
     matrices: list[np.ndarray], index: list[np.ndarray], n_network: int
 ) -> np.ndarray:
-    """Stack per-route ``[transit, point]`` matrices onto the network points.
+    """
+    Stack per-route ``[transit, point]`` matrices onto the network points.
 
     Returns a ``[sum of transits, n_network]`` matrix, NaN where a route has no point
     (or no data) at a network point. Where two route points of one route snap to the
@@ -234,7 +247,8 @@ TRANSIT_COLUMNS = ["direction", "t_start", "t_end", "s_min", "s_max", "n"]
 
 
 def _time_seconds(time) -> np.ndarray:
-    """POSIX seconds (float) from numeric or datetime-like input; NaN for NaT.
+    """
+    POSIX seconds (float) from numeric or datetime-like input; NaN for NaT.
 
     Datetime-like input goes through pandas, which handles tz-aware times (an object
     array to numpy) and NaT. Naive times are taken as UTC.
@@ -254,7 +268,8 @@ def _runs(t: np.ndarray, max_gap_s: float) -> np.ndarray:
 
 
 def lag_positions(time, xy: np.ndarray, lag_s, max_gap_s: float = 600.0) -> np.ndarray:
-    """Positions where the air of each sample was actually taken in.
+    """
+    Positions where the air of each sample was actually taken in.
 
     A sample logged at time *t* is air that entered the inlet ``lag_s`` seconds earlier, so
     it belongs at the platform's position at ``t - lag``. Positions are interpolated
@@ -288,7 +303,8 @@ def lag_positions(time, xy: np.ndarray, lag_s, max_gap_s: float = 600.0) -> np.n
 def snap_to_route(
     xy: np.ndarray, route_xy: np.ndarray, max_dist: float
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Nearest route point of each sample: ``(index, distance)``, index -1 beyond ``max_dist``.
+    """
+    Nearest route point of each sample: ``(index, distance)``, index -1 beyond ``max_dist``.
 
     Both arrays are ``(n, 2)`` in the same projected metres. A sample with a NaN position
     (e.g. no time in :func:`lag_positions`) gets index -1 and distance NaN.
@@ -317,7 +333,8 @@ def split_transits(
     reversal_m: float = 500.0,
     min_span_m: float = 1000.0,
 ) -> tuple[np.ndarray, pd.DataFrame]:
-    """Cut a platform's along-route coordinate into one-way transits.
+    """
+    Cut a platform's along-route coordinate into one-way transits.
 
     ``s`` is the along-route position of each sample (metres; NaN where the sample is not
     on this route) and ``time`` is sorted. A transit ends
@@ -393,7 +410,8 @@ def transect_matrix(
     n_points: int,
     max_dwell_s: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Average samples onto a ``[transit, point]`` matrix.
+    """
+    Average samples onto a ``[transit, point]`` matrix.
 
     ``transit`` comes from :func:`split_transits` and ``point`` from :func:`snap_to_route`
     (-1 in either skips the sample); ``obs`` and ``time`` are per sample. With

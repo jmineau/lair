@@ -1,4 +1,5 @@
-"""Tests for lair.geo.
+"""
+Tests for lair.geo.
 
 Requires the `geo` extra (cartopy/shapely/pyproj/rasterio/rioxarray) — skipped
 when not installed (run in the conda lair-dev env for full coverage). The pure
@@ -435,7 +436,8 @@ def test_basegrid_construction():
 
 @pytest.fixture
 def latlon_grid():
-    """A 5x6 regular lat/lon Dataset (1 deg) with rio CRS + cf-recognisable axes.
+    """
+    A 5x6 regular lat/lon Dataset (1 deg) with rio CRS + cf-recognisable axes.
 
     This is the shape the clip/regrid/resample helpers expect: 1D lat/lon
     carrying degrees_north/east units, rio spatial dims set, and an EPSG:4326
@@ -570,7 +572,8 @@ class TestResampleRegrid:
 
 
 class TestDataArrayInput:
-    """DataArray in -> DataArray out for the cf-bounds helpers (#34).
+    """
+    DataArray in -> DataArray out for the cf-bounds helpers (#34).
 
     cf_xarray's bounds helpers are Dataset-only, so these used to raise
     AttributeError on a DataArray.

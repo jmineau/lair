@@ -1,4 +1,5 @@
-"""Shared pytest configuration and fixtures for the lair test suite.
+"""
+Shared pytest configuration and fixtures for the lair test suite.
 
 Keep this file *minimal*. Anything specific to a single module belongs in that
 module's own ``tests/<module>/conftest.py`` so it travels with the module when

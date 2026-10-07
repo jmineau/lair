@@ -1,3 +1,5 @@
+"""lair: tools for land-air interactions research."""
+
 import logging
 import os
 from importlib.metadata import PackageNotFoundError, version as _version
@@ -55,7 +57,7 @@ if sort_by_dimensionality is not None:
 
 def setup_ccg_filter(lair_dir: str | None = None) -> None:
     """
-    Setup the CCG filter module from NOAA GML.
+    Set up the CCG filter module from NOAA GML.
 
     If ``_ccg_filter.py`` is not already present, download NOAA's
     ``ccg_filter.zip`` into a temporary directory, take ``ccg_filter.py`` from
@@ -117,7 +119,8 @@ def setup_ccg_filter(lair_dir: str | None = None) -> None:
 
 
 def _setup_ccg_filter_or_warn() -> None:
-    """Install the CCG filter at import; a failure warns instead of raising.
+    """
+    Install the CCG filter at import; a failure warns instead of raising.
 
     Only ``lair.background`` needs the filter, so a NOAA outage or a node
     without outbound FTP shouldn't break ``import lair``.

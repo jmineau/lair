@@ -1,4 +1,5 @@
-"""Tests for lair.config (data-dir resolution, paths + verbosity toggle).
+"""
+Tests for lair.config (data-dir resolution, paths + verbosity toggle).
 
 NOTE: importing lair.config has side effects (creates CACHE_DIR, sets a pandas
 option). Verbosity is a plain boolean, not the stdlib logging module.

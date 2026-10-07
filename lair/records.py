@@ -43,7 +43,7 @@ def list_files(
     followlinks: bool = False,
 ) -> list[str]:
     """
-    Returns a list of files in the specified directory that match the specified pattern.
+    Return a list of files in the specified directory that match the specified pattern.
 
     Parameters
     ----------
@@ -67,7 +67,6 @@ def list_files(
     List[str]
         A list of file names or full paths that match the specified pattern.
     """
-
     result = []
     if recursive:
         walk = os.walk(path, followlinks=followlinks)
@@ -337,7 +336,7 @@ class Cacher:
 
     def __init__(self, func: Callable, cache_file: str, reload=False):
         """
-        Initializes a Cacher object.
+        Initialize a Cacher object.
 
         Parameters
         ----------
@@ -369,7 +368,7 @@ class Cacher:
 
     def load_cache_index(self):
         """
-        Loads the cache index from a file.
+        Load the cache index from a file.
 
         Returns
         -------
@@ -387,15 +386,14 @@ class Cacher:
 
     def save_cache_index(self):
         """
-        Saves the cache index to a file.
+        Save the cache index to a file.
         """
         with open(self.index_file, "wb") as f:
             self.pkl.dump(self.cache_index, f, protocol=self.pkl.HIGHEST_PROTOCOL)
 
     def __call__(self, *args, **kwargs):
         """
-        Returns the cached result if available, otherwise calls the function
-        and caches the result for future use.
+        Return the cached result, or call the function and cache its result.
 
         Parameters
         ----------
@@ -407,7 +405,6 @@ class Cacher:
         Any
             The result of the function call.
         """
-
         key = self.pkl.dumps((args, kwargs))  # serialize func args
 
         if self.reload and key not in self._refreshed:

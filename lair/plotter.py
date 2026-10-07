@@ -1,5 +1,5 @@
 """
-This module provides utility functions for plotting data.
+Utility functions for plotting data.
 """
 
 from typing import Any, cast
@@ -40,7 +40,6 @@ def log10formatter(x, pos, deci=0) -> str:
     >>> data: xr.DataArray  # some data, in this case, 3D (time, lat, lon)
     >>> np.log10(data).plot(cbar_kwargs={"format": partial(log10formatter, deci=2)})
     """
-
     return f"$10^{{{x:.{deci}f}}}$"
 
 
@@ -48,8 +47,10 @@ def truncate_colormap(
     cmap: str | mcolors.Colormap, minval: float = 0.0, maxval: float = 1.0, n: int = 100
 ) -> mcolors.LinearSegmentedColormap:
     """
-    Truncate matplotlib colormaps using min and max vals from 0 to 1,
-    and then linearly build a new colormap
+    Truncate a matplotlib colormap to a range of its values.
+
+    The min and max values (from 0 to 1) bound the range, and a new colormap
+    is built linearly from it.
 
     Parameters
     ----------
@@ -567,6 +568,7 @@ class HandlerDashedLines(HandlerLineCollection):
     def create_artists(
         self, legend, orig_handle, xdescent, ydescent, width, height, fontsize, trans
     ):
+        """Return the line artists that draw *orig_handle* in the legend."""
         import numpy as np
         from matplotlib.lines import Line2D
 

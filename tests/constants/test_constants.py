@@ -1,4 +1,5 @@
-"""Tests for lair.constants.
+"""
+Tests for lair.constants.
 
 The constants are pint quantities (carrying SI-ish units). We check both the
 numeric magnitude and the dimensionality, plus the derived relationships.
@@ -37,14 +38,14 @@ def test_constant_values_and_units(name, magnitude, unit):
 
 
 def test_epsilon_is_ratio_of_gas_constants():
-    """epsilon = Rd / Rv, dimensionless, ~0.622."""
+    """``epsilon`` = Rd / Rv, dimensionless, ~0.622."""
     assert c.epsilon.check("[]")  # dimensionless
     assert c.epsilon.magnitude == pytest.approx((c.Rd / c.Rv).magnitude)
     assert c.epsilon.magnitude == pytest.approx(0.622, abs=1e-3)
 
 
 def test_cv_is_dry_air():
-    """cv is dry air at constant volume (Mayer's relation cp - cv ~ Rd)."""
+    """``cv`` is dry air at constant volume (Mayer's relation cp - cv ~ Rd)."""
     assert (c.cp - c.cv).magnitude == pytest.approx(c.Rd.magnitude, rel=0.01)
 
 

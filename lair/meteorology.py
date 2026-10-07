@@ -101,6 +101,7 @@ def ideal_gas_law(
 ) -> Numeric:
     """
     Ideal gas law equation solver.
+
     Solver attempts to solve for the specified variable using the following
     forms of the ideal gas law:
 
@@ -127,7 +128,6 @@ def ideal_gas_law(
     Can be used to solve for pressure, volume, temperature, density, mass,
     moles, or number of molecules.
     """
-
     # Compare against None (not truthiness) so array inputs and zero values
     # (e.g. n=0) work
     if solve_for in ["pressure", "pres", "p"]:

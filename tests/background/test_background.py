@@ -1,4 +1,5 @@
-"""Tests for lair.background.
+"""
+Tests for lair.background.
 
 Scaffold only (see tests/README.md). Importing lair.background requires the
 NOAA GML CCG filter (lair/_ccg_filter.py, fetched on first `import lair` unless

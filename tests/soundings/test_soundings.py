@@ -1,4 +1,5 @@
-"""Tests for lair.soundings.
+"""
+Tests for lair.soundings.
 
 Requires the `requests` extra (requests/siphon) — skipped when not installed.
 Parsing, interpolation and get_soundings are tested offline against small
@@ -290,7 +291,8 @@ def _wyoming_frame(date, station="SLC"):
 
 
 class _FakeWyoming:
-    """Stand-in for siphon's WyomingUpperAir: records requests, no network.
+    """
+    Stand-in for siphon's WyomingUpperAir: records requests, no network.
 
     ``errors`` maps a request time to a list of exceptions raised by successive
     requests for it, before the data is returned.

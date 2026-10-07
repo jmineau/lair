@@ -1,4 +1,5 @@
-"""Tests for lair.meteorology.
+"""
+Tests for lair.meteorology.
 
 Contract: plain SI in, plain SI out. pint Quantity inputs are converted to SI
 magnitudes first, so every function returns plain numbers / arrays, never a

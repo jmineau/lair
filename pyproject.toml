@@ -217,16 +217,21 @@ docstring-code-format = true
 exclude = ["README.md"]
 
 [tool.ruff.lint]
-# Conservative baseline to avoid churn on existing code (see AGENTS.md).
-# Start with the high-signal pyflakes/pycodestyle-error rules; broaden
-# (UP, B, SIM, I, ...) as modules get cleaned up.
+# E and F, plus pydocstyle as in fips and uataq. Broaden to the template's
+# other rules (UP, B, SIM, I, NPY, RUF100) as modules get cleaned up.
 select = [
     "E",  # pycodestyle errors
     "F",  # Pyflakes
+    "D",  # pydocstyle, numpy convention (below)
+    "D213",  # docstring summary on the second line
 ]
 ignore = [
     "E501",  # line too long, handled by formatter
     "E741",  # ambiguous variable names (l, I, O) — common in science code
+    "D105",  # magic methods need no docstring (docstr-coverage skips them too)
+    "D200",  # One-line docstring should fit on one line with quotes
+    "D212",  # Multi-line docstring summary should start at the first line
+    "D400",  # First line should end with a period, question mark, or exclamation point
 ]
 
 [tool.ruff.lint.isort]
@@ -236,3 +241,9 @@ known-first-party = ["lair"]
 # Intentional, kept on purpose (NOT a legacy backlog):
 "lair/__init__.py" = ["F401"]   # cf_xarray.units / pint_xarray / config: side-effect & re-export imports
 "lair/soundings.py" = ["E402"]  # import after optional-dependency check (intentional)
+# Tests need no docstrings, and a fixture's names what it provides ("A tiny
+# Vulcan archive."); the other docstring rules still apply to them.
+"tests/**" = ["D100", "D101", "D102", "D103", "D104", "D106", "D107", "D401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"

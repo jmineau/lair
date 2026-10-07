@@ -89,8 +89,9 @@ def determine_pcap_events(
     vhd: pd.Series, threshold: float, min_periods: int = 3
 ) -> pd.DataFrame:
     """
-    Determine the periods of persistent cold air pool (PCAP) events
-    using the valley heat deficit (VHD) metric.
+    Determine persistent cold air pool (PCAP) periods from the valley heat deficit.
+
+    The valley heat deficit (VHD) is the metric.
     """
     # Create a boolean mask for values above the threshold
     above_thres = vhd > threshold

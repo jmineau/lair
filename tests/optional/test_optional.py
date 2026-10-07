@@ -1,4 +1,5 @@
-"""Tests for lair._optional (optional-dependency import helper).
+"""
+Tests for lair._optional (optional-dependency import helper).
 
 NOTE: this directory maps to the private module ``lair._optional``. If that
 helper is ever promoted/renamed, rename this directory to match.

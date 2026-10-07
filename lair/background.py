@@ -54,8 +54,9 @@ def rolling_baseline(
     center: bool = True,
 ) -> pd.Series:
     """
-    Calculate the baseline concentration as the {q} quantile of a rolling
-    window of size {window} hours.
+    Calculate the baseline concentration as a rolling quantile.
+
+    The baseline is the {q} quantile of a rolling window of {window} hours.
 
     Parameters
     ----------
@@ -92,8 +93,9 @@ def phase_shift_corrected_baseline(
     data: pd.Series, n: int = 3600, q: float = 0.01
 ) -> pd.Series:
     """
-    Derive a baseline concentration using a low quantile approach to minimize
-    phase shift effects. This method uses forward-looking and backward-looking
+    Derive a baseline concentration from a low quantile, minimizing phase shift.
+
+    This method uses forward-looking and backward-looking
     windows to better represent the lowest observed concentrations during
     periods of rapid change.
 
