@@ -34,7 +34,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "Topic :: Scientific/Engineering :: Atmospheric Science"
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Typing :: Typed",
 ]
 
 [project.optional-dependencies]
@@ -125,6 +126,9 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ["lair*"]
+
+[tool.setuptools.package-data]
+"lair" = ["py.typed"]  # the annotations are part of the API (PEP 561)
 
 [tool.setuptools_scm]
 # CalVer releases are git tags vYYYY.MM.PATCH (MM = 05, 08 or 12), made with
