@@ -37,7 +37,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=06cca048"></script>
+    <script src="../../_static/documentation_options.js?v=7c1925f6"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev21+gabe84d1b9" />
+  <meta name="docsearch:version" content="2026.12.8.dev22+g0ebdd2f10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -652,74 +652,77 @@
     <span class="k">if</span> <span class="n">username</span> <span class="o">==</span> <span class="s2">&quot;anonymous&quot;</span> <span class="ow">and</span> <span class="n">password</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
         <span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;anonymous@&quot;</span>
 
-    <span class="n">ftp</span> <span class="o">=</span> <span class="n">ftplib</span><span class="o">.</span><span class="n">FTP</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
-    <span class="n">ftp</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+    <span class="c1"># The with block closes the connection however the download ends (a failed</span>
+    <span class="c1"># transfer, or a QUIT the server never answers).</span>
+    <span class="k">with</span> <span class="n">ftplib</span><span class="o">.</span><span class="n">FTP</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="k">as</span> <span class="n">ftp</span><span class="p">:</span>
+        <span class="n">ftp</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">paths</span><span class="p">]</span>  <span class="c1"># Convert a single path to a list</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">paths</span><span class="p">]</span>  <span class="c1"># Convert a single path to a list</span>
 
-    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
-        <span class="c1"># Start in root for every path</span>
-        <span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="c1"># Start in root for every path</span>
+            <span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
 
-        <span class="n">PATH</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>  <span class="c1"># path should start from root on ftp</span>
+            <span class="n">PATH</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>  <span class="c1"># path should start from root on ftp</span>
 
-        <span class="c1"># Redefine download func for each path; it is called within this iteration</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">PATH</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># Try changing to the specified path</span>
-                <span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="c1"># Redefine download func for each path; it is called within this iteration</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">PATH</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Try changing to the specified path</span>
+                    <span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-            <span class="k">except</span> <span class="n">ftplib</span><span class="o">.</span><span class="n">error_perm</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="c1"># 550 = not a directory (the wording varies between servers)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;550&quot;</span><span class="p">):</span>
-                    <span class="k">raise</span>
-                <span class="c1"># If it&#39;s not a directory, download the file</span>
+                <span class="k">except</span> <span class="n">ftplib</span><span class="o">.</span><span class="n">error_perm</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># 550 = not a directory (the wording varies between servers)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;550&quot;</span><span class="p">):</span>
+                        <span class="k">raise</span>
+                    <span class="c1"># If it&#39;s not a directory, download the file</span>
 
-                <span class="k">if</span> <span class="n">pattern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_path_matches</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
-                    <span class="c1"># Exit if pattern is not in path</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Skipping </span><span class="si">%s</span><span class="s2"> - pattern does not match&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="n">pattern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_path_matches</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">pattern</span><span class="p">):</span>
+                        <span class="c1"># Exit if pattern is not in path</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Skipping </span><span class="si">%s</span><span class="s2"> - pattern does not match&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="kc">None</span>
 
-                <span class="c1"># Get common path to append to download_dir</span>
-                <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                        <span class="c1"># Recreate the entire structure</span>
-                        <span class="n">common</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>  <span class="c1"># Remove leading &#39;/&#39;</span>
+                    <span class="c1"># Get common path to append to download_dir</span>
+                    <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                            <span class="c1"># Recreate the entire structure</span>
+                            <span class="n">common</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>  <span class="c1"># Remove leading &#39;/&#39;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># Get the relative strucuture from prefix</span>
+                            <span class="n">common</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">),</span> <span class="n">prefix</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="c1"># Get the relative strucuture from prefix</span>
-                        <span class="n">common</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">),</span> <span class="n">prefix</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># Drop each PATH directory into the download_dir</span>
-                    <span class="n">common</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">root</span><span class="p">))</span>
+                        <span class="c1"># Drop each PATH directory into the download_dir</span>
+                        <span class="n">common</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">root</span><span class="p">))</span>
 
-                <span class="c1"># Create the local directory structure</span>
-                <span class="n">local</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">common</span><span class="p">)</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">local</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="c1"># Create the local directory structure</span>
+                    <span class="n">local</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">common</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">local</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-                <span class="c1"># Download the file</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">local_file</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Downloading </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">local</span><span class="p">))</span>
-                    <span class="n">ftp</span><span class="o">.</span><span class="n">retrbinary</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RETR </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">local_file</span><span class="o">.</span><span class="n">write</span><span class="p">)</span>
+                    <span class="c1"># Download the file</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">local_file</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                            <span class="s2">&quot;Downloading </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="n">ftp</span><span class="o">.</span><span class="n">retrbinary</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RETR </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">local_file</span><span class="o">.</span><span class="n">write</span><span class="p">)</span>
 
-                <span class="k">return</span> <span class="s2">&quot;f&quot;</span>
+                    <span class="k">return</span> <span class="s2">&quot;f&quot;</span>
 
-            <span class="k">else</span><span class="p">:</span>  <span class="c1"># path is a directory</span>
-                <span class="n">files</span> <span class="o">=</span> <span class="n">ftp</span><span class="o">.</span><span class="n">nlst</span><span class="p">()</span>  <span class="c1"># Get a list of files in that directory</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># path is a directory</span>
+                    <span class="n">files</span> <span class="o">=</span> <span class="n">ftp</span><span class="o">.</span><span class="n">nlst</span><span class="p">()</span>  <span class="c1"># Get a list of files in that directory</span>
 
-                <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-                    <span class="c1"># recursively download files</span>
-                    <span class="n">f_d</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">path</span><span class="p">,</span> <span class="n">file</span><span class="p">]))</span>
+                    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                        <span class="c1"># recursively download files</span>
+                        <span class="n">f_d</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">path</span><span class="p">,</span> <span class="n">file</span><span class="p">]))</span>
 
-                    <span class="k">if</span> <span class="n">f_d</span> <span class="o">==</span> <span class="s2">&quot;d&quot;</span><span class="p">:</span>  <span class="c1"># file is a directory</span>
-                        <span class="c1"># download changed to a subdirectory</span>
-                        <span class="c1"># restart in the above directory to be able to traverse multiple dirs</span>
-                        <span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-                <span class="k">return</span> <span class="s2">&quot;d&quot;</span>
+                        <span class="k">if</span> <span class="n">f_d</span> <span class="o">==</span> <span class="s2">&quot;d&quot;</span><span class="p">:</span>  <span class="c1"># file is a directory</span>
+                            <span class="c1"># download changed to a subdirectory</span>
+                            <span class="c1"># restart in the above directory to be able to traverse multiple dirs</span>
+                            <span class="n">ftp</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="s2">&quot;d&quot;</span>
 
-        <span class="n">download</span><span class="p">(</span><span class="n">PATH</span><span class="p">)</span>
+            <span class="n">download</span><span class="p">(</span><span class="n">PATH</span><span class="p">)</span>
 
-    <span class="n">ftp</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
     <span class="k">return</span> <span class="kc">True</span></div>
 
 
