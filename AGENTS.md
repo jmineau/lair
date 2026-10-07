@@ -202,11 +202,11 @@ just docstr                  # docstring coverage, at least 88% (raise it as it 
 just build-docs              # Sphinx HTML -> docs/_build/html (`just docs-serve` previews)
 ```
 
-`just build-docs` does not yet fail on warnings: 12 remain, all "duplicate
-object description", because class docstrings' NumPy `Methods`/`Attributes`
-sections describe members that autodoc's `:members:` documents again. Remove
-those sections (or drop them in a `conf.py` hook, as PYSTILT does), then add
-`-W --keep-going` to the recipe.
+`just build-docs` fails on warnings. A class docstring's NumPy `Methods`
+section, and the `Attributes` entries that are properties, describe members
+autodoc's `:members:` documents again, so a `conf.py` hook
+(`drop_member_sections`) removes them before napoleon renders them; plain
+attributes stay. Writing those sections is still fine.
 
 Releases: `just next-version` prints the next CalVer version, the CHANGELOG
 gets its `## [X.Y.Z]` section, and `just release` pushes the tag; the Publish

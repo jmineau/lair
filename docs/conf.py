@@ -126,3 +126,71 @@ html_theme_options = {
         "alt_text": "LAIR - Home",
     },
 }
+
+
+# -- Class docstrings ----------------------------------------------------------
+# A class docstring's NumPy "Methods" section, and the "Attributes" entries that
+# are properties, describe members that autodoc's `:members:` documents again
+# (Sphinx then warns of a duplicate object description). Drop them before napoleon
+# turns the sections into directives; plain attributes, which autodoc does not
+# document, stay.
+
+
+def _is_underline(line: str) -> bool:
+    return bool(line.strip()) and set(line.strip()) == {"-"}
+
+
+def _section_end(lines: list[str], start: int) -> int:
+    """Index of the next section header after *start*, or the end of *lines*."""
+    for k in range(start, len(lines) - 1):
+        if lines[k].strip() and _is_underline(lines[k + 1]):
+            return k
+    return len(lines)
+
+
+def _is_documented_member(cls: object, name: str) -> bool:
+    import functools
+    import inspect
+
+    member = inspect.getattr_static(cls, name, None)
+    return isinstance(member, (property, functools.cached_property))
+
+
+def drop_member_sections(app, what, name, obj, options, lines) -> None:
+    """Remove what autodoc documents twice from a class docstring."""
+    if what != "class":
+        return
+    i = 0
+    while i < len(lines) - 1:
+        title = lines[i].strip()
+        if title not in ("Methods", "Attributes") or not _is_underline(lines[i + 1]):
+            i += 1
+            continue
+        end = _section_end(lines, i + 2)
+        if title == "Methods":
+            del lines[i:end]
+            continue
+        # Attributes: keep the entries autodoc does not document.
+        indent = len(lines[i]) - len(lines[i].lstrip())
+        kept, entry, keep = [], [], True
+        for line in lines[i + 2 : end]:
+            starts_entry = line.strip() and len(line) - len(line.lstrip()) == indent
+            if starts_entry:
+                if keep:
+                    kept += entry
+                attr = line.strip().split(":")[0].strip()
+                entry, keep = [line], not _is_documented_member(obj, attr)
+            else:
+                entry.append(line)
+        if keep:
+            kept += entry
+        if any(line.strip() for line in kept):
+            lines[i + 2 : end] = kept
+            i += 2 + len(kept)
+        else:
+            del lines[i:end]
+
+
+def setup(app) -> None:
+    """Register the class-docstring hook ahead of napoleon (priority 500)."""
+    app.connect("autodoc-process-docstring", drop_member_sections, priority=400)
