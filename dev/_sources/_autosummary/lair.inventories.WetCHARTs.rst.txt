@@ -1,0 +1,8 @@
+lair.inventories.WetCHARTs
+==========================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: WetCHARTs
+   :members:
+   :show-inheritance:

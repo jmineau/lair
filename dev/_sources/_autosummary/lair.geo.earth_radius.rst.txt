@@ -1,0 +1,6 @@
+lair.geo.earth\_radius
+======================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: earth_radius

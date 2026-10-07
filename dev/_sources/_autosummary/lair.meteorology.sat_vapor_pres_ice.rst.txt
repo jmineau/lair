@@ -1,0 +1,6 @@
+lair.meteorology.sat\_vapor\_pres\_ice
+======================================
+
+.. currentmodule:: lair.meteorology
+
+.. autofunction:: sat_vapor_pres_ice

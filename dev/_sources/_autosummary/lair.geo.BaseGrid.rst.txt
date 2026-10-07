@@ -1,0 +1,8 @@
+lair.geo.BaseGrid
+=================
+
+.. currentmodule:: lair.geo
+
+.. autoclass:: BaseGrid
+   :members:
+   :show-inheritance:

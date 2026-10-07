@@ -1,0 +1,8 @@
+lair.inventories.EPA
+====================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: EPA
+   :members:
+   :show-inheritance:

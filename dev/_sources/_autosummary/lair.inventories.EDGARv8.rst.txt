@@ -1,0 +1,8 @@
+lair.inventories.EDGARv8
+========================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: EDGARv8
+   :members:
+   :show-inheritance:

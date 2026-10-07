@@ -1,0 +1,8 @@
+lair.inventories.MultiModelInventory
+====================================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: MultiModelInventory
+   :members:
+   :show-inheritance:

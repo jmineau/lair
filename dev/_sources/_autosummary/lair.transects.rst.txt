@@ -1,0 +1,39 @@
+﻿lair.transects
+==============
+
+.. automodule:: lair.transects
+
+
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   along_route_distance
+   detection_frequency
+   enhancement
+   lag_positions
+   magnitude
+   merge_route_points
+   pool_routes
+   profile
+   robust_z
+   snap_to_route
+   split_transits
+   transect_matrix
+   transit_times
+
+
+
+
+
+
+
+
+

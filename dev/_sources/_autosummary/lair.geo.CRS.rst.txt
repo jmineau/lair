@@ -1,0 +1,8 @@
+lair.geo.CRS
+============
+
+.. currentmodule:: lair.geo
+
+.. autoclass:: CRS
+   :members:
+   :show-inheritance:

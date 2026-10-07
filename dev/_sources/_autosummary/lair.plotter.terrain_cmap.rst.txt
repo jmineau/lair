@@ -1,0 +1,6 @@
+lair.plotter.terrain\_cmap
+==========================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: terrain_cmap

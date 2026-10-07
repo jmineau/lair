@@ -1,0 +1,1243 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lair.clock &#8212; lair dev</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=1efe3841"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/clock';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            true;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.12.8.dev19+gd1dcce34a" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/lair_forlight_r.png" class="logo__image only-light" alt="LAIR - Home"/>
+    <img src="../../_static/lair_fordark_r.png" class="logo__image only-dark pst-js-only" alt="LAIR - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.clock</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for lair.clock</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Utility classes &amp; functions for working with time and dates.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextDecorator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zoneinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZoneInfo</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">AFTERNOON</span> <span class="o">=</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>  <span class="c1"># HH Local Standard Time</span>
+<span class="n">SEASONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span>
+    <span class="mi">6</span><span class="p">:</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span>
+    <span class="mi">7</span><span class="p">:</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span>
+    <span class="mi">8</span><span class="p">:</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span>
+    <span class="mi">9</span><span class="p">:</span> <span class="s2">&quot;SON&quot;</span><span class="p">,</span>
+    <span class="mi">10</span><span class="p">:</span> <span class="s2">&quot;SON&quot;</span><span class="p">,</span>
+    <span class="mi">11</span><span class="p">:</span> <span class="s2">&quot;SON&quot;</span><span class="p">,</span>
+    <span class="mi">12</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="TimeRange">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.TimeRange.html#lair.clock.TimeRange">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TimeRange</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TimeRange class to represent a time range with start and stop times.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start : dt.datetime | None</span>
+<span class="sd">        The start time of the time range.</span>
+<span class="sd">    stop : dt.datetime | None</span>
+<span class="sd">        The stop time of the time range.</span>
+<span class="sd">    total_seconds : float</span>
+<span class="sd">        The total number of seconds in the time range.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    parse_iso(string: str, inclusive: bool = False) -&gt; dt.datetime</span>
+<span class="sd">        Parse the ISO8601 formatted time string and return a datetime object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_input_types</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="nb">str</span><span class="p">,</span>
+        <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
+        <span class="nb">tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span>
+        <span class="nb">slice</span><span class="p">,</span>
+        <span class="kc">None</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">time_range</span><span class="p">:</span> <span class="s2">&quot;TimeRange&quot;</span> <span class="o">|</span> <span class="n">_input_types</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">_input_types</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">_input_types</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a TimeRange object with the specified time range.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time_range : str | list[Union[str, dt.datetime, None]] | tuple[Union[str, dt.datetime, None], Union[str, dt.datetime, None]] | slice | None</span>
+<span class="sd">            _description_, by default None</span>
+<span class="sd">        start : Union[_input_types, dt.datetime], optional</span>
+<span class="sd">            _description_, by default None</span>
+<span class="sd">        stop : Union[_input_types, dt.datetime], optional</span>
+<span class="sd">            _description_, by default None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``time_range`` is given together with ``start`` or ``stop``, or</span>
+<span class="sd">            if any of them has an unrecognized format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">time_range</span> <span class="ow">and</span> <span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="n">stop</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot specify both time_range and start/stop&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="n">TimeRange</span><span class="p">):</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">time_range</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">time_range</span><span class="o">.</span><span class="n">stop</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="n">time_range</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">]):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">time_range</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="c1"># Handle the case when time_range is a string</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="o">.</span><span class="n">parse_iso</span><span class="p">(</span><span class="n">time_range</span><span class="p">)</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="o">.</span><span class="n">parse_iso</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="n">inclusive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_range</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># Handle the case when time_range is a list/tuple</span>
+                <span class="c1">#   representing start and stop</span>
+                <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">time_range</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+                <span class="c1"># Handle the case when time_range is a slice</span>
+                <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">time_range</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">time_range</span><span class="o">.</span><span class="n">stop</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid time_range format&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;TimeRange(start=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">, stop=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="s2">&quot;Entire Observation Period&quot;</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Before </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;After </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">]):</span>
+            <span class="c1"># Entire Period - True</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="c1"># stop is exclusive: TimeRange(&#39;2024&#39;) stops at 2025-01-01 00:00,</span>
+        <span class="c1"># which belongs to the next period</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
+            <span class="c1"># Before stop - True if item &lt; stop</span>
+            <span class="k">return</span> <span class="n">item</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
+            <span class="c1"># After start - True if start &lt;= item</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;=</span> <span class="n">item</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The start of the range, or None if it is open at the start.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span>
+
+    <span class="nd">@start</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="o">.</span><span class="n">parse_iso</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid start time format&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The end of the range, or None if it is open at the end.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span>
+
+    <span class="nd">@stop</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">stop</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="o">.</span><span class="n">parse_iso</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">inclusive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid stop time format&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The length of the range in seconds; both ends must be set.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both start and stop times must be specified&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+
+<div class="viewcode-block" id="TimeRange.parse_iso">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.TimeRange.html#lair.clock.TimeRange.parse_iso">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_iso</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">inclusive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse the ISO8601 formatted time string and return a namedtuple with the parsed components.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        string : str</span>
+<span class="sd">            The ISO8601 formatted time string.</span>
+<span class="sd">        inclusive</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dt.datetime</span>
+<span class="sd">            The parsed datetime object.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the time_str format is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Parse time_range string using regex assuming ISO8601 format.</span>
+        <span class="c1"># Each component is only allowed after the one before it, and the</span>
+        <span class="c1"># whole string must match, so e.g. &#39;2024-1&#39; is rejected instead of</span>
+        <span class="c1"># being read as hour 1 of 2024.</span>
+        <span class="n">iso8601</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">r</span><span class="s2">&quot;(?P&lt;year&gt;\d</span><span class="si">{4}</span><span class="s2">)&quot;</span>
+            <span class="sa">r</span><span class="s2">&quot;(?:-?(?P&lt;month&gt;\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
+            <span class="sa">r</span><span class="s2">&quot;(?:-?(?P&lt;day&gt;\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
+            <span class="sa">r</span><span class="s2">&quot;(?:[T\s]?(?P&lt;hour&gt;\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
+            <span class="sa">r</span><span class="s2">&quot;(?::?(?P&lt;minute&gt;\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
+            <span class="sa">r</span><span class="s2">&quot;(?::?(?P&lt;second&gt;\d</span><span class="si">{2}</span><span class="s2">(?:\.\d{1,6})?))?)?)?)?)?&quot;</span>
+            <span class="sa">r</span><span class="s2">&quot;Z?&quot;</span>  <span class="c1"># UTC designator; times are naive (UTC by convention)</span>
+        <span class="p">)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">iso8601</span><span class="p">,</span> <span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid time string format: </span><span class="si">{</span><span class="n">string</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">components</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+        <span class="n">month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">hour</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;hour&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">minute</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;minute&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">second</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">fraction</span> <span class="o">=</span> <span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;second&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">microsecond</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fraction</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="n">fraction</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">second</span><span class="p">),</span> <span class="n">microsecond</span><span class="p">)</span>
+
+        <span class="c1"># Determine the stop time based on the inclusive flag</span>
+        <span class="k">if</span> <span class="n">inclusive</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]:</span>
+                <span class="s2">&quot;YYYY&quot;</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]:</span>
+                <span class="s2">&quot;YYYY-MM&quot;</span>
+                <span class="n">mm</span> <span class="o">=</span> <span class="n">month</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">month</span> <span class="o">&lt;</span> <span class="mi">12</span> <span class="k">else</span> <span class="mi">1</span>
+                <span class="n">yyyy</span> <span class="o">=</span> <span class="n">year</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">month</span> <span class="o">==</span> <span class="mi">12</span> <span class="k">else</span> <span class="n">year</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">yyyy</span><span class="p">,</span> <span class="n">mm</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;hour&quot;</span><span class="p">]:</span>
+                <span class="s2">&quot;YYYY-MM-DD&quot;</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;hour&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;minute&quot;</span><span class="p">]:</span>
+                <span class="s2">&quot;YYYY-MM-DDTHH&quot;</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;minute&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;second&quot;</span><span class="p">]:</span>
+                <span class="s2">&quot;YYYY-MM-DDTHH:MM&quot;</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;second&quot;</span><span class="p">]:</span>
+                <span class="s2">&quot;YYYY-MM-DDTHH:MM:SS&quot;</span>
+                <span class="c1"># one unit of the finest digit given, e.g. 12:30:45.5 -&gt; +0.1 s</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mf">10.0</span> <span class="o">**</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">fraction</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid time string format&quot;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">stop</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">start</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Timer">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.html#lair.clock.Timer">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Timer</span><span class="p">(</span><span class="n">ContextDecorator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Time your code using a class, context manager, or decorator</span>
+
+<span class="sd">    https://realpython.com/python-timer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">timers</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Elapsed time: </span><span class="si">{:0.4f}</span><span class="s2"> seconds&quot;</span>
+    <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">print</span>
+    <span class="n">_start_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Timer.TimerError">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.html#lair.clock.Timer.TimerError">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">TimerError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A custom exception used to report errors in use of Timer class&quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add the timer to the dict of timers.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timers</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Timer.start">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.html#lair.clock.Timer.start">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start a new timer&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">Timer</span><span class="o">.</span><span class="n">TimerError</span><span class="p">(</span><span class="s2">&quot;Timer is running. Use .stop() to stop it&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Timer.stop">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.html#lair.clock.Timer.stop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the timer, and report the elapsed time&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">Timer</span><span class="o">.</span><span class="n">TimerError</span><span class="p">(</span><span class="s2">&quot;Timer is not running. Use .start() to start it&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Calculate elapsed time</span>
+        <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Report elapsed time</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">elapsed_time</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">elapsed_time</span>
+
+        <span class="k">return</span> <span class="n">elapsed_time</span></div>
+
+
+<div class="viewcode-block" id="Timer.reset_timers">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.html#lair.clock.Timer.reset_timers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_timers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset class timers&quot;&quot;&quot;</span>
+        <span class="c1"># Clear in place: existing Timer instances share this dict</span>
+        <span class="n">Timer</span><span class="o">.</span><span class="n">timers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Timer&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start a new timer as a context manager&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">exc_info</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the context manager timer&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="datetime_accessor">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.datetime_accessor.html#lair.clock.datetime_accessor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">datetime_accessor</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="o">=</span><span class="s2">&quot;dt&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the datetime accessor of the object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span></div>
+
+
+
+<div class="viewcode-block" id="regular_times_to_intervals">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.regular_times_to_intervals.html#lair.clock.regular_times_to_intervals">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">regular_times_to_intervals</span><span class="p">(</span>
+    <span class="n">times</span><span class="p">,</span>
+    <span class="n">time_step</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">,</span>
+    <span class="n">closed</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="s2">&quot;neither&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">IntervalIndex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert an array of regular times to intervals of the specified length.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : np.array</span>
+<span class="sd">        A numpy array of datetime64 values indicating the start of each interval.</span>
+<span class="sd">    time_step : str, optional</span>
+<span class="sd">        The interval step (&#39;hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;, &#39;annual&#39;).</span>
+<span class="sd">        Determines the length of each interval. Default is &#39;monthly&#39;.</span>
+<span class="sd">    closed : str, optional</span>
+<span class="sd">        Defines if the interval is closed on the &#39;left&#39;, &#39;right&#39;, &#39;both&#39;, or &#39;neither&#39;. Default is &#39;left&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.IntervalIndex</span>
+<span class="sd">        An index with intervals covering the specified time range.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `time_step` is not one of &#39;hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;, or &#39;annual&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert the numpy array to pandas DatetimeIndex</span>
+    <span class="n">start_times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+
+    <span class="c1"># Define a dictionary mapping time_step to DateOffset</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;hourly&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s2">&quot;daily&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s2">&quot;monthly&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s2">&quot;annual&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Get the offset from the dictionary or raise an error if the time_step is invalid</span>
+    <span class="k">if</span> <span class="n">time_step</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">offsets</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time_step must be &#39;hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;, or &#39;annual&#39;&quot;</span><span class="p">)</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">time_step</span><span class="p">]</span>
+
+    <span class="c1"># Calculate the end times for each interval</span>
+    <span class="n">stop_times</span> <span class="o">=</span> <span class="n">start_times</span> <span class="o">+</span> <span class="n">offset</span>
+
+    <span class="c1"># Create the IntervalIndex with specified closure</span>
+    <span class="n">intervals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">IntervalIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span><span class="n">start_times</span><span class="p">,</span> <span class="n">stop_times</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="n">closed</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">intervals</span></div>
+
+
+
+<div class="viewcode-block" id="periodindex_to_binedges">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.periodindex_to_binedges.html#lair.clock.periodindex_to_binedges">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">periodindex_to_binedges</span><span class="p">(</span><span class="n">periodindex</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">PeriodIndex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a PeriodIndex to a list of bin edges.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    periodindex : pd.PeriodIndex</span>
+<span class="sd">        The PeriodIndex to convert.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[pd.Timestamp]</span>
+<span class="sd">        The bin edges.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">start_time</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">periodindex</span><span class="p">]</span>
+    <span class="n">end_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">end_time</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">periodindex</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">start_times</span> <span class="o">+</span> <span class="p">[</span><span class="n">end_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span></div>
+
+
+
+<div class="viewcode-block" id="time_difference_matrix">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.time_difference_matrix.html#lair.clock.time_difference_matrix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">time_difference_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">absolute</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the time differences between each pair of times.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : list[dt.datetime]</span>
+<span class="sd">        The list of times to calculate the differences between.</span>
+<span class="sd">    absolute : bool, optional</span>
+<span class="sd">        If True, return the absolute differences. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The matrix of time differences.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span>
+        <span class="n">times</span>
+    <span class="p">)</span>  <span class="c1"># wrap in pandas DatetimeIndex as np.subtract.outer doesn&#39;t like pd.Series</span>
+    <span class="n">diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">absolute</span><span class="p">:</span>
+        <span class="n">diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">diffs</span></div>
+
+
+
+<div class="viewcode-block" id="time_decay_matrix">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.time_decay_matrix.html#lair.clock.time_decay_matrix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">time_decay_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">decay</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the time decay matrix for the specified times and decay.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : list[dt.datetime]</span>
+<span class="sd">        The list of times to calculate the decay matrix for.</span>
+<span class="sd">    decay : str | pd.Timedelta</span>
+<span class="sd">        The decay to use for the exponential decay.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The matrix of time decay values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Time differences (timedelta64) over the decay time scale -&gt; exponential decay</span>
+    <span class="n">diffs</span> <span class="o">=</span> <span class="n">time_difference_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">diffs</span> <span class="o">/</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">decay</span><span class="p">)</span><span class="o">.</span><span class="n">to_timedelta64</span><span class="p">()))</span></div>
+
+
+
+<span class="c1"># ----- Time Aggregation ----- #</span>
+
+
+<div class="viewcode-block" id="diurnal">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.diurnal.html#lair.clock.diurnal">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">diurnal</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1h&quot;</span><span class="p">,</span>
+    <span class="n">statistic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;floor&quot;</span><span class="p">,</span> <span class="s2">&quot;ceil&quot;</span><span class="p">,</span> <span class="s2">&quot;round&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;floor&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aggregate the data to the specified frequency and compute the statistic for each group.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        The data to aggregate. Panda DataFrame with a DateTimeIndex.</span>
+<span class="sd">    freq : str</span>
+<span class="sd">        The frequency to aggregate the data to. Sub-Daily.</span>
+<span class="sd">    statistic : str or list of str, optional</span>
+<span class="sd">        The statistic to compute for each group. Default is &#39;mean&#39;.</span>
+<span class="sd">    method : one of &#39;floor&#39;, &#39;ceil&#39;, &#39;round&#39;</span>
+<span class="sd">        The method to use to round the index to the nearest freq.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        The aggregated data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resolution</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">method</span><span class="p">)(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">time</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">agg</span></div>
+
+
+
+<div class="viewcode-block" id="seasonal">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.seasonal.html#lair.clock.seasonal">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">seasonal</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">statistic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aggregate data by season and year.</span>
+
+<span class="sd">    Seasons are DJF, MAM, JJA and SON. DJF is labelled by the year of its</span>
+<span class="sd">    January and February: DJF 2024 is Dec 2023 + Jan 2024 + Feb 2024 (December</span>
+<span class="sd">    rows count towards the next year). The other seasons keep their calendar</span>
+<span class="sd">    year.</span>
+
+<span class="sd">    Partial seasons at the edges of the data are kept, not dropped. For data</span>
+<span class="sd">    covering calendar year 2024, DJF 2024 is Jan-Feb 2024 only and DJF 2025 is</span>
+<span class="sd">    Dec 2024 only.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        The data to aggregate. Panda DataFrame with a DateTimeIndex.</span>
+<span class="sd">    statistic : str, optional</span>
+<span class="sd">        The statistic to compute for each group. Default is &#39;mean&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        The aggregated data, indexed by (``season``, ``year``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Quarters starting in Dec/Mar/Jun/Sep line up with DJF/MAM/JJA/SON</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;QS-DEC&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>  <span class="c1"># pyrefly: ignore[no-matching-overload]</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;season&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">SEASONS</span><span class="p">)</span>
+
+    <span class="c1"># A DJF bin starts on Dec 1, so its label is the following (Jan/Feb) year</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;season&quot;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;year&quot;</span><span class="p">)])</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+
+<span class="c1"># ----- Decimal Time ----- #</span>
+
+
+<div class="viewcode-block" id="dt2decimalDate">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dt2decimalDate</span><span class="p">(</span><span class="n">datetime</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a datetime object to a decimal date.</span>
+
+<span class="sd">    Naive datetimes are used as-is (by convention they are UTC). Timezone-aware</span>
+<span class="sd">    datetimes (incl. tz-aware ``pd.Timestamp``) are converted to UTC first, so</span>
+<span class="sd">    the decimal date counts elapsed time from Jan 1 00:00 UTC of the UTC year.</span>
+<span class="sd">    This gives the same answer for pytz and zoneinfo zones, and keeps the two</span>
+<span class="sd">    instants of a DST fall-back hour distinct and in order.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    datetime : dt.datetime</span>
+<span class="sd">        The datetime object to convert.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The decimal date.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcoffset</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">this_year</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">total_seconds</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span> <span class="o">-</span> <span class="n">this_year</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+    <span class="n">total_seconds_year</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">year</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">total_seconds</span> <span class="o">/</span> <span class="n">total_seconds_year</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="decimalDate2dt">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.decimalDate2dt.html#lair.clock.decimalDate2dt">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decimalDate2dt</span><span class="p">(</span><span class="n">decimalDate</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a decimal date to a datetime object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    decimalDate : float</span>
+<span class="sd">        The decimal date to convert.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dt.datetime</span>
+<span class="sd">        The naive datetime object. For a decimal date made from a tz-aware</span>
+<span class="sd">        datetime by :func:`dt2decimalDate`, this is the UTC time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">decimalDate</span><span class="p">)</span>
+    <span class="n">rem</span> <span class="o">=</span> <span class="n">decimalDate</span> <span class="o">-</span> <span class="n">year</span>
+
+    <span class="n">this_year</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">total_seconds_year</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span>
+    <span class="c1"># Round to the millisecond: the float year term only carries ~1e-5 s of</span>
+    <span class="c1"># precision, and without rounding midnight comes back as 23:59:59.999998</span>
+    <span class="c1"># of the day before</span>
+    <span class="k">return</span> <span class="n">this_year</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">total_seconds_year</span> <span class="o">*</span> <span class="n">rem</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># ----- Time Zones ----- #</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_tz_localize</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">tz</span><span class="p">,</span> <span class="n">ambiguous</span><span class="p">,</span> <span class="n">nonexistent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ``tz_localize`` the naive ``times`` (DatetimeIndex or ``.dt`` accessor).</span>
+
+<span class="sd">    pandas &lt; 3 (pytz) raises pytz&#39;s AmbiguousTimeError / NonExistentTimeError,</span>
+<span class="sd">    which are not ValueErrors; re-raise them as ValueError like pandas 3 does.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">times</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="n">tz</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span> <span class="n">nonexistent</span><span class="o">=</span><span class="n">nonexistent</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;AmbiguousTimeError&quot;</span><span class="p">,</span> <span class="s2">&quot;NonExistentTimeError&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> is ambiguous or nonexistent in </span><span class="si">{</span><span class="n">tz</span><span class="si">}</span><span class="s2"> (DST transition). &quot;</span>
+                <span class="s2">&quot;Use the &#39;ambiguous&#39; or &#39;nonexistent&#39; argument.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span>
+
+
+<div class="viewcode-block" id="convert_timezones">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.convert_timezones.html#lair.clock.convert_timezones">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_timezones</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">totz</span><span class="p">,</span>
+    <span class="n">fromtz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert the times from one timezone to another.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The times to convert. With ``driver=&#39;pandas&#39;``, the index of a</span>
+<span class="sd">        DataFrame or the values of a Series.</span>
+<span class="sd">    totz : str</span>
+<span class="sd">        The timezone to convert the times to.</span>
+<span class="sd">    fromtz : str, optional</span>
+<span class="sd">        The timezone of the naive input times. Required if any input time is</span>
+<span class="sd">        naive (tz-aware times are converted from their own timezone).</span>
+<span class="sd">    localize : bool, optional</span>
+<span class="sd">        If True, the times will be localized to the totz timezone, by default False</span>
+<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
+<span class="sd">        None for a list of datetimes, &#39;pandas&#39; for a DataFrame or Series.</span>
+<span class="sd">    ambiguous : &#39;raise&#39; | &#39;NaT&#39; | &#39;infer&#39; | bool | array of bool, optional</span>
+<span class="sd">        How to localize naive times that happen twice in ``fromtz`` (DST</span>
+<span class="sd">        fall-back), with pandas ``tz_localize`` semantics: True is the DST</span>
+<span class="sd">        (first) instant, False the standard-time (second) one, &#39;NaT&#39; gives NaT,</span>
+<span class="sd">        and &#39;raise&#39; (the default) raises a ValueError. An array gives one flag</span>
+<span class="sd">        per input time (for a list, aware elements&#39; flags are ignored).</span>
+<span class="sd">    nonexistent : &#39;raise&#39; | &#39;NaT&#39; | &#39;shift_forward&#39; | &#39;shift_backward&#39; | timedelta, optional</span>
+<span class="sd">        How to localize naive times that don&#39;t exist in ``fromtz`` (DST</span>
+<span class="sd">        spring-forward), with pandas ``tz_localize`` semantics. Default &#39;raise&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The converted times.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If there are naive times and no ``fromtz``, or a naive time is ambiguous</span>
+<span class="sd">        or nonexistent in ``fromtz`` and ``ambiguous``/``nonexistent`` is &#39;raise&#39;,</span>
+<span class="sd">        or ``driver=&#39;pandas&#39;`` and ``x`` is not a DataFrame or Series.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">driver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Assign the fromtz timezone to the naive times (aware times keep theirs).</span>
+        <span class="c1"># Localize with pandas so DST transitions behave like the pandas driver.</span>
+        <span class="n">naive</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">naive</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fromtz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Naive times need fromtz: the timezone they are in&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">ambiguous</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># one flag per input time -&gt; keep the naive ones</span>
+                <span class="n">ambiguous</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ambiguous</span><span class="p">)[</span><span class="n">naive</span><span class="p">]</span>
+            <span class="n">localized</span> <span class="o">=</span> <span class="n">_tz_localize</span><span class="p">(</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">([</span><span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">naive</span><span class="p">]),</span>
+                <span class="n">fromtz</span><span class="p">,</span>
+                <span class="n">ambiguous</span><span class="p">,</span>
+                <span class="n">nonexistent</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">naive</span><span class="p">,</span> <span class="n">localized</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">NaT</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+                    <span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span>
+
+        <span class="c1"># Convert the times to the specified timezone.</span>
+        <span class="n">totz</span> <span class="o">=</span> <span class="n">ZoneInfo</span><span class="p">(</span><span class="n">totz</span><span class="p">)</span>
+        <span class="n">converted_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">NaT</span> <span class="k">else</span> <span class="n">t</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">totz</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times</span><span class="p">]</span>
+
+        <span class="c1"># If localize is True, localize the times to the totz timezone.</span>
+        <span class="k">if</span> <span class="n">localize</span><span class="p">:</span>
+            <span class="n">converted_times</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">t</span> <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">NaT</span> <span class="k">else</span> <span class="n">t</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">converted_times</span>
+            <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">converted_times</span>
+    <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;pandas&quot;</span><span class="p">:</span>
+        <span class="c1"># Check the type before copying: a list&#39;s copy() takes no &#39;deep&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;x is not a DataFrame or Series&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># If x is a DataFrame, convert DateTimeIndex</span>
+        <span class="c1"># If x is a Series, convert the series</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># If the times are not tz-aware, assign them the fromtz timezone.</span>
+        <span class="k">if</span> <span class="n">datetime_accessor</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">.</span><span class="n">tz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fromtz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Naive times need fromtz: the timezone they are in&quot;</span><span class="p">)</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">_tz_localize</span><span class="p">(</span>
+                <span class="n">datetime_accessor</span><span class="p">(</span><span class="n">times</span><span class="p">),</span> <span class="n">fromtz</span><span class="p">,</span> <span class="n">ambiguous</span><span class="p">,</span> <span class="n">nonexistent</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Convert the times to the specified timezone.</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">datetime_accessor</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="n">totz</span><span class="p">)</span>
+
+        <span class="c1"># If localize is True, localize the times to the totz timezone.</span>
+        <span class="k">if</span> <span class="n">localize</span><span class="p">:</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">datetime_accessor</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">index</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">times</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">times</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid driver&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="n">UTC2</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+<span class="n">UTC2MST</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">UTC2</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;MST&quot;</span><span class="p">)</span>
+<span class="n">UTC2MTN</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">UTC2</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;America/Denver&quot;</span><span class="p">)</span>
+<span class="n">MST2UTC</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;MST&quot;</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+<span class="n">MTN2UTC</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, James Mineau.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

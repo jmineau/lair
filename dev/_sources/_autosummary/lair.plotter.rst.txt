@@ -1,0 +1,51 @@
+﻿lair.plotter
+============
+
+.. automodule:: lair.plotter
+
+
+
+.. rubric:: Module Attributes
+
+.. autosummary::
+
+   SEASON_COLORS
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   NCL_cmap
+   create_polar_ax
+   diurnalPlot
+   format_radial_axis
+   log10formatter
+   polarFreq
+   polarPlot
+   seasonalPlot
+   terrain_cmap
+   truncate_colormap
+   windvectorPlot
+
+
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   HandlerDashedLines
+
+
+
+
+

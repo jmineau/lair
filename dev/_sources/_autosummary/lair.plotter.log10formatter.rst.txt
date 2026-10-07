@@ -1,0 +1,6 @@
+lair.plotter.log10formatter
+===========================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: log10formatter

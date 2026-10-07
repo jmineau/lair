@@ -1,0 +1,6 @@
+lair.pcaps.valleyheatdeficit
+============================
+
+.. currentmodule:: lair.pcaps
+
+.. autofunction:: valleyheatdeficit

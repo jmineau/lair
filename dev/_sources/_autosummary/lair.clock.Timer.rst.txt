@@ -1,0 +1,8 @@
+lair.clock.Timer
+================
+
+.. currentmodule:: lair.clock
+
+.. autoclass:: Timer
+   :members:
+   :show-inheritance:

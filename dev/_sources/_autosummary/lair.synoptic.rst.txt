@@ -1,0 +1,37 @@
+﻿lair.synoptic
+=============
+
+.. automodule:: lair.synoptic
+
+
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   hourly_mean
+   metadata
+   timeseries
+
+
+
+
+
+
+
+
+
+.. rubric:: Exceptions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   SynopticError
+

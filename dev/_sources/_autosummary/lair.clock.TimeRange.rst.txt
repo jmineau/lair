@@ -1,0 +1,8 @@
+lair.clock.TimeRange
+====================
+
+.. currentmodule:: lair.clock
+
+.. autoclass:: TimeRange
+   :members:
+   :show-inheritance:

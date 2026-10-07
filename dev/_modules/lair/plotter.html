@@ -1,0 +1,1115 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lair.plotter &#8212; lair dev</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=1efe3841"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/plotter';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            true;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.12.8.dev19+gd1dcce34a" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/lair_forlight_r.png" class="logo__image only-light" alt="LAIR - Home"/>
+    <img src="../../_static/lair_fordark_r.png" class="logo__image only-dark pst-js-only" alt="LAIR - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.plotter</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for lair.plotter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Utility functions for plotting data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mcolors</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.legend_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">HandlerLineCollection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.projections.polar</span><span class="w"> </span><span class="kn">import</span> <span class="n">PolarAxes</span>
+
+
+<span class="c1">#: Season colors (ColorBrewer Dark2) used for all season-keyed plots.</span>
+<span class="n">SEASON_COLORS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;DJF&quot;</span><span class="p">:</span> <span class="s2">&quot;#e7298a&quot;</span><span class="p">,</span> <span class="s2">&quot;MAM&quot;</span><span class="p">:</span> <span class="s2">&quot;#1b9e77&quot;</span><span class="p">,</span> <span class="s2">&quot;JJA&quot;</span><span class="p">:</span> <span class="s2">&quot;#d95f02&quot;</span><span class="p">,</span> <span class="s2">&quot;SON&quot;</span><span class="p">:</span> <span class="s2">&quot;#7570b3&quot;</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="log10formatter">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.log10formatter.html#lair.plotter.log10formatter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">log10formatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">deci</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Format ticks to log 10 format with deci number of decimals.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : float</span>
+<span class="sd">        Tick value.</span>
+<span class="sd">    deci : int, optional</span>
+<span class="sd">        Number of decimals to display. Defaults to 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Formatted tick label.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; data: xr.DataArray  # some data, in this case, 3D (time, lat, lon)</span>
+<span class="sd">    &gt;&gt;&gt; np.log10(data).plot(cbar_kwargs={&quot;format&quot;: partial(log10formatter, deci=2)})</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;$10^</span><span class="se">{{</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">deci</span><span class="si">}</span><span class="s2">f</span><span class="se">}}</span><span class="si">}</span><span class="s2">$&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="truncate_colormap">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.truncate_colormap.html#lair.plotter.truncate_colormap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">truncate_colormap</span><span class="p">(</span>
+    <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">mcolors</span><span class="o">.</span><span class="n">Colormap</span><span class="p">,</span> <span class="n">minval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">maxval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mcolors</span><span class="o">.</span><span class="n">LinearSegmentedColormap</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Truncate a matplotlib colormap to a range of its values.</span>
+
+<span class="sd">    The min and max values (from 0 to 1) bound the range, and a new colormap</span>
+<span class="sd">    is built linearly from it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cmap : str | matplotlib.colors.Colormap</span>
+<span class="sd">        Colormap to be truncated.</span>
+<span class="sd">    minval : float, optional</span>
+<span class="sd">        Minimum value to truncate the colormap. Defaults to 0.0.</span>
+<span class="sd">    maxval : float, optional</span>
+<span class="sd">        Maximum value to truncate the colormap. Defaults to 1.0.</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        Number of colors in the new colormap. Defaults to 100.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.colors.LinearSegmentedColormap</span>
+<span class="sd">        Truncated colormap.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+
+    <span class="n">new_cmap</span> <span class="o">=</span> <span class="n">mcolors</span><span class="o">.</span><span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
+        <span class="s2">&quot;trunc(</span><span class="si">{n}</span><span class="s2">,</span><span class="si">{a:.2f}</span><span class="s2">,</span><span class="si">{b:.2f}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">cmap</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">minval</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">maxval</span><span class="p">),</span>
+        <span class="n">cmap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">minval</span><span class="p">,</span> <span class="n">maxval</span><span class="p">,</span> <span class="n">n</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_cmap</span></div>
+
+
+
+<div class="viewcode-block" id="NCL_cmap">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.NCL_cmap.html#lair.plotter.NCL_cmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">NCL_cmap</span><span class="p">(</span><span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mcolors</span><span class="o">.</span><span class="n">LinearSegmentedColormap</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate matplotlib colormap from NCL color table.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    table_name : str</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.colors.LinearSegmentedColormap</span>
+<span class="sd">        matplotlib colormap from NCL color table.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+    <span class="c1"># Get NCL table link</span>
+    <span class="n">tables</span> <span class="o">=</span> <span class="s2">&quot;https://www.ncl.ucar.edu/Document/Graphics/ColorTables/Files&quot;</span>
+    <span class="n">table_link</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tables</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">.rgb&quot;</span>
+
+    <span class="c1"># Convert table rgb file to pandas dataframe</span>
+    <span class="c1"># TODO might be a better way to do this</span>
+    <span class="n">colortab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">table_link</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">colortab</span> <span class="o">=</span> <span class="n">colortab</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Fix columns</span>
+    <span class="n">colortab</span> <span class="o">=</span> <span class="n">colortab</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s2">&quot;#&quot;</span><span class="p">:</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">:</span> <span class="s2">&quot;b&quot;</span><span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Create linear matplotlib cmap from pandas dataframe</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">mcolors</span><span class="o">.</span><span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
+        <span class="n">table_name</span><span class="p">,</span> <span class="n">colortab</span><span class="o">.</span><span class="n">values</span> <span class="o">/</span> <span class="mi">255</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">100</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">cmap</span></div>
+
+
+
+<div class="viewcode-block" id="terrain_cmap">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.terrain_cmap.html#lair.plotter.terrain_cmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">terrain_cmap</span><span class="p">(</span>
+    <span class="n">minval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.42</span><span class="p">,</span> <span class="n">maxval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mcolors</span><span class="o">.</span><span class="n">LinearSegmentedColormap</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Matplotlib terrain cmap.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    minval : float, optional</span>
+<span class="sd">        Minimum value to truncate the colormap. Defaults to 0.42.</span>
+<span class="sd">    maxval : float, optional</span>
+<span class="sd">        Maximum value to truncate the colormap. Defaults to 1.0.</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        Number of colors in the new colormap. Defaults to 256.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.colors.LinearSegmentedColormap</span>
+<span class="sd">        Matplotlib terrain colormap.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">truncate_colormap</span><span class="p">(</span><span class="s2">&quot;terrain&quot;</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="n">minval</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="n">maxval</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="diurnalPlot">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.diurnalPlot.html#lair.plotter.diurnalPlot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">diurnalPlot</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">param</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">stats</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tz</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;UTC&quot;</span><span class="p">,</span>
+    <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1h&quot;</span><span class="p">,</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">colors</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">min_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the diurnal cycle of data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        Data to plot.</span>
+<span class="sd">    param : str</span>
+<span class="sd">        Parameter to plot.</span>
+<span class="sd">    stats : str | list[str], optional</span>
+<span class="sd">        Statistics to plot. Defaults to [&#39;std&#39;, &#39;median&#39;, &#39;mean&#39;].</span>
+<span class="sd">    units : str | None, optional</span>
+<span class="sd">        Units of the parameter for the ylabel. Defaults to None.</span>
+<span class="sd">    tz : str, optional</span>
+<span class="sd">        Timezone of the data. Defaults to &#39;UTC&#39;.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            DOES NOT CONVERT TIMEZONES.</span>
+
+<span class="sd">    freq : str, optional</span>
+<span class="sd">        Frequency of the data. Defaults to &#39;1h&#39;.</span>
+<span class="sd">    ax : plt.Axes | None, optional</span>
+<span class="sd">        Axis to plot on. Defaults to None.</span>
+<span class="sd">    colors : str | dict[str, str], optional</span>
+<span class="sd">        Colors of the statistics, or a single color for all of them.</span>
+<span class="sd">        Defaults to {&#39;mean&#39;: &#39;black&#39;, &#39;median&#39;: &#39;blue&#39;, &#39;std&#39;: &#39;gray&#39;}.</span>
+<span class="sd">    min_count : int, optional</span>
+<span class="sd">        Minimum count to plot. Defaults to 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    plt.Axes</span>
+<span class="sd">        Axis with the plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.dates</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mdates</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">diurnal</span>
+
+    <span class="c1"># Copy so appending &#39;count&#39; below never touches the caller&#39;s list</span>
+    <span class="k">if</span> <span class="n">stats</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[</span><span class="n">stats</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">colors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="s2">&quot;gray&quot;</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="n">stat</span><span class="p">:</span> <span class="n">colors</span> <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">}</span>
+
+    <span class="c1"># Check for count in stats</span>
+    <span class="k">if</span> <span class="s2">&quot;count&quot;</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span>
+        <span class="n">plot_count</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plot_count</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Calculate diurnal cycle</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="n">diurnal</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">stats</span><span class="p">)[</span><span class="n">param</span><span class="p">]</span>
+
+    <span class="c1"># Assign dummy date so locator isn&#39;t confused</span>
+    <span class="n">agg</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">(),</span> <span class="n">t</span><span class="p">))</span>
+
+    <span class="c1"># Filter by count</span>
+    <span class="k">if</span> <span class="n">min_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">agg</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">agg</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_count</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="c1"># Plot data</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+    <span class="n">legend_elements</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="s2">&quot;std&quot;</span> <span class="ow">and</span> <span class="s2">&quot;mean&quot;</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span>
+            <span class="c1"># Plot standard deviation as fill_between only if &#39;mean&#39; is also plotted</span>
+            <span class="n">handle</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+                <span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">],</span>
+                <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">],</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="s2">&quot;gray&quot;</span><span class="p">),</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+                <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="s2">&quot;count&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">plot_count</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># Plot other statistics as lines</span>
+            <span class="p">(</span><span class="n">handle</span><span class="p">,)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">agg</span><span class="p">[</span><span class="n">stat</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">colors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">),</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">legend_elements</span><span class="p">[</span><span class="n">stat</span><span class="p">]</span> <span class="o">=</span> <span class="n">handle</span>
+
+    <span class="c1"># Format x axis</span>
+    <span class="n">locator</span> <span class="o">=</span> <span class="n">mdates</span><span class="o">.</span><span class="n">HourLocator</span><span class="p">(</span><span class="n">byhour</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">mdates</span><span class="o">.</span><span class="n">DateFormatter</span><span class="p">(</span><span class="s2">&quot;%H:%M&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">locator</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">date2num</span><span class="p">(</span><span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">-</span> <span class="mf">0.03</span><span class="p">,</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">date2num</span><span class="p">(</span><span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="mf">0.03</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Build legend</span>
+    <span class="k">if</span> <span class="s2">&quot;std&quot;</span> <span class="ow">in</span> <span class="n">stats</span> <span class="ow">and</span> <span class="s2">&quot;mean&quot;</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">legend_elements</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;std&quot;</span><span class="p">)</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">legend_elements</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+        <span class="n">legend_elements</span><span class="p">[</span><span class="sa">r</span><span class="s2">&quot;mean $\pm$1$\sigma$&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">std</span><span class="p">,</span> <span class="n">mean</span><span class="p">)</span>
+    <span class="n">handles</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">legend_elements</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">legend_elements</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+
+    <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ylabel</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; [</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">]&quot;</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Time [</span><span class="si">{</span><span class="n">tz</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="seasonalPlot">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.seasonalPlot.html#lair.plotter.seasonalPlot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">seasonalPlot</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">param</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;CH4&quot;</span><span class="p">,</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ppm&quot;</span><span class="p">,</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the seasonal cycle of data by year.</span>
+
+<span class="sd">    Each season is one line, with a +/- 1 std band, plotted against its</span>
+<span class="sd">    season-year from :func:`lair.clock.seasonal`. DJF is labelled (and placed</span>
+<span class="sd">    on the x axis) by its January/February year, so DJF 2024 (Dec 2023 -</span>
+<span class="sd">    Feb 2024) sits at x = 2024. Partial seasons at the edges of the data are</span>
+<span class="sd">    plotted.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        Data to plot.</span>
+<span class="sd">    param : str, optional</span>
+<span class="sd">        Parameter to plot. Defaults to &#39;CH4&#39;.</span>
+<span class="sd">    units : str, optional</span>
+<span class="sd">        Units of the parameter for the ylabel. Defaults to &#39;ppm&#39;.</span>
+<span class="sd">    ax : plt.Axes | None, optional</span>
+<span class="sd">        Axis to plot on. Defaults to None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    plt.Axes</span>
+<span class="sd">        Axis with the plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO need to add a year or int x formatter</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">SEASON_COLORS</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">seasonal</span>
+
+    <span class="c1"># Calculate seasonal cycle</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="n">seasonal</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">])[</span><span class="n">param</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Plot data</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+    <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">season</span> <span class="ow">in</span> <span class="n">cast</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">,</span> <span class="n">agg</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+            <span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">season</span><span class="p">]</span> <span class="o">-</span> <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">,</span> <span class="n">season</span><span class="p">],</span>
+            <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">season</span><span class="p">]</span> <span class="o">+</span> <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">,</span> <span class="n">season</span><span class="p">],</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">season</span><span class="p">],</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+            <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Year&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="create_polar_ax">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.create_polar_ax.html#lair.plotter.create_polar_ax">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_polar_ax</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">PolarAxes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a polar axis with North at the top.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    plt.Axes</span>
+<span class="sd">        Polar axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;projection&quot;</span><span class="p">:</span> <span class="s2">&quot;polar&quot;</span><span class="p">})</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">PolarAxes</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_theta_direction</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_theta_zero_location</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="format_radial_axis">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.format_radial_axis.html#lair.plotter.format_radial_axis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_radial_axis</span><span class="p">(</span><span class="n">ax</span><span class="p">:</span> <span class="n">PolarAxes</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scale_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Format radial axis of polar plot.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax : PolarAxes</span>
+<span class="sd">        Axis to format.</span>
+<span class="sd">    x : str</span>
+<span class="sd">        Label of the radial axis.</span>
+<span class="sd">    scale_angle : float | None</span>
+<span class="sd">        Angle to position the label.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">scale_angle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_rlabel_position</span><span class="p">(</span><span class="n">scale_angle</span><span class="p">)</span>
+    <span class="n">ha</span> <span class="o">=</span> <span class="s2">&quot;right&quot;</span> <span class="k">if</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_rlabel_position</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">180</span> <span class="k">else</span> <span class="s2">&quot;left&quot;</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_rlabel_position</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_yticks</span><span class="p">()),</span> <span class="n">x</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="n">ha</span><span class="p">)</span>
+    <span class="c1"># TODO</span>
+    <span class="c1"># auto.text</span>
+    <span class="c1"># when xbins is a list, x label is not positioned well</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="polarPlot">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.polarPlot.html#lair.plotter.polarPlot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">polarPlot</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">param</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;CH4&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ws&quot;</span><span class="p">,</span>
+    <span class="n">wd</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;wd&quot;</span><span class="p">,</span>
+    <span class="n">statistic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ppm&quot;</span><span class="p">,</span>
+    <span class="n">min_bin</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">xbins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="n">scale_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot polar contour of data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        Data to plot.</span>
+<span class="sd">    param : str, optional</span>
+<span class="sd">        Parameter to plot. Defaults to &#39;CH4&#39;.</span>
+<span class="sd">    x : str, optional</span>
+<span class="sd">        Variable to bin in the radial axis. Defaults to &#39;ws&#39;.</span>
+<span class="sd">    wd : str, optional</span>
+<span class="sd">        Variable to bin in the angular axis. Defaults to &#39;wd&#39;.</span>
+<span class="sd">    statistic : str, optional</span>
+<span class="sd">        Statistic to plot. Defaults to &#39;mean&#39;.</span>
+<span class="sd">    units : str, optional</span>
+<span class="sd">        Units of the parameter for the colorbar label. Defaults to &#39;ppm&#39;.</span>
+<span class="sd">    min_bin : int, optional</span>
+<span class="sd">        Minimum count in each bin to plot. Defaults to 1.</span>
+<span class="sd">    xbins : int, optional</span>
+<span class="sd">        Number of bin edges in the radial axis (``xbins - 1`` bins), or explicit</span>
+<span class="sd">        edges; see :func:`lair.air.bin_polar`. Defaults to 30.</span>
+<span class="sd">    scale_angle : float | None, optional</span>
+<span class="sd">        Angle to position the radial axis label. Defaults to None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    plt.Axes</span>
+<span class="sd">        Axis with the plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">bin_polar</span><span class="p">,</span> <span class="n">circularize_radial_data</span><span class="p">,</span> <span class="n">sector_radians</span>
+
+    <span class="n">binned_data</span> <span class="o">=</span> <span class="n">bin_polar</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">wd</span><span class="o">=</span><span class="n">wd</span><span class="p">,</span> <span class="n">xbins</span><span class="o">=</span><span class="n">xbins</span><span class="p">)</span>
+
+    <span class="n">agg</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">binned_data</span><span class="p">[[</span><span class="n">param</span><span class="p">,</span> <span class="s2">&quot;radian_bin&quot;</span><span class="p">,</span> <span class="s2">&quot;x_bin&quot;</span><span class="p">]]</span>
+        <span class="c1"># observed=False keeps empty speed bins in the grid (pandas 3 defaults</span>
+        <span class="c1"># to True, which would drop them before the unstack)</span>
+        <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;radian_bin&quot;</span><span class="p">,</span> <span class="s2">&quot;x_bin&quot;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="n">statistic</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">])[</span><span class="n">param</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">unstack</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Filter by count in each bin</span>
+    <span class="n">bins_n</span> <span class="o">=</span> <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">agg</span><span class="p">[</span><span class="n">statistic</span><span class="p">])</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bins_n</span> <span class="o">&gt;=</span> <span class="n">min_bin</span><span class="p">)</span>
+
+    <span class="c1"># Keep all 16 direction sectors (empty ones as NaN) so the grid is evenly</span>
+    <span class="c1"># spaced and circularize_radial_data closes it at N, not mid-circle</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">sector_radians</span><span class="p">())</span>
+
+    <span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">circularize_radial_data</span><span class="p">(</span><span class="n">agg</span><span class="p">)</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">create_polar_ax</span><span class="p">()</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;YlOrRd&quot;</span><span class="p">)</span>
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">statistic</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+    <span class="c1"># Keep the colorbar on the axes so callers can adjust it</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">colorbar</span> <span class="o">=</span> <span class="n">cb</span>  <span class="c1"># pyrefly: ignore[missing-attribute]</span>
+
+    <span class="n">format_radial_axis</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale_angle</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="polarFreq">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.polarFreq.html#lair.plotter.polarFreq">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">polarFreq</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ws&quot;</span><span class="p">,</span>
+    <span class="n">wd</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;wd&quot;</span><span class="p">,</span>
+    <span class="n">xbins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="n">scale_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the contoured frequency of the data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        Data to plot.</span>
+<span class="sd">    x : str, optional</span>
+<span class="sd">        Variable to bin in the radial axis. Defaults to &#39;ws&#39;.</span>
+<span class="sd">    wd : str, optional</span>
+<span class="sd">        Variable to bin in the angular axis. Defaults to &#39;wd&#39;.</span>
+<span class="sd">    xbins : int, optional</span>
+<span class="sd">        Number of bin edges in the radial axis (``xbins - 1`` bins), or explicit</span>
+<span class="sd">        edges; see :func:`lair.air.bin_polar`. Defaults to 30.</span>
+<span class="sd">    scale_angle : float | None, optional</span>
+<span class="sd">        Angle to position the radial axis label. Defaults to None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    plt.Axes</span>
+<span class="sd">        Axis with the plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">bin_polar</span><span class="p">,</span> <span class="n">circularize_radial_data</span><span class="p">,</span> <span class="n">sector_radians</span>
+
+    <span class="n">binned_data</span> <span class="o">=</span> <span class="n">bin_polar</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">wd</span><span class="o">=</span><span class="n">wd</span><span class="p">,</span> <span class="n">xbins</span><span class="o">=</span><span class="n">xbins</span><span class="p">)</span>
+
+    <span class="c1"># observed=False keeps empty speed bins in the grid (count 0); pandas 3</span>
+    <span class="c1"># defaults to True, which would drop them before the unstack</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">binned_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;radian_bin&quot;</span><span class="p">,</span> <span class="s2">&quot;x_bin&quot;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="c1"># Keep all 16 direction sectors (empty ones count 0) so the grid is evenly</span>
+    <span class="c1"># spaced and circularize_radial_data closes it at N, not mid-circle</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">sector_radians</span><span class="p">(),</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">circularize_radial_data</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+    <span class="c1"># Convert to percent and set empty bins (0) to nan. nansum guards against a</span>
+    <span class="c1"># NaN in the grid, which would make a plain c.sum() NaN and blank the plot.</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">c</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">c</span><span class="p">[</span><span class="n">c</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">create_polar_ax</span><span class="p">()</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Frequency [%]&quot;</span><span class="p">)</span>
+
+    <span class="n">format_radial_axis</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale_angle</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="windvectorPlot">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.windvectorPlot.html#lair.plotter.windvectorPlot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">windvectorPlot</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">wd</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;WD&quot;</span><span class="p">,</span>
+    <span class="n">ws</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;WS&quot;</span><span class="p">,</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">unit_length</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot wind vectors.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">        Data to plot.</span>
+<span class="sd">    wd : str, optional</span>
+<span class="sd">        Wind direction variable. Defaults to &#39;WD&#39;.</span>
+<span class="sd">    ws : str, optional</span>
+<span class="sd">        Wind speed variable. Defaults to &#39;WS&#39;.</span>
+<span class="sd">    ax : plt.Axes | None, optional</span>
+<span class="sd">        Axis to plot on. Defaults to None.</span>
+<span class="sd">    unit_length : bool, optional</span>
+<span class="sd">        Normalize vectors to unit length. Defaults to False.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Additional arguments to pass to plt.quiver.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    plt.Axes</span>
+<span class="sd">        Axis with the plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">wind_components</span>
+
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">wind_components</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">ws</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">wd</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">unit_length</span><span class="p">:</span>
+        <span class="c1"># Normalize vectors to unit length</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span> <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="n">ws</span><span class="p">]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">v</span> <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="n">ws</span><span class="p">]</span>
+
+    <span class="c1"># Plot wind vectors</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">quiver</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">ws</span><span class="p">],</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">cast</span><span class="p">(</span><span class="n">Figure</span><span class="p">,</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_figure</span><span class="p">())</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="HandlerDashedLines">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.HandlerDashedLines.html#lair.plotter.HandlerDashedLines">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HandlerDashedLines</span><span class="p">(</span><span class="n">HandlerLineCollection</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom Handler for LineCollection instances.</span>
+
+<span class="sd">    https://stackoverflow.com/questions/31544489/two-line-styles-in-legend</span>
+
+<span class="sd">    There&#39;s a potentially better version in the above link</span>
+
+<span class="sd">    This needs a new names and better documentation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="HandlerDashedLines.create_artists">
+<a class="viewcode-back" href="../../_autosummary/lair.plotter.HandlerDashedLines.html#lair.plotter.HandlerDashedLines.create_artists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_artists</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">legend</span><span class="p">,</span> <span class="n">orig_handle</span><span class="p">,</span> <span class="n">xdescent</span><span class="p">,</span> <span class="n">ydescent</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">trans</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the line artists that draw *orig_handle* in the legend.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.lines</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line2D</span>
+
+        <span class="c1"># figure out how many lines there are</span>
+        <span class="n">numlines</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">orig_handle</span><span class="o">.</span><span class="n">get_segments</span><span class="p">())</span>
+        <span class="n">xdata</span><span class="p">,</span> <span class="n">xdata_marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">(</span>
+            <span class="n">legend</span><span class="p">,</span> <span class="n">xdescent</span><span class="p">,</span> <span class="n">ydescent</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">fontsize</span>
+        <span class="p">)</span>
+        <span class="n">leglines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># divide the vertical space where the lines will go</span>
+        <span class="c1"># into equal parts based on the number of lines</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">xdata</span><span class="p">,</span> <span class="n">height</span> <span class="o">/</span> <span class="p">(</span><span class="n">numlines</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># for each line, create the line at the proper location</span>
+        <span class="c1"># and set the dash pattern</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numlines</span><span class="p">):</span>
+            <span class="n">legline</span> <span class="o">=</span> <span class="n">Line2D</span><span class="p">(</span><span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span> <span class="o">*</span> <span class="p">(</span><span class="n">numlines</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="n">ydescent</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_prop</span><span class="p">(</span><span class="n">legline</span><span class="p">,</span> <span class="n">orig_handle</span><span class="p">,</span> <span class="n">legend</span><span class="p">)</span>
+            <span class="c1"># set color, dash pattern, and linewidth to that</span>
+            <span class="c1"># of the lines in linecollection</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">orig_handle</span><span class="o">.</span><span class="n">get_colors</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">orig_handle</span><span class="o">.</span><span class="n">get_colors</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># The unscaled dash pattern, as matplotlib&#39;s own HandlerLineCollection</span>
+            <span class="c1"># uses: get_dashes() is already scaled by the collection&#39;s linewidth,</span>
+            <span class="c1"># and the Line2D scales it by its linewidth again</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dashes</span> <span class="o">=</span> <span class="n">orig_handle</span><span class="o">.</span><span class="n">_us_linestyles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="n">dashes</span> <span class="o">=</span> <span class="n">orig_handle</span><span class="o">.</span><span class="n">_us_linestyles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">lw</span> <span class="o">=</span> <span class="n">orig_handle</span><span class="o">.</span><span class="n">get_linewidths</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="n">lw</span> <span class="o">=</span> <span class="n">orig_handle</span><span class="o">.</span><span class="n">get_linewidths</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">legline</span><span class="o">.</span><span class="n">set_linestyle</span><span class="p">(</span><span class="n">dashes</span><span class="p">)</span>
+            <span class="n">legline</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+            <span class="n">legline</span><span class="o">.</span><span class="n">set_transform</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+            <span class="n">legline</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="n">lw</span><span class="p">)</span>
+            <span class="n">leglines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">legline</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">leglines</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, James Mineau.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

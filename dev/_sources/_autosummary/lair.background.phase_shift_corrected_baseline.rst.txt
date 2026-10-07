@@ -1,0 +1,6 @@
+lair.background.phase\_shift\_corrected\_baseline
+=================================================
+
+.. currentmodule:: lair.background
+
+.. autofunction:: phase_shift_corrected_baseline

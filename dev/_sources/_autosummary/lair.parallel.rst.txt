@@ -1,0 +1,27 @@
+﻿lair.parallel
+=============
+
+.. automodule:: lair.parallel
+
+
+
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   parallelize
+
+
+
+
+
+
+
+
+
