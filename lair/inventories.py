@@ -19,14 +19,13 @@ import re
 from abc import ABCMeta
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Literal, ParamSpec, TypeVar
+from typing import Any, Literal, ParamSpec, Self, TypeVar
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
 import xarray as xr
-from typing_extensions import Self  # requires python 3.11 to import from typing
 from xarray import DataArray, Dataset
 
 from lair import units

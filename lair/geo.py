@@ -9,7 +9,7 @@ from __future__ import (
 import copy
 import math
 from collections import deque
-from typing import Any, Literal, TypeVar, cast
+from typing import Any, Literal, Self, TypeVar, cast
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -17,7 +17,6 @@ import numpy as np
 import numpy.typing as npt
 from numpy.typing import ArrayLike
 from typing import Iterable
-from typing_extensions import Self  # requires python 3.11 to import from typing
 from xarray import DataArray, Dataset
 
 from lair._optional import import_optional_dependency

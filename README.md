@@ -30,7 +30,7 @@ In particular, the `regridding` extra needs ESMF, which is only practical to get
 To create a new conda environment for `lair`, use the following command:
 
 ```bash
-mamba create -n lair -c conda-forge python=3.10 esmpy
+mamba create -n lair -c conda-forge python=3.11 esmpy
 ```
 
 If you already have a conda environment, simply install the dependencies:
@@ -40,7 +40,7 @@ mamba activate <lair-env>
 mamba install -c conda-forge esmpy
 ```
 
-> `lair` requires Python 3.10 or higher.
+> `lair` requires Python 3.11 or higher.
 
 Now we can install the package via `pip`. Either directly from the git repository:
 
