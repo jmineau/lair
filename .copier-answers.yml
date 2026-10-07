@@ -1,0 +1,16 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v1.0.0
+_src_path: gh:jmineau/python-template
+affiliation: University of Utah
+copyright_year: '2023'
+distribution_name: lair
+email: jameskmineau@gmail.com
+full_name: James Mineau
+github_username: jmineau
+orcid: 0000-0002-2289-2252
+package_name: lair
+project_name: lair
+project_short_description: Python package for land-air interactions research.
+publish_to_pypi: false
+python_min: '3.11'
+repository_name: lair

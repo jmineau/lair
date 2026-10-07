@@ -16,7 +16,8 @@ science utilities the user has accumulated/adapted for their research. Less
 opinionated and more loosely organized than the user's newer packages — think
 "my standard library", not "a framework".
 
-PyPI/import name: `lair`. Calendar-versioned (e.g. `2026.05.10`). Layout is
+Distribution and import name: `lair` (installed from GitHub; the `lair` on PyPI is
+another project). Calendar-versioned (e.g. `2026.05.10`). Layout is
 **flat** (`lair/`, not `src/lair/`). Docs published on GitHub Pages at
 <https://jmineau.github.io/lair/> (the old CHPC site was retired 2026-09-21;
 `~/public_html/lair/` only holds redirect pages; `~/public_html/software.php`
@@ -25,9 +26,11 @@ links to GitHub Pages).
 **Versioning (switched 2026-09-21):** setuptools-scm derives the version from
 git tags (`dynamic = ["version"]`; `lair.__version__` reads the installed
 metadata). Releases are CalVer tags `vYYYY.MM.PATCH` with MM = 05/08/12, made
-by `just release` (clean main, in sync with origin; new release month -> .0,
-otherwise PATCH+1; pushes the tag, then `gh release create` so Zenodo archives
-it and mints a DOI — Zenodo ignores bare tags). Citation metadata lives in
+by `just release` (clean main, in sync with origin, a CHANGELOG section for the
+version; new release month -> .0, otherwise PATCH+1; `just next-version` prints
+it). It pushes the tag, and the Publish workflow creates the GitHub Release from
+the CHANGELOG section, so Zenodo archives it and mints a DOI (Zenodo ignores
+bare tags). Release notes up to 2026.12.7 are in the GitHub Releases. Citation metadata lives in
 `CITATION.cff` + `.zenodo.json` (same shape as fips/PYSTILT/slv). Between tags installs report e.g.
 `2026.12.4.dev3+g<hash>`. `just version` prints the current one. The old CI
 bump bot (`update_version.yml` + `lair/_version.py`) is gone, so no more
@@ -182,20 +185,33 @@ the CCG filter's own `debug` prints on when `lair.background` is at `DEBUG`.
 
 ## Dev workflow
 
-Tooling mirrors the user's newer packages (e.g. `arl-met`): `uv` + `justfile`
-+ `ruff` + `pyrefly` + `pytest` + `pre-commit`. Config lives in
-`pyproject.toml` (`[dependency-groups]`, `[tool.uv]`, `[tool.pytest.ini_options]`,
-`[tool.coverage.*]`, `[tool.pyrefly]`, `[tool.ruff]`).
+The tooling comes from [jmineau/python-template](https://github.com/jmineau/python-template)
+(`.copier-answers.yml`; `copier update` pulls in its changes): `uv` + `justfile`
++ `ruff` + `pyrefly` + `pytest` + `pre-commit`, and CI runs the same recipes.
+Config lives in `pyproject.toml` (`[dependency-groups]`, `[tool.uv]`,
+`[tool.pytest]`, `[tool.coverage.*]`, `[tool.pyrefly]`, `[tool.ruff]`).
 
 ```bash
 # uv-based dev env (LEAN: tooling only, no optional extras). Fast + reliable.
-uv sync --group dev          # or: just sync
-just quality-check           # ruff (gate) + pyrefly (advisory) + hermetic tests
-just test                    # pytest, excluding slow
-just lint                    # ruff check lair tests
-just build-docs              # Sphinx HTML -> docs/_build/html (deployed by CI)
-just type-check              # pyrefly (advisory)
+uv sync                      # or: just sync
+just quality-check           # lint + type-check + docstr + tests (what CI checks)
+just test                    # pytest in parallel, excluding network and slow
+just lint                    # ruff check + format check (`just format` fixes)
+just type-check              # pyrefly (enforced gate)
+just docstr                  # docstring coverage, at least 84% (raise it as it grows)
+just build-docs              # Sphinx HTML -> docs/_build/html (`just docs-serve` previews)
 ```
+
+`just build-docs` does not yet fail on warnings: 12 remain, all "duplicate
+object description", because class docstrings' NumPy `Methods`/`Attributes`
+sections describe members that autodoc's `:members:` documents again. Remove
+those sections (or drop them in a `conf.py` hook, as PYSTILT does), then add
+`-W --keep-going` to the recipe.
+
+Releases: `just next-version` prints the next CalVer version, the CHANGELOG
+gets its `## [X.Y.Z]` section, and `just release` pushes the tag; the Publish
+workflow creates the GitHub Release (Zenodo archives it). See CONTRIBUTING.md.
+Don't release unless James asks.
 
 `uv run just --list` shows all recipes. The uv dev group does **not** install
 the optional extras (geo/formats/regridding need conda-built ESMF / heavy
@@ -243,8 +259,10 @@ should be all it takes. See `tests/README.md`. Rules: no cross-imports between
 test dirs; module-local fixtures stay in the module's dir; keep the top-level
 `tests/conftest.py` minimal.
 
-- **Markers** (`pyproject.toml`): `network`, `slow`, `chpc`. The hermetic CI
-  subset is `-m "not network and not slow and not chpc"`.
+- **Markers** (`pyproject.toml`): `network`, `slow`; `just test` and CI skip
+  both (no test uses them yet: network code is tested against fakes). Warnings
+  are errors (`[tool.pytest]`); a test that expects one asserts it with
+  `pytest.warns`.
 - **Coverage so far:** every module has real tests (lair-dev: 673 passed /
   1 xfailed, 97% coverage; lean uv: 393 passed / 17 skipped / 1 xfailed, as of
   2026-10-03). Thinnest: `inventories` and `__init__` (93%), `meteorology` (94%).

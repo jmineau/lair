@@ -599,6 +599,8 @@ class GMLData:
             data = pd.read_csv(
                 self.filepath, sep=" ", comment="#", parse_dates=["datetime"]
             )
+            # pandas-stubs type `.dt` of an untyped column as the generic accessor
+            # pyrefly: ignore[missing-attribute]
             data["datetime"] = data.datetime.dt.tz_localize(None)
             data = data.dropna(subset=["datetime"]).set_index("datetime").sort_index()
         elif self.driver == "xarray":

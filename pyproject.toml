@@ -88,6 +88,7 @@ complete = [
 Documentation = "https://jmineau.github.io/lair/"
 Repository = "https://github.com/jmineau/lair.git"
 Issues = "https://github.com/jmineau/lair/issues"
+Changelog = "https://github.com/jmineau/lair/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 # Lean tooling-only group so `uv sync` is fast and reliable on any Python.
@@ -96,15 +97,21 @@ Issues = "https://github.com/jmineau/lair/issues"
 # `importorskip` and are skipped here. For full optional-dependency coverage,
 # use the conda `lair-dev` env (see env-dev.yml) and run `pytest` there.
 dev = [
-  "pre-commit>=3.0.0",
-  "pydata-sphinx-theme>=0.14.0",
-  "pyrefly>=1.0.0",
-  "pytest>=7.0.0",
-  "pytest-cov>=4.0.0",
-  "ruff>=0.1.0",
+  "docstr-coverage>=2.3",
+  "git-cliff>=2.10",  # `just changelog`
+  "pre-commit>=4.0",
+  "pydata-sphinx-theme>=0.16",
+  "pyrefly>=1.3",
+  "pytest>=9.0",
+  "pytest-cov>=6.0",
+  "pytest-xdist>=3.6",
+  "ruff>=0.16",
   "rust-just>=1.42.4",
   "setuptools-scm>=8",  # `just version` / `just release`
-  "sphinx>=7.0.0",
+  "sphinx>=8.1",
+  "sphinx-autobuild>=2024.10",  # `just docs-serve`
+  "sphinx-copybutton>=0.5",
+  "twine>=6.0",  # `just dist`
 ]
 
 [tool.uv]
@@ -125,39 +132,52 @@ include = ["lair*"]
 # version, e.g. 2026.12.4.dev3+g1a2b3c4.
 fallback_version = "0.0.0"  # no git metadata at all (e.g. a bare source copy)
 
-[tool.pytest.ini_options]
+[tool.pytest]
+minversion = "9.0"
 testpaths = ["tests"]
+strict = true  # strict markers, config, xfail and parametrize ids
+addopts = ["-ra"]
+log_level = "INFO"  # show captured logs for failing tests
+# Warnings are errors, so deprecations surface early. Ignore a specific
+# third-party warning with e.g. "ignore:some message:DeprecationWarning:pkg".
+filterwarnings = [
+    "error",
+    # numpy ignores this one itself (netCDF4 raises it on import); pytest's
+    # "error" filter would bring it back.
+    "ignore:numpy.ndarray size changed:RuntimeWarning",
+]
 markers = [
     "network: requires live network access to external services (NOAA GML/FTP, AWS S3, MesoWest, soundings)",
     "slow: expensive runtime, bandwidth, or disk usage; excluded from default test runs",
-    "chpc: requires CHPC filesystem paths or group data; not runnable off-cluster",
+]
+
+[tool.repo-review]
+# Scientific Python repo-review (`uvx --from "sp-repo-review[cli]" sp-repo-review .`)
+# checks that python-template skips on purpose:
+ignore = [
+    "PY007",  # task runner: just, not nox/tox
+    "MY101",  # pyrefly's default preset; tighten per project
+    "PC110", "PC190",  # ruff runs as a local `uv run` hook, so uv.lock pins its version
+    "PC140",  # pyrefly runs as a local `uv run` hook, so it sees the project's dependencies
+    "PC160",  # no spell checker
+    "PC180",  # no markdown formatter
+    "PC901", "PC902", "PC903",  # pre-commit.ci is not used
 ]
 
 [tool.coverage.run]
 source = ["lair"]
-omit = [
-    "*/tests/*",
-    "*/test_*.py",
-    "lair/_ccg_filter.py",  # vendored from NOAA GML, not authored here
-]
+branch = true
+omit = ["lair/_ccg_filter.py"]  # vendored from NOAA GML, not authored here
 
 [tool.coverage.report]
+show_missing = true
 exclude_also = [
-    # Don't complain about missing debug-only code:
-    "def __repr__",
-    "if self\\.debug",
-
-    # Don't complain if tests don't hit defensive assertion code:
-    "raise AssertionError",
-    "raise NotImplementedError",
-
-    # Don't complain if non-runnable code isn't run:
-    "if 0:",
+    "if TYPE_CHECKING:",
     "if __name__ == .__main__.:",
-
-    # Don't complain about abstract methods, they aren't run:
+    "raise NotImplementedError",
     "@(abc\\.)?abstractmethod",
-    ]
+    "def __repr__",
+]
 
 [tool.pyrefly]
 # Enforced gate (CI + pre-commit): `just type-check` must pass. Where the
@@ -192,6 +212,9 @@ extend-exclude = [
 
 [tool.ruff.format]
 docstring-code-format = true
+# ruff also formats code blocks in Markdown; the README's examples keep their
+# hand-aligned comments.
+exclude = ["README.md"]
 
 [tool.ruff.lint]
 # Conservative baseline to avoid churn on existing code (see AGENTS.md).

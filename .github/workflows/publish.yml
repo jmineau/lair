@@ -1,0 +1,83 @@
+name: Publish
+
+# Pushing a vX.Y.Z tag (see `just release`) builds the package from that tag,
+# and creates a GitHub Release
+# from the tag's CHANGELOG.md section. Zenodo archives each GitHub Release.
+#
+# Keep this file's name: a PyPI trusted publisher would be registered for it.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      UV_NO_SYNC: "1"  # `just` recipes run in the environment synced below
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0  # setuptools-scm reads the version from tags
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.23"
+          python-version: "3.14"
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Build and check
+        run: uv run just dist
+
+      - name: Check the version matches the tag
+        run: |
+          version="$(uv run python -m setuptools_scm)"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::setuptools-scm computed $version, but the tag is $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  github-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Extract the CHANGELOG section
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            index($0, "## [" v "]") == 1 { found = 1; next }
+            /^## \[/ { if (found) exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          test -s release-notes.md || { echo "::error::CHANGELOG.md has no '## [$version]' section"; exit 1; }
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease=()
+          # PEP 440 pre-releases (a, b, rc) and dev releases
+          if [[ "$GITHUB_REF_NAME" =~ (a|b|rc)[0-9]+$|\.dev[0-9]+$ ]]; then prerelease=(--prerelease); fi
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag \
+            --title "$GITHUB_REF_NAME" --notes-file release-notes.md "${prerelease[@]}"

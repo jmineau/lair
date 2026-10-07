@@ -2,38 +2,50 @@ name: Code Quality
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 env:
+  # Never download NOAA GML's CCG filter when lair is imported; it is not in
+  # the repo (see lair/__init__.py), and the docs mock it.
   LAIR_SKIP_CCG_DOWNLOAD: "1"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  quality-check:
+  quality:
     runs-on: ubuntu-latest
+    env:
+      UV_NO_SYNC: "1"  # `just` recipes run in the environment synced below
+      RUFF_OUTPUT_FORMAT: github  # annotate the PR diff
 
     steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0  # setuptools-scm needs the tags for the version
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0  # setuptools-scm reads the version from tags
 
-    - name: Set up uv
-      uses: astral-sh/setup-uv@v7
-      with:
-        version: "0.10.4"
-        enable-cache: true
-        python-version: '3.11'
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.23"
+          python-version: "3.11"
 
-    - name: Sync dependencies (lean dev group)
-      run: uv sync --frozen
+      - name: Install
+        run: uv sync --locked
 
-    # Enforced gate.
-    - name: Lint with ruff
-      run: uv run --no-sync ruff check --output-format=github lair tests
+      - name: Lint and format check
+        run: uv run just lint
 
-    # Enforced gate: pyrefly passes cleanly (suppressions are inline, with a
-    # reason). See [tool.pyrefly] in pyproject.toml.
-    - name: Type check with pyrefly
-      if: ${{ !cancelled() }}
-      run: uv run --no-sync pyrefly check
+      - name: Type check
+        if: ${{ !cancelled() }}
+        run: uv run just type-check
+
+      - name: Docstring coverage
+        if: ${{ !cancelled() }}
+        run: uv run just docstr

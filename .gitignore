@@ -24,3 +24,6 @@ lair/.ccg_filter-*/
 coverage.xml
 junit.xml
 htmlcov/
+
+# Visual Studio Code
+.vscode/
