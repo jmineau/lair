@@ -4,5 +4,20 @@ lair.soundings.Sounding
 .. currentmodule:: lair.soundings
 
 .. autoclass:: Sounding
-   :members:
-   :show-inheritance:
+   :no-members:
+
+
+
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~Sounding.interpolate
+   ~Sounding.plot
+
+
+

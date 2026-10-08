@@ -2,16 +2,16 @@
 ============
 
 .. automodule:: lair.plotter
+   :no-members:
 
 
-
-.. rubric:: Module Attributes
+.. rubric:: Attributes
 
 .. autosummary::
+   :toctree:
+   :nosignatures:
 
    SEASON_COLORS
-
-
 
 
 
@@ -32,8 +32,6 @@
    terrain_cmap
    truncate_colormap
    windvectorPlot
-
-
 
 
 

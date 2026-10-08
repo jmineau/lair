@@ -2,9 +2,7 @@
 ============
 
 .. automodule:: lair.records
-
-
-
+   :no-members:
 
 
 
@@ -20,8 +18,6 @@
    read_kml
    unzip
    wget_download
-
-
 
 
 

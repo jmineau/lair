@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=7c1925f6"></script>
+    <script src="../_static/documentation_options.js?v=bf0c5245"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="lair.records.list_files" href="lair.records.list_files.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev22+g0ebdd2f10" />
+  <meta name="docsearch:version" content="2026.12.8.dev23+g6e5cb5f15" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -352,6 +352,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.air.html">lair.air</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.bin_polar.html">lair.air.bin_polar</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.circularize_radial_data.html">lair.air.circularize_radial_data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.rotate_winds.html">lair.air.rotate_winds</a></li>
@@ -369,6 +370,8 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.meteorology.html">lair.meteorology</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.meteorology.Numeric.html">lair.meteorology.Numeric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.meteorology.standard.html">lair.meteorology.standard</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.meteorology.T_from_e.html">lair.meteorology.T_from_e</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.meteorology.hypsometric.html">lair.meteorology.hypsometric</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.meteorology.ideal_gas_law.html">lair.meteorology.ideal_gas_law</a></li>
@@ -388,16 +391,22 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.soundings.html">lair.soundings</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.soundings.SOUNDING_DIR_ENV.html">lair.soundings.SOUNDING_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.soundings.download_sounding.html">lair.soundings.download_sounding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.soundings.download_soundings.html">lair.soundings.download_soundings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.soundings.get_soundings.html">lair.soundings.get_soundings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.soundings.merge.html">lair.soundings.merge</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.soundings.Sounding.html">lair.soundings.Sounding</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.soundings.Sounding.html">lair.soundings.Sounding</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.soundings.Sounding.interpolate.html">lair.soundings.Sounding.interpolate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.soundings.Sounding.plot.html">lair.soundings.Sounding.plot</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.hrrr.html">lair.hrrr</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.hrrr.PROJECTION.html">lair.hrrr.PROJECTION</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.hrrr.create_s3_chunk_url.html">lair.hrrr.create_s3_chunk_url</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.hrrr.create_s3_group_url.html">lair.hrrr.create_s3_group_url</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.hrrr.create_s3_subgroup_url.html">lair.hrrr.create_s3_subgroup_url</a></li>
@@ -408,33 +417,97 @@
 <li class="toctree-l2"><a class="reference internal" href="lair.hrrr.retrieve_object.html">lair.hrrr.retrieve_object</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.hrrr.winds_frame.html">lair.hrrr.winds_frame</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.hrrr.Winds.html">lair.hrrr.Winds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.hrrr.ZarrId.html">lair.hrrr.ZarrId</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.hrrr.ZarrId.html">lair.hrrr.ZarrId</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.hrrr.ZarrId.format_chunk_id.html">lair.hrrr.ZarrId.format_chunk_id</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.inventories.EDGAR.html">lair.inventories.EDGAR</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.inventories.EDGAR.html">lair.inventories.EDGAR</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.EDGAR.get_files.html">lair.inventories.EDGAR.get_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.EDGAR.get_sector_name.html">lair.inventories.EDGAR.get_sector_name</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.EDGARv7.html">lair.inventories.EDGARv7</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.EDGARv8.html">lair.inventories.EDGARv8</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.EPA.html">lair.inventories.EPA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.EPAv1.html">lair.inventories.EPAv1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.inventories.EPAv2.html">lair.inventories.EPAv2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.inventories.GFEI.html">lair.inventories.GFEI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.inventories.GFEIv1.html">lair.inventories.GFEIv1</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.inventories.EPAv2.html">lair.inventories.EPAv2</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.EPAv2.get_monthly_scale_factors.html">lair.inventories.EPAv2.get_monthly_scale_factors</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.inventories.GFEI.html">lair.inventories.GFEI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.GFEI.get_files.html">lair.inventories.GFEI.get_files</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.inventories.GFEIv1.html">lair.inventories.GFEIv1</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.GFEIv1.get_standard_deviations.html">lair.inventories.GFEIv1.get_standard_deviations</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.GFEIv2.html">lair.inventories.GFEIv2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.inventories.Inventory.html">lair.inventories.Inventory</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.inventories.Inventory.html">lair.inventories.Inventory</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.absolute_emissions.html">lair.inventories.Inventory.absolute_emissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.collapsed.html">lair.inventories.Inventory.collapsed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.data.html">lair.inventories.Inventory.data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.total_emissions.html">lair.inventories.Inventory.total_emissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.convert_units.html">lair.inventories.Inventory.convert_units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.get_files.html">lair.inventories.Inventory.get_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.get_standard_name.html">lair.inventories.Inventory.get_standard_name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.get_units.html">lair.inventories.Inventory.get_units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.integrate.html">lair.inventories.Inventory.integrate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.plot.html">lair.inventories.Inventory.plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.quantify.html">lair.inventories.Inventory.quantify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.regrid.html">lair.inventories.Inventory.regrid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.reproject.html">lair.inventories.Inventory.reproject</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Inventory.resample.html">lair.inventories.Inventory.resample</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.MultiModelInventory.html">lair.inventories.MultiModelInventory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.inventories.Vulcan.html">lair.inventories.Vulcan</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.inventories.Vulcan.html">lair.inventories.Vulcan</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Vulcan.clip.html">lair.inventories.Vulcan.clip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Vulcan.get_files.html">lair.inventories.Vulcan.get_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Vulcan.get_uncertainties.html">lair.inventories.Vulcan.get_uncertainties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.inventories.Vulcan.reproject.html">lair.inventories.Vulcan.reproject</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.WetCHARTs.html">lair.inventories.WetCHARTs</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.noaa.html">lair.noaa</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.noaa.CarbonTracker.html">lair.noaa.CarbonTracker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.noaa.CarbonTrackerCH4.html">lair.noaa.CarbonTrackerCH4</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.noaa.CarbonTrackerCO2.html">lair.noaa.CarbonTrackerCO2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.noaa.GMLData.html">lair.noaa.GMLData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.noaa.CARBONTRACKER_DIR_ENV.html">lair.noaa.CARBONTRACKER_DIR_ENV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.noaa.GML_DIR_ENV.html">lair.noaa.GML_DIR_ENV</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.noaa.CarbonTracker.html">lair.noaa.CarbonTracker</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTracker.molefractions_dir.html">lair.noaa.CarbonTracker.molefractions_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTracker.units.html">lair.noaa.CarbonTracker.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTracker.background.html">lair.noaa.CarbonTracker.background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTracker.download.html">lair.noaa.CarbonTracker.download</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTracker.from_version.html">lair.noaa.CarbonTracker.from_version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTracker.get_specie_from_version.html">lair.noaa.CarbonTracker.get_specie_from_version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTracker.sample.html">lair.noaa.CarbonTracker.sample</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.noaa.CarbonTrackerCH4.html">lair.noaa.CarbonTrackerCH4</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTrackerCH4.molefractions.html">lair.noaa.CarbonTrackerCH4.molefractions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure.html">lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.noaa.CarbonTrackerCO2.html">lair.noaa.CarbonTrackerCO2</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTrackerCO2.molefractions.html">lair.noaa.CarbonTrackerCO2.molefractions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.CarbonTrackerCO2.molefractions_dir.html">lair.noaa.CarbonTrackerCO2.molefractions_dir</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.noaa.GMLData.html">lair.noaa.GMLData</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.GMLData.data.html">lair.noaa.GMLData.data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.GMLData.apply_qaqc.html">lair.noaa.GMLData.apply_qaqc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.noaa.GMLData.download.html">lair.noaa.GMLData.download</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.synoptic.html">lair.synoptic</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -447,8 +520,13 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.pollutants.html">lair.pollutants</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.pollutants.POLLUTANTS.html">lair.pollutants.POLLUTANTS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.pollutants.get_pollutant.html">lair.pollutants.get_pollutant</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.pollutants.Pollutant.html">lair.pollutants.Pollutant</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.pollutants.Pollutant.html">lair.pollutants.Pollutant</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.pollutants.Pollutant.molar_mass.html">lair.pollutants.Pollutant.molar_mass</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.pollutants.Pollutant.label.html">lair.pollutants.Pollutant.label</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.transects.html">lair.transects</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -492,11 +570,29 @@
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.round_latlon.html">lair.geo.round_latlon</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.wrap_lons.html">lair.geo.wrap_lons</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.write_rio_crs.html">lair.geo.write_rio_crs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.geo.BaseGrid.html">lair.geo.BaseGrid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.geo.CRS.html">lair.geo.CRS</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.geo.BaseGrid.html">lair.geo.BaseGrid</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.BaseGrid.gridcell_area.html">lair.geo.BaseGrid.gridcell_area</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.BaseGrid.clip.html">lair.geo.BaseGrid.clip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.BaseGrid.copy.html">lair.geo.BaseGrid.copy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.BaseGrid.regrid.html">lair.geo.BaseGrid.regrid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.BaseGrid.reproject.html">lair.geo.BaseGrid.reproject</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.BaseGrid.resample.html">lair.geo.BaseGrid.resample</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.geo.CRS.html">lair.geo.CRS</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.CRS.epsg.html">lair.geo.CRS.epsg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.CRS.proj4.html">lair.geo.CRS.proj4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.CRS.units.html">lair.geo.CRS.units</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.CRS.wkt.html">lair.geo.CRS.wkt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.CRS.to_cartopy.html">lair.geo.CRS.to_cartopy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.CRS.to_pyproj.html">lair.geo.CRS.to_pyproj</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.geo.CRS.to_rasterio.html">lair.geo.CRS.to_rasterio</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.plotter.html">lair.plotter</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.plotter.SEASON_COLORS.html">lair.plotter.SEASON_COLORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.plotter.NCL_cmap.html">lair.plotter.NCL_cmap</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.plotter.create_polar_ax.html">lair.plotter.create_polar_ax</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.plotter.diurnalPlot.html">lair.plotter.diurnalPlot</a></li>
@@ -508,7 +604,10 @@
 <li class="toctree-l2"><a class="reference internal" href="lair.plotter.terrain_cmap.html">lair.plotter.terrain_cmap</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.plotter.truncate_colormap.html">lair.plotter.truncate_colormap</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.plotter.windvectorPlot.html">lair.plotter.windvectorPlot</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.plotter.HandlerDashedLines.html">lair.plotter.HandlerDashedLines</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.plotter.HandlerDashedLines.html">lair.plotter.HandlerDashedLines</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.plotter.HandlerDashedLines.create_artists.html">lair.plotter.HandlerDashedLines.create_artists</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 </ul>
@@ -524,15 +623,49 @@
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.seasonal.html">lair.clock.seasonal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.time_decay_matrix.html">lair.clock.time_decay_matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.time_difference_matrix.html">lair.clock.time_difference_matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.TimeRange.html">lair.clock.TimeRange</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.Timer.html">lair.clock.Timer</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.clock.TimeRange.html">lair.clock.TimeRange</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.clock.TimeRange.start.html">lair.clock.TimeRange.start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.clock.TimeRange.stop.html">lair.clock.TimeRange.stop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.clock.TimeRange.total_seconds.html">lair.clock.TimeRange.total_seconds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.clock.TimeRange.parse_iso.html">lair.clock.TimeRange.parse_iso</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.clock.Timer.html">lair.clock.Timer</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.clock.Timer.logger.html">lair.clock.Timer.logger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.clock.Timer.reset_timers.html">lair.clock.Timer.reset_timers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.clock.Timer.start.html">lair.clock.Timer.start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.clock.Timer.stop.html">lair.clock.Timer.stop</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.config.html">lair.config</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.config.CACHE_DIR.html">lair.config.CACHE_DIR</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.config.get_data_dir.html">lair.config.get_data_dir</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1"><a class="reference internal" href="lair.constants.html">lair.constants</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="lair.constants.html">lair.constants</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.Na.html">lair.constants.Na</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.kb.html">lair.constants.kb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.rho_w.html">lair.constants.rho_w</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.Gamma_d.html">lair.constants.Gamma_d</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.Rd.html">lair.constants.Rd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.Rv.html">lair.constants.Rv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.g.html">lair.constants.g</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.cp.html">lair.constants.cp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.c_l.html">lair.constants.c_l</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.cv.html">lair.constants.cv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.L_f.html">lair.constants.L_f</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.L.html">lair.constants.L</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.L_s.html">lair.constants.L_s</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.h.html">lair.constants.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.R_earth.html">lair.constants.R_earth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.epsilon.html">lair.constants.epsilon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.c.html">lair.constants.c</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.sigma.html">lair.constants.sigma</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.constants.Rstar.html">lair.constants.Rstar</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.dev.html">lair.dev</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.dev.public_attrs.html">lair.dev.public_attrs</a></li>
 </ul>
@@ -547,7 +680,12 @@
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.records.read_kml</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.records.unzip.html">lair.records.unzip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.records.wget_download.html">lair.records.wget_download</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.records.Cacher.html">lair.records.Cacher</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="lair.records.Cacher.html">lair.records.Cacher</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="lair.records.Cacher.__call__.html">lair.records.Cacher.__call__</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.records.Cacher.load_cache_index.html">lair.records.Cacher.load_cache_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lair.records.Cacher.save_cache_index.html">lair.records.Cacher.save_cache_index</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.utils.html">lair.utils</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>

@@ -2,16 +2,16 @@
 ===========
 
 .. automodule:: lair.config
+   :no-members:
 
 
-
-.. rubric:: Module Attributes
+.. rubric:: Attributes
 
 .. autosummary::
+   :toctree:
+   :nosignatures:
 
    CACHE_DIR
-
-
 
 
 
@@ -22,8 +22,6 @@
    :nosignatures:
 
    get_data_dir
-
-
 
 
 

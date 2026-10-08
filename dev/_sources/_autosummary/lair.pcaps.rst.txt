@@ -2,9 +2,7 @@
 ==========
 
 .. automodule:: lair.pcaps
-
-
-
+   :no-members:
 
 
 
@@ -19,8 +17,6 @@
    determine_pcap_events
    filter_pcap_events
    valleyheatdeficit
-
-
 
 
 

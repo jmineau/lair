@@ -2,19 +2,17 @@
 =========
 
 .. automodule:: lair.noaa
+   :no-members:
 
 
-
-.. rubric:: Module Attributes
+.. rubric:: Attributes
 
 .. autosummary::
+   :toctree:
+   :nosignatures:
 
    CARBONTRACKER_DIR_ENV
    GML_DIR_ENV
-
-
-
-
 
 
 

@@ -1,0 +1,6 @@
+lair.constants.L\_s
+===================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: L_s

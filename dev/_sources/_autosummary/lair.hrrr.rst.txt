@@ -2,16 +2,16 @@
 =========
 
 .. automodule:: lair.hrrr
+   :no-members:
 
 
-
-.. rubric:: Module Attributes
+.. rubric:: Attributes
 
 .. autosummary::
+   :toctree:
+   :nosignatures:
 
    PROJECTION
-
-
 
 
 
@@ -30,8 +30,6 @@
    get_value
    retrieve_object
    winds_frame
-
-
 
 
 

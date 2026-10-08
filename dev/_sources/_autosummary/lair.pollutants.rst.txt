@@ -2,16 +2,16 @@
 ===============
 
 .. automodule:: lair.pollutants
+   :no-members:
 
 
-
-.. rubric:: Module Attributes
+.. rubric:: Attributes
 
 .. autosummary::
+   :toctree:
+   :nosignatures:
 
    POLLUTANTS
-
-
 
 
 
@@ -22,8 +22,6 @@
    :nosignatures:
 
    get_pollutant
-
-
 
 
 

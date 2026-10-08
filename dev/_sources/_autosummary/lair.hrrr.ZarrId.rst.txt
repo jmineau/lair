@@ -4,5 +4,19 @@ lair.hrrr.ZarrId
 .. currentmodule:: lair.hrrr
 
 .. autoclass:: ZarrId
-   :members:
-   :show-inheritance:
+   :no-members:
+
+
+
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~ZarrId.format_chunk_id
+
+
+

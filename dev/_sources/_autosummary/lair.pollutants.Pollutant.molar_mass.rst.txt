@@ -1,0 +1,6 @@
+lair.pollutants.Pollutant.molar\_mass
+=====================================
+
+.. currentmodule:: lair.pollutants
+
+.. autoproperty:: Pollutant.molar_mass

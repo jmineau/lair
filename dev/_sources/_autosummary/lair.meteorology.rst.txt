@@ -2,17 +2,17 @@
 ================
 
 .. automodule:: lair.meteorology
+   :no-members:
 
 
-
-.. rubric:: Module Attributes
+.. rubric:: Attributes
 
 .. autosummary::
+   :toctree:
+   :nosignatures:
 
    Numeric
    standard
-
-
 
 
 
@@ -31,8 +31,6 @@
    sat_vapor_pres
    sat_vapor_pres_ice
    virt_T
-
-
 
 
 

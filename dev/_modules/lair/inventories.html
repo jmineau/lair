@@ -37,7 +37,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=7c1925f6"></script>
+    <script src="../../_static/documentation_options.js?v=bf0c5245"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev22+g0ebdd2f10" />
+  <meta name="docsearch:version" content="2026.12.8.dev23+g6e5cb5f15" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -738,7 +738,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="n">Dataset</span> <span class="o">=</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="Inventory.get_standard_name">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.get_standard_name">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.get_standard_name.html#lair.inventories.Inventory.get_standard_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_standard_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the standard name of the inventory.</span>
@@ -752,7 +752,7 @@
 
 
 <div class="viewcode-block" id="Inventory.get_files">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.get_files">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.get_files.html#lair.inventories.Inventory.get_files">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the inventory files.</span>
@@ -780,7 +780,7 @@
         <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Inventory.get_units">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.get_units">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.get_units.html#lair.inventories.Inventory.get_units">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the quantity, area, and time units of the inventory data.</span>
@@ -937,7 +937,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">_quantify_data_only</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Inventory.quantify">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.quantify">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.quantify.html#lair.inventories.Inventory.quantify">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">quantify</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Quantify the data using `pint` units for each variable.</span>
@@ -951,7 +951,7 @@
 
 
 <div class="viewcode-block" id="Inventory.convert_units">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.convert_units">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">convert_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dst_units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert the units of the data to the desired output units.</span>
@@ -984,7 +984,7 @@
 
 
 <div class="viewcode-block" id="Inventory.integrate">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.integrate">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.integrate.html#lair.inventories.Inventory.integrate">[docs]</a>
     <span class="nd">@_keep_attrs</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1002,7 +1002,7 @@
     <span class="c1"># Emission inventories only allow mass-conserving (conservative) regridding</span>
     <span class="c1"># pyrefly: ignore[bad-override]</span>
 <div class="viewcode-block" id="Inventory.regrid">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.regrid">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.regrid.html#lair.inventories.Inventory.regrid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">regrid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">out_grid</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
@@ -1045,7 +1045,7 @@
     <span class="c1"># Emission inventories only allow mass-conserving (conservative) regridding</span>
     <span class="c1"># pyrefly: ignore[bad-override]</span>
 <div class="viewcode-block" id="Inventory.resample">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.resample">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.resample.html#lair.inventories.Inventory.resample">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
@@ -1074,7 +1074,7 @@
     <span class="c1"># Emission inventories only allow mass-conserving (conservative) regridding</span>
     <span class="c1"># pyrefly: ignore[bad-override]</span>
 <div class="viewcode-block" id="Inventory.reproject">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.reproject">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.reproject.html#lair.inventories.Inventory.reproject">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reproject</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
@@ -1101,7 +1101,7 @@
 
 
 <div class="viewcode-block" id="Inventory.plot">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory.plot">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Inventory.plot.html#lair.inventories.Inventory.plot">[docs]</a>
     <span class="nd">@_keep_attrs</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1415,7 +1415,7 @@
     <span class="p">}</span>
 
 <div class="viewcode-block" id="EDGAR.get_files">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.EDGAR.html#lair.inventories.EDGAR.get_files">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.EDGAR.get_files.html#lair.inventories.EDGAR.get_files">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Recursively get the inventory files for each sector.</span>
@@ -1429,7 +1429,7 @@
 
 
 <div class="viewcode-block" id="EDGAR.get_sector_name">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.EDGAR.html#lair.inventories.EDGAR.get_sector_name">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.EDGAR.get_sector_name.html#lair.inventories.EDGAR.get_sector_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sector_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sector</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate a formatted name from the sector description.</span>
@@ -1831,7 +1831,7 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="EPAv2.get_monthly_scale_factors">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.EPAv2.html#lair.inventories.EPAv2.get_monthly_scale_factors">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.EPAv2.get_monthly_scale_factors.html#lair.inventories.EPAv2.get_monthly_scale_factors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_monthly_scale_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the monthly scale factors.</span>
@@ -1942,7 +1942,7 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="GFEI.get_files">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.GFEI.html#lair.inventories.GFEI.get_files">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.GFEI.get_files.html#lair.inventories.GFEI.get_files">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the sector files, without the ``All``, ``gsd`` and ``rsd`` ones.&quot;&quot;&quot;</span>
         <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_root</span><span class="p">()</span>
@@ -2009,7 +2009,7 @@
     <span class="n">_file_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Global_Fuel_Exploitation_Inventory&quot;</span>
 
 <div class="viewcode-block" id="GFEIv1.get_standard_deviations">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.GFEIv1.html#lair.inventories.GFEIv1.get_standard_deviations">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.GFEIv1.get_standard_deviations.html#lair.inventories.GFEIv1.get_standard_deviations">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_standard_deviations</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;relative&quot;</span><span class="p">,</span> <span class="s2">&quot;geometric&quot;</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
@@ -2159,7 +2159,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_clipped</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="Vulcan.get_files">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Vulcan.html#lair.inventories.Vulcan.get_files">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Vulcan.get_files.html#lair.inventories.Vulcan.get_files">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uncertainty</span><span class="o">=</span><span class="s2">&quot;central&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return this region&#39;s sector files for one uncertainty (``central`` by default).&quot;&quot;&quot;</span>
         <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_root</span><span class="p">()</span>
@@ -2172,7 +2172,7 @@
 
 
 <div class="viewcode-block" id="Vulcan.get_uncertainties">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Vulcan.html#lair.inventories.Vulcan.get_uncertainties">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Vulcan.get_uncertainties.html#lair.inventories.Vulcan.get_uncertainties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_uncertainties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uncertainty</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="s2">&quot;upper&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the lower or upper 95% confidence bound of the emissions.</span>
@@ -2196,7 +2196,7 @@
 
 
 <div class="viewcode-block" id="Vulcan.clip">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Vulcan.html#lair.inventories.Vulcan.clip">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Vulcan.clip.html#lair.inventories.Vulcan.clip">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clip</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">bbox</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2243,7 +2243,7 @@
 
 
 <div class="viewcode-block" id="Vulcan.reproject">
-<a class="viewcode-back" href="../../_autosummary/lair.inventories.Vulcan.html#lair.inventories.Vulcan.reproject">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.inventories.Vulcan.reproject.html#lair.inventories.Vulcan.reproject">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reproject</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>

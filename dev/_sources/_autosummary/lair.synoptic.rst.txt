@@ -2,9 +2,7 @@
 =============
 
 .. automodule:: lair.synoptic
-
-
-
+   :no-members:
 
 
 
@@ -23,10 +21,6 @@
 
 
 
-
-
-
-
 .. rubric:: Exceptions
 
 .. autosummary::
@@ -34,4 +28,6 @@
    :nosignatures:
 
    SynopticError
+
+
 

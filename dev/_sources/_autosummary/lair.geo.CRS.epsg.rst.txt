@@ -1,0 +1,6 @@
+lair.geo.CRS.epsg
+=================
+
+.. currentmodule:: lair.geo
+
+.. autoproperty:: CRS.epsg

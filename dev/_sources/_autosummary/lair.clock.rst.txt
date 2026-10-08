@@ -2,9 +2,7 @@
 ==========
 
 .. automodule:: lair.clock
-
-
-
+   :no-members:
 
 
 
@@ -25,8 +23,6 @@
    seasonal
    time_decay_matrix
    time_difference_matrix
-
-
 
 
 

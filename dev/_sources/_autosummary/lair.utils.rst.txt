@@ -2,9 +2,7 @@
 ==========
 
 .. automodule:: lair.utils
-
-
-
+   :no-members:
 
 
 
@@ -16,8 +14,6 @@
    :nosignatures:
 
    updating_print
-
-
 
 
 

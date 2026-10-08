@@ -4,5 +4,46 @@ lair.inventories.Inventory
 .. currentmodule:: lair.inventories
 
 .. autoclass:: Inventory
-   :members:
+   :no-members:
    :show-inheritance:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~Inventory.absolute_emissions
+   ~Inventory.collapsed
+   ~Inventory.data
+   ~Inventory.total_emissions
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~Inventory.convert_units
+   ~Inventory.get_files
+   ~Inventory.get_standard_name
+   ~Inventory.get_units
+   ~Inventory.integrate
+   ~Inventory.plot
+   ~Inventory.quantify
+   ~Inventory.regrid
+   ~Inventory.reproject
+   ~Inventory.resample
+
+
+
+
+.. rubric:: Inherited
+
+
+From :class:`~lair.inventories.BaseGrid`: :py:obj:`~lair.inventories.BaseGrid.clip`, :py:obj:`~lair.inventories.BaseGrid.copy`, :py:obj:`~lair.inventories.BaseGrid.gridcell_area`
+
+

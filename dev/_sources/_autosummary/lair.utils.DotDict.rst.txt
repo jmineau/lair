@@ -4,5 +4,13 @@ lair.utils.DotDict
 .. currentmodule:: lair.utils
 
 .. autoclass:: DotDict
-   :members:
+   :no-members:
    :show-inheritance:
+
+
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+lair.constants.Rv
+=================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: Rv

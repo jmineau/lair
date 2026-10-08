@@ -1,0 +1,6 @@
+lair.inventories.Inventory.quantify
+===================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Inventory.quantify

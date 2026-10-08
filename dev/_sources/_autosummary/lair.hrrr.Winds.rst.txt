@@ -4,5 +4,12 @@ lair.hrrr.Winds
 .. currentmodule:: lair.hrrr
 
 .. autoclass:: Winds
-   :members:
-   :show-inheritance:
+   :no-members:
+
+
+
+
+
+
+
+

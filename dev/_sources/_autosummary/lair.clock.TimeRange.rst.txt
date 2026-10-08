@@ -4,5 +4,28 @@ lair.clock.TimeRange
 .. currentmodule:: lair.clock
 
 .. autoclass:: TimeRange
-   :members:
-   :show-inheritance:
+   :no-members:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~TimeRange.start
+   ~TimeRange.stop
+   ~TimeRange.total_seconds
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~TimeRange.parse_iso
+
+
+

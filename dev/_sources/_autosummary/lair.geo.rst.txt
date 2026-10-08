@@ -2,9 +2,7 @@
 ========
 
 .. automodule:: lair.geo
-
-
-
+   :no-members:
 
 
 
@@ -37,8 +35,6 @@
    round_latlon
    wrap_lons
    write_rio_crs
-
-
 
 
 

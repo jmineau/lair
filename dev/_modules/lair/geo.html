@@ -37,7 +37,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=7c1925f6"></script>
+    <script src="../../_static/documentation_options.js?v=bf0c5245"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev22+g0ebdd2f10" />
+  <meta name="docsearch:version" content="2026.12.8.dev23+g6e5cb5f15" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -558,21 +558,21 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_wkt</span><span class="p">()</span>
 
 <div class="viewcode-block" id="CRS.to_cartopy">
-<a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.html#lair.geo.CRS.to_cartopy">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.to_cartopy.html#lair.geo.CRS.to_cartopy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_cartopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to cartopy CRS.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CRS.to_rasterio">
-<a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.html#lair.geo.CRS.to_rasterio">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.to_rasterio.html#lair.geo.CRS.to_rasterio">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_rasterio</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">CRS</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to rasterio CRS.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CRS.to_pyproj">
-<a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.html#lair.geo.CRS.to_pyproj">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.to_pyproj.html#lair.geo.CRS.to_pyproj">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_pyproj</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to pyproj CRS.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span></div>
@@ -931,7 +931,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseGrid.copy">
-<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.html#lair.geo.BaseGrid.copy">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.copy.html#lair.geo.BaseGrid.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a copy of the grid.</span>
@@ -957,7 +957,7 @@
         <span class="k">return</span> <span class="n">gridcell_area</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseGrid.clip">
-<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.html#lair.geo.BaseGrid.clip">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.clip.html#lair.geo.BaseGrid.clip">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clip</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">bbox</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1008,7 +1008,7 @@
 
 
 <div class="viewcode-block" id="BaseGrid.regrid">
-<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.html#lair.geo.BaseGrid.regrid">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.regrid.html#lair.geo.BaseGrid.regrid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">regrid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">out_grid</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
@@ -1051,7 +1051,7 @@
 
 
 <div class="viewcode-block" id="BaseGrid.resample">
-<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.html#lair.geo.BaseGrid.resample">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.resample.html#lair.geo.BaseGrid.resample">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
@@ -1087,7 +1087,7 @@
 
 
 <div class="viewcode-block" id="BaseGrid.reproject">
-<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.html#lair.geo.BaseGrid.reproject">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.reproject.html#lair.geo.BaseGrid.reproject">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reproject</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>

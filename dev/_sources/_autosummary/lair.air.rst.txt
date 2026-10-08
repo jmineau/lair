@@ -2,16 +2,16 @@
 ========
 
 .. automodule:: lair.air
+   :no-members:
 
 
-
-.. rubric:: Module Attributes
+.. rubric:: Attributes
 
 .. autosummary::
+   :toctree:
+   :nosignatures:
 
    WIND_SECTORS
-
-
 
 
 
@@ -27,8 +27,6 @@
    sector_radians
    wind_components
    wind_direction
-
-
 
 
 

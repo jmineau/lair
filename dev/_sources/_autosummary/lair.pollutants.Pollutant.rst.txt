@@ -4,5 +4,26 @@ lair.pollutants.Pollutant
 .. currentmodule:: lair.pollutants
 
 .. autoclass:: Pollutant
-   :members:
-   :show-inheritance:
+   :no-members:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~Pollutant.molar_mass
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~Pollutant.label
+
+
+

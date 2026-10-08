@@ -2,9 +2,7 @@
 ==============
 
 .. automodule:: lair.transects
-
-
-
+   :no-members:
 
 
 
@@ -28,8 +26,6 @@
    split_transits
    transect_matrix
    transit_times
-
-
 
 
 

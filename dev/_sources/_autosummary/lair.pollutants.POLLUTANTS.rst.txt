@@ -1,0 +1,6 @@
+lair.pollutants.POLLUTANTS
+==========================
+
+.. currentmodule:: lair.pollutants
+
+.. autodata:: POLLUTANTS

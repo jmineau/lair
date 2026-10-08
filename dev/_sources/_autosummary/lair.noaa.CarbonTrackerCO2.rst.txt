@@ -4,5 +4,28 @@ lair.noaa.CarbonTrackerCO2
 .. currentmodule:: lair.noaa
 
 .. autoclass:: CarbonTrackerCO2
-   :members:
+   :no-members:
    :show-inheritance:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~CarbonTrackerCO2.molefractions
+   ~CarbonTrackerCO2.molefractions_dir
+
+
+
+
+
+
+.. rubric:: Inherited
+
+
+From :class:`~lair.noaa.CarbonTracker`: :py:obj:`~lair.noaa.CarbonTracker.background`, :py:obj:`~lair.noaa.CarbonTracker.download`, :py:obj:`~lair.noaa.CarbonTracker.from_version`, :py:obj:`~lair.noaa.CarbonTracker.get_specie_from_version`, :py:obj:`~lair.noaa.CarbonTracker.sample`, :py:obj:`~lair.noaa.CarbonTracker.units`
+
+

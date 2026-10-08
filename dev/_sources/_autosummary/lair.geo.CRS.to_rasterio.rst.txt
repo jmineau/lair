@@ -1,0 +1,6 @@
+lair.geo.CRS.to\_rasterio
+=========================
+
+.. currentmodule:: lair.geo
+
+.. automethod:: CRS.to_rasterio

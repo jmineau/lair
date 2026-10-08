@@ -1,0 +1,6 @@
+lair.noaa.CarbonTracker.download
+================================
+
+.. currentmodule:: lair.noaa
+
+.. automethod:: CarbonTracker.download

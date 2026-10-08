@@ -37,7 +37,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=7c1925f6"></script>
+    <script src="../../_static/documentation_options.js?v=bf0c5245"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev22+g0ebdd2f10" />
+  <meta name="docsearch:version" content="2026.12.8.dev23+g6e5cb5f15" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -484,7 +484,7 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">)&quot;</span>
 
 <div class="viewcode-block" id="CarbonTracker.get_specie_from_version">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.get_specie_from_version">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.get_specie_from_version.html#lair.noaa.CarbonTracker.get_specie_from_version">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_specie_from_version</span><span class="p">(</span><span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ch4&quot;</span><span class="p">,</span> <span class="s2">&quot;co2&quot;</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -504,7 +504,7 @@
 
 
 <div class="viewcode-block" id="CarbonTracker.from_version">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.from_version">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.from_version.html#lair.noaa.CarbonTracker.from_version">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_version</span><span class="p">(</span><span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -533,7 +533,7 @@
 
 
 <div class="viewcode-block" id="CarbonTracker.download">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.download">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.download.html#lair.noaa.CarbonTracker.download">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">sub_dirs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;fluxes&quot;</span><span class="p">,</span> <span class="s2">&quot;molefractions&quot;</span><span class="p">),</span>
@@ -653,7 +653,7 @@
         <span class="k">return</span> <span class="n">out</span>
 
 <div class="viewcode-block" id="CarbonTracker.sample">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.sample">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.sample.html#lair.noaa.CarbonTracker.sample">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sample the molefraction field at ``points``.</span>
@@ -687,7 +687,7 @@
 
 
 <div class="viewcode-block" id="CarbonTracker.background">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker.background">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.background.html#lair.noaa.CarbonTracker.background">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">background</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Background mole fraction [ppm]: mean of the sampled field over ``points``.</span>
@@ -766,7 +766,7 @@
         <span class="k">return</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="CarbonTrackerCH4.molefractions">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.html#lair.noaa.CarbonTrackerCH4.molefractions">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.molefractions.html#lair.noaa.CarbonTrackerCH4.molefractions">[docs]</a>
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">molefractions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Molefractions Dataset. Cached property.&quot;&quot;&quot;</span>
@@ -796,7 +796,7 @@
 
 
 <div class="viewcode-block" id="CarbonTrackerCH4.calc_molefractions_pressure">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.html#lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure.html#lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">calc_molefractions_pressure</span><span class="p">(</span><span class="n">molefractions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -875,7 +875,7 @@
         <span class="k">return</span> <span class="n">matches</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">matches</span> <span class="k">else</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="CarbonTrackerCO2.molefractions">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCO2.html#lair.noaa.CarbonTrackerCO2.molefractions">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCO2.molefractions.html#lair.noaa.CarbonTrackerCO2.molefractions">[docs]</a>
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">molefractions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Molefractions Dataset on ``self.grid`` (lazy). Cached property.&quot;&quot;&quot;</span>
@@ -1014,7 +1014,7 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NOAA GML Data(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">site</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_type</span><span class="si">}</span><span class="s2">)&quot;</span>
 
 <div class="viewcode-block" id="GMLData.download">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.html#lair.noaa.GMLData.download">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.download.html#lair.noaa.GMLData.download">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Download the file from NOAA GML&#39;s FTP server and return its path.&quot;&quot;&quot;</span>
         <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;ftp.gml.noaa.gov&quot;</span>
@@ -1024,7 +1024,7 @@
 
 
 <div class="viewcode-block" id="GMLData.data">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.html#lair.noaa.GMLData.data">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.data.html#lair.noaa.GMLData.data">[docs]</a>
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The file&#39;s data, read once.&quot;&quot;&quot;</span>
@@ -1075,7 +1075,7 @@
         <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;datetime&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
 
 <div class="viewcode-block" id="GMLData.apply_qaqc">
-<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.html#lair.noaa.GMLData.apply_qaqc">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.apply_qaqc.html#lair.noaa.GMLData.apply_qaqc">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply_qaqc</span><span class="p">(</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span>

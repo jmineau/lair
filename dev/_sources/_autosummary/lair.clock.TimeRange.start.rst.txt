@@ -1,0 +1,6 @@
+lair.clock.TimeRange.start
+==========================
+
+.. currentmodule:: lair.clock
+
+.. autoproperty:: TimeRange.start

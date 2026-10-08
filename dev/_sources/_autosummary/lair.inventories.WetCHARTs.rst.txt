@@ -4,5 +4,24 @@ lair.inventories.WetCHARTs
 .. currentmodule:: lair.inventories
 
 .. autoclass:: WetCHARTs
-   :members:
+   :no-members:
    :show-inheritance:
+
+
+
+
+
+
+
+
+
+.. rubric:: Inherited
+
+
+From :class:`~lair.inventories.Inventory`: :py:obj:`~lair.inventories.Inventory.absolute_emissions`, :py:obj:`~lair.inventories.Inventory.collapsed`, :py:obj:`~lair.inventories.Inventory.convert_units`, :py:obj:`~lair.inventories.Inventory.data`, :py:obj:`~lair.inventories.Inventory.get_files`, :py:obj:`~lair.inventories.Inventory.get_standard_name`, :py:obj:`~lair.inventories.Inventory.get_units`, :py:obj:`~lair.inventories.Inventory.integrate`, :py:obj:`~lair.inventories.Inventory.plot`, :py:obj:`~lair.inventories.Inventory.quantify`, :py:obj:`~lair.inventories.Inventory.regrid`, :py:obj:`~lair.inventories.Inventory.reproject`, :py:obj:`~lair.inventories.Inventory.resample`, :py:obj:`~lair.inventories.Inventory.total_emissions`
+
+
+
+From :class:`~lair.inventories.BaseGrid`: :py:obj:`~lair.inventories.BaseGrid.clip`, :py:obj:`~lair.inventories.BaseGrid.copy`, :py:obj:`~lair.inventories.BaseGrid.gridcell_area`
+
+

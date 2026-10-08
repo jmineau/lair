@@ -2,12 +2,14 @@
 ==============
 
 .. automodule:: lair.constants
+   :no-members:
 
 
-
-.. rubric:: Module Attributes
+.. rubric:: Attributes
 
 .. autosummary::
+   :toctree:
+   :nosignatures:
 
    Na
    kb
@@ -28,10 +30,6 @@
    c
    sigma
    Rstar
-
-
-
-
 
 
 
