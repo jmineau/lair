@@ -13,6 +13,9 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 - lair ships `py.typed`, so type checkers read its annotations.
 - The documentation has a version dropdown. The site opens at the latest
   release, `dev/` follows `main`, and each release keeps its own pages.
+- The API reference has a page for each class, with tables of its attributes and
+  methods, and a page for each member, as in pandas. A subclass links to the
+  members it inherits.
 
 ### Changed
 

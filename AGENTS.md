@@ -90,7 +90,7 @@ lair/
                      the builder tests importorskip it. Platform specifics
                      (TRAX) live in slv.measurements.mobile.transects.
   utils.py           tiny helpers (updating_print, DotDict)
-docs/                Sphinx source (conf.py, index.rst, api.rst, _templates/);
+docs/                Sphinx source (conf.py, index.rst, api.rst, _templates/, _ext/);
                      .github/workflows/docs.yml deploys to GitHub Pages
 env-dev.yml          conda dev env
 tests/               pytest suite, CONTAINERIZED per module (see "Testing")
@@ -202,11 +202,15 @@ just docstr                  # docstring coverage, at least 88% (raise it as it 
 just build-docs              # Sphinx HTML -> docs/_build/html (`just docs-serve` previews)
 ```
 
-`just build-docs` fails on warnings. A class docstring's NumPy `Methods`
-section, and the `Attributes` entries that are properties, describe members
-autodoc's `:members:` documents again, so a `conf.py` hook
-(`drop_member_sections`) removes them before napoleon renders them; plain
-attributes stay. Writing those sections is still fine.
+`just build-docs` fails on warnings. Each class gets a page with tables of
+its attributes and methods, and each member a page of its own
+(`docs/_templates/autosummary/`); a subclass lists what it defines and links
+to what it inherits. `docs/_ext/api_pages.py` (from python-template) decides
+what gets a row, and drops from a class docstring the `Methods` section and
+the `Attributes` entries that have a row, so nothing is described twice.
+Writing those sections is still fine; plain attributes without a docstring
+stay in the class docstring. A property with no docstring shows an empty row,
+so give each one.
 
 Releases: `just next-version` prints the next CalVer version, the CHANGELOG
 gets its `## [X.Y.Z]` section, and `just release` pushes the tag; the Publish
@@ -366,8 +370,7 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   types can't be combined at import time (`Polygon | None` raises), so modules
   whose annotations name optional types need `from __future__ import
   annotations` (geo, inventories). `docs/api.rst` lists modules by hand; add
-  new modules to it. The "duplicate object description" warnings come from
-  numpydoc `Methods` sections in class docstrings (napoleon renders them).
+  new modules to it. Each module's page lists what it defines.
 - `setup_ccg_filter()` at import time touches the filesystem. Don't import
   `lair` inside an immutable / read-only environment without
   pre-installing `_ccg_filter.py` (or set `LAIR_SKIP_CCG_DOWNLOAD=1`).

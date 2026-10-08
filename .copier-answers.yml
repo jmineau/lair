@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v1.0.0
+_commit: v1.1.0
 _src_path: gh:jmineau/python-template
 affiliation: University of Utah
 copyright_year: '2023'
@@ -14,3 +14,7 @@ project_short_description: Python package for land-air interactions research.
 publish_to_pypi: false
 python_min: '3.11'
 repository_name: lair
+test_os:
+- ubuntu-latest
+- macos-latest
+- windows-latest

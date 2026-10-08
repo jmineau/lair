@@ -1,8 +1,8 @@
 name: Publish
 
-# Pushing a vX.Y.Z tag (see `just release`) builds the package from that tag,
-# and creates a GitHub Release
-# from the tag's CHANGELOG.md section. Zenodo archives each GitHub Release.
+# Pushing a vX.Y.Z tag (see `just release`) builds the package from that tag and
+# creates a GitHub Release from the tag's CHANGELOG.md section. Zenodo archives
+# each GitHub Release.
 #
 # Keep this file's name: a PyPI trusted publisher would be registered for it.
 on:
