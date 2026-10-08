@@ -1,53 +1,29 @@
 {{ fullname | escape | underline }}
 
 .. automodule:: {{ fullname }}
+   :no-members:
 
-{% block attributes %}
-{% if attributes %}
-.. rubric:: Module Attributes
-
-.. autosummary::
-{% for item in attributes %}
-   {{ item }}
-{%- endfor %}
-{% endif %}
-{% endblock %}
-
-{% block functions %}
-{% if functions %}
-.. rubric:: Functions
+{#- Tables of what the module defines, each item on its own page. #}
+{% for title, items in [("Attributes", attributes), ("Functions", functions), ("Classes", classes), ("Exceptions", exceptions)] %}
+{% if items %}
+.. rubric:: {{ title }}
 
 .. autosummary::
    :toctree:
    :nosignatures:
-{% for item in functions %}
+{% for item in items %}
    {{ item }}
 {%- endfor %}
 {% endif %}
-{% endblock %}
+{% endfor %}
 
-{% block classes %}
-{% if classes %}
-.. rubric:: Classes
+{% if modules %}
+.. rubric:: Modules
 
 .. autosummary::
    :toctree:
-   :nosignatures:
-{% for item in classes %}
+   :recursive:
+{% for item in modules %}
    {{ item }}
 {%- endfor %}
 {% endif %}
-{% endblock %}
-
-{% block exceptions %}
-{% if exceptions %}
-.. rubric:: Exceptions
-
-.. autosummary::
-   :toctree:
-   :nosignatures:
-{% for item in exceptions %}
-   {{ item }}
-{%- endfor %}
-{% endif %}
-{% endblock %}
