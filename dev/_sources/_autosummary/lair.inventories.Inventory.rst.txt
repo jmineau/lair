@@ -44,6 +44,6 @@ lair.inventories.Inventory
 .. rubric:: Inherited
 
 
-From :class:`~lair.inventories.BaseGrid`: :py:obj:`~lair.inventories.BaseGrid.clip`, :py:obj:`~lair.inventories.BaseGrid.copy`, :py:obj:`~lair.inventories.BaseGrid.gridcell_area`
+From :class:`~.BaseGrid`: :py:obj:`~.BaseGrid.clip`, :py:obj:`~.BaseGrid.copy`, :py:obj:`~.BaseGrid.gridcell_area`
 
 

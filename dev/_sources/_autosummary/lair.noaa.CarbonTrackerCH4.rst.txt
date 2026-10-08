@@ -32,6 +32,6 @@ lair.noaa.CarbonTrackerCH4
 .. rubric:: Inherited
 
 
-From :class:`~lair.noaa.CarbonTracker`: :py:obj:`~lair.noaa.CarbonTracker.background`, :py:obj:`~lair.noaa.CarbonTracker.download`, :py:obj:`~lair.noaa.CarbonTracker.from_version`, :py:obj:`~lair.noaa.CarbonTracker.get_specie_from_version`, :py:obj:`~lair.noaa.CarbonTracker.molefractions_dir`, :py:obj:`~lair.noaa.CarbonTracker.sample`, :py:obj:`~lair.noaa.CarbonTracker.units`
+From :class:`~.CarbonTracker`: :py:obj:`~.CarbonTracker.background`, :py:obj:`~.CarbonTracker.download`, :py:obj:`~.CarbonTracker.from_version`, :py:obj:`~.CarbonTracker.get_specie_from_version`, :py:obj:`~.CarbonTracker.molefractions_dir`, :py:obj:`~.CarbonTracker.sample`, :py:obj:`~.CarbonTracker.units`
 
 
