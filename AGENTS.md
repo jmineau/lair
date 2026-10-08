@@ -91,7 +91,7 @@ lair/
                      (TRAX) live in slv.measurements.mobile.transects.
   utils.py           tiny helpers (updating_print, DotDict)
 docs/                Sphinx source (conf.py, index.rst, api.rst, _templates/, _ext/);
-                     .github/workflows/docs.yml deploys to GitHub Pages
+                     .github/workflows/docs.yml pushes the gh-pages branch, which Pages serves
 env-dev.yml          conda dev env
 tests/               pytest suite, CONTAINERIZED per module (see "Testing")
 justfile             dev tasks (uv-based): sync/lint/type-check/test/...
