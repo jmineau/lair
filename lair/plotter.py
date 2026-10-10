@@ -34,10 +34,21 @@ def log10formatter(x, pos, deci=0) -> str:
 
     Examples
     --------
-    >>> from functools import partial
-    >>> import numpy as np
-    >>> data: xr.DataArray  # some data, in this case, 3D (time, lat, lon)
-    >>> np.log10(data).plot(cbar_kwargs={"format": partial(log10formatter, deci=2)})
+    .. plot::
+
+       >>> from functools import partial
+       >>> import numpy as np
+       >>> import xarray as xr
+       >>> from lair.plotter import log10formatter
+       >>> x = np.linspace(-3, 3, 40)
+       >>> data = xr.DataArray(
+       ...     10 ** (np.add.outer(x, x) / 2),
+       ...     coords={"lat": x, "lon": x},
+       ...     dims=("lat", "lon"),
+       ... )
+       >>> mesh = np.log10(data).plot(
+       ...     cbar_kwargs={"format": partial(log10formatter, deci=1)}
+       ... )
     """
     return f"$10^{{{x:.{deci}f}}}$"
 
@@ -66,6 +77,21 @@ def truncate_colormap(
     -------
     matplotlib.colors.LinearSegmentedColormap
         Truncated colormap.
+
+    Examples
+    --------
+    .. plot::
+
+       >>> import matplotlib.pyplot as plt
+       >>> import numpy as np
+       >>> from lair.plotter import truncate_colormap
+       >>> gradient = np.linspace(0, 1, 256).reshape(1, -1)
+       >>> fig, axes = plt.subplots(2, 1, figsize=(6, 1.2))
+       >>> for ax, cmap in zip(
+       ...     axes, ["viridis", truncate_colormap("viridis", 0.3, 0.9)]
+       ... ):
+       ...     mesh = ax.imshow(gradient, aspect="auto", cmap=cmap)
+       ...     ax.set_axis_off()
     """
     if isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
@@ -129,6 +155,18 @@ def terrain_cmap(
     -------
     matplotlib.colors.LinearSegmentedColormap
         Matplotlib terrain colormap.
+
+    Examples
+    --------
+    .. plot::
+
+       >>> import matplotlib.pyplot as plt
+       >>> import numpy as np
+       >>> from lair.plotter import terrain_cmap
+       >>> gradient = np.linspace(0, 1, 256).reshape(1, -1)
+       >>> fig, ax = plt.subplots(figsize=(6, 0.6))
+       >>> mesh = ax.imshow(gradient, aspect="auto", cmap=terrain_cmap())
+       >>> ax.set_axis_off()
     """
     return truncate_colormap("terrain", minval=minval, maxval=maxval, n=n)
 
@@ -177,6 +215,21 @@ def diurnalPlot(
     -------
     plt.Axes
         Axis with the plot
+
+    Examples
+    --------
+    .. plot::
+
+       >>> import numpy as np
+       >>> import pandas as pd
+       >>> from lair.plotter import diurnalPlot
+       >>> rng = np.random.default_rng(0)
+       >>> time = pd.date_range("2024-01-01", periods=24 * 90, freq="1h")
+       >>> cycle = 0.15 * np.cos(2 * np.pi * (time.hour.to_numpy() - 15) / 24)
+       >>> data = pd.DataFrame(
+       ...     {"CH4": 2.0 + cycle + rng.normal(0, 0.05, len(time))}, index=time
+       ... )
+       >>> ax = diurnalPlot(data, "CH4", units="ppm")
     """
     import datetime as dt
 
@@ -296,6 +349,22 @@ def seasonalPlot(
     -------
     plt.Axes
         Axis with the plot
+
+    Examples
+    --------
+    .. plot::
+
+       >>> import numpy as np
+       >>> import pandas as pd
+       >>> from lair.plotter import seasonalPlot
+       >>> rng = np.random.default_rng(0)
+       >>> time = pd.date_range("2021-01-01", "2023-12-31", freq="1D")
+       >>> trend = 1.9 + 0.00004 * np.arange(len(time))
+       >>> annual = 0.06 * np.cos(2 * np.pi * (time.dayofyear.to_numpy() - 20) / 365.25)
+       >>> data = pd.DataFrame(
+       ...     {"CH4": trend + annual + rng.normal(0, 0.02, len(time))}, index=time
+       ... )
+       >>> ax = seasonalPlot(data)
     """
     # TODO need to add a year or int x formatter
     colors = SEASON_COLORS
@@ -410,6 +479,28 @@ def polarPlot(
     -------
     plt.Axes
         Axis with the plot
+
+    Examples
+    --------
+    .. plot::
+
+       >>> import numpy as np
+       >>> import pandas as pd
+       >>> from lair.plotter import polarPlot
+       >>> rng = np.random.default_rng(0)
+       >>> n = 20000
+       >>> data = pd.DataFrame(
+       ...     {
+       ...         "ws": rng.gamma(2.0, 1.5, n),  # wind speed [m/s]
+       ...         "wd": rng.uniform(0, 360, n),  # wind direction [degrees]
+       ...     }
+       ... )
+       >>> data["CH4"] = (
+       ...     2.0
+       ...     + 0.03 * data["ws"] * (1 + np.cos(np.radians(data["wd"] - 90)))
+       ...     + rng.normal(0, 0.02, n)
+       ... )
+       >>> ax = polarPlot(data, min_bin=10)
     """
     from lair.air import bin_polar, circularize_radial_data, sector_radians
 
@@ -474,6 +565,28 @@ def polarFreq(
     -------
     plt.Axes
         Axis with the plot
+
+    Examples
+    --------
+    .. plot::
+
+       >>> import numpy as np
+       >>> import pandas as pd
+       >>> from lair.plotter import polarFreq
+       >>> rng = np.random.default_rng(0)
+       >>> n = 20000
+       >>> data = pd.DataFrame(
+       ...     {
+       ...         "ws": rng.gamma(2.0, 1.5, n),  # wind speed [m/s]
+       ...         "wd": rng.uniform(0, 360, n),  # wind direction [degrees]
+       ...     }
+       ... )
+       >>> data["CH4"] = (
+       ...     2.0
+       ...     + 0.03 * data["ws"] * (1 + np.cos(np.radians(data["wd"] - 90)))
+       ...     + rng.normal(0, 0.02, n)
+       ... )
+       >>> ax = polarFreq(data)
     """
     from lair.air import bin_polar, circularize_radial_data, sector_radians
 
