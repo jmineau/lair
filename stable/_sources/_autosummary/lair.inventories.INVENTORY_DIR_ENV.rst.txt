@@ -1,0 +1,6 @@
+lair.inventories.INVENTORY\_DIR\_ENV
+====================================
+
+.. currentmodule:: lair.inventories
+
+.. autodata:: INVENTORY_DIR_ENV

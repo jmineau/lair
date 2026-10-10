@@ -1,0 +1,6 @@
+lair.clock.Timer.stop
+=====================
+
+.. currentmodule:: lair.clock
+
+.. automethod:: Timer.stop

@@ -1,0 +1,6 @@
+lair.clock.time\_decay\_matrix
+==============================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: time_decay_matrix

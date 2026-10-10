@@ -1,0 +1,6 @@
+lair.geo.add\_extent\_map
+=========================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: add_extent_map

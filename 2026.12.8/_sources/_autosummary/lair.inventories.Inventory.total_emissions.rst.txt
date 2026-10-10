@@ -1,0 +1,6 @@
+lair.inventories.Inventory.total\_emissions
+===========================================
+
+.. currentmodule:: lair.inventories
+
+.. autoproperty:: Inventory.total_emissions

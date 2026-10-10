@@ -1,0 +1,6 @@
+lair.geo.CRS.to\_cartopy
+========================
+
+.. currentmodule:: lair.geo
+
+.. automethod:: CRS.to_cartopy

@@ -1,0 +1,6 @@
+lair.clock.TimeRange.parse\_iso
+===============================
+
+.. currentmodule:: lair.clock
+
+.. automethod:: TimeRange.parse_iso

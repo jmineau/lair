@@ -1,0 +1,6 @@
+lair.noaa.GMLData.apply\_qaqc
+=============================
+
+.. currentmodule:: lair.noaa
+
+.. automethod:: GMLData.apply_qaqc

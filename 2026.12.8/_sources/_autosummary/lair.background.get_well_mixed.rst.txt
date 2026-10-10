@@ -1,0 +1,6 @@
+lair.background.get\_well\_mixed
+================================
+
+.. currentmodule:: lair.background
+
+.. autofunction:: get_well_mixed

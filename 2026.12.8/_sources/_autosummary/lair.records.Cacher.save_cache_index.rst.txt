@@ -1,0 +1,6 @@
+lair.records.Cacher.save\_cache\_index
+======================================
+
+.. currentmodule:: lair.records
+
+.. automethod:: Cacher.save_cache_index

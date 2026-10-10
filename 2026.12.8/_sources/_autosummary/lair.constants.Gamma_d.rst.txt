@@ -1,0 +1,6 @@
+lair.constants.Gamma\_d
+=======================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: Gamma_d

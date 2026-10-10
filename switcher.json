@@ -5,9 +5,14 @@
     "url": "https://jmineau.github.io/lair/dev/"
   },
   {
-    "name": "2026.12.7 (stable)",
-    "version": "2026.12.7",
+    "name": "2026.12.8 (stable)",
+    "version": "2026.12.8",
     "url": "https://jmineau.github.io/lair/stable/",
     "preferred": true
+  },
+  {
+    "name": "2026.12.7",
+    "version": "2026.12.7",
+    "url": "https://jmineau.github.io/lair/2026.12.7/"
   }
 ]

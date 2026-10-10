@@ -1,0 +1,6 @@
+lair.soundings.merge
+====================
+
+.. currentmodule:: lair.soundings
+
+.. autofunction:: merge

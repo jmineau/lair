@@ -1,0 +1,6 @@
+lair.inventories.Vulcan.get\_uncertainties
+==========================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Vulcan.get_uncertainties

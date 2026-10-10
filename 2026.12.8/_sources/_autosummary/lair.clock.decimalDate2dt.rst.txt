@@ -1,0 +1,6 @@
+lair.clock.decimalDate2dt
+=========================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: decimalDate2dt

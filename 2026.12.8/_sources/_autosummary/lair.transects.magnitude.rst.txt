@@ -1,0 +1,6 @@
+lair.transects.magnitude
+========================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: magnitude

@@ -1,0 +1,6 @@
+lair.config.CACHE\_DIR
+======================
+
+.. currentmodule:: lair.config
+
+.. autodata:: CACHE_DIR

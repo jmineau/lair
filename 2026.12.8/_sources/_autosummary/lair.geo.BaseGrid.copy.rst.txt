@@ -1,0 +1,6 @@
+lair.geo.BaseGrid.copy
+======================
+
+.. currentmodule:: lair.geo
+
+.. automethod:: BaseGrid.copy

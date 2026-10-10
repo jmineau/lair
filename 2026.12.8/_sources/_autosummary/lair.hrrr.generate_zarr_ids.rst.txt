@@ -1,0 +1,6 @@
+lair.hrrr.generate\_zarr\_ids
+=============================
+
+.. currentmodule:: lair.hrrr
+
+.. autofunction:: generate_zarr_ids

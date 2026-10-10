@@ -1,0 +1,6 @@
+lair.clock.convert\_timezones
+=============================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: convert_timezones

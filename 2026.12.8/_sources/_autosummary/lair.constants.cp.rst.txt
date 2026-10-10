@@ -1,0 +1,6 @@
+lair.constants.cp
+=================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: cp

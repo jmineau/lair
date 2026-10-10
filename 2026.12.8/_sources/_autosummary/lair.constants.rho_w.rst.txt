@@ -1,0 +1,6 @@
+lair.constants.rho\_w
+=====================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: rho_w

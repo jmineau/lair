@@ -1,0 +1,6 @@
+lair.inventories.Inventory.absolute\_emissions
+==============================================
+
+.. currentmodule:: lair.inventories
+
+.. autoproperty:: Inventory.absolute_emissions

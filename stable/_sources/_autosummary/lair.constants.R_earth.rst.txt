@@ -1,0 +1,6 @@
+lair.constants.R\_earth
+=======================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: R_earth

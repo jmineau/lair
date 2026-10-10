@@ -1,0 +1,6 @@
+lair.geo.write\_rio\_crs
+========================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: write_rio_crs

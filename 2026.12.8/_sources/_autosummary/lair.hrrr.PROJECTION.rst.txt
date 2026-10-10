@@ -1,0 +1,6 @@
+lair.hrrr.PROJECTION
+====================
+
+.. currentmodule:: lair.hrrr
+
+.. autodata:: PROJECTION

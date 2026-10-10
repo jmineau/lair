@@ -1,0 +1,6 @@
+lair.air.WIND\_SECTORS
+======================
+
+.. currentmodule:: lair.air
+
+.. autodata:: WIND_SECTORS

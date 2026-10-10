@@ -1,0 +1,6 @@
+lair.inventories.Inventory.reproject
+====================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Inventory.reproject
