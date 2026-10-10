@@ -29,6 +29,7 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
@@ -37,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=21cccf27"></script>
+    <script src="../../_static/documentation_options.js?v=bae92290"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev26+g27e8857eb" />
+  <meta name="docsearch:version" content="2026.12.9.dev2+ge3e1abc17" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -426,10 +427,21 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
-<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; data: xr.DataArray  # some data, in this case, 3D (time, lat, lon)</span>
-<span class="sd">    &gt;&gt;&gt; np.log10(data).plot(cbar_kwargs={&quot;format&quot;: partial(log10formatter, deci=2)})</span>
+<span class="sd">    .. plot::</span>
+
+<span class="sd">       &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">       &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">       &gt;&gt;&gt; import xarray as xr</span>
+<span class="sd">       &gt;&gt;&gt; from lair.plotter import log10formatter</span>
+<span class="sd">       &gt;&gt;&gt; x = np.linspace(-3, 3, 40)</span>
+<span class="sd">       &gt;&gt;&gt; data = xr.DataArray(</span>
+<span class="sd">       ...     10 ** (np.add.outer(x, x) / 2),</span>
+<span class="sd">       ...     coords={&quot;lat&quot;: x, &quot;lon&quot;: x},</span>
+<span class="sd">       ...     dims=(&quot;lat&quot;, &quot;lon&quot;),</span>
+<span class="sd">       ... )</span>
+<span class="sd">       &gt;&gt;&gt; mesh = np.log10(data).plot(</span>
+<span class="sd">       ...     cbar_kwargs={&quot;format&quot;: partial(log10formatter, deci=1)}</span>
+<span class="sd">       ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;$10^</span><span class="se">{{</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">deci</span><span class="si">}</span><span class="s2">f</span><span class="se">}}</span><span class="si">}</span><span class="s2">$&quot;</span></div>
 
@@ -461,6 +473,21 @@
 <span class="sd">    -------</span>
 <span class="sd">    matplotlib.colors.LinearSegmentedColormap</span>
 <span class="sd">        Truncated colormap.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. plot::</span>
+
+<span class="sd">       &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">       &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">       &gt;&gt;&gt; from lair.plotter import truncate_colormap</span>
+<span class="sd">       &gt;&gt;&gt; gradient = np.linspace(0, 1, 256).reshape(1, -1)</span>
+<span class="sd">       &gt;&gt;&gt; fig, axes = plt.subplots(2, 1, figsize=(6, 1.2))</span>
+<span class="sd">       &gt;&gt;&gt; for ax, cmap in zip(</span>
+<span class="sd">       ...     axes, [&quot;viridis&quot;, truncate_colormap(&quot;viridis&quot;, 0.3, 0.9)]</span>
+<span class="sd">       ... ):</span>
+<span class="sd">       ...     mesh = ax.imshow(gradient, aspect=&quot;auto&quot;, cmap=cmap)</span>
+<span class="sd">       ...     ax.set_axis_off()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
@@ -530,6 +557,18 @@
 <span class="sd">    -------</span>
 <span class="sd">    matplotlib.colors.LinearSegmentedColormap</span>
 <span class="sd">        Matplotlib terrain colormap.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. plot::</span>
+
+<span class="sd">       &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">       &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">       &gt;&gt;&gt; from lair.plotter import terrain_cmap</span>
+<span class="sd">       &gt;&gt;&gt; gradient = np.linspace(0, 1, 256).reshape(1, -1)</span>
+<span class="sd">       &gt;&gt;&gt; fig, ax = plt.subplots(figsize=(6, 0.6))</span>
+<span class="sd">       &gt;&gt;&gt; mesh = ax.imshow(gradient, aspect=&quot;auto&quot;, cmap=terrain_cmap())</span>
+<span class="sd">       &gt;&gt;&gt; ax.set_axis_off()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">truncate_colormap</span><span class="p">(</span><span class="s2">&quot;terrain&quot;</span><span class="p">,</span> <span class="n">minval</span><span class="o">=</span><span class="n">minval</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="n">maxval</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span></div>
 
@@ -581,6 +620,21 @@
 <span class="sd">    -------</span>
 <span class="sd">    plt.Axes</span>
 <span class="sd">        Axis with the plot</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. plot::</span>
+
+<span class="sd">       &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; from lair.plotter import diurnalPlot</span>
+<span class="sd">       &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">       &gt;&gt;&gt; time = pd.date_range(&quot;2024-01-01&quot;, periods=24 * 90, freq=&quot;1h&quot;)</span>
+<span class="sd">       &gt;&gt;&gt; cycle = 0.15 * np.cos(2 * np.pi * (time.hour.to_numpy() - 15) / 24)</span>
+<span class="sd">       &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">       ...     {&quot;CH4&quot;: 2.0 + cycle + rng.normal(0, 0.05, len(time))}, index=time</span>
+<span class="sd">       ... )</span>
+<span class="sd">       &gt;&gt;&gt; ax = diurnalPlot(data, &quot;CH4&quot;, units=&quot;ppm&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 
@@ -703,6 +757,22 @@
 <span class="sd">    -------</span>
 <span class="sd">    plt.Axes</span>
 <span class="sd">        Axis with the plot</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. plot::</span>
+
+<span class="sd">       &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; from lair.plotter import seasonalPlot</span>
+<span class="sd">       &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">       &gt;&gt;&gt; time = pd.date_range(&quot;2021-01-01&quot;, &quot;2023-12-31&quot;, freq=&quot;1D&quot;)</span>
+<span class="sd">       &gt;&gt;&gt; trend = 1.9 + 0.00004 * np.arange(len(time))</span>
+<span class="sd">       &gt;&gt;&gt; annual = 0.06 * np.cos(2 * np.pi * (time.dayofyear.to_numpy() - 20) / 365.25)</span>
+<span class="sd">       &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">       ...     {&quot;CH4&quot;: trend + annual + rng.normal(0, 0.02, len(time))}, index=time</span>
+<span class="sd">       ... )</span>
+<span class="sd">       &gt;&gt;&gt; ax = seasonalPlot(data)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># TODO need to add a year or int x formatter</span>
     <span class="n">colors</span> <span class="o">=</span> <span class="n">SEASON_COLORS</span>
@@ -826,6 +896,28 @@
 <span class="sd">    -------</span>
 <span class="sd">    plt.Axes</span>
 <span class="sd">        Axis with the plot</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. plot::</span>
+
+<span class="sd">       &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; from lair.plotter import polarPlot</span>
+<span class="sd">       &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">       &gt;&gt;&gt; n = 20000</span>
+<span class="sd">       &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">       ...     {</span>
+<span class="sd">       ...         &quot;ws&quot;: rng.gamma(2.0, 1.5, n),  # wind speed [m/s]</span>
+<span class="sd">       ...         &quot;wd&quot;: rng.uniform(0, 360, n),  # wind direction [degrees]</span>
+<span class="sd">       ...     }</span>
+<span class="sd">       ... )</span>
+<span class="sd">       &gt;&gt;&gt; data[&quot;CH4&quot;] = (</span>
+<span class="sd">       ...     2.0</span>
+<span class="sd">       ...     + 0.03 * data[&quot;ws&quot;] * (1 + np.cos(np.radians(data[&quot;wd&quot;] - 90)))</span>
+<span class="sd">       ...     + rng.normal(0, 0.02, n)</span>
+<span class="sd">       ... )</span>
+<span class="sd">       &gt;&gt;&gt; ax = polarPlot(data, min_bin=10)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">bin_polar</span><span class="p">,</span> <span class="n">circularize_radial_data</span><span class="p">,</span> <span class="n">sector_radians</span>
 
@@ -893,6 +985,28 @@
 <span class="sd">    -------</span>
 <span class="sd">    plt.Axes</span>
 <span class="sd">        Axis with the plot</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. plot::</span>
+
+<span class="sd">       &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; from lair.plotter import polarFreq</span>
+<span class="sd">       &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">       &gt;&gt;&gt; n = 20000</span>
+<span class="sd">       &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">       ...     {</span>
+<span class="sd">       ...         &quot;ws&quot;: rng.gamma(2.0, 1.5, n),  # wind speed [m/s]</span>
+<span class="sd">       ...         &quot;wd&quot;: rng.uniform(0, 360, n),  # wind direction [degrees]</span>
+<span class="sd">       ...     }</span>
+<span class="sd">       ... )</span>
+<span class="sd">       &gt;&gt;&gt; data[&quot;CH4&quot;] = (</span>
+<span class="sd">       ...     2.0</span>
+<span class="sd">       ...     + 0.03 * data[&quot;ws&quot;] * (1 + np.cos(np.radians(data[&quot;wd&quot;] - 90)))</span>
+<span class="sd">       ...     + rng.normal(0, 0.02, n)</span>
+<span class="sd">       ... )</span>
+<span class="sd">       &gt;&gt;&gt; ax = polarFreq(data)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">bin_polar</span><span class="p">,</span> <span class="n">circularize_radial_data</span><span class="p">,</span> <span class="n">sector_radians</span>
 
