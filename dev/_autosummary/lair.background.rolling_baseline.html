@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=44910a43"></script>
+    <script src="../_static/documentation_options.js?v=21cccf27"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="lair.background.phase_shift_corrected_baseline" href="lair.background.phase_shift_corrected_baseline.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev25+g3bdd2d455" />
+  <meta name="docsearch:version" content="2026.12.8.dev26+g27e8857eb" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -769,10 +769,10 @@
 <li><p><strong>data</strong> (<em>pd.Series</em>) – Time series of data to calculate the baseline from.</p></li>
 <li><p><strong>window</strong> (<em>Any</em><em>, </em><em>optional</em>) – Window size for the rolling calculation. Must be passable to
 pd.Timedelta. Default is ‘24h’.</p></li>
-<li><p><strong>q</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Quantile to calculate the baseline from. Default is 0.01.</p></li>
-<li><p><strong>min_periods</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Minimum number of periods within each window required to have a value.
+<li><p><strong>q</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Quantile to calculate the baseline from. Default is 0.01.</p></li>
+<li><p><strong>min_periods</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Minimum number of periods within each window required to have a value.
 Default is 1.</p></li>
-<li><p><strong>center</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Center the window on the timestamp. Default is True.</p></li>
+<li><p><strong>center</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Center the window on the timestamp. Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

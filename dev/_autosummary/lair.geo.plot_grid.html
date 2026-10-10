@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=44910a43"></script>
+    <script src="../_static/documentation_options.js?v=21cccf27"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="lair.geo.haversine" href="lair.geo.haversine.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev25+g3bdd2d455" />
+  <meta name="docsearch:version" content="2026.12.8.dev26+g27e8857eb" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -766,9 +766,9 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>grid</strong> (<em>xr.DataArray</em><em> | </em><em>xr.Dataset</em>) – The grid to plot. Must have 1D <code class="docutils literal notranslate"><span class="pre">lat</span></code> and <code class="docutils literal notranslate"><span class="pre">lon</span></code> coordinates.</p></li>
-<li><p><strong>lw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Line width of the cell edges, by default 1.</p></li>
+<li><p><strong>lw</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Line width of the cell edges, by default 1.</p></li>
 <li><p><strong>ax</strong> (<em>plt.Axes</em><em>, </em><em>optional</em>) – Axes object to plot to, by default None (a new map in <code class="docutils literal notranslate"><span class="pre">crs</span></code>).</p></li>
-<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><em>minx</em><em>, </em><em>maxx</em><em>, </em><em>miny</em><em>, </em><em>maxy</em><em>]</em><em>, </em><em>optional</em>) – Extent of the plot in longitude/latitude degrees, whatever the map
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>minx</em><em>, </em><em>maxx</em><em>, </em><em>miny</em><em>, </em><em>maxy</em><em>]</em><em>, </em><em>optional</em>) – Extent of the plot in longitude/latitude degrees, whatever the map
 projection, by default None.</p></li>
 <li><p><strong>crs</strong> (<em>Any</em><em>, </em><em>optional</em>) – Map projection for a new axes: a cartopy projection, or anything
 <a class="reference internal" href="lair.geo.CRS.html#lair.geo.CRS" title="lair.geo.CRS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> accepts (EPSG code, “EPSG:…” string, pyproj CRS, …).

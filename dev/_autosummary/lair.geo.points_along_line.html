@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=44910a43"></script>
+    <script src="../_static/documentation_options.js?v=21cccf27"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="lair.geo.plot_grid" href="lair.geo.plot_grid.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev25+g3bdd2d455" />
+  <meta name="docsearch:version" content="2026.12.8.dev26+g27e8857eb" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -789,11 +789,11 @@ Runtime is close to linear in the number of graph nodes.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>multiline</strong> (<em>shapely.LineString</em><em> | </em><em>shapely.MultiLineString</em>) – The line, or network of lines.</p></li>
-<li><p><strong>spacing</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The minimum Euclidean distance between generated points.</p></li>
-<li><p><strong>resolution_factor</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Graph step size as a fraction of <code class="docutils literal notranslate"><span class="pre">spacing</span></code>, by default 0.1. Smaller
+<li><p><strong>spacing</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – The minimum Euclidean distance between generated points.</p></li>
+<li><p><strong>resolution_factor</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Graph step size as a fraction of <code class="docutils literal notranslate"><span class="pre">spacing</span></code>, by default 0.1. Smaller
 values make a denser graph, which follows curves more closely and
 places points closer to exactly <code class="docutils literal notranslate"><span class="pre">spacing</span></code> apart, but is slower.</p></li>
-<li><p><strong>decimals</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of decimal places node coordinates are rounded to. By default
+<li><p><strong>decimals</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of decimal places node coordinates are rounded to. By default
 two places finer than the step size (<code class="docutils literal notranslate"><span class="pre">spacing</span> <span class="pre">*</span> <span class="pre">resolution_factor</span></code>),
 and at least 5.</p></li>
 </ul>
@@ -803,7 +803,7 @@ and at least 5.</p></li>
 <code class="docutils literal notranslate"><span class="pre">spacing</span></code> from every other.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)">list</a>[Point]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[Point]</p>
 </dd>
 </dl>
 </dd></dl>

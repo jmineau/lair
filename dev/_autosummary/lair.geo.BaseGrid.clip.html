@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=44910a43"></script>
+    <script src="../_static/documentation_options.js?v=21cccf27"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="lair.geo.BaseGrid.gridcell_area" href="lair.geo.BaseGrid.gridcell_area.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8.dev25+g3bdd2d455" />
+  <meta name="docsearch:version" content="2026.12.8.dev26+g27e8857eb" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -774,11 +774,11 @@ while clipping with a bbox/extent seems to be inclusive of the bounds.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>bbox</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><em>minx</em><em>, </em><em>miny</em><em>, </em><em>maxx</em><em>, </em><em>maxy</em><em>]</em>) – The bounding box to clip the data to.</p></li>
-<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><em>minx</em><em>, </em><em>maxx</em><em>, </em><em>miny</em><em>, </em><em>maxy</em><em>]</em>) – The extent to clip the data to.</p></li>
+<li><p><strong>bbox</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><em>minx</em><em>, </em><em>miny</em><em>, </em><em>maxx</em><em>, </em><em>maxy</em><em>]</em>) – The bounding box to clip the data to.</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><em>minx</em><em>, </em><em>maxx</em><em>, </em><em>miny</em><em>, </em><em>maxy</em><em>]</em>) – The extent to clip the data to.</p></li>
 <li><p><strong>geom</strong> (<em>shapely.Polygon</em>) – The geometry to clip the data to.</p></li>
 <li><p><strong>crs</strong> (<em>Any</em>) – The CRS of the input geometries. If not provided, the CRS of the data is used.</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to modify the data in place. Default is False (returns a
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to modify the data in place. Default is False (returns a
 new copy with the clipped data).</p></li>
 <li><p><strong>kwargs</strong> (<em>Any</em>) – Additional keyword arguments to pass to the rioxarray clip method.</p></li>
 </ul>
