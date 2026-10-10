@@ -8,6 +8,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Added
+
+- The API pages of `diurnalPlot`, `seasonalPlot`, `polarPlot`, `polarFreq`,
+  `log10formatter`, `truncate_colormap` and `terrain_cmap` show a figure, drawn
+  from synthetic data. The examples run whenever the docs build, so a change
+  that breaks one fails the build.
+
 ## [2026.12.8] - 2026-10-09
 
 ### Added
