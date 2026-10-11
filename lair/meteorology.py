@@ -35,12 +35,12 @@ from lair import constants
 Numeric = Any
 
 # Physical constants as plain SI floats
-Rstar = constants.Rstar.m_as("J / K / mol")
-Rd = constants.Rd.m_as("J / kg / K")
-kb = constants.kb.m_as("J / K")
-cp = constants.cp.m_as("J / kg / K")
-g = constants.g.m_as("m / s**2")
-epsilon = constants.epsilon.m_as("dimensionless")
+Rstar = float(constants.Rstar.m_as("J / K / mol"))
+Rd = float(constants.Rd.m_as("J / kg / K"))
+kb = float(constants.kb.m_as("J / K"))
+cp = float(constants.cp.m_as("J / kg / K"))
+g = float(constants.g.m_as("m / s**2"))
+epsilon = float(constants.epsilon.m_as("dimensionless"))
 
 
 #: Standard Atmosphere, in SI: T [K], p [Pa], rho [kg/m^3], z [m]
