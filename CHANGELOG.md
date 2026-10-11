@@ -24,6 +24,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- Docstrings that said something false are corrected:
+  `background.phase_shift_corrected_baseline` no longer lists a `timezone`
+  parameter it does not have, `rolling_baseline` no longer prints `{q}` and
+  `{window}` literally, `Sounding.interpolate` documents `interval` (not
+  `step`), `thoning` documents `smooth_time`, and `hrrr`'s `chunk_id` is
+  documented as the string it is (`"4.5"`), not an `int` or a `float`.
+  `geo.add_extent_map` and `Sounding.units`, which were unfinished or cut off,
+  are documented in full.
 - The `requests` extra requires s3fs 2023.10.0 or newer. Without a floor, a new
   install could pair the newest boto3 with s3fs 0.4.2, from 2020, because the
   newest boto3 is often ahead of what s3fs's aiobotocore allows.

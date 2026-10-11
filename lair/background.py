@@ -57,7 +57,8 @@ def rolling_baseline(
     """
     Calculate the baseline concentration as a rolling quantile.
 
-    The baseline is the {q} quantile of a rolling window of {window} hours.
+    The baseline is the rolling ``q`` quantile over ``window``, smoothed with a
+    rolling mean over the same window.
 
     Parameters
     ----------
@@ -107,13 +108,14 @@ def phase_shift_corrected_baseline(
     Parameters
     ----------
     data : pd.Series
-        Signal time series with local datetime index.
-    n : int
-        Window size in seconds.
-    q : float
-        Quantile to extract from signal.
-    timezone : str, optional
-        Timezone to convert the datetime index to.
+        Signal time series with a datetime index. The baseline is calculated
+        separately for each calendar day of the index, in the index's own time
+        zone (the function does no time zone conversion), so pass local time to
+        get local days.
+    n : int, optional
+        Window size in seconds. Default is 3600.
+    q : float, optional
+        Quantile to extract from signal. Default is 0.01.
 
     Returns
     -------
@@ -190,14 +192,18 @@ def thoning(
     ----------
     data : pd.Series
         Time series of data to be smoothed. Must have a datetime index.
-
+        NaN values are dropped before the curve is fitted.
+    smooth_time : list[datetime] | pd.Index, optional
+        Times at which to evaluate the fitted curve; they become the index of
+        the result. Default is the index of ``data``, so rows where ``data`` is
+        NaN get the curve's value.
     **kwargs
         Additional keyword arguments to pass to the ccgFilter class.
 
     Returns
     -------
     pd.Series
-        Smoothed data.
+        Smoothed data, at ``smooth_time``.
     """
     # Drop nans (filter does not handle them)
     orig_index = data.index.copy()  # however, we may want to return the original index

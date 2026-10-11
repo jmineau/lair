@@ -385,24 +385,28 @@ def add_extent_map(
     zorder: int | None = None,
 ) -> plt.Axes:
     """
-    Add an extent map to the figure.
+    Add a small extent map to the figure that shows where the main map is.
 
-    TODO This needs better naming and documentation.
+    The extent map is a new axes with land, ocean and state boundaries, and
+    the extent of the main map drawn on it as an outline (no fill).
 
     Parameters
     ----------
     fig : matplotlib.figure.Figure
-        Figure object
+        Figure to add the extent map to
     main_extent : list[float]
-        Extent of the main map
+        Extent of the main map, ``[minx, maxx, miny, maxy]``, in
+        ``main_extent_crs``
     main_extent_crs : ccrs.CRS
         CRS of the main extent
     extent_map_rect : tuple[left, bottom, width, height]
-        Rectangle of the extent map
+        Position of the extent map, in figure fractions (0 to 1) as for
+        ``Figure.add_axes``
     extent_map_extent : list[float]
-        Extent of the extent map
+        Extent of the extent map, ``[west, east, south, north]`` in degrees
+        of longitude and latitude
     extent_map_crs : ccrs.CRS
-        CRS of the extent map
+        Projection of the extent map
     color : str
         Color of the main-extent outline drawn on the extent map
     linewidth : int
