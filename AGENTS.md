@@ -349,9 +349,9 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   `pytest.warns`, and one raised inside another library is ignored by its
   message in `filterwarnings` there, with a comment naming the library and
   version.
-- **Coverage so far:** every module has real tests. The suite is 678 tests:
-  the lean uv env runs 396 and skips 17 (five whole modules among them); the
-  pixi env skips none (as of 2026-10-10, with `lair/_ccg_filter.py` present;
+- **Coverage so far:** every module has real tests. The suite is 679 tests:
+  the lean uv env runs 397 and skips 17 (five whole modules among them); the
+  pixi env skips none (as of 2026-10-11, with `lair/_ccg_filter.py` present;
   CI has no CCG filter, so `tests/background` skips there too). Coverage was
   97% in the full environment on 2026-10-03; thinnest: `inventories` and
   `__init__` (93%), `meteorology` (94%).
