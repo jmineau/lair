@@ -44,6 +44,12 @@ class Sounding:
         The date and time of the sounding.
     data : pd.DataFrame
         The sounding data.
+    units : dict[str, str]
+        The unit of each column of ``data`` and of each station attribute,
+        keyed by name: ``pressure`` in hPa; ``height`` and ``elevation`` in
+        meters; ``temperature`` and ``dewpoint`` in degrees Celsius
+        (``degC``); ``direction``, ``latitude`` and ``longitude`` in degrees;
+        ``speed``, ``u_wind`` and ``v_wind`` in knots; ``pw`` in millimeters.
 
     Methods
     -------
@@ -105,16 +111,17 @@ class Sounding:
 
     def interpolate(self, start=1289, stop=5000, interval=10):
         """
-        Interpolate sounding data to a specified height.
+        Interpolate sounding data to regular height levels.
 
         Parameters
         ----------
-        start : int
-            The starting height.
-        stop : int
-            The stopping height.
-        step : int
-            The height step.
+        start : int, optional
+            The lowest height, in meters. Default is 1289.
+        stop : int, optional
+            The height to stop at, in meters. Like the end of a ``range``, it
+            is not itself a level. Default is 5000.
+        interval : int, optional
+            The spacing between levels, in meters. Default is 10.
 
         Returns
         -------

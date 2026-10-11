@@ -71,8 +71,8 @@ class ZarrId:
 
         Parameters
         ----------
-        chunk_id : int
-            chunk_id
+        chunk_id : str
+            Chunk id, for example ``"4.5"``.
 
         Returns
         -------
@@ -128,8 +128,9 @@ class Winds:
         list of times to download
     nearest_point : xr.Dataset
         nearest point to lat, lon
-    chunk_id : float
-        chunk id of nearest point
+    chunk_id : numpy.ndarray
+        chunk id of nearest point (a 0-d array holding a string such as
+        ``"4.5"``)
     zarr_ids : dict[str, list[ZarrId]]
         dictionary of zarr ids with var as key
     data : pd.DataFrame
@@ -243,8 +244,11 @@ def create_s3_chunk_url(zarr_id: ZarrId, chunk_id, prefix: bool = False) -> str:
     ----------
     zarr_id : ZarrId
         ZarrId instance
-    chunk_id : int  # TODO check this
-        chunk id
+    chunk_id : str
+        Name of the chunk's object in the zarr group, for example ``"4.5"``
+        (forecasts get a leading time index, see ``ZarrId.format_chunk_id``).
+        It is the ``chunk_id`` of a point in the HRRR chunk index (see
+        ``get_nearest_point``).
     prefix : bool
         include prefix
 
@@ -388,8 +392,8 @@ def get_value(s3, zarr_id: ZarrId, chunk_id, nearest_point: xr.Dataset):
         s3 resource
     zarr_id : ZarrId
         ZarrId instance
-    chunk_id : float
-        chunk id
+    chunk_id : str
+        Chunk id, for example ``"4.5"``.
     nearest_point : xr.Dataset
         nearest point
 
