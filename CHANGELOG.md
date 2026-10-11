@@ -22,6 +22,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   conda-forge. `env-dev.yml` is gone, so lair's dependencies are listed in one
   place, and CI runs the whole test suite in that environment.
 
+### Fixed
+
+- `inventories` and `noaa` no longer raise xarray's `FutureWarning` about the
+  changing defaults of `compat`, `data_vars`, `coords` and `join` when they
+  open several files (Vulcan, WetCHARTs, EDGAR v8 annual, the CarbonTracker
+  mole fractions). lair names today's values, so what the loaders return does
+  not change when xarray's defaults do.
+
 ## [2026.12.8] - 2026-10-09
 
 ### Added

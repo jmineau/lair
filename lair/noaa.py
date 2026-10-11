@@ -23,6 +23,27 @@ CARBONTRACKER_DIR_ENV = "LAIR_CARBONTRACKER_DIR"
 GML_DIR_ENV = "LAIR_GML_DIR"
 
 
+def _open_mfdataset(files, preprocess=None, parallel: bool = False) -> xr.Dataset:
+    """
+    Open ``files`` as one dataset, combined the way xarray does it today.
+
+    xarray is changing the defaults of the four arguments named here (it warns
+    since 2025.08), and it warns that the new ``data_vars`` changes what the
+    CarbonTracker mole fractions load. Naming today's values keeps the result
+    the same on any xarray, and keeps the warning quiet.
+    """
+    return xr.open_mfdataset(
+        files,
+        preprocess=preprocess,
+        parallel=parallel,
+        combine="by_coords",
+        compat="no_conflicts",
+        data_vars="all",
+        coords="different",
+        join="outer",
+    )
+
+
 class CarbonTracker(metaclass=ABCMeta):
     """
     NOAA CarbonTracker
@@ -274,12 +295,7 @@ class CarbonTracker(metaclass=ABCMeta):
         files = sorted({f for f in file_for.values() if f is not None})
         if points.empty or not files:
             return points
-        with xr.open_mfdataset(
-            files,
-            preprocess=self._preprocess_molefractions,
-            data_vars="all",
-            combine="by_coords",
-        ) as ds:
+        with _open_mfdataset(files, preprocess=self._preprocess_molefractions) as ds:
             return self._sample_field(points, ds, self.specie, self.units)
 
     def background(self, points: pd.DataFrame, by: str | None = None) -> pd.DataFrame:
@@ -372,9 +388,9 @@ class CarbonTrackerCH4(CarbonTracker):
                 / self.version
                 / "molefractions.pkl"
             )
-            open_mfdataset = Cacher(xr.open_mfdataset, str(cache_file))
+            open_mfdataset = Cacher(_open_mfdataset, str(cache_file))
         else:
-            open_mfdataset = xr.open_mfdataset
+            open_mfdataset = _open_mfdataset
         ds = open_mfdataset(
             files,
             preprocess=CarbonTrackerCH4._preprocess_molefractions,
@@ -476,9 +492,9 @@ class CarbonTrackerCO2(CarbonTracker):
                 / self.version
                 / f"molefractions_{self.grid}.pkl"
             )
-            open_mfdataset = Cacher(xr.open_mfdataset, str(cache_file))
+            open_mfdataset = Cacher(_open_mfdataset, str(cache_file))
         else:
-            open_mfdataset = xr.open_mfdataset
+            open_mfdataset = _open_mfdataset
         return open_mfdataset(
             files,
             preprocess=self._preprocess_molefractions,

@@ -347,10 +347,7 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - **Coverage so far:** every module has real tests. The suite is 678 tests:
   the lean uv env runs 396 and skips 17 (five whole modules among them); the
   pixi env skips none (as of 2026-10-10, with `lair/_ccg_filter.py` present;
-  CI has no CCG filter, so `tests/background` skips there too). 16 of the
-  `inventories` tests fail in the pixi env until #86 is settled: `Vulcan`
-  opens its files with an xarray default that is changing, and xarray's
-  `FutureWarning` about it is an error here. Coverage was
+  CI has no CCG filter, so `tests/background` skips there too). Coverage was
   97% in the full environment on 2026-10-03; thinnest: `inventories` and
   `__init__` (93%), `meteorology` (94%).
   Network code is tested against fakes, never live: HRRR chunks from a fake
@@ -441,6 +438,15 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   `Fuel_exploitation` (PRO_FFF) only when its COAL/GAS/OIL parts are loaded
   (monthly has no split). Test loaders on tiny synthetic archives shaped like
   the real files (check layouts with `ncdump -h`).
+- **Opening many files:** call the module's `_open_mfdataset` (`inventories`,
+  `noaa`), not `xr.open_mfdataset`. xarray is changing the defaults of
+  `compat`, `data_vars`, `coords` and `join` and warns where the result would
+  differ (Vulcan, WetCHARTs, EDGAR v8 annual, the CarbonTracker mole
+  fractions); the helpers name today's values, so the data stays the same on
+  any xarray. `noaa`'s takes the arguments the cached call always had, so the
+  `Cacher` key, and with it every existing cache, is unchanged. The `xr.concat`
+  calls (EPA v2 monthly, soundings) still use the defaults; they did not warn
+  on the tests or on the real archives (2026-10-11).
 - **Inventory time labels (2026-10, #37):** every loader labels a step by the
   *start* of its period (Jan 1 / the 1st / 00:00 / top of the hour). Use the
   file's CF `time_bnds` when it has them (`_label_period_starts`: Vulcan,
