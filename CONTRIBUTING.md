@@ -20,8 +20,16 @@ uv run pre-commit install  # run the hooks on every commit
 
 The uv environment is lean: it does not install the optional extras (`geo`,
 `formats`, `regridding`, ...), so the tests of the modules behind them skip.
-For full coverage, use the conda environment in `env-dev.yml` and run `pytest`
-there (the `regridding` extra needs conda-forge's ESMF).
+For full coverage, use the [pixi](https://pixi.sh) environment, which has
+every extra (the `regridding` extra needs conda-forge's ESMF, which uv cannot
+install). It is locked in `pixi.lock`, for 64-bit Linux:
+
+```bash
+pixi install     # builds .pixi/envs/default
+pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow"
+```
+
+CI runs the tests in both environments.
 
 ## Checks
 
@@ -40,7 +48,8 @@ shows them all).
 | `just pre-commit` | run every hook on every file |
 
 After changing dependencies in `pyproject.toml`, run `just lock` (the
-`uv-lock` hook also does this on commit) and commit `uv.lock` with the change.
+`uv-lock` hook also does this on commit) and `pixi lock`, and commit `uv.lock`
+and `pixi.lock` with the change. CI fails on a `pixi.lock` that is out of date.
 
 ## Making a change
 
@@ -78,7 +87,9 @@ lair is not published to PyPI; it is installed from GitHub.
 
 Dependabot opens one pull request a month per kind of pin: GitHub Actions,
 pre-commit hooks, and `uv.lock` (the dev tools; it never raises the minimum
-versions in `pyproject.toml`). Merge it when CI passes.
+versions in `pyproject.toml`). Merge it when CI passes. Dependabot does not
+update `pixi.lock` (the environment with every extra), so the two lockfiles
+can hold different versions of a package.
 
 ## Template
 

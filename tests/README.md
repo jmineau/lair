@@ -67,8 +67,8 @@ uv run pytest tests/clock                                  # just one module
 Modules behind optional extras (`geo`, `formats`, `regridding`, `requests`,
 `science`) use `pytest.importorskip(...)` so their tests **skip** cleanly when
 the extra isn't installed. The lean `uv` dev group does not install those
-extras; for full coverage run the suite in the conda `lair-dev` env
-(see `env-dev.yml`).
+extras; for full coverage run the suite in the pixi environment
+(`pixi run pytest`; see `[tool.pixi]` in `pyproject.toml`).
 
 ## Offline import
 

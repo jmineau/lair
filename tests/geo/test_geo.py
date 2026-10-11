@@ -2,7 +2,7 @@
 Tests for lair.geo.
 
 Requires the `geo` extra (cartopy/shapely/pyproj/rasterio/rioxarray) — skipped
-when not installed (run in the conda lair-dev env for full coverage). The pure
+when not installed (run in the pixi environment for full coverage). The pure
 geometry/coordinate helpers are tested here; the plotting and regridding paths
 are not.
 """

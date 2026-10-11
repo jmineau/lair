@@ -2,7 +2,7 @@
 Tests for lair.hrrr.
 
 Requires the `requests`/`formats`/`geo` extras (boto3/numcodecs/cartopy) —
-skipped when not installed (run in the conda lair-dev env for full coverage).
+skipped when not installed (run in the pixi environment for full coverage).
 S3 URL construction, chunk decoding and the Winds download are tested against
 in-memory chunks served by a fake boto3 resource; live HRRR fetches are not.
 """

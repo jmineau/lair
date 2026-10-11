@@ -56,6 +56,15 @@ cd lair
 pip install -e .
 ```
 
+From a clone, [pixi](https://pixi.sh) can build the environment instead: it
+installs `lair` with every extra, taking ESMF and `xesmf` from conda-forge,
+from `pixi.lock` (64-bit Linux only):
+
+```bash
+pixi install     # builds .pixi/envs/default
+pixi run python
+```
+
 # Logging
 
 `lair` logs through Python's standard `logging` module, under the `lair` logger

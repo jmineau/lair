@@ -15,6 +15,7 @@ lair/.ccg_filter-*/
 
 # Environments
 .venv/
+.pixi/
 
 # Test / lint / type caches and reports
 .pytest_cache/

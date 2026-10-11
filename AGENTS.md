@@ -92,12 +92,13 @@ lair/
   utils.py           tiny helpers (updating_print, DotDict)
 docs/                Sphinx source (conf.py, index.rst, api.rst, _templates/, _ext/);
                      .github/workflows/docs.yml pushes the gh-pages branch, which Pages serves
-env-dev.yml          conda dev env
+pixi.lock            the environment with every extra, locked (`[tool.pixi]` in pyproject.toml)
 tests/               pytest suite, CONTAINERIZED per module (see "Testing")
 justfile             dev tasks (uv-based): sync/lint/type-check/test/...
 .pre-commit-config.yaml   pre-commit + ruff hooks (pyrefly deliberately omitted)
-.github/workflows/   tests.yml (matrix; Codecov upload from ubuntu/3.12, needs the
-                     CODECOV_TOKEN repo secret), quality.yml (ruff + pyrefly gates),
+.github/workflows/   tests.yml (matrix on uv.lock, no extras; Codecov upload from
+                     ubuntu/3.11, needs the CODECOV_TOKEN repo secret; and a `pixi`
+                     job: the whole suite with every extra), quality.yml (ruff + pyrefly gates),
                      docs.yml (GitHub Pages)
 ```
 
@@ -164,8 +165,9 @@ Implications:
   scopes it: `@_keep_attrs` (absolute_emissions, integrate, plot) or a `with
   xr.set_options(keep_attrs=True):` block (loaders' `_open`/`_process` in
   `Inventory.__init__`, `Vulcan.get_uncertainties`). Only xarray < 2025.11
-  drops attrs by default, so run the attr tests (`TestAttributes`) in
-  `lair-dev`.
+  drops attrs by default, and the uv and pixi environments both lock a newer
+  one, so the attr tests (`TestAttributes`) pass there with or without the
+  scoping: to check it, run them on an older xarray.
 
 ## Logging
 
@@ -219,16 +221,37 @@ Don't release unless James asks.
 
 `uv run just --list` shows all recipes. The uv dev group does **not** install
 the optional extras (geo/formats/regridding need conda-built ESMF / heavy
-wheels). For full optional-dependency coverage, use the conda `lair-dev` env
-(`env-dev.yml`) and run `pytest` there — modules behind missing extras
-`importorskip` and skip cleanly otherwise.
+wheels), and modules behind missing extras `importorskip` and skip cleanly.
+For full optional-dependency coverage, use the [pixi](https://pixi.sh)
+environment: `[tool.pixi]` in `pyproject.toml` names only what conda must
+supply (ESMF, esmpy, xesmf), pixi takes everything else from the extras and
+the `dev` group already listed there, and `pixi.lock` locks both.
 
 ```bash
-# conda-based install (required for esmpy / regridding extra)
-mamba activate lair-dev
-mamba install -c conda-forge esmpy   # only if you need the regridding extra
-pip install -e .                     # or: uv pip install -e .
+# Every extra, incl. xesmf on conda-forge's ESMF (linux-64 only)
+pixi install                 # .pixi/envs/default, from pixi.lock
+pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow"
+pixi lock                    # after changing a dependency, beside `uv lock`
 ```
+
+The Tests workflow's `pixi` job runs that suite and fails on a `pixi.lock`
+that is out of date with `pyproject.toml`. The `just` recipes call `uv run`,
+so they use the uv environment; in the pixi one, call the tool (`pixi run
+pytest`, `pixi run pyrefly check`). Three things to know:
+
+- **Two lockfiles, solved separately.** `uv.lock` and `pixi.lock` can hold
+  different versions of one package (2026-10-10: numpy 2.4.6 and pint 0.25.3
+  in `uv.lock`, numpy 2.5.4 and pint 0.26.1 in `pixi.lock`), so a failure in
+  one environment only is often a version difference. Dependabot updates
+  `uv.lock`, not `pixi.lock`.
+- **`[tool.pixi.pypi-dependencies]` holds two things that are not lair's
+  dependencies:** `geopandas` (one `geo.clip` test builds a GeoSeries) and a
+  floor on `s3fs` (the `requests` extra has none, and without one the
+  resolver keeps the newest boto3 and goes back to s3fs 0.4.2, from 2020;
+  `uv lock --upgrade` does the same).
+- **The no-MPI ESMF build** (`build = "nompi*"`): the MPICH build starts MPI
+  on `import xesmf`, and when that start-up fails it kills the whole pytest
+  process.
 
 **Linting/formatting (ruff):** `ruff check` (the template's rules: E, F, UP, B, SIM, I,
 D, NPY, RUF100) is an enforced gate, and
@@ -241,8 +264,8 @@ formatter never moves those), and `# noqa` on the first line of a multi-line
 statement. Generated/vendored modules are in `extend-exclude`.
 
 **Typing (pyrefly): enforced gate since 2026-09-21** (CI Code Quality job,
-`just quality-check`, pre-commit hook). It passes with 0 errors on both the
-lean uv stack (pandas 3) and `lair-dev` (pandas 2.2). Rules: fix real
+`just quality-check`, pre-commit hook). It passes with 0 errors on the lean
+uv stack (pandas 3), where the gate runs. Rules: fix real
 annotation problems; where library stubs are wrong/narrow (pandas `cut`/
 `resample.agg` overloads, pint transformation callbacks, pint's
 version-dependent private import), suppress **inline on that line with a
@@ -318,19 +341,28 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - **Markers** (`pyproject.toml`): `network`, `slow`; `just test` and CI skip
   both (no test uses them yet: network code is tested against fakes). Warnings
   are errors (`[tool.pytest]`); a test that expects one asserts it with
-  `pytest.warns`.
-- **Coverage so far:** every module has real tests (lair-dev: 673 passed /
-  1 xfailed, 97% coverage; lean uv: 393 passed / 17 skipped / 1 xfailed, as of
-  2026-10-03). Thinnest: `inventories` and `__init__` (93%), `meteorology` (94%).
+  `pytest.warns`, and one raised inside another library is ignored by its
+  message in `filterwarnings` there, with a comment naming the library and
+  version.
+- **Coverage so far:** every module has real tests. The suite is 678 tests:
+  the lean uv env runs 396 and skips 17 (five whole modules among them); the
+  pixi env skips none (as of 2026-10-10, with `lair/_ccg_filter.py` present;
+  CI has no CCG filter, so `tests/background` skips there too). 16 of the
+  `inventories` tests fail in the pixi env until #86 is settled: `Vulcan`
+  opens its files with an xarray default that is changing, and xarray's
+  `FutureWarning` about it is an error here. Coverage was
+  97% in the full environment on 2026-10-03; thinnest: `inventories` and
+  `__init__` (93%), `meteorology` (94%).
   Network code is tested against fakes, never live: HRRR chunks from a fake
   boto3 resource, soundings with siphon's `WyomingUpperAir` stubbed,
   `records.ftp_download` against an in-memory `ftplib.FTP`, CarbonTracker/GML
   readers on small synthetic files. `pcaps.valleyheatdeficit` is checked
-  against an independent trapezoid VHD of a synthetic sounding. The one xfail
-  (`plotter.HandlerDashedLines` double-scales dashes by linewidth) is a known
-  bug left open.
-- **Two pandas majors:** the lean uv env resolves pandas 3.x, `lair-dev` has
-  pandas 2.2. Run both before calling a pandas change done.
+  against an independent trapezoid VHD of a synthetic sounding.
+- **Two pandas majors:** lair's dependencies allow pandas 2 and 3, but the uv
+  and pixi environments both lock pandas 3, so no maintained environment
+  exercises pandas 2 (the hand-built conda env that had pandas 2.2 is no
+  longer maintained). A pandas change is checked on pandas 3 only, unless you
+  build a pandas 2 environment for it.
 
 ## Conventions
 
