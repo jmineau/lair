@@ -43,7 +43,11 @@ classifiers = [
 requests = [
   "boto3",
   "requests",
-  "s3fs",
+  # The newest boto3 is often ahead of the botocore that s3fs's aiobotocore
+  # allows; without a floor, resolvers keep boto3 and go back to s3fs 0.4.2
+  # (2020). 2023.10.0 pins fsspec 2023.10.0, the oldest that zarr 3 reads
+  # remote stores with.
+  "s3fs>=2023.10.0",
   "siphon",
 ]
 
@@ -286,9 +290,6 @@ lair = { path = ".", editable = true }
 # Not a dependency of lair: `lair.geo.clip` takes a GeoSeries, and one test
 # builds one.
 geopandas = "*"
-# Without a floor the resolver keeps the newest boto3 and goes back to an s3fs
-# from 2020, the last one that does not pin botocore.
-s3fs = ">=2024"
 
 [tool.pixi.environments]
 default = { features = ["complete", "dev"] }

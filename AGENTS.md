@@ -252,11 +252,8 @@ pytest`, `pixi run pyrefly check`). Three things to know:
   in `uv.lock`, numpy 2.5.4 and pint 0.26.1 in `pixi.lock`), so a failure in
   one environment only is often a version difference. Dependabot updates
   `uv.lock`, not `pixi.lock`.
-- **`[tool.pixi.pypi-dependencies]` holds two things that are not lair's
-  dependencies:** `geopandas` (one `geo.clip` test builds a GeoSeries) and a
-  floor on `s3fs` (the `requests` extra has none, and without one the
-  resolver keeps the newest boto3 and goes back to s3fs 0.4.2, from 2020;
-  `uv lock --upgrade` does the same).
+- **`[tool.pixi.pypi-dependencies]` holds one thing that is not a lair
+  dependency:** `geopandas` (one `geo.clip` test builds a GeoSeries).
 - **The no-MPI ESMF build** (`build = "nompi*"`): the MPICH build starts MPI
   on `import xesmf`, and when that start-up fails it kills the whole pytest
   process.
@@ -468,6 +465,15 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   whose annotations name optional types need `from __future__ import
   annotations` (geo, inventories). `docs/api.rst` lists modules by hand; add
   new modules to it. Each module's page lists what it defines.
+- **The `requests` extra floors s3fs (`>=2023.10.0`), not boto3.** The newest
+  boto3 is usually a few releases ahead of the botocore that s3fs's
+  aiobotocore allows. Without the floor, uv and pixi both kept the newest boto3
+  and went back to s3fs 0.4.2 (2020), the last s3fs without aiobotocore; with
+  it, they hold boto3 back instead (2026-10-11: boto3 1.43.106, not 1.43.111).
+  2023.10.0 is where s3fs's fsspec pin meets zarr 3's oldest fsspec for remote
+  stores; `HRRR`'s S3 calls ran on it (Python 3.11, 3.12, 3.14) and on later
+  releases. s3fs 0.5.2 and 2021.4.0 fail at import on current fsspec or
+  Python 3.12.
 - `setup_ccg_filter()` at import time touches the filesystem. Don't import
   `lair` inside an immutable / read-only environment without
   pre-installing `_ccg_filter.py` (or set `LAIR_SKIP_CCG_DOWNLOAD=1`).
