@@ -256,7 +256,7 @@ def test_builder_skips_samples_without_time(track, kind):
         time = np.where(missing, np.nan, t)
     else:
         time = (t * 1e9).astype("datetime64[ns]")
-        time[missing] = np.datetime64("NaT")
+        time[missing] = np.datetime64("NaT", "ns")
     lagged, transit, table, m_obs, m_t = _build(time, xy, obs, lag)
     assert np.isnan(lagged[missing]).all()
     np.testing.assert_allclose(lagged[~missing], expected[0])
