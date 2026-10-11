@@ -11,8 +11,8 @@ from lair.constants import cp as _cp
 from lair.meteorology import hypsometric, ideal_gas_law, poisson
 
 # Plain SI floats (lair.meteorology is plain SI in, plain SI out)
-Rd = _Rd.m_as("J / kg / K")
-cp = _cp.m_as("J / kg / K")
+Rd = float(_Rd.m_as("J / kg / K"))
+cp = float(_cp.m_as("J / kg / K"))
 
 
 def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray:

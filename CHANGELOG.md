@@ -32,6 +32,11 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   documented as the string it is (`"4.5"`), not an `int` or a `float`.
   `geo.add_extent_map` and `Sounding.units`, which were unfinished or cut off,
   are documented in full.
+- The constants of `lair.meteorology` (`Rstar`, `Rd`, `kb`, `cp`, `g`,
+  `epsilon`) and `lair.pcaps` (`Rd`, `cp`) are plain floats, as their comments
+  said, not 0-d numpy arrays, so `help()` no longer prints numpy's
+  documentation under each. The values are the same; a scalar call such as
+  `ideal_gas_law` now returns a `float` where it returned a `numpy.float64`.
 - The `requests` extra requires s3fs 2023.10.0 or newer. Without a floor, a new
   install could pair the newest boto3 with s3fs 0.4.2, from 2020, because the
   newest boto3 is often ahead of what s3fs's aiobotocore allows.
