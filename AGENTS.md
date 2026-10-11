@@ -135,7 +135,15 @@ from lair.noaa import ...
 2. Registers a custom pint context `mass_flux` that converts
    `[substance] / [area] / [time]` ↔ `[mass] / [area] / [time]` using
    molecular weight.
-3. Sets pint's default sort to `sort_by_dimensionality`.
+3. Sets pint's default sort to `sort_by_dimensionality`, so a unit prints
+   in dimension order (`kg/km**2/d`, not pint's alphabetical `kg/d/km**2`).
+   Not cosmetic: `inventories.Inventory.get_units` splits a flux unit on `/`
+   and reads quantity, area and time in that order. pint >= 0.26 exports the
+   function from `pint.delegates.formatter`; pint <= 0.25 has it only in the
+   private `_compound_unit_helpers`, and pint 0.26 needs Python >= 3.12, so
+   lair imports from both places while it supports Python 3.11 (pyrefly
+   flags the one the installed pint lacks; each line suppresses it).
+   `tests/test_pkg.py` checks the order.
 4. Calls `setup_ccg_filter()` which, **on first import**, FTP-downloads
    `ccg_filter.zip` from `ftp.gml.noaa.gov` into a temporary directory
    (`lair/.ccg_filter-*`, removed afterwards), takes only `ccg_filter.py` from
@@ -267,8 +275,8 @@ statement. Generated/vendored modules are in `extend-exclude`.
 `just quality-check`, pre-commit hook). It passes with 0 errors on the lean
 uv stack (pandas 3), where the gate runs. Rules: fix real
 annotation problems; where library stubs are wrong/narrow (pandas `cut`/
-`resample.agg` overloads, pint transformation callbacks, pint's
-version-dependent private import), suppress **inline on that line with a
+`resample.agg` overloads, pint transformation callbacks, the two places
+pint keeps `sort_by_dimensionality`), suppress **inline on that line with a
 reason** (`# pyrefly: ignore[<kind>]`), not in config. Config only disables
 `bad-override-mutable-attribute` (subclass class constants like
 `version: str = 'v8'` over `str | None` base attrs). Optional extras are in
