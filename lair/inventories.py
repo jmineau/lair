@@ -144,6 +144,27 @@ def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
     return data
 
 
+def _open_mfdataset(
+    files: list[Path], preprocess: Callable[[Dataset], Dataset] | None = None
+) -> Dataset:
+    """
+    Open ``files`` as one dataset, combined the way xarray does it today.
+
+    xarray is changing the defaults of the four arguments named here (it warns
+    since 2025.08), and it warns that the new ones change what Vulcan and
+    WetCHARTs load and raise on EDGAR v8's annual files. Naming today's values
+    keeps the result the same on any xarray, and keeps the warning quiet.
+    """
+    return xr.open_mfdataset(
+        files,
+        preprocess=preprocess,
+        compat="no_conflicts",
+        data_vars="all",
+        coords="different",
+        join="outer",
+    )
+
+
 def _quantify_data_only(
     data: Dataset, units_map: dict[Any, Any] | None = None
 ) -> Dataset:
@@ -718,7 +739,7 @@ class Inventory(BaseGrid):
 
     def _open(self, files: list[Path]) -> Dataset:
         # Open the dataset, preprocessing if necessary
-        return xr.open_mfdataset(files, preprocess=getattr(self, "_preprocess", None))
+        return _open_mfdataset(files, preprocess=getattr(self, "_preprocess", None))
 
     def _process(self, data) -> Dataset:
         # In the base case, we just return the data
@@ -1384,7 +1405,7 @@ class EPAv2(EPA):
         files = list(
             Path(self.epa_dir, self.version, "monthly_scale_factors").glob("*.nc")
         )
-        ds = xr.open_mfdataset(files)
+        ds = _open_mfdataset(files)
         ds = ds.rename_vars(
             {var: "_".join(str(var).split("_")[4:]) for var in list(ds.data_vars)}
         )
@@ -1573,7 +1594,7 @@ class GFEIv1(GFEI):
 
         p = self._file_root()
         files = [f for f in p.glob(f"*{short}.nc") if "All" not in f.stem]
-        sd = xr.open_mfdataset(files, preprocess=preprocess)
+        sd = _open_mfdataset(files, preprocess=preprocess)
         return sd
 
 
@@ -1809,7 +1830,7 @@ class Vulcan(Inventory):
         return ds
 
     def _open(self, files: list[Path]) -> Dataset:
-        return xr.open_mfdataset(files, preprocess=self._preprocess)
+        return _open_mfdataset(files, preprocess=self._preprocess)
 
     def _process(self, data: Dataset) -> Dataset:
         # Vulcan marks cells without emissions as NaN (most cells of the point
