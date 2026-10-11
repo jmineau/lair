@@ -75,6 +75,9 @@ Extra          Packages                               Used by
 
    mamba install -c conda-forge esmpy
 
+From a clone of the repository, `pixi <https://pixi.sh>`_ builds an environment
+with every extra, ESMF included (``pixi install``; 64-bit Linux only).
+
 Data locations
 --------------
 

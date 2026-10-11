@@ -15,6 +15,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   from synthetic data. The examples run whenever the docs build, so a change
   that breaks one fails the build.
 
+### Changed
+
+- The environment with every extra is built by [pixi](https://pixi.sh) from
+  `pyproject.toml` and `pixi.lock` (`pixi install`), with ESMF and `xesmf` from
+  conda-forge. `env-dev.yml` is gone, so lair's dependencies are listed in one
+  place, and CI runs the whole test suite in that environment.
+
 ## [2026.12.8] - 2026-10-09
 
 ### Added

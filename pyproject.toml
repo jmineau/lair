@@ -96,7 +96,7 @@ Changelog = "https://github.com/jmineau/lair/blob/main/CHANGELOG.md"
 # It does NOT install the optional-dependency extras (geo/formats/regridding
 # need conda-built ESMF / heavy binary wheels) — tests for those modules
 # `importorskip` and are skipped here. For full optional-dependency coverage,
-# use the conda `lair-dev` env (see env-dev.yml) and run `pytest` there.
+# use the pixi environment (`[tool.pixi]` below) and run `pixi run pytest`.
 dev = [
   "docstr-coverage>=2.3",
   "git-cliff>=2.10",  # `just changelog`
@@ -204,8 +204,8 @@ project-excludes = [
     "**/__pycache__",
 ]
 # Optional extras (and their transitive helpers) are typed as Any so the result
-# is the same in the lean uv env (extras absent) and the conda lair-dev env
-# (extras installed). Core deps (numpy/pandas/xarray/matplotlib/pint) stay typed.
+# is the same whether the extras are installed (the pixi env) or not (the lean
+# uv env). Core deps (numpy/pandas/xarray/matplotlib/pint) stay typed.
 # Subclasses pin class constants (e.g. `version: str = 'v8'`) over base-class
 # attributes typed more loosely (`str | None`); that's intended here.
 errors = { bad-override-mutable-attribute = false }
@@ -265,3 +265,30 @@ known-first-party = ["lair"]
 # Tests need no docstrings, and a fixture's names what it provides ("A tiny
 # Vulcan archive."); the other docstring rules still apply to them.
 "tests/**" = ["D100", "D101", "D102", "D103", "D104", "D106", "D107", "D401"]
+
+# The environment with every extra. xesmf needs ESMF from conda-forge; pixi
+# installs the conda packages named here and everything else from the
+# dependencies above, and locks both in pixi.lock.
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.dependencies]
+python = "3.12.*"
+# The no-MPI ESMF build: the MPICH build starts MPI on import, and when that
+# start-up fails it kills the whole process group.
+esmf = { version = "*", build = "nompi*" }
+esmpy = ">=8.4"
+xesmf = "*"
+
+[tool.pixi.pypi-dependencies]
+lair = { path = ".", editable = true }
+# Not a dependency of lair: `lair.geo.clip` takes a GeoSeries, and one test
+# builds one.
+geopandas = "*"
+# Without a floor the resolver keeps the newest boto3 and goes back to an s3fs
+# from 2020, the last one that does not pin botocore.
+s3fs = ">=2024"
+
+[tool.pixi.environments]
+default = { features = ["complete", "dev"] }

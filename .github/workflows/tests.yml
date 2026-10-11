@@ -62,3 +62,25 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: junit.xml
           report_type: test_results
+
+  # The job above installs no extras, so the tests of the modules behind them
+  # skip. This job runs the whole suite in the pixi environment (`[tool.pixi]`
+  # in pyproject.toml, locked in pixi.lock), which has every extra: xesmf needs
+  # conda-forge's ESMF, so it cannot come from uv.lock.
+  pixi:
+    name: pixi env (every extra)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0  # setuptools-scm reads the version from tags
+
+      - uses: prefix-dev/setup-pixi@v0.11.0
+        with:
+          locked: true  # fail if pixi.lock is out of date with pyproject.toml
+          cache: true
+
+      - name: Test
+        run: pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow"
