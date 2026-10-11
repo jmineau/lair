@@ -10,14 +10,18 @@ import pint
 import pint_xarray
 from pint_xarray import unit_registry as units
 
-# sort_by_dimensionality is private pint API and it moves between releases:
-# pint >= 0.26 keeps it in `sorting`, pint <= 0.25 in `_compound_unit_helpers`.
+# sort_by_dimensionality prints a unit's parts in dimension order (kg/km**2/d,
+# where pint's default gives kg/d/km**2). pint >= 0.26 exports it; pint <= 0.25,
+# the newest pint on Python 3.11, has it only in a private module. pyrefly checks
+# against the installed pint, so it reports whichever import that pint lacks:
+# each suppression below is for one pint version.
 try:
-    # pyrefly: ignore[missing-import]
-    from pint.delegates.formatter.sorting import sort_by_dimensionality
+    # pyrefly: ignore[missing-module-attribute]
+    from pint.delegates.formatter import sort_by_dimensionality
 except ImportError:
     try:
-        from pint.delegates.formatter._compound_unit_helpers import (  # pyrefly: ignore[missing-import]
+        from pint.delegates.formatter._compound_unit_helpers import (
+            # pyrefly: ignore[missing-module-attribute]
             sort_by_dimensionality,
         )
     except ImportError:
@@ -52,7 +56,9 @@ mass_flux.add_transformation(
 units.add_context(mass_flux)
 
 # Set default pint sorting function to sort by dimensionality.
-# Cosmetic only: if pint moves the helper again, keep pint's own order.
+# Not cosmetic: inventories.Inventory.get_units splits a flux unit on "/"
+# and reads its parts in this order. If pint moves the helper again, lair still
+# imports with pint's own order, and get_units mislabels the parts.
 if sort_by_dimensionality is not None:
     units.formatter.default_sort_func = sort_by_dimensionality
 

@@ -38,6 +38,20 @@ def test_mass_flux_context_registered():
         pass
 
 
+def test_compound_units_print_in_dimension_order():
+    """
+    A flux unit prints its parts by dimension, not alphabetically.
+
+    ``inventories.Inventory.get_units`` splits a unit on "/" into its quantity,
+    area and time parts, so it relies on this order (pint's default sort gives
+    ``kg/d/km**2``). It holds on pint <= 0.25 and on pint >= 0.26, which keep
+    ``sort_by_dimensionality`` in different places.
+    """
+    from lair import units
+
+    assert f"{units('kg/km**2/day').units:~C}" == "kg/km**2/d"
+
+
 def test_reexports_present():
     """The handful of symbols __init__ explicitly re-exports are available."""
     assert callable(lair.ftp_download)
