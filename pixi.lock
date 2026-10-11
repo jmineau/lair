@@ -1611,7 +1611,7 @@ packages:
   - xarray
   - boto3 ; extra == 'requests'
   - requests ; extra == 'requests'
-  - s3fs ; extra == 'requests'
+  - s3fs>=2023.10.0 ; extra == 'requests'
   - siphon ; extra == 'requests'
   - zarr ; extra == 'formats'
   - numcodecs ; extra == 'formats'

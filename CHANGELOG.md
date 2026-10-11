@@ -24,6 +24,9 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- The `requests` extra requires s3fs 2023.10.0 or newer. Without a floor, a new
+  install could pair the newest boto3 with s3fs 0.4.2, from 2020, because the
+  newest boto3 is often ahead of what s3fs's aiobotocore allows.
 - `inventories` and `noaa` no longer raise xarray's `FutureWarning` about the
   changing defaults of `compat`, `data_vars`, `coords` and `join` when they
   open several files (Vulcan, WetCHARTs, EDGAR v8 annual, the CarbonTracker
