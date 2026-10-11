@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=060a393a"></script>
+    <script src="../_static/documentation_options.js?v=3788389e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo" href="lair.geo.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev8+g8fc60fae4" />
+  <meta name="docsearch:version" content="2026.12.9.dev10+ga90970078" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -762,17 +762,21 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.geo.add_extent_map">
 <span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">add_extent_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent_map_rect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent_map_extent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent_map_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#add_extent_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.add_extent_map" title="Link to this definition">#</a></dt>
-<dd><p>Add an extent map to the figure.</p>
-<p>TODO This needs better naming and documentation.</p>
+<dd><p>Add a small extent map to the figure that shows where the main map is.</p>
+<p>The extent map is a new axes with land, ocean and state boundaries, and
+the extent of the main map drawn on it as an outline (no fill).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.11.2)"><em>matplotlib.figure.Figure</em></a>) – Figure object</p></li>
-<li><p><strong>main_extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>]</em>) – Extent of the main map</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.11.2)"><em>matplotlib.figure.Figure</em></a>) – Figure to add the extent map to</p></li>
+<li><p><strong>main_extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>]</em>) – Extent of the main map, <code class="docutils literal notranslate"><span class="pre">[minx,</span> <span class="pre">maxx,</span> <span class="pre">miny,</span> <span class="pre">maxy]</span></code>, in
+<code class="docutils literal notranslate"><span class="pre">main_extent_crs</span></code></p></li>
 <li><p><strong>main_extent_crs</strong> (<em>ccrs.CRS</em>) – CRS of the main extent</p></li>
-<li><p><strong>extent_map_rect</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><em>left</em><em>, </em><em>bottom</em><em>, </em><em>width</em><em>, </em><em>height</em><em>]</em>) – Rectangle of the extent map</p></li>
-<li><p><strong>extent_map_extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>]</em>) – Extent of the extent map</p></li>
-<li><p><strong>extent_map_crs</strong> (<em>ccrs.CRS</em>) – CRS of the extent map</p></li>
+<li><p><strong>extent_map_rect</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><em>left</em><em>, </em><em>bottom</em><em>, </em><em>width</em><em>, </em><em>height</em><em>]</em>) – Position of the extent map, in figure fractions (0 to 1) as for
+<code class="docutils literal notranslate"><span class="pre">Figure.add_axes</span></code></p></li>
+<li><p><strong>extent_map_extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>]</em>) – Extent of the extent map, <code class="docutils literal notranslate"><span class="pre">[west,</span> <span class="pre">east,</span> <span class="pre">south,</span> <span class="pre">north]</span></code> in degrees
+of longitude and latitude</p></li>
+<li><p><strong>extent_map_crs</strong> (<em>ccrs.CRS</em>) – Projection of the extent map</p></li>
 <li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Color of the main-extent outline drawn on the extent map</p></li>
 <li><p><strong>linewidth</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Line width of the main-extent outline</p></li>
 <li><p><strong>zorder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Zorder of the extent map, by default None</p></li>

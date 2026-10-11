@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=060a393a"></script>
+    <script src="../_static/documentation_options.js?v=3788389e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.hrrr.PROJECTION" href="lair.hrrr.PROJECTION.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev8+g8fc60fae4" />
+  <meta name="docsearch:version" content="2026.12.9.dev10+ga90970078" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -774,7 +774,10 @@ so we have to write relatively low-level code to load data on this level</p></li
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>zarr_id</strong> (<a class="reference internal" href="lair.hrrr.ZarrId.html#lair.hrrr.ZarrId" title="lair.hrrr.ZarrId"><em>ZarrId</em></a>) – ZarrId instance</p></li>
-<li><p><strong>chunk_id</strong> (<em>int  # TODO check this</em>) – chunk id</p></li>
+<li><p><strong>chunk_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the chunk’s object in the zarr group, for example <code class="docutils literal notranslate"><span class="pre">&quot;4.5&quot;</span></code>
+(forecasts get a leading time index, see <code class="docutils literal notranslate"><span class="pre">ZarrId.format_chunk_id</span></code>).
+It is the <code class="docutils literal notranslate"><span class="pre">chunk_id</span></code> of a point in the HRRR chunk index (see
+<code class="docutils literal notranslate"><span class="pre">get_nearest_point</span></code>).</p></li>
 <li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – include prefix</p></li>
 </ul>
 </dd>

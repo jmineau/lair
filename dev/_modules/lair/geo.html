@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=060a393a"></script>
+    <script src="../../_static/documentation_options.js?v=3788389e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev8+g8fc60fae4" />
+  <meta name="docsearch:version" content="2026.12.9.dev10+ga90970078" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -811,24 +811,28 @@
     <span class="n">zorder</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Add an extent map to the figure.</span>
+<span class="sd">    Add a small extent map to the figure that shows where the main map is.</span>
 
-<span class="sd">    TODO This needs better naming and documentation.</span>
+<span class="sd">    The extent map is a new axes with land, ocean and state boundaries, and</span>
+<span class="sd">    the extent of the main map drawn on it as an outline (no fill).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    fig : matplotlib.figure.Figure</span>
-<span class="sd">        Figure object</span>
+<span class="sd">        Figure to add the extent map to</span>
 <span class="sd">    main_extent : list[float]</span>
-<span class="sd">        Extent of the main map</span>
+<span class="sd">        Extent of the main map, ``[minx, maxx, miny, maxy]``, in</span>
+<span class="sd">        ``main_extent_crs``</span>
 <span class="sd">    main_extent_crs : ccrs.CRS</span>
 <span class="sd">        CRS of the main extent</span>
 <span class="sd">    extent_map_rect : tuple[left, bottom, width, height]</span>
-<span class="sd">        Rectangle of the extent map</span>
+<span class="sd">        Position of the extent map, in figure fractions (0 to 1) as for</span>
+<span class="sd">        ``Figure.add_axes``</span>
 <span class="sd">    extent_map_extent : list[float]</span>
-<span class="sd">        Extent of the extent map</span>
+<span class="sd">        Extent of the extent map, ``[west, east, south, north]`` in degrees</span>
+<span class="sd">        of longitude and latitude</span>
 <span class="sd">    extent_map_crs : ccrs.CRS</span>
-<span class="sd">        CRS of the extent map</span>
+<span class="sd">        Projection of the extent map</span>
 <span class="sd">    color : str</span>
 <span class="sd">        Color of the main-extent outline drawn on the extent map</span>
 <span class="sd">    linewidth : int</span>

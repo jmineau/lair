@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=060a393a"></script>
+    <script src="../_static/documentation_options.js?v=3788389e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.soundings.merge" href="lair.soundings.merge.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev8+g8fc60fae4" />
+  <meta name="docsearch:version" content="2026.12.9.dev10+ga90970078" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -771,6 +771,11 @@
 <li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The station identifier.</p></li>
 <li><p><strong>time</strong> (<em>datetime</em>) – The date and time of the sounding.</p></li>
 <li><p><strong>data</strong> (<em>pd.DataFrame</em>) – The sounding data.</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – The unit of each column of <code class="docutils literal notranslate"><span class="pre">data</span></code> and of each station attribute,
+keyed by name: <code class="docutils literal notranslate"><span class="pre">pressure</span></code> in hPa; <code class="docutils literal notranslate"><span class="pre">height</span></code> and <code class="docutils literal notranslate"><span class="pre">elevation</span></code> in
+meters; <code class="docutils literal notranslate"><span class="pre">temperature</span></code> and <code class="docutils literal notranslate"><span class="pre">dewpoint</span></code> in degrees Celsius
+(<code class="docutils literal notranslate"><span class="pre">degC</span></code>); <code class="docutils literal notranslate"><span class="pre">direction</span></code>, <code class="docutils literal notranslate"><span class="pre">latitude</span></code> and <code class="docutils literal notranslate"><span class="pre">longitude</span></code> in degrees;
+<code class="docutils literal notranslate"><span class="pre">speed</span></code>, <code class="docutils literal notranslate"><span class="pre">u_wind</span></code> and <code class="docutils literal notranslate"><span class="pre">v_wind</span></code> in knots; <code class="docutils literal notranslate"><span class="pre">pw</span></code> in millimeters.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
@@ -783,7 +788,7 @@
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate" title="lair.soundings.Sounding.interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate</span></code></a>([start, stop, interval])</p></td>
-<td><p>Interpolate sounding data to a specified height.</p></td>
+<td><p>Interpolate sounding data to regular height levels.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="lair.soundings.Sounding.plot.html#lair.soundings.Sounding.plot" title="lair.soundings.Sounding.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>()</p></td>
 <td><p>Plot the sounding (not implemented yet).</p></td>

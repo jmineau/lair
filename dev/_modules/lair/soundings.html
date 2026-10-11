@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=060a393a"></script>
+    <script src="../../_static/documentation_options.js?v=3788389e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev8+g8fc60fae4" />
+  <meta name="docsearch:version" content="2026.12.9.dev10+ga90970078" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -437,6 +437,12 @@
 <span class="sd">        The date and time of the sounding.</span>
 <span class="sd">    data : pd.DataFrame</span>
 <span class="sd">        The sounding data.</span>
+<span class="sd">    units : dict[str, str]</span>
+<span class="sd">        The unit of each column of ``data`` and of each station attribute,</span>
+<span class="sd">        keyed by name: ``pressure`` in hPa; ``height`` and ``elevation`` in</span>
+<span class="sd">        meters; ``temperature`` and ``dewpoint`` in degrees Celsius</span>
+<span class="sd">        (``degC``); ``direction``, ``latitude`` and ``longitude`` in degrees;</span>
+<span class="sd">        ``speed``, ``u_wind`` and ``v_wind`` in knots; ``pw`` in millimeters.</span>
 
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
@@ -500,16 +506,17 @@
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1289</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Interpolate sounding data to a specified height.</span>
+<span class="sd">        Interpolate sounding data to regular height levels.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start : int</span>
-<span class="sd">            The starting height.</span>
-<span class="sd">        stop : int</span>
-<span class="sd">            The stopping height.</span>
-<span class="sd">        step : int</span>
-<span class="sd">            The height step.</span>
+<span class="sd">        start : int, optional</span>
+<span class="sd">            The lowest height, in meters. Default is 1289.</span>
+<span class="sd">        stop : int, optional</span>
+<span class="sd">            The height to stop at, in meters. Like the end of a ``range``, it</span>
+<span class="sd">            is not itself a level. Default is 5000.</span>
+<span class="sd">        interval : int, optional</span>
+<span class="sd">            The spacing between levels, in meters. Default is 10.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

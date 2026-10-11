@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=060a393a"></script>
+    <script src="../_static/documentation_options.js?v=3788389e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.hrrr.winds_frame" href="lair.hrrr.winds_frame.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev8+g8fc60fae4" />
+  <meta name="docsearch:version" content="2026.12.9.dev10+ga90970078" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -770,7 +770,8 @@
 <li><p><strong>lon</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – longitude of point</p></li>
 <li><p><strong>times</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>dt.datetime</em><em>]</em>) – list of times to download</p></li>
 <li><p><strong>nearest_point</strong> (<em>xr.Dataset</em>) – nearest point to lat, lon</p></li>
-<li><p><strong>chunk_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – chunk id of nearest point</p></li>
+<li><p><strong>chunk_id</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – chunk id of nearest point (a 0-d array holding a string such as
+<code class="docutils literal notranslate"><span class="pre">&quot;4.5&quot;</span></code>)</p></li>
 <li><p><strong>zarr_ids</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference internal" href="lair.hrrr.ZarrId.html#lair.hrrr.ZarrId" title="lair.hrrr.ZarrId"><em>ZarrId</em></a><em>]</em><em>]</em>) – dictionary of zarr ids with var as key</p></li>
 <li><p><strong>data</strong> (<em>pd.DataFrame</em>) – 10 m winds: <code class="docutils literal notranslate"><span class="pre">u</span></code>, <code class="docutils literal notranslate"><span class="pre">v</span></code> (earth-relative), <code class="docutils literal notranslate"><span class="pre">ws</span></code> (speed from u and v)
 and <code class="docutils literal notranslate"><span class="pre">wd</span></code> (see <a class="reference internal" href="lair.hrrr.winds_frame.html#lair.hrrr.winds_frame" title="lair.hrrr.winds_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">winds_frame()</span></code></a>).</p></li>

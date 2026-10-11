@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=060a393a"></script>
+    <script src="../_static/documentation_options.js?v=3788389e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.background.rolling_baseline" href="lair.background.rolling_baseline.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev8+g8fc60fae4" />
+  <meta name="docsearch:version" content="2026.12.9.dev10+ga90970078" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -773,13 +773,16 @@ J. Geophys. Res. ,94, 8549 8565.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>pd.Series</em>) – Time series of data to be smoothed. Must have a datetime index.</p></li>
+<li><p><strong>data</strong> (<em>pd.Series</em>) – Time series of data to be smoothed. Must have a datetime index.
+NaN values are dropped before the curve is fitted.</p></li>
+<li><p><strong>smooth_time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>datetime</em><em>] </em><em>| </em><em>pd.Index</em><em>, </em><em>optional</em>) – Times at which to evaluate the fitted curve; they become the index of
+the result. Default is the index of <code class="docutils literal notranslate"><span class="pre">data</span></code>, so rows where <code class="docutils literal notranslate"><span class="pre">data</span></code> is
+NaN get the curve’s value.</p></li>
 <li><p><strong>**kwargs</strong> – Additional keyword arguments to pass to the ccgFilter class.</p></li>
-<li><p><strong>smooth_time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em>] </em><em>| </em><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.html#pandas.Index" title="(in pandas v3.0.6)"><em>Index</em></a><em> | </em><em>None</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>pd.Series</em> – Smoothed data.</p>
+<dd class="field-even"><p><em>pd.Series</em> – Smoothed data, at <code class="docutils literal notranslate"><span class="pre">smooth_time</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.0.6)"><em>Series</em></a></p>
