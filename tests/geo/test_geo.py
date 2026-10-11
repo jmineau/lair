@@ -187,7 +187,10 @@ class TestCRS:
 
     def test_proj4_and_wkt_are_strings(self):
         crs = geo.CRS(4326)
-        assert isinstance(crs.proj4, str) and crs.proj4
+        # pyproj warns on every conversion to a PROJ string
+        with pytest.warns(UserWarning, match="lose important projection"):
+            proj4 = crs.proj4
+        assert isinstance(proj4, str) and proj4
         assert isinstance(crs.wkt, str) and crs.wkt
 
     def test_repr_and_str_mention_epsg(self):

@@ -932,7 +932,7 @@ def wetcharts_dir(tmp_path):
 
 
 class TestWetCHARTs:
-    @pytest.mark.parametrize("model", [1914, "1914"])
+    @pytest.mark.parametrize("model", [1914, "1914"], ids=["int", "str"])
     def test_select_model(self, wetcharts_dir, model):
         w = inventories.WetCHARTs(model=model, inventory_dir=wetcharts_dir)
         assert float(w.data["wetlands"].max()) == 3.0
