@@ -32,6 +32,9 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- `import lair.soundings` without `requests` raises the same "Optional `lair`
+  dependency 'requests' not found" error as the other optional imports, not a
+  bare `ModuleNotFoundError`.
 - Docstrings that said something false are corrected:
   `background.phase_shift_corrected_baseline` no longer lists a `timezone`
   parameter it does not have, `rolling_baseline` no longer prints `{q}` and
