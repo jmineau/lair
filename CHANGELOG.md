@@ -10,6 +10,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Added
 
+- A quickstart page, and a worked example that totals an inventory over a
+  region with `integrate()`, regrids it conservatively and checks that the
+  total is kept. It explains why a flux goes through `Inventory.regrid` or
+  `resample` (conservative) rather than `lair.geo.resample` (bilinear).
 - The API pages of `diurnalPlot`, `seasonalPlot`, `polarPlot`, `polarFreq`,
   `log10formatter`, `truncate_colormap` and `terrain_cmap` show a figure, drawn
   from synthetic data. The examples run whenever the docs build, so a change

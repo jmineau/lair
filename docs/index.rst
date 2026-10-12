@@ -23,11 +23,17 @@ atmospheric data: meteorological calculations, emissions inventories, NOAA
 greenhouse-gas products, soundings, HRRR winds, background estimation, mobile
 transects, geospatial helpers, and plotting.
 
+New to lair? Install it (below), then start with the :doc:`quickstart`.
+
 .. toctree::
    :maxdepth: 2
    :hidden:
 
+   Quickstart <quickstart>
+   Examples <examples/index>
    API Reference <api>
+
+.. _installation:
 
 Installation
 ------------
@@ -243,6 +249,8 @@ by its full path, from a job script, or in a notebook kernel. The message comes
 from GDAL, which ``fiona`` loads, and it is harmless: coordinates transform to
 the same numbers with and without it. ``conda activate`` removes it. Without
 activating, set ``PROJ_DATA`` to the environment's ``share/proj`` folder.
+
+.. _data-locations:
 
 Data locations
 --------------
