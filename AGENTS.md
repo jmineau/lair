@@ -90,7 +90,8 @@ lair/
                      the builder tests importorskip it. Platform specifics
                      (TRAX) live in slv.measurements.mobile.transects.
   utils.py           tiny helpers (updating_print, DotDict)
-docs/                Sphinx source (conf.py, index.rst, api.rst, _templates/, _ext/);
+docs/                Sphinx source (conf.py, index.rst, quickstart.rst, examples/,
+                     api.rst, _templates/, _ext/);
                      .github/workflows/docs.yml pushes the gh-pages branch, which Pages serves
 pixi.lock            the environment with every extra, locked (`[tool.pixi]` in pyproject.toml)
 tests/               pytest suite, CONTAINERIZED per module (see "Testing")
@@ -337,6 +338,11 @@ when one breaks.
   no extras, and `docs/conf.py` mocks them (`autodoc_mock_imports`). An example
   can use only the core dependencies. One that needs an extra, such as cartopy
   for the map functions in `lair.geo`, cannot run in the docs build.
+- **A page that cannot run** (`docs/examples/inventory.rst` needs ESMF and
+  EDGAR's files) shows its code and output as `.. code-block:: ipython`,
+  recorded from one real run in the pixi environment, and says so in a note at
+  the top with the date. Rerun it and paste the new output when the code it
+  calls changes.
 
 ## Testing
 
