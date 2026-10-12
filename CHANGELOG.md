@@ -17,6 +17,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Changed
 
+- The install instructions (README and front page) are rewritten. They install
+  from GitHub with the extras (`pip install lair` is an unrelated project on
+  PyPI), with a conda route that has ESMF (needed for grid-cell areas, inventory
+  totals and regridding) and a pip route without it, and they say which
+  `LAIR_*` variables each module needs, that the first `import lair` downloads
+  NOAA's CCG filter (and how to skip it or place it by hand), and how to install
+  on CHPC. The extras table lists `synoptic` under `requests` and `pollutants`
+  under `science`.
 - The environment with every extra is built by [pixi](https://pixi.sh) from
   `pyproject.toml` and `pixi.lock` (`pixi install`), with ESMF and `xesmf` from
   conda-forge. `env-dev.yml` is gone, so lair's dependencies are listed in one

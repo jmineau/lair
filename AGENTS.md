@@ -161,9 +161,14 @@ Implications:
   loop and don't run it on a machine without outbound FTP if you've never
   imported it before.
 - **Escape hatch:** set `LAIR_SKIP_CCG_DOWNLOAD=1` to skip the FTP download
-  (for tests / CI / read-only / offline environments). When skipped *and* the
-  file is absent, `lair.background` is not importable. The test suite sets this
-  in `tests/conftest.py`; CI sets it at the workflow level.
+  (for tests / CI / read-only / offline environments). It is read with
+  `os.getenv`, so any non-empty value skips, `0` included; only empty text
+  downloads. When skipped *and* the file is absent, `lair.background` is not
+  importable. The test suite sets this in `tests/conftest.py`; CI sets it at the
+  workflow level.
+- `lair.config` also makes the cache folder at import (`LAIR_CACHE_DIR`, default
+  `~/.cache/lair`). With a read-only home and no `LAIR_CACHE_DIR`, `import lair`
+  fails with a `PermissionError` (seen 2026-10-11).
 - `lair/_ccg_filter.py` is generated, not authored. Do not commit it. The
   user's `.gitignore`/`.git/info/exclude` already handles it.
 - The pint registry is process-global; importing `lair` mutates other code's
@@ -397,7 +402,7 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 | `formats` | zarr, numcodecs, fastkml, lxml | Alt file formats |
 | `geo` | cartopy, networkx, pyproj, rasterio, rioxarray, shapely | Geographic processing |
 | `science` | molmass, scipy | Chemistry / CCG filter |
-| `regridding` | xesmf | needs conda-built ESMF (see README) |
+| `regridding` | xesmf | needs conda-built ESMF (see README); also `geo.gridcell_area`, so `Inventory.absolute_emissions` and `integrate()` |
 | `complete` | all of the above | one-shot |
 
 ## Gotchas
@@ -474,6 +479,19 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   stores; `HRRR`'s S3 calls ran on it (Python 3.11, 3.12, 3.14) and on later
   releases. s3fs 0.5.2 and 2021.4.0 fail at import on current fsspec or
   Python 3.12.
+- **ESMF and pip (checked 2026-10-11):** `pip install "lair[complete]"` installs
+  `xesmf` without ESMF, so `import xesmf` fails with `No module named 'ESMF'`
+  (a plain `ModuleNotFoundError`, not the `ImportError` of
+  `import_optional_dependency`). `geo.gridcell_area` calls `import xesmf` first,
+  even for a projected grid, so inventory totals need conda's ESMF. Asking
+  conda-forge only for `esmpy` gave the MPICH build of ESMF, which printed a
+  `UCX ERROR` line on `import xesmf` on a cluster compute node; the README and
+  docs ask for `esmf=*=nompi*` (the build the pixi environment uses).
+- **`lair.background` imports `_ccg_filter` (and so scipy) at the top**, so even
+  `rolling_baseline`, which uses only pandas, needs the `science` extra and the
+  downloaded file. NOAA's `ccgFilter` divides by the number of gaps longer than
+  a day, so a series with none (hourly data) raises `ZeroDivisionError` unless
+  `sampleinterval=` is given (`thoning(hourly, sampleinterval=1)` works).
 - `setup_ccg_filter()` at import time touches the filesystem. Don't import
   `lair` inside an immutable / read-only environment without
   pre-installing `_ccg_filter.py` (or set `LAIR_SKIP_CCG_DOWNLOAD=1`).

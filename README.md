@@ -22,48 +22,53 @@
 
 # Installation
 
-The `lair` package is installable from the git repository via `pip`, however, some dependencies can only be installed via `conda`.
-In particular, the `regridding` extra needs ESMF, which is only practical to get from conda-forge. Therefore, we recommend using `conda` to install the package.
+`lair` is installed from GitHub, not from PyPI. On PyPI, `lair` is an unrelated
+project (a helper for Flask web services), so `pip install lair` installs the
+wrong package.
 
-> If you are using CHPC, it is assumed that `miniforge3` is installed following the instructions at https://www.chpc.utah.edu/documentation/software/python-anaconda.php
+You need Python 3.11 or newer and [git](https://git-scm.com/). Install lair into a
+new environment, so that its packages stay apart from the rest of your work.
 
-To create a new conda environment for `lair`, use the following command:
-
-```bash
-mamba create -n lair -c conda-forge python=3.11 esmpy
-```
-
-If you already have a conda environment, simply install the dependencies:
+Grid-cell areas and regridding need ESMF, a compiled library that pip cannot
+install. The inventories use both, so totaling an inventory over a region
+(`Inventory.integrate()`) needs ESMF too. For these, use conda:
 
 ```bash
-mamba activate <lair-env>
-mamba install -c conda-forge esmpy
+mamba create -n lair -c conda-forge python=3.12 esmpy "esmf=*=nompi*"
+conda activate lair
+pip install "lair[complete] @ git+https://github.com/jmineau/lair.git"
 ```
 
-> `lair` requires Python 3.11 or higher.
-
-Now we can install the package via `pip`. Either directly from the git repository:
+For everything else, pip is enough:
 
 ```bash
-pip install git+https://github.com/jmineau/lair.git
+python3 -m venv lair-env
+source lair-env/bin/activate
+pip install "lair[requests,formats,geo,science] @ git+https://github.com/jmineau/lair.git"
 ```
 
-or by cloning the repository and installing it as an editable package:
+The names in square brackets are the extras, groups of optional packages:
 
-```bash
-git clone https://github.com/jmineau/lair.git
-cd lair
-pip install -e .
-```
+| Extra | Packages | Used by |
+|---|---|---|
+| `requests` | boto3, requests, s3fs, siphon | `hrrr`, `soundings`, `synoptic` |
+| `formats` | zarr, numcodecs, fastkml, lxml | `hrrr`, `records.read_kml` |
+| `geo` | cartopy, networkx, pyproj, rasterio, rioxarray, shapely | `geo`, `hrrr`, `inventories`, `transects` |
+| `science` | molmass, scipy | `background`, `inventories`, `pollutants`, `transects` |
+| `regridding` | xesmf (needs ESMF) | `geo` (areas, regrid, resample), `inventories` (totals, regrid) |
+| `complete` | all of the above | |
 
-From a clone, [pixi](https://pixi.sh) can build the environment instead: it
-installs `lair` with every extra, taking ESMF and `xesmf` from conda-forge,
-from `pixi.lock` (64-bit Linux only):
+The first `import lair` in a new environment downloads one file, NOAA's CCG
+filter (used by `lair.background`), from `ftp.gml.noaa.gov`. Without a network
+`import lair` still works and only `lair.background` is unavailable. Set
+`LAIR_SKIP_CCG_DOWNLOAD=1` to skip the download.
 
-```bash
-pixi install     # builds .pixi/envs/default
-pixi run python
-```
+The [documentation](https://jmineau.github.io/lair/) has the rest: uv, a release
+or no git, placing the CCG filter by hand, which `LAIR_*` variables each module
+needs, and the steps for CHPC (University of Utah): `module load miniforge3`,
+then the conda commands above. To change lair's code, see
+[CONTRIBUTING.md](CONTRIBUTING.md), which also covers the
+[pixi](https://pixi.sh) environment with every extra.
 
 # Logging
 
