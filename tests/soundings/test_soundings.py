@@ -9,6 +9,8 @@ siphon's WyomingUpperAir replaced by a fake; live fetches are not exercised.
 """
 
 import datetime as dt
+import importlib
+import sys
 
 import numpy as np
 import pandas as pd
@@ -24,6 +26,18 @@ soundings = pytest.importorskip(
 def test_importable():
     """lair.soundings imports when its optional deps are available."""
     assert soundings is not None
+
+
+def test_missing_requests_says_what_to_install(monkeypatch):
+    # None in sys.modules makes the import raise ModuleNotFoundError for it
+    monkeypatch.delitem(sys.modules, "lair.soundings", raising=False)
+    monkeypatch.setitem(sys.modules, "requests", None)
+    with pytest.raises(
+        ImportError, match="Optional `lair` dependency 'requests'"
+    ) as info:
+        importlib.import_module("lair.soundings")
+    assert not isinstance(info.value, ModuleNotFoundError)
+    assert isinstance(info.value.__cause__, ModuleNotFoundError)
 
 
 def _write_sounding(dirpath, station, time, top=3000.0, with_pw=True):
