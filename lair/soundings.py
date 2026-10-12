@@ -10,14 +10,14 @@ from time import sleep
 
 import numpy as np
 import pandas as pd
-import requests
 import xarray as xr
 
 from lair._optional import import_optional_dependency
 from lair.air import wind_direction
 from lair.config import get_data_dir
 
-# Optional dependency
+# Optional dependencies
+requests = import_optional_dependency("requests")
 siphon = import_optional_dependency("siphon")
 from siphon.simplewebservice.wyoming import WyomingUpperAir
 
