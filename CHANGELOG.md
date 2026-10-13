@@ -14,6 +14,11 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   region with `integrate()`, regrids it conservatively and checks that the
   total is kept. It explains why a flux goes through `Inventory.regrid` or
   `resample` (conservative) rather than `lair.geo.resample` (bilinear).
+- Worked examples for soundings (download, read, potential temperature, and
+  when `get_soundings` downloads), `clock` (local time, daily cycle, afternoon
+  and seasonal means, decimal dates), HRRR `Winds` (UTC times, wind direction
+  convention) and CarbonTracker (data folder, `download`, `sample`,
+  `background`).
 - The API pages of `diurnalPlot`, `seasonalPlot`, `polarPlot`, `polarFreq`,
   `log10formatter`, `truncate_colormap` and `terrain_cmap` show a figure, drawn
   from synthetic data. The examples run whenever the docs build, so a change

@@ -72,12 +72,21 @@ class TimeRange:
 
         Parameters
         ----------
-        time_range : str | list[Union[str, dt.datetime, None]] | tuple[Union[str, dt.datetime, None], Union[str, dt.datetime, None]] | slice | None
-            _description_, by default None
-        start : Union[_input_types, dt.datetime], optional
-            _description_, by default None
-        stop : Union[_input_types, dt.datetime], optional
-            _description_, by default None
+        time_range : TimeRange | str | list | tuple | slice | None, optional
+            The whole range in one argument: another ``TimeRange``; an ISO 8601
+            string, which covers the period it names (``"2024"`` is all of
+            2024, ``"2024-07-04"`` that day); a ``(start, stop)`` pair; or a
+            slice. With no ``start`` or ``stop`` either, the default (None) is a
+            range open at both ends.
+        start : str | dt.datetime | numpy.datetime64 | None, optional
+            The start, when ``time_range`` is not given. A string stands for
+            the start of the period it names. None leaves the range open at the
+            start.
+        stop : str | dt.datetime | numpy.datetime64 | None, optional
+            The stop, when ``time_range`` is not given. It is not part of the
+            range. A string stands for the end of the period it names:
+            ``"2024"`` stops at 2025-01-01 00:00. None leaves the range open at
+            the end.
 
         Raises
         ------
@@ -186,13 +195,17 @@ class TimeRange:
     @staticmethod
     def parse_iso(string: str, inclusive: bool = False) -> dt.datetime:
         """
-        Parse the ISO8601 formatted time string and return a namedtuple with the parsed components.
+        Parse an ISO 8601 time string, such as ``"2024-07"``, into a datetime.
 
         Parameters
         ----------
         string : str
-            The ISO8601 formatted time string.
-        inclusive
+            The ISO 8601 time string, from a year down to fractions of a second.
+            A trailing ``Z`` is accepted; the result has no time zone.
+        inclusive : bool, optional
+            If False (the default), return the start of the period the string
+            names. If True, return its end, which is the start of the next
+            period: ``"2024-07"`` gives 2024-08-01 00:00.
 
         Returns
         -------

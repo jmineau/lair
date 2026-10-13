@@ -8,3 +8,7 @@ Each page says whether it runs when the docs build.
    :maxdepth: 1
 
    inventory
+   soundings
+   clock
+   hrrr_winds
+   carbontracker
