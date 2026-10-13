@@ -6,6 +6,7 @@ import datetime as dt
 import logging
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 try:
@@ -153,7 +154,21 @@ def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     data : pd.Series
         Time series of data to be smoothed. Must have a datetime index.
     **kwargs
-        Additional keyword arguments to pass to the ccgFilter class.
+        Additional keyword arguments to pass to the ccgFilter class. Its times
+        are in days of 1/365 of a decimal year (a calendar day, or 366/365 of
+        one in a leap year): the cutoffs ``shortterm`` (default 80) and
+        ``longterm`` (default 667), and ``sampleinterval``, the step of the
+        even grid that the filter interpolates the data onto. With the default,
+        ``sampleinterval=0``, the filter uses the mean of the steps between
+        samples that are about a day or more. When there are none (data more
+        often than daily with no gap of a day, or daily data within one leap
+        year), lair passes the median step between samples instead (1/24 for
+        hourly data). For data more often than daily *with* gaps of a day or
+        more, the filter's estimate is the mean length of those gaps. The
+        filter interpolates onto its grid, it does not average, so a grid that
+        coarse samples the data at about the same hour each time and a diurnal
+        cycle shifts the curve. Pass the data's own step there
+        (``sampleinterval=1/24`` for hourly data).
 
     Returns
     -------
@@ -164,8 +179,20 @@ def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
         raise ValueError("Data contains NaN values.")
 
     # Convert datetime index to decimal date
-    xp = data.index.to_series().apply(dt2decimalDate).values
+    xp = data.index.to_series().apply(dt2decimalDate).to_numpy(dtype=float)
     yp = data.values
+
+    if kwargs.get("sampleinterval", 0) == 0:
+        # ccgFilter estimates the interval from the steps longer than 0.002739
+        # years (about a day) and divides by zero when there are none. Only then,
+        # pass the median step, in the filter's unit (1/365 of a decimal year).
+        steps = np.diff(np.sort(xp))
+        if not (steps > 0.002739).any():
+            steps = steps[steps > 0]
+            if steps.size == 0:
+                raise ValueError("Data needs samples at two or more distinct times.")
+            kwargs["sampleinterval"] = float(np.median(steps)) * 365
+            logger.debug("sampleinterval set to %g days", kwargs["sampleinterval"])
 
     if "debug" not in kwargs:
         # Print the filter's diagnostics when lair.background logs at DEBUG
@@ -198,7 +225,13 @@ def thoning(
         the result. Default is the index of ``data``, so rows where ``data`` is
         NaN get the curve's value.
     **kwargs
-        Additional keyword arguments to pass to the ccgFilter class.
+        Additional keyword arguments to pass to the ccgFilter class (see
+        :func:`thoning_filter`). ``sampleinterval`` is the step, in days, of
+        the even grid the filter interpolates the data onto. The default (0)
+        lets the filter estimate it from the steps of about a day or more;
+        when the data has none, as hourly data without a gap of a day does,
+        lair uses the median step (1/24 for hourly data). Hourly data with
+        such gaps needs ``sampleinterval=1/24``.
 
     Returns
     -------

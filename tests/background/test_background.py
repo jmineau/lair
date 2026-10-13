@@ -110,6 +110,106 @@ class TestThoning:
         assert seen == [False, True]
 
 
+class TestSampleInterval:
+    """``sampleinterval`` (days) when the data is more often than daily (#94)."""
+
+    @staticmethod
+    def captured_kwargs(monkeypatch, data, **kwargs):
+        seen = {}
+
+        def fake_filter(xp, yp, **kw):
+            seen.update(kw)
+
+        monkeypatch.setattr(background, "ccgFilter", fake_filter)
+        background.thoning_filter(data, **kwargs)
+        return seen
+
+    @pytest.mark.parametrize(("freq", "per_day"), [("h", 24), ("30min", 48)])
+    def test_subdaily_default(self, freq, per_day):
+        """The issue's repro: hourly and 30-minute data no longer divide by zero."""
+        import numpy as np
+        import pandas as pd
+
+        idx = pd.date_range("2024-01-01", periods=per_day * 60, freq=freq)
+        y = pd.Series(420 + np.sin(np.arange(len(idx)) / 24), index=idx, name="CO2")
+        out = background.thoning(y)
+        assert out.index.equals(idx)
+        assert out.notna().all()
+        # The median step, in days of 1/365 decimal year (2024 has 366 days)
+        filt = background.thoning_filter(y)
+        assert filt.sampleinterval == pytest.approx(365 / 366 / per_day)
+
+    def test_daily_in_leap_year(self):
+        """Daily steps within a leap year are 1/366 year, under NOAA's threshold."""
+        import pandas as pd
+
+        idx = pd.date_range("2024-01-01", "2024-12-31", freq="D")
+        y = pd.Series(400.0, index=idx) + pd.Series(range(len(idx)), index=idx) / 365
+        filt = background.thoning_filter(y)
+        assert filt.sampleinterval == pytest.approx(365 / 366)
+
+    def test_hourly_curve_matches_daily(self):
+        """
+        The hourly default follows the daily curve, and filters a diurnal cycle.
+
+        A grid of one day on hourly data would sample midnight every day and
+        put the 5 ppm diurnal cycle into the curve.
+        """
+        import numpy as np
+        import pandas as pd
+
+        from lair.clock import dt2decimalDate
+
+        def signal(index):
+            t = np.array([dt2decimalDate(x) for x in index])
+            return 410 + 2.5 * (t - 2023) + 3 * np.sin(2 * np.pi * t)
+
+        daily_idx = pd.date_range("2023-01-01", "2023-12-31", freq="D")
+        hourly_idx = pd.date_range("2023-01-01", "2023-12-31", freq="h")
+        diurnal = 5 * np.cos(2 * np.pi * hourly_idx.hour / 24)
+        daily = background.thoning(pd.Series(signal(daily_idx), index=daily_idx))
+        hourly = background.thoning(
+            pd.Series(signal(hourly_idx) + diurnal, index=hourly_idx),
+            smooth_time=daily_idx,
+        )
+        inner = (daily_idx >= "2023-03-01") & (daily_idx < "2023-11-01")
+        assert np.abs(hourly - daily)[inner].max() < 0.01
+
+    def test_daily_default_passes_nothing(self, monkeypatch):
+        """Data with steps of a day or more keeps NOAA's own estimate."""
+        import pandas as pd
+
+        for freq in ["D", "7D", "MS"]:
+            idx = pd.date_range("2021-01-01", "2023-12-31", freq=freq)
+            data = pd.Series(400.0, index=idx)
+            assert "sampleinterval" not in self.captured_kwargs(monkeypatch, data)
+
+    def test_subdaily_with_gap_keeps_noaa_estimate(self, monkeypatch):
+        """Hourly data with a gap of a day or more did not fail; it is unchanged."""
+        import pandas as pd
+
+        idx = pd.date_range("2021-01-01", "2021-03-31 23:00", freq="h")
+        idx = idx[(idx < "2021-02-01") | (idx >= "2021-02-04")]
+        data = pd.Series(400.0, index=idx)
+        assert "sampleinterval" not in self.captured_kwargs(monkeypatch, data)
+
+    @pytest.mark.parametrize("value", [1, 0.25, 1 / 24])
+    def test_explicit_value_passed_through(self, monkeypatch, value):
+        import pandas as pd
+
+        idx = pd.date_range("2024-01-01", periods=24 * 60, freq="h")
+        data = pd.Series(400.0, index=idx)
+        seen = self.captured_kwargs(monkeypatch, data, sampleinterval=value)
+        assert seen["sampleinterval"] is value
+
+    def test_one_time_raises(self):
+        import pandas as pd
+
+        data = pd.Series([400.0, 401.0], index=pd.to_datetime(["2024-01-01"] * 2))
+        with pytest.raises(ValueError, match="two or more distinct times"):
+            background.thoning_filter(data)
+
+
 def test_thoning_filter_rejects_nan():
     import pandas as pd
 
