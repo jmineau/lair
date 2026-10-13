@@ -18,7 +18,7 @@ dependencies = [
   "matplotlib",
   "netcdf4",
   "numpy",
-  "pandas",
+  "pandas>=3.0",  # pandas 3 only: the tests run on pandas 3, and nothing on pandas 2
   "pint>=0.24.4",  # sort_by_dimensionality (lair/__init__.py); 0.24.0 to 0.24.3 do not import with flexparser 0.4
   "pint-xarray",
   "xarray",

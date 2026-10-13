@@ -161,7 +161,7 @@ class TestPlots:
             {"CH4": rng.normal(2, 0.3, 240)},
             index=pd.date_range("2024-01-01", periods=240, freq="h"),
         )
-        # Default freq must parse on pandas >= 3.0 (uppercase '1H' does not)
+        # The default freq must parse (uppercase '1H' does not)
         ax = plotter.diurnalPlot(df, "CH4")
         assert ax.has_data()
 

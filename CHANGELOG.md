@@ -26,6 +26,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Changed
 
+- lair requires pandas 3 or newer (`pandas>=3.0`; breaking). Every environment
+  lair is tested in already ran pandas 3, and nothing tested pandas 2. If yours
+  has pandas 2, upgrade it (`pip install -U "pandas>=3"`, or the conda
+  equivalent). The one piece of code that only pandas 2 needed is gone:
+  `clock.convert_timezones` no longer translates pytz's `AmbiguousTimeError` and
+  `NonExistentTimeError` into a `ValueError`, because pandas 3 raises a
+  `ValueError` itself.
 - lair requires pint 0.24.4 or newer (`pint>=0.24.4`; breaking), and `import lair`
   raises `ImportError` when pint has no `sort_by_dimensionality`, which sets the
   order a unit prints in (`kg/km**2/d`). It used to go on with pint's own order

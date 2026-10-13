@@ -1605,7 +1605,7 @@ packages:
   - matplotlib
   - netcdf4
   - numpy
-  - pandas
+  - pandas>=3.0
   - pint>=0.24.4
   - pint-xarray
   - xarray

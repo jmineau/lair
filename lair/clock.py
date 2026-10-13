@@ -5,7 +5,7 @@ Utility classes & functions for working with time and dates.
 import datetime as dt
 import re
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextlib import ContextDecorator
 from dataclasses import dataclass, field
 from functools import partial
@@ -13,6 +13,7 @@ from typing import Any, ClassVar, Literal, Union
 from zoneinfo import ZoneInfo
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 AFTERNOON = [12, 13, 14, 15, 16]  # HH Local Standard Time
@@ -597,32 +598,18 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
 # ----- Time Zones ----- #
 
 
-def _tz_localize(times, tz, ambiguous, nonexistent):
-    """
-    ``tz_localize`` the naive ``times`` (DatetimeIndex or ``.dt`` accessor).
-
-    pandas < 3 (pytz) raises pytz's AmbiguousTimeError / NonExistentTimeError,
-    which are not ValueErrors; re-raise them as ValueError like pandas 3 does.
-    """
-    try:
-        return times.tz_localize(tz, ambiguous=ambiguous, nonexistent=nonexistent)
-    except Exception as e:
-        if type(e).__name__ in ("AmbiguousTimeError", "NonExistentTimeError"):
-            raise ValueError(
-                f"{e} is ambiguous or nonexistent in {tz} (DST transition). "
-                "Use the 'ambiguous' or 'nonexistent' argument."
-            ) from e
-        raise
-
-
 def convert_timezones(
     x,
     totz,
     fromtz=None,
     localize=False,
     driver=None,
-    ambiguous="raise",
-    nonexistent="raise",
+    ambiguous: Literal["raise", "NaT", "infer"]
+    | bool
+    | Sequence[bool]
+    | npt.NDArray[np.bool_] = "raise",
+    nonexistent: Literal["raise", "NaT", "shift_forward", "shift_backward"]
+    | dt.timedelta = "raise",
 ):
     """
     Convert the times from one timezone to another.
@@ -675,11 +662,12 @@ def convert_timezones(
             if np.ndim(ambiguous) > 0:
                 # one flag per input time -> keep the naive ones
                 ambiguous = np.asarray(ambiguous)[naive]
-            localized = _tz_localize(
-                pd.DatetimeIndex([times[i] for i in naive]),
+            localized = pd.DatetimeIndex([times[i] for i in naive]).tz_localize(
                 fromtz,
-                ambiguous,
-                nonexistent,
+                # pandas-stubs leave out the scalar bool and the list it accepts
+                # pyrefly: ignore[bad-argument-type]
+                ambiguous=ambiguous,
+                nonexistent=nonexistent,
             )
             for i, t in zip(naive, localized, strict=True):
                 if t is pd.NaT or isinstance(times[i], pd.Timestamp):
@@ -717,8 +705,8 @@ def convert_timezones(
         if datetime_accessor(times).tz is None:
             if fromtz is None:
                 raise ValueError("Naive times need fromtz: the timezone they are in")
-            times = _tz_localize(
-                datetime_accessor(times), fromtz, ambiguous, nonexistent
+            times = datetime_accessor(times).tz_localize(
+                fromtz, ambiguous=ambiguous, nonexistent=nonexistent
             )
 
         # Convert the times to the specified timezone.
