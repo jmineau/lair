@@ -407,7 +407,7 @@ class TestGenerateRegularGrid:
         assert grid.y.values.tolist()[:3] == [40.05, 40.15, 40.25]
 
     def test_cell_count(self):
-        # Cells whose centre falls inside [min, max)
+        # Cells whose center falls inside [min, max)
         grid = geo.generate_regular_grid(-112.2, -111.75, 0.05, 40.45, 40.93, 0.05)
         assert grid.sizes == {"y": 10, "x": 9}
 
@@ -440,7 +440,7 @@ def test_basegrid_construction():
 @pytest.fixture
 def latlon_grid():
     """
-    A 5x6 regular lat/lon Dataset (1 deg) with rio CRS + cf-recognisable axes.
+    A 5x6 regular lat/lon Dataset (1 deg) with rio CRS + cf-recognizable axes.
 
     This is the shape the clip/regrid/resample helpers expect: 1D lat/lon
     carrying degrees_north/east units, rio spatial dims set, and an EPSG:4326
@@ -650,7 +650,7 @@ class TestGridcellAreaCRS:
             geo.gridcell_area(grid)
 
     def test_non_metre_projected_crs(self, latlon_grid):
-        # Utah Central in US survey feet: projected, but not metres
+        # Utah Central in US survey feet: projected, but not meters
         grid = geo.write_rio_crs(latlon_grid, 3566)
         with pytest.raises(ValueError, match="Only lat-lon and meter grids"):
             geo.gridcell_area(grid)
@@ -767,7 +767,7 @@ class TestPlotting:
         extent = [-113, -110, 41, 43]
         ax = geo.plot_grid(latlon_grid, extent=extent, crs=ccrs.LambertConformal())
         x0, x1, y0, y1 = ax.get_extent(crs=ccrs.PlateCarree())
-        # The projected view encloses the requested lon/lat box (not metres)
+        # The projected view encloses the requested lon/lat box (not meters)
         assert -115 < x0 <= -113 and -110 <= x1 < -108
         assert 39 < y0 <= 41 and 43 <= y1 < 45
 

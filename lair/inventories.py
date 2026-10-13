@@ -1112,7 +1112,7 @@ class EDGARv8(EDGAR):
     version 8.0, (2023) European Commission, JRC (Datasets).
 
     Annual data drop EDGAR's combined fuel-exploitation file ``PRO_FFF``
-    (CH4 2020: 109.42 Mt) in favour of its COAL/GAS/OIL parts (109.27 Mt). The
+    (CH4 2020: 109.42 Mt) in favor of its COAL/GAS/OIL parts (109.27 Mt). The
     0.15 Mt gap is an inconsistency within EDGAR's own files, not data lair
     fails to read; EDGAR's ``TOTALS`` follow ``PRO_FFF``, so the sum of the
     sectors is 0.15 Mt below them (see GitHub issue #37).

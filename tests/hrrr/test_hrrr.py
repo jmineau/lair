@@ -283,7 +283,7 @@ def _chunk_index(lon, lat, spacing=3000.0):
     import xarray as xr
 
     x0, y0 = hrrr.PROJECTION.transform_point(lon, lat, ccrs.PlateCarree())
-    # Offset the grid so the point is not on a cell centre; x and y offsets
+    # Offset the grid so the point is not on a cell center; x and y offsets
     # differ so swapping them would pick a different cell
     x = x0 + spacing * (np.arange(5) - 2) + 0.2 * spacing
     y = y0 + spacing * (np.arange(5) - 2) - 0.4 * spacing
@@ -302,7 +302,7 @@ def test_get_nearest_point_on_hrrr_projection():
     lon, lat = -111.85, 40.77
     index = _chunk_index(lon, lat)
     point = hrrr.get_nearest_point(lon, lat, index)
-    # x offset +0.2 cell -> nearest column is the centre one (2); y offset
+    # x offset +0.2 cell -> nearest column is the center one (2); y offset
     # -0.4 cell -> nearest row is still 2. A point 1 cell north lands on row 3.
     assert str(point.chunk_id.values) == "2.2"
     north = hrrr.get_nearest_point(lon, lat + 3000.0 / 111e3, index)
@@ -320,7 +320,7 @@ def test_winds_end_to_end(monkeypatch):
     times = [dt.datetime(2024, 1, 1, 0), dt.datetime(2024, 1, 1, 1)]
     u_grid, v_grid = [3.0, -2.0], [4.0, 0.5]
 
-    # Centre cell: chunk "2.2", in-chunk (y, x) = (20, 20)
+    # Center cell: chunk "2.2", in-chunk (y, x) = (20, 20)
     objects = {}
     for var, values in (("UGRD", u_grid), ("VGRD", v_grid)):
         for t, value in zip(times, values, strict=True):

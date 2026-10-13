@@ -450,7 +450,7 @@ def _write_vulcan(root, time_step, sectors, bounds=("mn",)):
     d = root / "vulcan" / "v3" / "data" / "native" / time_step
     d.mkdir(parents=True)
     if time_step == "annual":
-        # 2014 and 2015: days since 2010-01-01, labelled mid-year
+        # 2014 and 2015: days since 2010-01-01, labeled mid-year
         files = {
             (sector, bound, value): _cf_time(
                 [1461, 1826], [365, 365], "days since 2010-01-01 00:00:00 UTC"
@@ -461,7 +461,7 @@ def _write_vulcan(root, time_step, sectors, bounds=("mn",)):
         }
         names = {k: f"Vulcan_v3_US_annual_1km_{k[0]}_{k[1]}.nc4" for k in files}
     else:
-        # 2015-01-01 and 02, 24 hours each, labelled at the half hour
+        # 2015-01-01 and 02, 24 hours each, labeled at the half hour
         files, names = {}, {}
         for sector in sectors:
             for day in (1, 2):
@@ -529,7 +529,7 @@ class TestVulcan:
 
     def test_clip_returns_clipped_copy(self, vulcan_dir):
         v = inventories.Vulcan(inventory_dir=vulcan_dir)
-        bbox = (-1.5e6, 4e5, -1.5e6 + 4_000, 4e5 + 3_000)  # data CRS (metres)
+        bbox = (-1.5e6, 4e5, -1.5e6 + 4_000, 4e5 + 3_000)  # data CRS (meters)
         clipped = v.clip(bbox=bbox)
         assert clipped is not v
         assert clipped._is_clipped and not v._is_clipped
@@ -578,7 +578,7 @@ class TestVulcan:
         assert {"lat", "lon"} <= set(out.data.dims)
 
     def test_reproject_conserves_point_sources(self, vulcan_dir):
-        # NaN "no emission" cells must not wipe out neighbouring point sources
+        # NaN "no emission" cells must not wipe out neighboring point sources
         pytest.importorskip("xesmf")
         v = inventories.Vulcan(inventory_dir=vulcan_dir)
         clipped = v.clip(bbox=(-1.5e6, 4e5, -1.5e6 + 9_000, 4e5 + 7_000))
@@ -1108,7 +1108,7 @@ class TestTimeLabels:
         ],
     )
     def test_totals_do_not_depend_on_labels(self, request, case, provider_offset):
-        # Relabelling is only a relabelling: absolute_emissions and integrate
+        # Relabeling is only a relabeling: absolute_emissions and integrate
         # give bit-identical totals with the provider's mid-step labels.
         import pandas as pd
 

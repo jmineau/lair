@@ -764,7 +764,7 @@ def gridcell_area(
     grid : xr.DataArray | xr.Dataset
         Grid data with a `rioxarray` CRS: geographic (any datum, e.g.
         EPSG:4326, OGC:CRS84, EPSG:4269) with ``lat``/``lon`` coordinates,
-        or projected in metres.
+        or projected in meters.
     R : float | array-like, optional
         Radius of earth in kilometers (lat-lon grids only), by default
         calculated based on the latitude. An array must broadcast against the
@@ -877,9 +877,9 @@ def generate_regular_grid(
     """
     Generate a regular grid. Grid points are cell centers.
 
-    Cells start at ``xmin``/``ymin`` and continue while their centre is below
-    ``xmax``/``ymax`` (a centre landing exactly on the max edge may or may not
-    be included, depending on float error). Centres are
+    Cells start at ``xmin``/``ymin`` and continue while their center is below
+    ``xmax``/``ymax`` (a center landing exactly on the max edge may or may not
+    be included, depending on float error). Centers are
     ``min + d * (i + 0.5)``, rounded to 10 decimals only to drop float noise
     (``40.35``, not ``40.349999999999994``), which matches PYSTILT's grid axes.
 
@@ -919,12 +919,12 @@ def generate_regular_grid(
 
 
 def _cell_centers(vmin: float, vmax: float, d: float) -> np.ndarray:
-    """Centres of the cells of size ``d`` from ``vmin`` whose centre is below ``vmax``."""
+    """Centers of the cells of size ``d`` from ``vmin`` whose center is below ``vmax``."""
     vmin, vmax, d = float(vmin), float(vmax), float(d)
-    # Cell count exactly as before (np.arange). Where the last centre lands on
+    # Cell count exactly as before (np.arange). Where the last center lands on
     # vmax, float error decides whether that cell is included.
     n = len(np.arange(vmin + d / 2, vmax, d))
-    # Each centre from vmin directly (no accumulated error), then drop float noise
+    # Each center from vmin directly (no accumulated error), then drop float noise
     return np.round(vmin + d * (np.arange(n) + 0.5), 10)
 
 
@@ -1245,7 +1245,7 @@ def gridcell_area_from_latlon(
         Grid-cell area in square-kilometers, shape (len(lat), len(lon))
     """
     lat, lon = np.asarray(lat), np.asarray(lon)
-    # A coordinate-only grid with cf-recognisable lat/lon
+    # A coordinate-only grid with cf-recognizable lat/lon
     grid = Dataset(coords={"lat": lat, "lon": lon})
     grid.lat.attrs["units"] = "degrees_north"
     grid.lon.attrs["units"] = "degrees_east"
@@ -1359,7 +1359,7 @@ def points_along_line(
         resolution_factor = 0.1
     step_size = spacing * resolution_factor
     if decimals is None:
-        # Rounding error at most step_size / 200, so neighbouring nodes never
+        # Rounding error at most step_size / 200, so neighboring nodes never
         # collapse together. Never coarser than the original fixed 5 places.
         decimals = max(5, math.ceil(-math.log10(step_size)) + 2)
     # Distances within `tol` of `spacing` count as `spacing`: float error in
@@ -1459,7 +1459,7 @@ def points_along_line(
             far_enough = origin == -1 or distance(node, placed[origin]) >= spacing - tol
             if far_enough and not too_close(node, skip=origin):
                 origin = place(node)
-            # Otherwise we are too near the origin or blocked by a neighbour:
+            # Otherwise we are too near the origin or blocked by a neighbor:
             # KEEP WALKING, still measuring from the old origin
 
             # Propagate

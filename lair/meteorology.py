@@ -6,7 +6,7 @@ Inspired by AOS 330 at UW-Madison with Grant Petty.
 Units contract: **plain SI in, plain SI out.** Inputs are floats, numpy arrays
 or xarray DataArrays in SI units (K, Pa, m, kg, mol, m^3, J/kg/K, ...), and the
 results are the same kinds of plain numbers in SI units (e.g. ``hypsometric``
-returns metres, ``ideal_gas_law("p", ...)`` returns Pa). The physical constants
+returns meters, ``ideal_gas_law("p", ...)`` returns Pa). The physical constants
 are used as plain SI floats internally.
 
 pint Quantities (and pint-quantified xarray DataArrays) are accepted for
