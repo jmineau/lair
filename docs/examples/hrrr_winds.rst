@@ -8,16 +8,15 @@ Utah campus. Two rules come out of it:
   wind analysis at the HRRR grid point nearest to the point you give, one hour
   at a time, from a public archive on AWS. Nothing is saved to disk, and no
   ``LAIR_*`` variable is needed.
-* **Times are UTC.** Pass times without a time zone, in UTC. A time with a time
-  zone reads the wrong hour
-  (`#99 <https://github.com/jmineau/lair/issues/99>`_): convert to local time
-  after the download, as below.
+* **A time without a time zone is UTC.** A time with one is converted to UTC
+  to choose the hour, and ``data`` keeps it as you gave it, so you can ask in
+  local time and get local time back (see `Local time`_).
 
 .. note::
 
    This page does not run when the docs build. It needs the ``requests``,
    ``formats`` and ``geo`` extras (see :ref:`installation`) and downloads from
-   AWS. The output below was recorded from one run of this code on 2026-10-12.
+   AWS. The output below was recorded from one run of this code on 2026-10-13.
 
 The data
 --------
@@ -86,6 +85,23 @@ hand:
       ...:
       ...: UTC2MTN(w.data, driver="pandas")
    Out[3]:
+                                     u         v        ws          wd
+   2024-01-15 05:00:00-07:00  3.967581 -4.437818  5.952808  318.202055
+   2024-01-15 06:00:00-07:00  2.486016 -0.986341  2.674536  291.640982
+   2024-01-15 07:00:00-07:00  1.992718 -4.930086  5.317581  337.991665
+   2024-01-15 08:00:00-07:00  0.995803 -4.007268  4.129142  346.044711
+   2024-01-15 09:00:00-07:00  0.417582 -2.144768  2.185042  348.982453
+   2024-01-15 10:00:00-07:00  1.670684 -0.887114  1.891602  297.967782
+
+Or ask in local time to begin with. ``Winds`` converts each time to UTC to
+choose the hour (5:00 MST is 12:00 UTC), so these are the same six analyses,
+and the index stays in Mountain time:
+
+.. code-block:: ipython
+
+   In [4]: local = pd.date_range("2024-01-15 05:00", periods=6, freq="1h", tz="America/Denver").to_pydatetime().tolist()
+      ...: Winds(lat=40.766, lon=-111.848, times=local).data
+   Out[4]:
                                      u         v        ws          wd
    2024-01-15 05:00:00-07:00  3.967581 -4.437818  5.952808  318.202055
    2024-01-15 06:00:00-07:00  2.486016 -0.986341  2.674536  291.640982
