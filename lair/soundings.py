@@ -214,7 +214,9 @@ def download_sounding(station, date, dst=None) -> str:
         The 3-letter station identifier (e.g. ``'SLC'``) passed to the Wyoming
         service via siphon. Also used as the file-name prefix.
     date : datetime
-        The date and time.
+        The date and time. Naive times are taken as UTC; tz-aware times are
+        converted to UTC. Wyoming reads the time as UTC, and the file is named
+        for the UTC hour (``SLC_2024011512.csv`` for 12 UTC).
     dst : str
         The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/<station>``.
 
@@ -223,6 +225,7 @@ def download_sounding(station, date, dst=None) -> str:
     str
         The path to the downloaded sounding data.
     """
+    date = _naive_utc(date)
     if dst is None:
         dst = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)
     os.makedirs(dst, exist_ok=True)

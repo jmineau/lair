@@ -308,16 +308,20 @@ class _FakeWyoming:
     """
     Stand-in for siphon's WyomingUpperAir: records requests, no network.
 
+    ``requests`` holds each (time, station); ``formatted`` the time as siphon
+    writes it into the request URL, which the server reads as UTC.
     ``errors`` maps a request time to a list of exceptions raised by successive
     requests for it, before the data is returned.
     """
 
     def __init__(self, errors=None):
         self.requests = []
+        self.formatted = []
         self.errors = errors or {}
 
     def request_data(self, time, site_id):
         self.requests.append((pd.Timestamp(time), site_id))
+        self.formatted.append(f"{time:%Y-%m-%d %H:%M:%S}")
         pending = self.errors.get(pd.Timestamp(time))
         if pending:
             raise pending.pop(0)
@@ -358,6 +362,54 @@ class TestDownloadSounding:
         path = soundings.download_sounding("SLC", dt.datetime(2024, 1, 1))
         assert path == str(tmp_path / "SLC" / "SLC_2024010100.csv")
         assert (tmp_path / "SLC" / "SLC_2024010100.csv").is_file()
+
+    @pytest.mark.parametrize(
+        ("date", "utc"),
+        [
+            pytest.param(dt.datetime(2024, 1, 15, 12), "2024-01-15 12", id="naive"),
+            pytest.param(
+                dt.datetime(2024, 1, 15, 12, tzinfo=dt.UTC), "2024-01-15 12", id="utc"
+            ),
+            pytest.param(
+                dt.datetime(2024, 1, 15, 5, tzinfo=dt.timezone(dt.timedelta(hours=-7))),
+                "2024-01-15 12",
+                id="fixed-offset-datetime",
+            ),
+            pytest.param(
+                pd.Timestamp("2024-01-15 05:00", tz="America/Denver"),
+                "2024-01-15 12",
+                id="mst",
+            ),
+            pytest.param(
+                pd.Timestamp("2024-07-15 06:00", tz="America/Denver"),
+                "2024-07-15 12",
+                id="mdt",
+            ),
+            # The local date and the UTC date differ: 17:00 MST is 00 UTC the next day
+            pytest.param(
+                pd.Timestamp("2024-01-15 17:00", tz="America/Denver"),
+                "2024-01-16 00",
+                id="utc-date-is-next-day",
+            ),
+        ],
+    )
+    def test_time_is_requested_and_named_in_utc(self, tmp_path, wyoming, date, utc):
+        # Naive times are UTC; aware ones are converted before the request
+        # (Wyoming reads the time as UTC) and before the file is named
+        expected = pd.Timestamp(f"{utc}:00")
+        path = soundings.download_sounding("SLC", date, str(tmp_path))
+
+        assert wyoming.formatted == [f"{expected:%Y-%m-%d %H:%M:%S}"]
+        assert path == str(tmp_path / f"SLC_{expected:%Y%m%d%H}.csv")
+        assert soundings.Sounding(path).time == expected.to_pydatetime()
+
+    def test_same_instant_in_two_zones_is_one_file(self, tmp_path, wyoming):
+        soundings.download_sounding("SLC", dt.datetime(2024, 1, 15, 12), str(tmp_path))
+        soundings.download_sounding(
+            "SLC", pd.Timestamp("2024-01-15 05:00", tz="America/Denver"), str(tmp_path)
+        )
+        assert len(wyoming.requests) == 1
+        assert sorted(p.name for p in tmp_path.iterdir()) == ["SLC_2024011512.csv"]
 
 
 class TestDownloadSoundingsErrors:
