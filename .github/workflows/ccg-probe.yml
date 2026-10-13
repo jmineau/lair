@@ -1,0 +1,66 @@
+name: CCG probe
+
+# TEMPORARY (removed again in the next commit): measures whether NOAA's FTP
+# server hands out ccg_filter.zip to GitHub-hosted runners, how long it takes,
+# and how often it fails, by calling lair.setup_ccg_filter() five times per OS.
+on:
+  push:
+    branches: [ci/run-background-tests]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      UV_NO_SYNC: "1"
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.23"
+          python-version: "3.12"
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Download the filter five times
+        shell: bash
+        run: |
+          cat > probe.py <<'PY'
+          import os
+          import sys
+          import tempfile
+          import time
+
+          os.environ["LAIR_SKIP_CCG_DOWNLOAD"] = "1"  # `import lair` must not download
+          import lair
+
+          del os.environ["LAIR_SKIP_CCG_DOWNLOAD"]
+          failures = 0
+          for attempt in range(1, 6):
+              with tempfile.TemporaryDirectory() as d:
+                  start = time.monotonic()
+                  try:
+                      lair.setup_ccg_filter(d)
+                      size = os.path.getsize(os.path.join(d, "_ccg_filter.py"))
+                      print(f"attempt {attempt}: ok, {size} bytes, {time.monotonic() - start:.2f} s")
+                  except Exception as e:
+                      failures += 1
+                      print(f"attempt {attempt}: FAILED after {time.monotonic() - start:.2f} s: {type(e).__name__}: {e}")
+              time.sleep(2)
+          print(f"{failures} of 5 attempts failed")
+          sys.exit(1 if failures else 0)
+          PY
+          uv run python probe.py
