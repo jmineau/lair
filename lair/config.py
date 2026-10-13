@@ -12,7 +12,8 @@ from pathlib import Path
 # lair has no built-in data locations. Readers of a data archive take an
 # explicit directory argument and otherwise fall back to a LAIR_* environment
 # variable (see `get_data_dir`), e.g. LAIR_INVENTORY_DIR, LAIR_SOUNDING_DIR,
-# LAIR_CARBONTRACKER_DIR, LAIR_GML_DIR.
+# LAIR_CARBONTRACKER_DIR, LAIR_GML_DIR. LAIR_CACHE_DIR has a default (see
+# `get_cache_dir`), so it never raises.
 
 
 def get_data_dir(env_var: str, path: str | os.PathLike | None = None) -> Path:
@@ -46,12 +47,27 @@ def get_data_dir(env_var: str, path: str | os.PathLike | None = None) -> Path:
     return Path(path)
 
 
+def get_cache_dir() -> Path:
+    """
+    Resolve the cache directory.
+
+    The environment variable ``LAIR_CACHE_DIR`` is read each time this is
+    called, not when lair is imported, so setting it after ``import lair``
+    works. The folder is not made here: the code that caches makes it the
+    first time it writes there, so ``import lair`` works where the home
+    directory is read-only.
+
+    Returns
+    -------
+    Path
+        ``$LAIR_CACHE_DIR``, or ``.cache/lair`` in the home directory when
+        the variable is unset or empty.
+    """
+    path = os.environ.get("LAIR_CACHE_DIR")
+    if path:
+        return Path(path)
+    return Path(os.path.expanduser("~"), ".cache", "lair")
+
+
 # LAIR
 LAIR_DIR = os.path.dirname(__file__)
-
-#: User Cache Directory. Importing lair does not create it: the code that
-#: caches (``lair.noaa``) makes the folder the first time it writes there, so
-#: ``import lair`` works where the home directory is read-only.
-CACHE_DIR = os.getenv(
-    "LAIR_CACHE_DIR", os.path.join(os.path.expanduser("~"), ".cache", "lair")
-)

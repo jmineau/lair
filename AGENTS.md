@@ -57,7 +57,7 @@ lair/
   _ccg_filter.py     NOAA GML CCG filter (downloaded on first import;
                      **do not commit**)
   _optional.py       import_optional_dependency() helper
-  config.py          data-dir resolution (get_data_dir), CACHE_DIR
+  config.py          data-dir resolution (get_data_dir), cache folder (get_cache_dir)
   constants.py       physical constants (workaround until pint has them)
   air.py             general atmospheric helpers (bin_polar, wind_components,
                      wind_direction -- NaN for a zero vector, not 270)
@@ -173,12 +173,14 @@ Implications:
   only CI job that reaches NOAA: when NOAA is down and the month's cache is
   missing, the step fails (a red job, not skipped tests). The lean uv job could
   not run those tests anyway (no scipy).
-- `lair.config` makes no folder: `CACHE_DIR` (`LAIR_CACHE_DIR`, default
-  `~/.cache/lair`) is only a path, read from the environment at import.
-  `lair.noaa` makes the folder when it first caches (`_cache_file`) and raises an
-  `OSError` that names the folder and `LAIR_CACHE_DIR` when it cannot, so
-  `import lair` works with a read-only home. Keep `config.py` free of
-  file-system work, and have a new cache user call `_cache_file`.
+- `lair.config` makes no folder: `get_cache_dir()` (`LAIR_CACHE_DIR`, default
+  `~/.cache/lair`) only returns a path, and reads the environment at each call,
+  so the variable can be set after `import lair`. There is no `CACHE_DIR`
+  constant: it would be read at import. `lair.noaa` makes the folder when it
+  first caches (`_cache_file`) and raises an `OSError` that names the folder and
+  `LAIR_CACHE_DIR` when it cannot, so `import lair` works with a read-only home.
+  Keep `config.py` free of file-system work, and have a new cache user call
+  `_cache_file`. Tests point the cache elsewhere with `monkeypatch.setenv`.
   `tests/config` and `tests/noaa` check a read-only home.
 - `lair/_ccg_filter.py` is generated, not authored. Do not commit it. The
   user's `.gitignore`/`.git/info/exclude` already handles it.

@@ -573,11 +573,10 @@ class TestMolefractionsProperty:
         ]
 
     def test_ch4_cache_reuses_the_opened_dataset(self, ct_ch4, tmp_path, monkeypatch):
-        import lair.config
         import lair.noaa as noaa
 
         cache_dir = tmp_path / "cache"
-        monkeypatch.setattr(lair.config, "CACHE_DIR", str(cache_dir))
+        monkeypatch.setenv("LAIR_CACHE_DIR", str(cache_dir))
         ct_ch4.cache = True
         first = ct_ch4.molefractions
         cache_file = (
@@ -604,9 +603,7 @@ class TestMolefractionsProperty:
         assert float(ds["co2"].sel(level=2).max()) == 395.0
 
     def test_co2_cache_file_names_the_grid(self, ct_co2, tmp_path, monkeypatch):
-        import lair.config
-
-        monkeypatch.setattr(lair.config, "CACHE_DIR", str(tmp_path / "cache"))
+        monkeypatch.setenv("LAIR_CACHE_DIR", str(tmp_path / "cache"))
         ct_co2.cache = True
         _ = ct_co2.molefractions
         assert (
@@ -624,9 +621,7 @@ class TestCacheFolder:
 
     @pytest.fixture(params=["read-only", "file"])
     def blocked(self, request, tmp_path, monkeypatch):
-        """Point ``CACHE_DIR`` where no folder can be made, and return it."""
-        import lair.config
-
+        """Point ``LAIR_CACHE_DIR`` where no folder can be made, and return it."""
         parent = tmp_path / "blocked"
         if request.param == "file":
             # Works for root too: nothing can be made inside a regular file
@@ -642,7 +637,7 @@ class TestCacheFolder:
                 parent.chmod(0o700)
                 pytest.skip("cannot make a read-only folder (running as root?)")
         cache_dir = parent / "cache"
-        monkeypatch.setattr(lair.config, "CACHE_DIR", str(cache_dir))
+        monkeypatch.setenv("LAIR_CACHE_DIR", str(cache_dir))
         yield cache_dir
         if parent.is_dir():
             parent.chmod(0o700)  # let pytest clean up
@@ -662,13 +657,22 @@ class TestCacheFolder:
 
     def test_folder_that_exists_is_fine(self, tmp_path, monkeypatch):
         # Many processes (e.g. SLURM tasks) make the folder at about the same time
-        import lair.config
         import lair.noaa as noaa
 
-        monkeypatch.setattr(lair.config, "CACHE_DIR", str(tmp_path / "cache"))
+        monkeypatch.setenv("LAIR_CACHE_DIR", str(tmp_path / "cache"))
         first = noaa._cache_file("a", "b.pkl")
         assert first.parent.is_dir()
         assert noaa._cache_file("a", "b.pkl") == first
+
+    def test_variable_is_read_each_time_not_at_import(self, tmp_path, monkeypatch):
+        # lair is already imported here: setting the variable now must count
+        import lair.noaa as noaa
+
+        for name in ("first", "second"):
+            monkeypatch.setenv("LAIR_CACHE_DIR", str(tmp_path / name))
+            path = noaa._cache_file("a", "b.pkl")
+            assert path == tmp_path / name / "a" / "b.pkl"
+            assert path.parent.is_dir()
 
     def test_no_cache_needs_no_folder(self, ct, blocked):
         assert ct.cache is False
