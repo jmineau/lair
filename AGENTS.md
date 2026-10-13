@@ -99,8 +99,9 @@ justfile             dev tasks (uv-based): sync/lint/type-check/test/...
 .pre-commit-config.yaml   pre-commit + ruff hooks (pyrefly deliberately omitted)
 .github/workflows/   tests.yml (matrix on uv.lock, no extras; Codecov upload from
                      ubuntu/3.11, needs the CODECOV_TOKEN repo secret; and a `pixi`
-                     job: the whole suite with every extra), quality.yml (ruff + pyrefly gates),
-                     docs.yml (GitHub Pages)
+                     job: the whole suite with every extra, and the only job that
+                     downloads the CCG filter, so `tests/background` runs there),
+                     quality.yml (ruff + pyrefly gates), docs.yml (GitHub Pages)
 ```
 
 There are no subpackages; everything is a top-level module.
@@ -166,7 +167,12 @@ Implications:
   `os.getenv`, so any non-empty value skips, `0` included; only empty text
   downloads. When skipped *and* the file is absent, `lair.background` is not
   importable. The test suite sets this in `tests/conftest.py`; CI sets it at the
-  workflow level.
+  workflow level in all three workflows, except that the Tests workflow's `pixi`
+  job overrides it with an empty value for one step, which downloads the filter
+  (cached by month with `actions/cache`) so `tests/background` runs. That is the
+  only CI job that reaches NOAA: when NOAA is down and the month's cache is
+  missing, the step fails (a red job, not skipped tests). The lean uv job could
+  not run those tests anyway (no scipy).
 - `lair.config` also makes the cache folder at import (`LAIR_CACHE_DIR`, default
   `~/.cache/lair`). With a read-only home and no `LAIR_CACHE_DIR`, `import lair`
   fails with a `PermissionError` (seen 2026-10-11).
@@ -368,7 +374,8 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - **Coverage so far:** every module has real tests. The suite is 679 tests:
   the lean uv env runs 397 and skips 17 (five whole modules among them); the
   pixi env skips none (as of 2026-10-11, with `lair/_ccg_filter.py` present;
-  CI has no CCG filter, so `tests/background` skips there too). Coverage was
+  CI's lean uv jobs have neither the filter nor scipy, so `tests/background`
+  skips there; its `pixi` job downloads the filter and runs it). Coverage was
   97% in the full environment on 2026-10-03; thinnest: `inventories` and
   `__init__` (93%), `meteorology` (94%).
   Network code is tested against fakes, never live: HRRR chunks from a fake

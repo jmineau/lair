@@ -12,7 +12,8 @@ permissions:
 
 env:
   # Never download NOAA GML's CCG filter when lair is imported; it is not in
-  # the repo (see lair/__init__.py), and the docs mock it.
+  # the repo (see lair/__init__.py), and the docs mock it. The pixi job below
+  # is the one exception: it fetches the filter so tests/background runs.
   LAIR_SKIP_CCG_DOWNLOAD: "1"
 
 concurrency:
@@ -81,6 +82,28 @@ jobs:
         with:
           locked: true  # fail if pixi.lock is out of date with pyproject.toml
           cache: true
+
+      # tests/background needs NOAA's CCG filter, which is not in the repo (see
+      # lair/__init__.py) and which the uv job above cannot use anyway: it has
+      # no scipy. This is the only job that downloads it. The cache key changes
+      # each month, so most runs reuse the file and the server is reached about
+      # once a month (more often for a pull request before main has saved the
+      # month's copy). A failed download fails this step; it does not skip the tests.
+      - name: Get the month
+        id: month
+        run: echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache NOAA's CCG filter
+        uses: actions/cache@v6
+        with:
+          path: lair/_ccg_filter.py
+          key: ccg-filter-${{ steps.month.outputs.month }}
+
+      - name: Download NOAA's CCG filter
+        timeout-minutes: 5
+        env:
+          LAIR_SKIP_CCG_DOWNLOAD: ""  # empty text downloads; the workflow sets "1"
+        run: pixi run python -c "import lair; lair.setup_ccg_filter()"
 
       - name: Test
         run: pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow"
