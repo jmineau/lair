@@ -47,9 +47,9 @@ daylight saving time). ``driver="pandas"`` converts the index of a
    local = UTC2MST(data, driver="pandas")
    local.head(3)
 
-Standard time keeps every day 24 hours long, so the same hour of the day means
-the same position of the sun all year. That is why the afternoon below is in
-standard time.
+Standard time is the same offset from UTC all year, so every day is 24 hours
+long and noon is noon in January and in July. That is why the afternoon below
+is in standard time.
 
 By hour of the day
 ------------------
@@ -89,14 +89,17 @@ By season
 
 :func:`~lair.clock.seasonal` averages over DJF, MAM, JJA and SON in each year.
 A DJF season takes the year of its January and February, so December 2023
-counts toward DJF 2024. A season the data cover only in part is kept, not
-dropped; here, December 2023 to November 2024 makes four whole seasons.
+counts toward DJF 2024.
 
 .. ipython:: python
 
    from lair.clock import seasonal
 
    seasonal(local).round(3)
+
+The data start at midnight UTC on December 1, which is 5 p.m. on November 30 in
+MST. Those seven hours make an "SON 2023" of their own: a season the data cover
+only in part is kept, not dropped, so drop it yourself if you do not want it.
 
 Decimal dates
 -------------
