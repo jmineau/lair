@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=79617494"></script>
+    <script src="../_static/documentation_options.js?v=69029f39"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="lair.config.CACHE_DIR" href="lair.config.CACHE_DIR.html" />
+    <link rel="next" title="lair.config.get_cache_dir" href="lair.config.get_cache_dir.html" />
     <link rel="prev" title="lair.clock.Timer.stop" href="lair.clock.Timer.stop.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev27+ga19c52675" />
+  <meta name="docsearch:version" content="2026.12.9.dev28+gdb746bf54" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -669,7 +669,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a aria-current="page" class="current reference internal" href="#">lair.config</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.config.CACHE_DIR.html">lair.config.CACHE_DIR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.config.get_cache_dir.html">lair.config.get_cache_dir</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.config.get_data_dir.html">lair.config.get_data_dir</a></li>
 </ul>
 </details></li>
@@ -785,19 +785,13 @@
   <section id="module-lair.config">
 <span id="lair-config"></span><h1>lair.config<a class="headerlink" href="#module-lair.config" title="Link to this heading">#</a></h1>
 <p>Config module for lair package</p>
-<p class="rubric">Attributes</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.config.CACHE_DIR.html#lair.config.CACHE_DIR" title="lair.config.CACHE_DIR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CACHE_DIR</span></code></a></p></td>
-<td><p>the code that caches (<code class="docutils literal notranslate"><span class="pre">lair.noaa</span></code>) makes the folder the first time it writes there, so <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> works where the home directory is read-only.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.config.get_data_dir.html#lair.config.get_data_dir" title="lair.config.get_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_data_dir</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.config.get_cache_dir.html#lair.config.get_cache_dir" title="lair.config.get_cache_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cache_dir</span></code></a></p></td>
+<td><p>Resolve the cache directory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.config.get_data_dir.html#lair.config.get_data_dir" title="lair.config.get_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_data_dir</span></code></a></p></td>
 <td><p>Resolve a data directory.</p></td>
 </tr>
 </tbody>
@@ -825,11 +819,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="lair.config.CACHE_DIR.html"
+       href="lair.config.get_cache_dir.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">lair.config.CACHE_DIR</p>
+        <p class="prev-next-title">lair.config.get_cache_dir</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

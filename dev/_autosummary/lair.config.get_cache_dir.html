@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lair.config.CACHE_DIR &#8212; lair dev</title>
+    <title>lair.config.get_cache_dir &#8212; lair dev</title>
   
   
   
@@ -39,12 +39,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=79617494"></script>
+    <script src="../_static/documentation_options.js?v=69029f39"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/lair.config.CACHE_DIR';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/lair.config.get_cache_dir';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.config" href="lair.config.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev27+ga19c52675" />
+  <meta name="docsearch:version" content="2026.12.9.dev28+gdb746bf54" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -669,7 +669,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.config.html">lair.config</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.config.CACHE_DIR</a></li>
+<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.config.get_cache_dir</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.config.get_data_dir.html">lair.config.get_data_dir</a></li>
 </ul>
 </details></li>
@@ -768,7 +768,7 @@
     
     <li class="breadcrumb-item"><a href="lair.config.html" class="nav-link">lair.config</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.config.CACHE_DIR</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.config.get_cache_dir</span></li>
   </ul>
 </nav>
 </div>
@@ -785,17 +785,24 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="lair-config-cache-dir">
-<h1>lair.config.CACHE_DIR<a class="headerlink" href="#lair-config-cache-dir" title="Link to this heading">#</a></h1>
-<dl class="py data">
-<dt class="sig sig-object py" id="lair.config.CACHE_DIR">
-<span class="sig-prename descclassname"><span class="pre">lair.config.</span></span><span class="sig-name descname"><span class="pre">CACHE_DIR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/home/runner/.cache/lair'</span></span><a class="headerlink" href="#lair.config.CACHE_DIR" title="Link to this definition">#</a></dt>
-<dd><p>the code that
-caches (<code class="docutils literal notranslate"><span class="pre">lair.noaa</span></code>) makes the folder the first time it writes there, so
-<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> works where the home directory is read-only.</p>
+  <section id="lair-config-get-cache-dir">
+<h1>lair.config.get_cache_dir<a class="headerlink" href="#lair-config-get-cache-dir" title="Link to this heading">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="lair.config.get_cache_dir">
+<span class="sig-prename descclassname"><span class="pre">lair.config.</span></span><span class="sig-name descname"><span class="pre">get_cache_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/config.html#get_cache_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.config.get_cache_dir" title="Link to this definition">#</a></dt>
+<dd><p>Resolve the cache directory.</p>
+<p>The environment variable <code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code> is read each time this is
+called, not when lair is imported, so setting it after <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code>
+works. The folder is not made here: the code that caches makes it the
+first time it writes there, so <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> works where the home
+directory is read-only.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>User Cache Directory. Importing lair does not create it</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Path</em> – <code class="docutils literal notranslate"><span class="pre">$LAIR_CACHE_DIR</span></code>, or <code class="docutils literal notranslate"><span class="pre">.cache/lair</span></code> in the home directory when
+the variable is unset or empty.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>Path</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -849,14 +856,14 @@ caches (<code class="docutils literal notranslate"><span class="pre">lair.noaa</
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lair.config.CACHE_DIR"><code class="docutils literal notranslate"><span class="pre">CACHE_DIR</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lair.config.get_cache_dir"><code class="docutils literal notranslate"><span class="pre">get_cache_dir()</span></code></a></li>
 </ul>
   </nav></div>
 
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/_autosummary/lair.config.CACHE_DIR.rst.txt">
+    <a href="../_sources/_autosummary/lair.config.get_cache_dir.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

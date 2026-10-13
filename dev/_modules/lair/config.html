@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=79617494"></script>
+    <script src="../../_static/documentation_options.js?v=69029f39"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev27+ga19c52675" />
+  <meta name="docsearch:version" content="2026.12.9.dev28+gdb746bf54" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -431,7 +431,8 @@
 <span class="c1"># lair has no built-in data locations. Readers of a data archive take an</span>
 <span class="c1"># explicit directory argument and otherwise fall back to a LAIR_* environment</span>
 <span class="c1"># variable (see `get_data_dir`), e.g. LAIR_INVENTORY_DIR, LAIR_SOUNDING_DIR,</span>
-<span class="c1"># LAIR_CARBONTRACKER_DIR, LAIR_GML_DIR.</span>
+<span class="c1"># LAIR_CARBONTRACKER_DIR, LAIR_GML_DIR. LAIR_CACHE_DIR has a default (see</span>
+<span class="c1"># `get_cache_dir`), so it never raises.</span>
 
 
 <div class="viewcode-block" id="get_data_dir">
@@ -468,15 +469,33 @@
 
 
 
+<div class="viewcode-block" id="get_cache_dir">
+<a class="viewcode-back" href="../../_autosummary/lair.config.get_cache_dir.html#lair.config.get_cache_dir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cache_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resolve the cache directory.</span>
+
+<span class="sd">    The environment variable ``LAIR_CACHE_DIR`` is read each time this is</span>
+<span class="sd">    called, not when lair is imported, so setting it after ``import lair``</span>
+<span class="sd">    works. The folder is not made here: the code that caches makes it the</span>
+<span class="sd">    first time it writes there, so ``import lair`` works where the home</span>
+<span class="sd">    directory is read-only.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Path</span>
+<span class="sd">        ``$LAIR_CACHE_DIR``, or ``.cache/lair`` in the home directory when</span>
+<span class="sd">        the variable is unset or empty.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LAIR_CACHE_DIR&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;.cache&quot;</span><span class="p">,</span> <span class="s2">&quot;lair&quot;</span><span class="p">)</span></div>
+
+
+
 <span class="c1"># LAIR</span>
 <span class="n">LAIR_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
-
-<span class="c1">#: User Cache Directory. Importing lair does not create it: the code that</span>
-<span class="c1">#: caches (``lair.noaa``) makes the folder the first time it writes there, so</span>
-<span class="c1">#: ``import lair`` works where the home directory is read-only.</span>
-<span class="n">CACHE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span>
-    <span class="s2">&quot;LAIR_CACHE_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;.cache&quot;</span><span class="p">,</span> <span class="s2">&quot;lair&quot;</span><span class="p">)</span>
-<span class="p">)</span>
 </pre></div>
 
                 </article>

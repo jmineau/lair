@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=79617494"></script>
+    <script src="_static/documentation_options.js?v=69029f39"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="next" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev27+ga19c52675" />
+  <meta name="docsearch:version" content="2026.12.9.dev28+gdb746bf54" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -658,9 +658,9 @@ to an environment variable:</p>
 </pre></div>
 </div>
 <p>Importing lair reads none of these folders. A variable is read when you call code
-that needs it, and a missing one raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> that names it.
-<code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code> is the exception twice over: it has a default, and lair reads
-it when it is imported, so set it before <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code>. lair makes the folder
+that needs it, so you can set it in a script or notebook after <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code>,
+and a missing one raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> that names it. <code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code> is the
+exception: it has a default, so a missing one is no error. lair makes the folder
 the first time it saves something there (only <code class="docutils literal notranslate"><span class="pre">lair.noaa</span></code>’s CarbonTracker
 classes do), not when it is imported, so <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> works with a read-only
 home directory. If the folder cannot be made, the error names it and

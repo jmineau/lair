@@ -277,9 +277,9 @@ For example:
    export LAIR_INVENTORY_DIR=/path/to/inventories
 
 Importing lair reads none of these folders. A variable is read when you call code
-that needs it, and a missing one raises a ``ValueError`` that names it.
-``LAIR_CACHE_DIR`` is the exception twice over: it has a default, and lair reads
-it when it is imported, so set it before ``import lair``. lair makes the folder
+that needs it, so you can set it in a script or notebook after ``import lair``,
+and a missing one raises a ``ValueError`` that names it. ``LAIR_CACHE_DIR`` is the
+exception: it has a default, so a missing one is no error. lair makes the folder
 the first time it saves something there (only ``lair.noaa``'s CarbonTracker
 classes do), not when it is imported, so ``import lair`` works with a read-only
 home directory. If the folder cannot be made, the error names it and

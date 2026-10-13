@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=79617494"></script>
+    <script src="../../_static/documentation_options.js?v=69029f39"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev27+ga19c52675" />
+  <meta name="docsearch:version" content="2026.12.9.dev28+gdb746bf54" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -432,7 +432,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_data_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cache_dir</span><span class="p">,</span> <span class="n">get_data_dir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.records</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cacher</span><span class="p">,</span> <span class="n">ftp_download</span><span class="p">,</span> <span class="n">list_files</span>
 
 <span class="c1">#: Environment variable holding the CarbonTracker data root</span>
@@ -467,8 +467,9 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Path of a file in the lair cache, with its folder made.</span>
 
-<span class="sd">    The cache folder (``LAIR_CACHE_DIR``, default ``~/.cache/lair``) is made</span>
-<span class="sd">    here, the first time something is cached, and not when lair is imported.</span>
+<span class="sd">    The cache folder (``LAIR_CACHE_DIR``, default ``~/.cache/lair``) is read</span>
+<span class="sd">    and made here, the first time something is cached, and not when lair is</span>
+<span class="sd">    imported.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -487,9 +488,8 @@
 <span class="sd">        location is read-only). The message names the folder and says to set</span>
 <span class="sd">        ``LAIR_CACHE_DIR``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CACHE_DIR</span>
-
-    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">CACHE_DIR</span><span class="p">,</span> <span class="o">*</span><span class="n">parts</span><span class="p">)</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">get_cache_dir</span><span class="p">()</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">cache_dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># exist_ok: many processes (e.g. SLURM tasks) may make it at once</span>
         <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -498,7 +498,7 @@
         <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span>
             <span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span>
             <span class="sa">f</span><span class="s2">&quot;Cannot make the cache folder </span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="si">}</span><span class="s2">). Set &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;the LAIR_CACHE_DIR environment variable (now </span><span class="si">{</span><span class="n">CACHE_DIR</span><span class="si">}</span><span class="s2">) to a &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the LAIR_CACHE_DIR environment variable (now </span><span class="si">{</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">) to a &quot;</span>
             <span class="s2">&quot;folder you can write to, or pass cache=False.&quot;</span><span class="p">,</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
     <span class="k">return</span> <span class="n">path</span>
