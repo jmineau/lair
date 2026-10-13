@@ -173,9 +173,13 @@ Implications:
   only CI job that reaches NOAA: when NOAA is down and the month's cache is
   missing, the step fails (a red job, not skipped tests). The lean uv job could
   not run those tests anyway (no scipy).
-- `lair.config` also makes the cache folder at import (`LAIR_CACHE_DIR`, default
-  `~/.cache/lair`). With a read-only home and no `LAIR_CACHE_DIR`, `import lair`
-  fails with a `PermissionError` (seen 2026-10-11).
+- `lair.config` makes no folder: `CACHE_DIR` (`LAIR_CACHE_DIR`, default
+  `~/.cache/lair`) is only a path, read from the environment at import.
+  `lair.noaa` makes the folder when it first caches (`_cache_file`) and raises an
+  `OSError` that names the folder and `LAIR_CACHE_DIR` when it cannot, so
+  `import lair` works with a read-only home. Keep `config.py` free of
+  file-system work, and have a new cache user call `_cache_file`.
+  `tests/config` and `tests/noaa` check a read-only home.
 - `lair/_ccg_filter.py` is generated, not authored. Do not commit it. The
   user's `.gitignore`/`.git/info/exclude` already handles it.
 - The pint registry is process-global; importing `lair` mutates other code's
@@ -521,6 +525,8 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   5 ppm high, and hourly data with a 3-day gap gets NOAA's estimate of 3 and
   the same bias. On a smooth series the hourly curve with 1/24 matched the
   daily curve within 0.003 ppm. Test any change against the daily curve.
-- `setup_ccg_filter()` at import time touches the filesystem. Don't import
-  `lair` inside an immutable / read-only environment without
-  pre-installing `_ccg_filter.py` (or set `LAIR_SKIP_CCG_DOWNLOAD=1`).
+- `setup_ccg_filter()` at import time touches the filesystem: it writes into
+  lair's own folder. Where that folder is read-only and `_ccg_filter.py` is
+  absent, `import lair` still works and logs a WARNING (checked 2026-10-13);
+  pre-install `_ccg_filter.py` or set `LAIR_SKIP_CCG_DOWNLOAD=1` to skip the
+  attempt and the warning.

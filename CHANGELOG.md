@@ -51,6 +51,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 - `import lair.soundings` without `requests` raises the same "Optional `lair`
   dependency 'requests' not found" error as the other optional imports, not a
   bare `ModuleNotFoundError`.
+- `import lair` works when the home directory is read-only (a container or a
+  sandbox). It used to make the cache folder (`LAIR_CACHE_DIR`, default
+  `.cache/lair` in the home directory) and fail with a `PermissionError`,
+  though only `lair.noaa.CarbonTracker` uses the cache. The folder is now made the first
+  time `lair.noaa` saves a cache file there. When it cannot be made, the error
+  names the folder and `LAIR_CACHE_DIR` (`cache=False` caches nothing).
+  `lair.config.CACHE_DIR` is unchanged, but the folder may not exist until
+  something is cached.
 - Docstrings that said something false are corrected:
   `background.phase_shift_corrected_baseline` no longer lists a `timezone`
   parameter it does not have, `rolling_baseline` no longer prints `{q}` and

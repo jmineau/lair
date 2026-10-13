@@ -49,9 +49,9 @@ def get_data_dir(env_var: str, path: str | os.PathLike | None = None) -> Path:
 # LAIR
 LAIR_DIR = os.path.dirname(__file__)
 
-#: User Cache Directory
+#: User Cache Directory. Importing lair does not create it: the code that
+#: caches (``lair.noaa``) makes the folder the first time it writes there, so
+#: ``import lair`` works where the home directory is read-only.
 CACHE_DIR = os.getenv(
     "LAIR_CACHE_DIR", os.path.join(os.path.expanduser("~"), ".cache", "lair")
 )
-# exist_ok: many processes (e.g. SLURM tasks) may import lair at once
-os.makedirs(CACHE_DIR, exist_ok=True)
