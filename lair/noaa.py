@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from lair.config import get_data_dir
+from lair.config import get_cache_dir, get_data_dir
 from lair.records import Cacher, ftp_download, list_files
 
 #: Environment variable holding the CarbonTracker data root
@@ -48,8 +48,9 @@ def _cache_file(*parts: str) -> Path:
     """
     Path of a file in the lair cache, with its folder made.
 
-    The cache folder (``LAIR_CACHE_DIR``, default ``~/.cache/lair``) is made
-    here, the first time something is cached, and not when lair is imported.
+    The cache folder (``LAIR_CACHE_DIR``, default ``~/.cache/lair``) is read
+    and made here, the first time something is cached, and not when lair is
+    imported.
 
     Parameters
     ----------
@@ -68,9 +69,8 @@ def _cache_file(*parts: str) -> Path:
         location is read-only). The message names the folder and says to set
         ``LAIR_CACHE_DIR``.
     """
-    from lair.config import CACHE_DIR
-
-    path = Path(CACHE_DIR, *parts)
+    cache_dir = get_cache_dir()
+    path = cache_dir.joinpath(*parts)
     try:
         # exist_ok: many processes (e.g. SLURM tasks) may make it at once
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -79,7 +79,7 @@ def _cache_file(*parts: str) -> Path:
         raise OSError(
             e.errno,
             f"Cannot make the cache folder {path.parent} ({e.strerror}). Set "
-            f"the LAIR_CACHE_DIR environment variable (now {CACHE_DIR}) to a "
+            f"the LAIR_CACHE_DIR environment variable (now {cache_dir}) to a "
             "folder you can write to, or pass cache=False.",
         ) from e
     return path

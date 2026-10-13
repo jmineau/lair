@@ -39,6 +39,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   conda-forge. `env-dev.yml` is gone, so lair's dependencies are listed in one
   place, and CI runs the whole test suite in that environment.
 
+### Removed
+
+- `lair.config.CACHE_DIR`, a string fixed when lair was imported (#105). Code
+  that read it calls `lair.config.get_cache_dir()`, which returns a `Path`
+  (`str(get_cache_dir())` for the old string). Code that set it, such as a test,
+  sets the `LAIR_CACHE_DIR` environment variable instead
+  (`os.environ["LAIR_CACHE_DIR"] = ...`, or pytest's `monkeypatch.setenv`).
+
 ### Fixed
 
 - `hrrr.Winds` reads the right hour for times with a time zone (#99). The S3
@@ -70,8 +78,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   though only `lair.noaa.CarbonTracker` uses the cache. The folder is now made the first
   time `lair.noaa` saves a cache file there. When it cannot be made, the error
   names the folder and `LAIR_CACHE_DIR` (`cache=False` caches nothing).
-  `lair.config.CACHE_DIR` is unchanged, but the folder may not exist until
-  something is cached.
+  The folder may not exist until something is cached.
+- `LAIR_CACHE_DIR` takes effect when it is set after `import lair` (#105). lair
+  read it once, when `lair.config` was imported, so a script or notebook that
+  set it below its imports got the default folder (`.cache/lair` in the home
+  directory) and no message. It is now read when the cache is used, as the other
+  `LAIR_*` variables are, through the new `lair.config.get_cache_dir()`. An
+  empty `LAIR_CACHE_DIR` is now read as unset (the default folder), as the data
+  variables already are; it used to mean the current folder.
 - Docstrings that said something false are corrected:
   `background.phase_shift_corrected_baseline` no longer lists a `timezone`
   parameter it does not have, `rolling_baseline` no longer prints `{q}` and
