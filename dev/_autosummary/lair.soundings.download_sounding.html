@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=49d23da5"></script>
+    <script src="../_static/documentation_options.js?v=79617494"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.soundings.SOUNDING_DIR_ENV" href="lair.soundings.SOUNDING_DIR_ENV.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev24+gc3f40741b" />
+  <meta name="docsearch:version" content="2026.12.9.dev27+ga19c52675" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -796,7 +796,9 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The 3-letter station identifier (e.g. <code class="docutils literal notranslate"><span class="pre">'SLC'</span></code>) passed to the Wyoming
 service via siphon. Also used as the file-name prefix.</p></li>
-<li><p><strong>date</strong> (<em>datetime</em>) – The date and time.</p></li>
+<li><p><strong>date</strong> (<em>datetime</em>) – The date and time. Naive times are taken as UTC; tz-aware times are
+converted to UTC. Wyoming reads the time as UTC, and the file is named
+for the UTC hour (<code class="docutils literal notranslate"><span class="pre">SLC_2024011512.csv</span></code> for 12 UTC).</p></li>
 <li><p><strong>dst</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The destination directory. Defaults to <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR/&lt;station&gt;</span></code>.</p></li>
 </ul>
 </dd>

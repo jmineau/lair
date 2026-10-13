@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=49d23da5"></script>
+    <script src="../_static/documentation_options.js?v=79617494"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.transects.snap_to_route" href="lair.transects.snap_to_route.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev24+gc3f40741b" />
+  <meta name="docsearch:version" content="2026.12.9.dev27+ga19c52675" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -791,7 +791,7 @@
 <dt class="sig sig-object py" id="lair.transects.split_transits">
 <span class="sig-prename descclassname"><span class="pre">lair.transects.</span></span><span class="sig-name descname"><span class="pre">split_transits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_gap_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">600.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reversal_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_span_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/transects.html#split_transits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.transects.split_transits" title="Link to this definition">#</a></dt>
 <dd><p>Cut a platform’s along-route coordinate into one-way transits.</p>
-<p><code class="docutils literal notranslate"><span class="pre">s</span></code> is the along-route position of each sample (metres; NaN where the sample is not
+<p><code class="docutils literal notranslate"><span class="pre">s</span></code> is the along-route position of each sample (meters; NaN where the sample is not
 on this route) and <code class="docutils literal notranslate"><span class="pre">time</span></code> is sorted. A transit ends</p>
 <ul class="simple">
 <li><p>at a time gap longer than <code class="docutils literal notranslate"><span class="pre">max_gap_s</span></code> (overnight, or the record stops), or</p></li>

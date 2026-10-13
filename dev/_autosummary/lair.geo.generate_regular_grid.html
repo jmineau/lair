@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=49d23da5"></script>
+    <script src="../_static/documentation_options.js?v=79617494"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo.extent2bbox" href="lair.geo.extent2bbox.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev24+gc3f40741b" />
+  <meta name="docsearch:version" content="2026.12.9.dev27+ga19c52675" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -791,9 +791,9 @@
 <dt class="sig sig-object py" id="lair.geo.generate_regular_grid">
 <span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">generate_regular_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ymin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ymax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#generate_regular_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.generate_regular_grid" title="Link to this definition">#</a></dt>
 <dd><p>Generate a regular grid. Grid points are cell centers.</p>
-<p>Cells start at <code class="docutils literal notranslate"><span class="pre">xmin</span></code>/<code class="docutils literal notranslate"><span class="pre">ymin</span></code> and continue while their centre is below
-<code class="docutils literal notranslate"><span class="pre">xmax</span></code>/<code class="docutils literal notranslate"><span class="pre">ymax</span></code> (a centre landing exactly on the max edge may or may not
-be included, depending on float error). Centres are
+<p>Cells start at <code class="docutils literal notranslate"><span class="pre">xmin</span></code>/<code class="docutils literal notranslate"><span class="pre">ymin</span></code> and continue while their center is below
+<code class="docutils literal notranslate"><span class="pre">xmax</span></code>/<code class="docutils literal notranslate"><span class="pre">ymax</span></code> (a center landing exactly on the max edge may or may not
+be included, depending on float error). Centers are
 <code class="docutils literal notranslate"><span class="pre">min</span> <span class="pre">+</span> <span class="pre">d</span> <span class="pre">*</span> <span class="pre">(i</span> <span class="pre">+</span> <span class="pre">0.5)</span></code>, rounded to 10 decimals only to drop float noise
 (<code class="docutils literal notranslate"><span class="pre">40.35</span></code>, not <code class="docutils literal notranslate"><span class="pre">40.349999999999994</span></code>), which matches PYSTILT’s grid axes.</p>
 <dl class="field-list simple">
