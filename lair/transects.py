@@ -198,7 +198,7 @@ def merge_route_points(
     """
     Merge the fixed points of several routes into one network point set.
 
-    ``routes_xy`` are ``(n_i, 2)`` arrays of projected coordinates (metres). Points of the
+    ``routes_xy`` are ``(n_i, 2)`` arrays of projected coordinates (meters). Points of the
     first route are kept; a point of a later route is added only if it is farther than
     ``tol`` from every point already in the set, otherwise it is snapped to the nearest
     existing one. Returns ``(network_xy, index)`` where ``index[i][k]`` is the network
@@ -306,7 +306,7 @@ def snap_to_route(
     """
     Nearest route point of each sample: ``(index, distance)``, index -1 beyond ``max_dist``.
 
-    Both arrays are ``(n, 2)`` in the same projected metres. A sample with a NaN position
+    Both arrays are ``(n, 2)`` in the same projected meters. A sample with a NaN position
     (e.g. no time in :func:`lag_positions`) gets index -1 and distance NaN.
     """
     from scipy.spatial import cKDTree
@@ -336,7 +336,7 @@ def split_transits(
     """
     Cut a platform's along-route coordinate into one-way transits.
 
-    ``s`` is the along-route position of each sample (metres; NaN where the sample is not
+    ``s`` is the along-route position of each sample (meters; NaN where the sample is not
     on this route) and ``time`` is sorted. A transit ends
 
     - at a time gap longer than ``max_gap_s`` (overnight, or the record stops), or

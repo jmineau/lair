@@ -503,7 +503,7 @@ def seasonal(data: pd.DataFrame, statistic: str | list[str] = "mean") -> pd.Data
     """
     Aggregate data by season and year.
 
-    Seasons are DJF, MAM, JJA and SON. DJF is labelled by the year of its
+    Seasons are DJF, MAM, JJA and SON. DJF is labeled by the year of its
     January and February: DJF 2024 is Dec 2023 + Jan 2024 + Feb 2024 (December
     rows count towards the next year). The other seasons keep their calendar
     year.

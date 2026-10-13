@@ -156,7 +156,7 @@ def test_bin_polar_explicit_bin_edges():
 
 def test_bin_polar_int_xbins_is_number_of_edges():
     # An int xbins is the number of evenly spaced edges from min to max, so it
-    # gives xbins - 1 speed bins, labelled by their right edges.
+    # gives xbins - 1 speed bins, labeled by their right edges.
     df = pd.DataFrame({"ws": [0.0, 1.0, 2.0, 3.0, 4.0], "wd": [10.0] * 5})
     out = air.bin_polar(df, xbins=5)
     assert list(out["x_bin"].cat.categories) == [1.0, 2.0, 3.0, 4.0]

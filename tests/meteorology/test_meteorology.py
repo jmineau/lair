@@ -191,7 +191,7 @@ class TestHypsometric:
         assert deltaz == pytest.approx(863.2259, rel=1e-6)
 
     def test_top_height_from_bottom_height(self):
-        # Plain floats: Z1 adds to the thickness in metres
+        # Plain floats: Z1 adds to the thickness in meters
         Z2 = met.hypsometric(Tv=280.0, p1=1e5, p2=9e4, Z1=1289.0)
         assert isinstance(Z2, float)
         assert pytest.approx(1289.0 + 863.2259, rel=1e-6) == Z2

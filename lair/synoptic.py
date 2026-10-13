@@ -184,7 +184,7 @@ def hourly_mean(
     """
     Hourly means of a :func:`timeseries` frame, with wind averaged as a vector.
 
-    Numeric columns are averaged over each clock hour (labelled by its start).
+    Numeric columns are averaged over each clock hour (labeled by its start).
     Where ``speed`` and ``direction`` exist, ``Uwind``/``Vwind`` are computed per
     observation and averaged, and ``direction`` is replaced by the direction of
     the mean vector (NaN for a dead-calm hour); ``speed`` stays the scalar mean.
