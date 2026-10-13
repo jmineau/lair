@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=c0ca869f"></script>
+    <script src="../_static/documentation_options.js?v=49d23da5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.config" href="lair.config.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev22+gbe1e608a2" />
+  <meta name="docsearch:version" content="2026.12.9.dev24+gc3f40741b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -790,7 +790,14 @@
 <dl class="py data">
 <dt class="sig sig-object py" id="lair.config.CACHE_DIR">
 <span class="sig-prename descclassname"><span class="pre">lair.config.</span></span><span class="sig-name descname"><span class="pre">CACHE_DIR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/home/runner/.cache/lair'</span></span><a class="headerlink" href="#lair.config.CACHE_DIR" title="Link to this definition">#</a></dt>
-<dd><p>User Cache Directory</p>
+<dd><p>the code that
+caches (<code class="docutils literal notranslate"><span class="pre">lair.noaa</span></code>) makes the folder the first time it writes there, so
+<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> works where the home directory is read-only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>User Cache Directory. Importing lair does not create it</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

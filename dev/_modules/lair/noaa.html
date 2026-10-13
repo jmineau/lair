@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=c0ca869f"></script>
+    <script src="../../_static/documentation_options.js?v=49d23da5"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev22+gbe1e608a2" />
+  <meta name="docsearch:version" content="2026.12.9.dev24+gc3f40741b" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -463,6 +463,47 @@
     <span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_cache_file</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Path of a file in the lair cache, with its folder made.</span>
+
+<span class="sd">    The cache folder (``LAIR_CACHE_DIR``, default ``~/.cache/lair``) is made</span>
+<span class="sd">    here, the first time something is cached, and not when lair is imported.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *parts : str</span>
+<span class="sd">        Path of the file below the cache folder.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Path</span>
+<span class="sd">        The cache file (not created).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    OSError</span>
+<span class="sd">        If the folder cannot be made (a :exc:`PermissionError` when the</span>
+<span class="sd">        location is read-only). The message names the folder and says to set</span>
+<span class="sd">        ``LAIR_CACHE_DIR``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CACHE_DIR</span>
+
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">CACHE_DIR</span><span class="p">,</span> <span class="o">*</span><span class="n">parts</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># exist_ok: many processes (e.g. SLURM tasks) may make it at once</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># OSError(errno, ...) gives the matching subclass, e.g. PermissionError</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Cannot make the cache folder </span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="si">}</span><span class="s2">). Set &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the LAIR_CACHE_DIR environment variable (now </span><span class="si">{</span><span class="n">CACHE_DIR</span><span class="si">}</span><span class="s2">) to a &quot;</span>
+            <span class="s2">&quot;folder you can write to, or pass cache=False.&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">return</span> <span class="n">path</span>
+
+
 <div class="viewcode-block" id="CarbonTracker">
 <a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CarbonTracker</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -478,7 +519,7 @@
 <span class="sd">    directory : str</span>
 <span class="sd">        The directory for the version.</span>
 <span class="sd">    cache : bool</span>
-<span class="sd">        Whether to cache the data.</span>
+<span class="sd">        Whether to cache the data (in ``LAIR_CACHE_DIR``).</span>
 
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
@@ -511,7 +552,10 @@
 <span class="sd">        carbon_tracker_directory : str, optional</span>
 <span class="sd">            The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.</span>
 <span class="sd">        cache : bool, optional</span>
-<span class="sd">            Whether to cache the data, by default True.</span>
+<span class="sd">            Whether to cache the data, by default True. The cache is a file in</span>
+<span class="sd">            ``LAIR_CACHE_DIR`` (default ``~/.cache/lair``), and the folder is</span>
+<span class="sd">            made the first time the data is read, so ``cache=False`` needs no</span>
+<span class="sd">            writable folder.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;specie&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
@@ -820,14 +864,8 @@
         <span class="n">files</span> <span class="o">=</span> <span class="n">list_files</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">&quot;*nc&quot;</span><span class="p">,</span> <span class="n">full_names</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CACHE_DIR</span>
-
-            <span class="n">cache_file</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">Path</span><span class="p">(</span><span class="n">CACHE_DIR</span><span class="p">)</span>
-                <span class="o">/</span> <span class="s2">&quot;carbontracker&quot;</span>
-                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span>
-                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
-                <span class="o">/</span> <span class="s2">&quot;molefractions.pkl&quot;</span>
+            <span class="n">cache_file</span> <span class="o">=</span> <span class="n">_cache_file</span><span class="p">(</span>
+                <span class="s2">&quot;carbontracker&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="s2">&quot;molefractions.pkl&quot;</span>
             <span class="p">)</span>
             <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">_open_mfdataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
@@ -933,14 +971,11 @@
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CACHE_DIR</span>
-
-            <span class="n">cache_file</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">Path</span><span class="p">(</span><span class="n">CACHE_DIR</span><span class="p">)</span>
-                <span class="o">/</span> <span class="s2">&quot;carbontracker&quot;</span>
-                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span>
-                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
-                <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;molefractions_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+            <span class="n">cache_file</span> <span class="o">=</span> <span class="n">_cache_file</span><span class="p">(</span>
+                <span class="s2">&quot;carbontracker&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;molefractions_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">_open_mfdataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
