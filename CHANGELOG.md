@@ -47,6 +47,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   with a time zone are now converted to UTC to choose the analysis, in
   `create_s3_group_url` and so in every key built on it; times without one are
   taken as UTC, as before, and `Winds.data` keeps the times as given.
+- `soundings.download_sounding` asks Wyoming for the right hour, and names the
+  file for it, when `date` has a time zone (#104). It formatted the time in its
+  own zone, though Wyoming reads UTC, so 05:00 in `America/Denver` (12:00 UTC)
+  asked for the 05 UTC sounding and saved it as `SLC_2024011505.csv`. Times with
+  a time zone are now converted to UTC first, and times without one are taken
+  as UTC, as before. `download_soundings` and `get_soundings` already converted,
+  so only a direct call was affected.
 - `background.thoning` and `thoning_filter` no longer raise `ZeroDivisionError`
   on data more often than daily (hourly, 30-minute) with no gap of a day, or on
   daily data within one leap year (#94). NOAA's filter estimates
