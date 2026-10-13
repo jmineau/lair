@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=9b36353f"></script>
+    <script src="../../_static/documentation_options.js?v=c0ca869f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev21+gf1f16d57a" />
+  <meta name="docsearch:version" content="2026.12.9.dev22+gbe1e608a2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -433,6 +433,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair._optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional_dependency</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">rotate_winds</span><span class="p">,</span> <span class="n">wind_direction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_timezones</span>
 
 <span class="c1"># Optional dependencies</span>
 <span class="n">boto3</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;boto3&quot;</span><span class="p">)</span>
@@ -464,7 +465,8 @@
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    run_hour : dt.datetime</span>
-<span class="sd">        run hour of the model</span>
+<span class="sd">        run hour of the model. A naive time is taken as UTC; a tz-aware time</span>
+<span class="sd">        is converted to UTC when the S3 key is built.</span>
 <span class="sd">    level_type : &#39;sfc&#39; | &#39;prs&#39;</span>
 <span class="sd">        vertical level</span>
 <span class="sd">    var_level : str</span>
@@ -555,7 +557,9 @@
 <span class="sd">    lon : float</span>
 <span class="sd">        longitude of point</span>
 <span class="sd">    times : list[dt.datetime]</span>
-<span class="sd">        list of times to download</span>
+<span class="sd">        Hours of the analyses to download. A naive time is taken as UTC. A</span>
+<span class="sd">        tz-aware time is converted to UTC to choose the analysis, so 05:00 in</span>
+<span class="sd">        ``America/Denver`` in January reads the 12 UTC analysis.</span>
 <span class="sd">    nearest_point : xr.Dataset</span>
 <span class="sd">        nearest point to lat, lon</span>
 <span class="sd">    chunk_id : numpy.ndarray</span>
@@ -565,7 +569,8 @@
 <span class="sd">        dictionary of zarr ids with var as key</span>
 <span class="sd">    data : pd.DataFrame</span>
 <span class="sd">        10 m winds: ``u``, ``v`` (earth-relative), ``ws`` (speed from u and v)</span>
-<span class="sd">        and ``wd`` (see :func:`winds_frame`).</span>
+<span class="sd">        and ``wd`` (see :func:`winds_frame`). The index is ``times`` as given,</span>
+<span class="sd">        so tz-aware times keep their time zone.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">lat</span><span class="p">:</span> <span class="nb">float</span>
@@ -620,6 +625,9 @@
 <span class="sd">     - Start of the zarr array data format</span>
 <span class="sd">     - Includes metadata such as the grid</span>
 
+<span class="sd">    The archive is keyed by the UTC run hour: a naive ``run_hour`` is taken as</span>
+<span class="sd">    UTC, and a tz-aware one is converted to UTC.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    zarr_id : ZarrId</span>
@@ -633,7 +641,11 @@
 <span class="sd">        s3 group url</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;s3://hrrrzarr/&quot;</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Skip when using boto3</span>
-    <span class="n">url</span> <span class="o">+=</span> <span class="n">zarr_id</span><span class="o">.</span><span class="n">run_hour</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+    <span class="c1"># strftime formats a tz-aware time in its own zone, so convert it first</span>
+    <span class="p">(</span><span class="n">run_hour</span><span class="p">,)</span> <span class="o">=</span> <span class="n">convert_timezones</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">run_hour</span><span class="p">],</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">localize</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">url</span> <span class="o">+=</span> <span class="n">run_hour</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">level_type</span><span class="si">}</span><span class="s2">/%Y%m%d/%Y%m%d_%Hz_</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">model_type</span><span class="si">}</span><span class="s2">.zarr/&quot;</span>
     <span class="p">)</span>
     <span class="n">url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">var_level</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">var_name</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -766,7 +778,8 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    times : [dt.datetime]</span>
-<span class="sd">        list of datetime objects with hour specified [UTC]</span>
+<span class="sd">        list of datetime objects with hour specified. Naive times are taken as</span>
+<span class="sd">        UTC; tz-aware times are converted to UTC when the S3 keys are built.</span>
 <span class="sd">    level_type : str</span>
 <span class="sd">        veritical level</span>
 <span class="sd">    variables : [(str, str)]</span>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=9b36353f"></script>
+    <script src="../_static/documentation_options.js?v=c0ca869f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.hrrr.Winds" href="lair.hrrr.Winds.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev21+gf1f16d57a" />
+  <meta name="docsearch:version" content="2026.12.9.dev22+gbe1e608a2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -794,7 +794,8 @@
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>run_hour</strong> (<em>dt.datetime</em>) – run hour of the model</p></li>
+<li><p><strong>run_hour</strong> (<em>dt.datetime</em>) – run hour of the model. A naive time is taken as UTC; a tz-aware time
+is converted to UTC when the S3 key is built.</p></li>
 <li><p><strong>level_type</strong> (<em>'sfc'</em><em> | </em><em>'prs'</em>) – vertical level</p></li>
 <li><p><strong>var_level</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – variable level</p></li>
 <li><p><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – variable name</p></li>
