@@ -41,6 +41,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- `background.thoning` and `thoning_filter` no longer raise `ZeroDivisionError`
+  on data more often than daily (hourly, 30-minute) with no gap of a day, or on
+  daily data within one leap year (#94). NOAA's filter estimates
+  `sampleinterval` only from steps of about a day or more; when there are none,
+  lair now passes the median step between samples (in days, 1/24 for hourly
+  data). Every call that worked before gives the same result, and the
+  docstrings document `sampleinterval`.
 - `import lair.soundings` without `requests` raises the same "Optional `lair`
   dependency 'requests' not found" error as the other optional imports, not a
   bare `ModuleNotFoundError`.
