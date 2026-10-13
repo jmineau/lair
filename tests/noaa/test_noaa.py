@@ -619,6 +619,63 @@ class TestMolefractionsProperty:
             _ = ct.molefractions
 
 
+class TestCacheFolder:
+    """The cache folder is made when the cache is first used, not at import."""
+
+    @pytest.fixture(params=["read-only", "file"])
+    def blocked(self, request, tmp_path, monkeypatch):
+        """Point ``CACHE_DIR`` where no folder can be made, and return it."""
+        import lair.config
+
+        parent = tmp_path / "blocked"
+        if request.param == "file":
+            # Works for root too: nothing can be made inside a regular file
+            parent.write_text("not a folder")
+        else:
+            parent.mkdir()
+            parent.chmod(0o500)
+            try:
+                (parent / "probe").mkdir()
+            except OSError:
+                pass
+            else:
+                parent.chmod(0o700)
+                pytest.skip("cannot make a read-only folder (running as root?)")
+        cache_dir = parent / "cache"
+        monkeypatch.setattr(lair.config, "CACHE_DIR", str(cache_dir))
+        yield cache_dir
+        if parent.is_dir():
+            parent.chmod(0o700)  # let pytest clean up
+
+    @pytest.fixture(params=["ct_ch4", "ct_co2"])
+    def ct(self, request):
+        return request.getfixturevalue(request.param)
+
+    def test_error_names_the_folder_and_the_variable(self, ct, blocked):
+        ct.cache = True
+        with pytest.raises(OSError, match="LAIR_CACHE_DIR") as err:
+            _ = ct.molefractions
+        assert str(blocked) in str(err.value)
+        # Same kind of error as the file system raised (PermissionError, ...)
+        assert type(err.value) is type(err.value.__cause__)
+        assert not blocked.exists()
+
+    def test_folder_that_exists_is_fine(self, tmp_path, monkeypatch):
+        # Many processes (e.g. SLURM tasks) make the folder at about the same time
+        import lair.config
+        import lair.noaa as noaa
+
+        monkeypatch.setattr(lair.config, "CACHE_DIR", str(tmp_path / "cache"))
+        first = noaa._cache_file("a", "b.pkl")
+        assert first.parent.is_dir()
+        assert noaa._cache_file("a", "b.pkl") == first
+
+    def test_no_cache_needs_no_folder(self, ct, blocked):
+        assert ct.cache is False
+        assert len(ct.molefractions.time) > 0
+        assert not blocked.exists()
+
+
 class TestDownloadRequests:
     @pytest.fixture
     def calls(self, monkeypatch):

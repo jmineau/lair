@@ -44,6 +44,47 @@ def _open_mfdataset(files, preprocess=None, parallel: bool = False) -> xr.Datase
     )
 
 
+def _cache_file(*parts: str) -> Path:
+    """
+    Path of a file in the lair cache, with its folder made.
+
+    The cache folder (``LAIR_CACHE_DIR``, default ``~/.cache/lair``) is made
+    here, the first time something is cached, and not when lair is imported.
+
+    Parameters
+    ----------
+    *parts : str
+        Path of the file below the cache folder.
+
+    Returns
+    -------
+    Path
+        The cache file (not created).
+
+    Raises
+    ------
+    OSError
+        If the folder cannot be made (a :exc:`PermissionError` when the
+        location is read-only). The message names the folder and says to set
+        ``LAIR_CACHE_DIR``.
+    """
+    from lair.config import CACHE_DIR
+
+    path = Path(CACHE_DIR, *parts)
+    try:
+        # exist_ok: many processes (e.g. SLURM tasks) may make it at once
+        path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        # OSError(errno, ...) gives the matching subclass, e.g. PermissionError
+        raise OSError(
+            e.errno,
+            f"Cannot make the cache folder {path.parent} ({e.strerror}). Set "
+            f"the LAIR_CACHE_DIR environment variable (now {CACHE_DIR}) to a "
+            "folder you can write to, or pass cache=False.",
+        ) from e
+    return path
+
+
 class CarbonTracker(metaclass=ABCMeta):
     """
     NOAA CarbonTracker
@@ -57,7 +98,7 @@ class CarbonTracker(metaclass=ABCMeta):
     directory : str
         The directory for the version.
     cache : bool
-        Whether to cache the data.
+        Whether to cache the data (in ``LAIR_CACHE_DIR``).
 
     Methods
     -------
@@ -90,7 +131,10 @@ class CarbonTracker(metaclass=ABCMeta):
         carbon_tracker_directory : str, optional
             The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.
         cache : bool, optional
-            Whether to cache the data, by default True.
+            Whether to cache the data, by default True. The cache is a file in
+            ``LAIR_CACHE_DIR`` (default ``~/.cache/lair``), and the folder is
+            made the first time the data is read, so ``cache=False`` needs no
+            writable folder.
         """
         if not hasattr(self, "specie"):
             raise TypeError(
@@ -379,14 +423,8 @@ class CarbonTrackerCH4(CarbonTracker):
         files = list_files(str(path), "*nc", full_names=True, recursive=True)
 
         if self.cache:
-            from lair.config import CACHE_DIR
-
-            cache_file = (
-                Path(CACHE_DIR)
-                / "carbontracker"
-                / self.specie
-                / self.version
-                / "molefractions.pkl"
+            cache_file = _cache_file(
+                "carbontracker", self.specie, self.version, "molefractions.pkl"
             )
             open_mfdataset = Cacher(_open_mfdataset, str(cache_file))
         else:
@@ -483,14 +521,11 @@ class CarbonTrackerCO2(CarbonTracker):
             )
 
         if self.cache:
-            from lair.config import CACHE_DIR
-
-            cache_file = (
-                Path(CACHE_DIR)
-                / "carbontracker"
-                / self.specie
-                / self.version
-                / f"molefractions_{self.grid}.pkl"
+            cache_file = _cache_file(
+                "carbontracker",
+                self.specie,
+                self.version,
+                f"molefractions_{self.grid}.pkl",
             )
             open_mfdataset = Cacher(_open_mfdataset, str(cache_file))
         else:

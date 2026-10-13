@@ -1,12 +1,8 @@
-"""
-Tests for lair.config (data-dir resolution, paths + verbosity toggle).
+"""Tests for lair.config (data-dir resolution, cache location)."""
 
-NOTE: importing lair.config has side effects (creates CACHE_DIR, sets a pandas
-option). Verbosity is a plain boolean, not the stdlib logging module.
-"""
-
-import importlib
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -40,22 +36,44 @@ class TestGetDataDir:
             config.get_data_dir("LAIR_TEST_DIR")
 
 
-def test_cache_dir_created_on_import():
-    # config creates CACHE_DIR at import time.
-    assert os.path.isdir(config.CACHE_DIR)
+@pytest.fixture(params=["writable", "read-only", "file"])
+def home(request, tmp_path):
+    """A home directory that is writable, read-only, or not a folder at all."""
+    home = tmp_path / "home"
+    if request.param == "file":
+        # Works for root too: nothing can be made inside a regular file
+        home.write_text("not a folder")
+        yield home
+        return
+    home.mkdir()
+    if request.param == "read-only":
+        home.chmod(0o500)
+        try:
+            (home / "probe").mkdir()
+        except OSError:
+            pass
+        else:
+            home.chmod(0o700)
+            pytest.skip("cannot make a read-only folder (running as root?)")
+    yield home
+    home.chmod(0o700)  # let pytest clean up
 
 
-def test_cache_dir_creation_tolerates_concurrent_import(monkeypatch, tmp_path):
-    # Many SLURM tasks importing lair at once: another process can create
-    # CACHE_DIR between an exists() check and makedirs(). Simulate that race.
-    monkeypatch.setenv("LAIR_CACHE_DIR", str(tmp_path))
-    monkeypatch.setattr(os.path, "exists", lambda path: False)
-    try:
-        importlib.reload(config)
-        assert str(tmp_path) == config.CACHE_DIR
-    finally:
-        monkeypatch.undo()
-        importlib.reload(config)
+def test_import_makes_no_cache_folder(home, tmp_path):
+    # `import lair` must not touch the file system for the cache: with a
+    # read-only home (a container, a sandbox) it used to fail with a
+    # PermissionError, even for code that never reads the cache.
+    env = {k: v for k, v in os.environ.items() if k not in ("LAIR_CACHE_DIR", "HOME")}
+    env.update(HOME=str(home), USERPROFILE=str(home), LAIR_SKIP_CCG_DOWNLOAD="1")
+    result = subprocess.run(
+        [sys.executable, "-c", "import lair"],
+        env=env,
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert not (home / ".cache").exists()
 
 
 def test_no_verbose_flag():
