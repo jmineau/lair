@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=76844c48"></script>
+    <script src="_static/documentation_options.js?v=9168e630"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,10 +55,10 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="next" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev14+g83ac32f6c" />
+  <meta name="docsearch:version" content="2026.12.9.dev15+g76ba87a72" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -146,6 +146,20 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="api.html">
     API Reference
@@ -270,6 +284,20 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="api.html">
     API Reference
   </a>
@@ -382,10 +410,11 @@ regarding land-air interactions. It is designed to make it easier to work with
 atmospheric data: meteorological calculations, emissions inventories, NOAA
 greenhouse-gas products, soundings, HRRR winds, background estimation, mobile
 transects, geospatial helpers, and plotting.</p>
+<p>New to lair? Install it (below), then start with the <a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a>.</p>
 <div class="toctree-wrapper compound">
 </div>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<span id="id1"></span><h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">lair</span></code> is installed from GitHub, not from PyPI. On PyPI, <code class="docutils literal notranslate"><span class="pre">lair</span></code> is an
 unrelated project (a helper for Flask web services), so <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">lair</span></code>
 installs the wrong package.</p>
@@ -460,7 +489,7 @@ with every extra, ESMF included, from <code class="docutils literal notranslate"
 <a class="reference external" href="https://github.com/jmineau/lair/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
 </section>
 <section id="optional-dependencies">
-<span id="id1"></span><h3>Optional dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">#</a></h3>
+<span id="id2"></span><h3>Optional dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">#</a></h3>
 <p>The core install is light. Modules that need heavier packages import them only
 when used; name the matching extras in square brackets, as in the commands above:</p>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -594,7 +623,7 @@ activating, set <code class="docutils literal notranslate"><span class="pre">PRO
 </section>
 </section>
 <section id="data-locations">
-<h2>Data locations<a class="headerlink" href="#data-locations" title="Link to this heading">#</a></h2>
+<span id="id3"></span><h2>Data locations<a class="headerlink" href="#data-locations" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">lair</span></code> has no built-in data paths. Functions and classes that read from a
 local data archive take an explicit directory argument and otherwise fall back
 to an environment variable:</p>
@@ -712,11 +741,11 @@ software and/or acknowledge me.</p>
                   
 <div class="prev-next-area">
     <a class="right-next"
-       href="api.html"
+       href="quickstart.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Quickstart</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
