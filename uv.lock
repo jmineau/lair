@@ -1700,7 +1700,7 @@ requires-dist = [
     { name = "numcodecs", marker = "extra == 'formats'" },
     { name = "numpy" },
     { name = "pandas" },
-    { name = "pint" },
+    { name = "pint", specifier = ">=0.24.4" },
     { name = "pint-xarray" },
     { name = "pyproj", marker = "extra == 'geo'" },
     { name = "rasterio", marker = "extra == 'geo'" },

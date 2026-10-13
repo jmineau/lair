@@ -7,6 +7,8 @@ import-time side effects documented in AGENTS.md.
 
 import logging
 import os
+import subprocess
+import sys
 
 import pint
 import pytest
@@ -44,12 +46,42 @@ def test_compound_units_print_in_dimension_order():
 
     ``inventories.Inventory.get_units`` splits a unit on "/" into its quantity,
     area and time parts, so it relies on this order (pint's default sort gives
-    ``kg/d/km**2``). It holds on pint <= 0.25 and on pint >= 0.26, which keep
-    ``sort_by_dimensionality`` in different places.
+    ``kg/d/km**2``). It holds on pint 0.24 and 0.25 and on pint >= 0.26, which
+    keep ``sort_by_dimensionality`` in different places.
     """
     from lair import units
 
+    assert units.formatter.default_sort_func is lair.sort_by_dimensionality
     assert f"{units('kg/km**2/day').units:~C}" == "kg/km**2/d"
+
+
+def test_import_fails_when_pint_has_no_sort_by_dimensionality():
+    """
+    ``import lair`` raises ``ImportError`` when pint has no ``sort_by_dimensionality``.
+
+    lair used to go on with pint's own unit order, and ``Inventory.get_units``
+    then mislabeled a flux unit's parts. The function is removed from both
+    places pint keeps it, in a new interpreter, after the packages lair imports
+    before its own pint import.
+    """
+    code = (
+        "import importlib\n"
+        "import cf_xarray.units, pint_xarray\n"
+        "for name in ('pint.delegates.formatter',\n"
+        "             'pint.delegates.formatter._compound_unit_helpers'):\n"
+        "    try:\n"
+        "        module = importlib.import_module(name)\n"
+        "    except ImportError:\n"
+        "        continue\n"
+        "    if hasattr(module, 'sort_by_dimensionality'):\n"
+        "        del module.sort_by_dimensionality\n"
+        "import lair\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True
+    )
+    assert result.returncode != 0
+    assert "cannot import name 'sort_by_dimensionality'" in result.stderr
 
 
 def test_reexports_present():
