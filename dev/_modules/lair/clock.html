@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=9168e630"></script>
+    <script src="../../_static/documentation_options.js?v=78e93917"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev15+g76ba87a72" />
+  <meta name="docsearch:version" content="2026.12.9.dev17+g595988584" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -493,12 +493,21 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        time_range : str | list[Union[str, dt.datetime, None]] | tuple[Union[str, dt.datetime, None], Union[str, dt.datetime, None]] | slice | None</span>
-<span class="sd">            _description_, by default None</span>
-<span class="sd">        start : Union[_input_types, dt.datetime], optional</span>
-<span class="sd">            _description_, by default None</span>
-<span class="sd">        stop : Union[_input_types, dt.datetime], optional</span>
-<span class="sd">            _description_, by default None</span>
+<span class="sd">        time_range : TimeRange | str | list | tuple | slice | None, optional</span>
+<span class="sd">            The whole range in one argument: another ``TimeRange``; an ISO 8601</span>
+<span class="sd">            string, which covers the period it names (``&quot;2024&quot;`` is all of</span>
+<span class="sd">            2024, ``&quot;2024-07-04&quot;`` that day); a ``(start, stop)`` pair; or a</span>
+<span class="sd">            slice. With no ``start`` or ``stop`` either, the default (None) is a</span>
+<span class="sd">            range open at both ends.</span>
+<span class="sd">        start : str | dt.datetime | numpy.datetime64 | None, optional</span>
+<span class="sd">            The start, when ``time_range`` is not given. A string stands for</span>
+<span class="sd">            the start of the period it names. None leaves the range open at the</span>
+<span class="sd">            start.</span>
+<span class="sd">        stop : str | dt.datetime | numpy.datetime64 | None, optional</span>
+<span class="sd">            The stop, when ``time_range`` is not given. It is not part of the</span>
+<span class="sd">            range. A string stands for the end of the period it names:</span>
+<span class="sd">            ``&quot;2024&quot;`` stops at 2025-01-01 00:00. None leaves the range open at</span>
+<span class="sd">            the end.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -609,13 +618,17 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_iso</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">inclusive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Parse the ISO8601 formatted time string and return a namedtuple with the parsed components.</span>
+<span class="sd">        Parse an ISO 8601 time string, such as ``&quot;2024-07&quot;``, into a datetime.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        string : str</span>
-<span class="sd">            The ISO8601 formatted time string.</span>
-<span class="sd">        inclusive</span>
+<span class="sd">            The ISO 8601 time string, from a year down to fractions of a second.</span>
+<span class="sd">            A trailing ``Z`` is accepted; the result has no time zone.</span>
+<span class="sd">        inclusive : bool, optional</span>
+<span class="sd">            If False (the default), return the start of the period the string</span>
+<span class="sd">            names. If True, return its end, which is the start of the next</span>
+<span class="sd">            period: ``&quot;2024-07&quot;`` gives 2024-08-01 00:00.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

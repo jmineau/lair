@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=9168e630"></script>
+    <script src="../_static/documentation_options.js?v=78e93917"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.clock.TimeRange.total_seconds" href="lair.clock.TimeRange.total_seconds.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev15+g76ba87a72" />
+  <meta name="docsearch:version" content="2026.12.9.dev17+g595988584" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -793,12 +793,15 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="lair.clock.TimeRange.parse_iso">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">TimeRange.</span></span><span class="sig-name descname"><span class="pre">parse_iso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inclusive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/clock.html#TimeRange.parse_iso"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.clock.TimeRange.parse_iso" title="Link to this definition">#</a></dt>
-<dd><p>Parse the ISO8601 formatted time string and return a namedtuple with the parsed components.</p>
+<dd><p>Parse an ISO 8601 time string, such as <code class="docutils literal notranslate"><span class="pre">&quot;2024-07&quot;</span></code>, into a datetime.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>string</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The ISO8601 formatted time string.</p></li>
-<li><p><strong>inclusive</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>)</p></li>
+<li><p><strong>string</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The ISO 8601 time string, from a year down to fractions of a second.
+A trailing <code class="docutils literal notranslate"><span class="pre">Z</span></code> is accepted; the result has no time zone.</p></li>
+<li><p><strong>inclusive</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If False (the default), return the start of the period the string
+names. If True, return its end, which is the start of the next
+period: <code class="docutils literal notranslate"><span class="pre">&quot;2024-07&quot;</span></code> gives 2024-08-01 00:00.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
