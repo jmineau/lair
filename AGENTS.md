@@ -495,9 +495,20 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   docs ask for `esmf=*=nompi*` (the build the pixi environment uses).
 - **`lair.background` imports `_ccg_filter` (and so scipy) at the top**, so even
   `rolling_baseline`, which uses only pandas, needs the `science` extra and the
-  downloaded file. NOAA's `ccgFilter` divides by the number of gaps longer than
-  a day, so a series with none (hourly data) raises `ZeroDivisionError` unless
-  `sampleinterval=` is given (`thoning(hourly, sampleinterval=1)` works).
+  downloaded file.
+- **`thoning`'s `sampleinterval` (#94) is in days of 1/365 decimal year**
+  (`dinterval = sampleinterval / 365` in NOAA's `ccgFilter`; `shortterm` and
+  `longterm` use the same days): the step of the even grid the filter
+  *interpolates* the residuals onto before its FFT. NOAA's default (0) averages
+  the steps longer than 0.002739 years and divides by zero when there are none
+  (sub-daily data without a day's gap, or daily data within one leap year,
+  whose steps are 1/366 year); only then `thoning_filter` passes the median
+  step (1/24 for hourly), so every call that worked before is unchanged. A
+  grid coarser than the data samples it rather than averaging it:
+  `sampleinterval=1` on hourly data with a 5 ppm diurnal cycle put the curve
+  5 ppm high, and hourly data with a 3-day gap gets NOAA's estimate of 3 and
+  the same bias. On a smooth series the hourly curve with 1/24 matched the
+  daily curve within 0.003 ppm. Test any change against the daily curve.
 - `setup_ccg_filter()` at import time touches the filesystem. Don't import
   `lair` inside an immutable / read-only environment without
   pre-installing `_ccg_filter.py` (or set `LAIR_SKIP_CCG_DOWNLOAD=1`).
