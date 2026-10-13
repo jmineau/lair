@@ -338,11 +338,16 @@ when one breaks.
   no extras, and `docs/conf.py` mocks them (`autodoc_mock_imports`). An example
   can use only the core dependencies. One that needs an extra, such as cartopy
   for the map functions in `lair.geo`, cannot run in the docs build.
-- **A page that cannot run** (`docs/examples/inventory.rst` needs ESMF and
-  EDGAR's files) shows its code and output as `.. code-block:: ipython`,
-  recorded from one real run in the pixi environment, and says so in a note at
-  the top with the date. Rerun it and paste the new output when the code it
-  calls changes.
+- **A page that cannot run** shows its code and output as `.. code-block::
+  ipython`, recorded from one real run in the pixi environment, and says so in
+  a note at the top with the date. Four do: `docs/examples/inventory.rst`
+  (ESMF and EDGAR's files), `soundings.rst` (siphon, a download from Wyoming),
+  `hrrr_winds.rst` (boto3, s3fs, zarr, cartopy, a download from AWS) and
+  `carbontracker.rst` (a 35 MB download from NOAA's FTP server). Run their code
+  in an empty folder (the blocks use relative paths, so no machine's paths
+  reach the page) and paste the new output when the code they call changes.
+  `docs/examples/clock.rst` needs only the core dependencies and runs when the
+  docs build.
 
 ## Testing
 
