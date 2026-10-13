@@ -1606,7 +1606,7 @@ packages:
   - netcdf4
   - numpy
   - pandas
-  - pint
+  - pint>=0.24.4
   - pint-xarray
   - xarray
   - boto3 ; extra == 'requests'

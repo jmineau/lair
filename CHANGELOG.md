@@ -26,6 +26,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Changed
 
+- lair requires pint 0.24.4 or newer (`pint>=0.24.4`; breaking), and `import lair`
+  raises `ImportError` when pint has no `sort_by_dimensionality`, which sets the
+  order a unit prints in (`kg/km**2/d`). It used to go on with pint's own order
+  (`kg/d/km**2`), and `Inventory.get_units`, which reads a flux unit's quantity,
+  area and time in the dimension order, then mislabeled the parts. pint 0.24.0
+  is the first release with the function, but 0.24.0 to 0.24.3 do not import
+  with flexparser 0.4, so the floor is 0.24.4. If you have an older pint,
+  upgrade it (`pip install -U "pint>=0.24.4"`).
 - The install instructions (README and front page) are rewritten. They install
   from GitHub with the extras (`pip install lair` is an unrelated project on
   PyPI), with a conda route that has ESMF (needed for grid-cell areas, inventory

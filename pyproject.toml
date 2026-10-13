@@ -19,7 +19,7 @@ dependencies = [
   "netcdf4",
   "numpy",
   "pandas",
-  "pint",
+  "pint>=0.24.4",  # sort_by_dimensionality (lair/__init__.py); 0.24.0 to 0.24.3 do not import with flexparser 0.4
   "pint-xarray",
   "xarray",
 ]

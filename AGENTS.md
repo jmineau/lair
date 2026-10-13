@@ -141,11 +141,16 @@ from lair.noaa import ...
    in dimension order (`kg/km**2/d`, not pint's alphabetical `kg/d/km**2`).
    Not cosmetic: `inventories.Inventory.get_units` splits a flux unit on `/`
    and reads quantity, area and time in that order. pint >= 0.26 exports the
-   function from `pint.delegates.formatter`; pint <= 0.25 has it only in the
-   private `_compound_unit_helpers`, and pint 0.26 needs Python >= 3.12, so
+   function from `pint.delegates.formatter`; pint 0.24 and 0.25 have it only in
+   the private `_compound_unit_helpers`, and pint 0.26 needs Python >= 3.12, so
    lair imports from both places while it supports Python 3.11 (pyrefly
-   flags the one the installed pint lacks; each line suppresses it).
-   `tests/test_pkg.py` checks the order.
+   flags the one the installed pint lacks; each line suppresses it). When
+   neither place has it (an older pint, or a pint that moves it again)
+   `import lair` raises `ImportError`: there is no fallback to pint's own
+   order, which would leave `get_units` mislabeling the parts. The pint
+   requirement is `>=0.24.4`: 0.24 is the oldest pint with the function, but
+   0.24.0 to 0.24.3 do not import with flexparser 0.4 (2024-11-07), which a new
+   install gets. `tests/test_pkg.py` checks the order and the failure.
 4. Calls `setup_ccg_filter()` which, **on first import**, FTP-downloads
    `ccg_filter.zip` from `ftp.gml.noaa.gov` into a temporary directory
    (`lair/.ccg_filter-*`, removed afterwards), takes only `ccg_filter.py` from
