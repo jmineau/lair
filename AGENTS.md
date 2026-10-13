@@ -107,7 +107,7 @@ justfile             dev tasks (uv-based): sync/lint/type-check/test/...
 There are no subpackages; everything is a top-level module.
 
 > **No WIP modules left:** `noaa.py` (CarbonTracker CH4/CO2 + GML) was the last
-> one excluded from ruff/pyrefly; it is fully linted and type-checked since #25.
+> one excluded from ruff/pyrefly; it is fully linted and type-checked.
 > The SODAR reader (`lair.mesowest`) moved to the `uataq` package on 2026-09-21
 > (CHPC-archive readers don't belong in lair).
 
@@ -184,7 +184,7 @@ Implications:
   user's `.gitignore`/`.git/info/exclude` already handles it.
 - The pint registry is process-global; importing `lair` mutates other code's
   pint behavior in the same process.
-- **No global xarray options** (#38): `lair.inventories` used to run
+- **No global xarray options:** `lair.inventories` used to run
   `xr.set_options(keep_attrs=True)` at import. Code that needs attributes kept
   scopes it: `@_keep_attrs` (absolute_emissions, integrate, plot) or a `with
   xr.set_options(keep_attrs=True):` block (loaders' `_open`/`_process` in
@@ -195,7 +195,7 @@ Implications:
 
 ## Logging
 
-lair uses the standard `logging` module (since #22; `config.verbose` and
+lair uses the standard `logging` module (`config.verbose` and
 `vprint` are gone). Each module has `logger = logging.getLogger(__name__)`;
 no handler is attached anywhere. Never add handlers (not even a `NullHandler`,
 which would also hide warnings from Python's last-resort handler), set levels,
@@ -434,7 +434,7 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - `lair.constants` exists because pint hasn't shipped real constants
   support; if pint adds it (see linked issue 1078 in the module
   docstring), revisit.
-- `lair.meteorology` is **plain SI in, plain SI out** (issue #41): it uses
+- `lair.meteorology` is **plain SI in, plain SI out**: it uses
   the `lair.constants` values as plain SI floats (`.m_as(...)`), so float /
   numpy / xarray inputs give plain numbers (`hypsometric` -> m,
   `ideal_gas_law("p")` -> Pa). pint Quantity inputs (incl. pint-quantified
@@ -446,7 +446,7 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   daily is uppercase (`'D'`; `'d'` is deprecated). `read_csv(delim_whitespace=)`
   is gone (use `sep=r'\s+'`), `DataFrame.interpolate` refuses object-dtype
   columns, and `pd.options.mode.copy_on_write` is always on. lair does not set
-  it on pandas 2 (that would change the caller's whole session; #40): write
+  it on pandas 2 (that would change the caller's whole session): write
   code that is correct either way (no chained assignment, `.copy()` a slice
   before setting values). Audit with the suite on pandas 2 under
   `copy_on_write = "warn"` and `-W error::pandas.errors.SettingWithCopyWarning`.
@@ -479,7 +479,7 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   `Cacher` key, and with it every existing cache, is unchanged. The `xr.concat`
   calls (EPA v2 monthly, soundings) still use the defaults; they did not warn
   on the tests or on the real archives (2026-10-11).
-- **Inventory time labels (2026-10, #37):** every loader labels a step by the
+- **Inventory time labels (2026-10):** every loader labels a step by the
   *start* of its period (Jan 1 / the 1st / 00:00 / top of the hour). Use the
   file's CF `time_bnds` when it has them (`_label_period_starts`: Vulcan,
   WetCHARTs); EDGAR v8 monthly has none (15th of each month) and is floored to
@@ -512,7 +512,7 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - **`lair.background` imports `_ccg_filter` (and so scipy) at the top**, so even
   `rolling_baseline`, which uses only pandas, needs the `science` extra and the
   downloaded file.
-- **`thoning`'s `sampleinterval` (#94) is in days of 1/365 decimal year**
+- **`thoning`'s `sampleinterval` is in days of 1/365 decimal year**
   (`dinterval = sampleinterval / 365` in NOAA's `ccgFilter`; `shortterm` and
   `longterm` use the same days): the step of the even grid the filter
   *interpolates* the residuals onto before its FFT. NOAA's default (0) averages
