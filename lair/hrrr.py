@@ -14,6 +14,7 @@ import xarray as xr
 
 from lair._optional import import_optional_dependency
 from lair.air import rotate_winds, wind_direction
+from lair.clock import convert_timezones
 
 # Optional dependencies
 boto3 = import_optional_dependency("boto3")
@@ -43,7 +44,8 @@ class ZarrId:
     Attributes
     ----------
     run_hour : dt.datetime
-        run hour of the model
+        run hour of the model. A naive time is taken as UTC; a tz-aware time
+        is converted to UTC when the S3 key is built.
     level_type : 'sfc' | 'prs'
         vertical level
     var_level : str
@@ -125,7 +127,9 @@ class Winds:
     lon : float
         longitude of point
     times : list[dt.datetime]
-        list of times to download
+        Hours of the analyses to download. A naive time is taken as UTC. A
+        tz-aware time is converted to UTC to choose the analysis, so 05:00 in
+        ``America/Denver`` in January reads the 12 UTC analysis.
     nearest_point : xr.Dataset
         nearest point to lat, lon
     chunk_id : numpy.ndarray
@@ -135,7 +139,8 @@ class Winds:
         dictionary of zarr ids with var as key
     data : pd.DataFrame
         10 m winds: ``u``, ``v`` (earth-relative), ``ws`` (speed from u and v)
-        and ``wd`` (see :func:`winds_frame`).
+        and ``wd`` (see :func:`winds_frame`). The index is ``times`` as given,
+        so tz-aware times keep their time zone.
     """
 
     lat: float
@@ -187,6 +192,9 @@ def create_s3_group_url(zarr_id: ZarrId, prefix: bool = True) -> str:
      - Start of the zarr array data format
      - Includes metadata such as the grid
 
+    The archive is keyed by the UTC run hour: a naive ``run_hour`` is taken as
+    UTC, and a tz-aware one is converted to UTC.
+
     Parameters
     ----------
     zarr_id : ZarrId
@@ -200,7 +208,11 @@ def create_s3_group_url(zarr_id: ZarrId, prefix: bool = True) -> str:
         s3 group url
     """
     url = "s3://hrrrzarr/" if prefix else ""  # Skip when using boto3
-    url += zarr_id.run_hour.strftime(
+    # strftime formats a tz-aware time in its own zone, so convert it first
+    (run_hour,) = convert_timezones(
+        [zarr_id.run_hour], totz="UTC", fromtz="UTC", localize=True
+    )
+    url += run_hour.strftime(
         f"{zarr_id.level_type}/%Y%m%d/%Y%m%d_%Hz_{zarr_id.model_type}.zarr/"
     )
     url += f"{zarr_id.var_level}/{zarr_id.var_name}"
@@ -318,7 +330,8 @@ def generate_zarr_ids(
     Parameters
     ----------
     times : [dt.datetime]
-        list of datetime objects with hour specified [UTC]
+        list of datetime objects with hour specified. Naive times are taken as
+        UTC; tz-aware times are converted to UTC when the S3 keys are built.
     level_type : str
         veritical level
     variables : [(str, str)]

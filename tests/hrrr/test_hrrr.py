@@ -52,6 +52,62 @@ class TestS3Urls:
         )
 
 
+def _group_key(run_hour):
+    zid = hrrr.ZarrId(run_hour, "sfc", "10m_above_ground", "UGRD", "anl")
+    return hrrr.create_s3_group_url(zid, prefix=False).split(".zarr")[0]
+
+
+class TestS3KeyTimeZones:
+    """The archive is keyed by UTC run hour, whatever zone the time is in (#99)."""
+
+    def test_naive_is_utc(self):
+        assert (
+            _group_key(dt.datetime(2024, 1, 15, 12)) == "sfc/20240115/20240115_12z_anl"
+        )
+
+    def test_aware_utc(self):
+        t = dt.datetime(2024, 1, 15, 12, tzinfo=dt.UTC)
+        assert _group_key(t) == "sfc/20240115/20240115_12z_anl"
+
+    @pytest.mark.parametrize(
+        ("local", "key"),
+        [
+            # MST (-07:00): 05:00 local is 12 UTC
+            (dt.datetime(2024, 1, 15, 5), "sfc/20240115/20240115_12z_anl"),
+            # MDT (-06:00): 06:00 local is 12 UTC
+            (dt.datetime(2024, 7, 15, 6), "sfc/20240715/20240715_12z_anl"),
+            # 20:00 MST is 03 UTC the next day: the date in the key moves too
+            (dt.datetime(2024, 1, 15, 20), "sfc/20240116/20240116_03z_anl"),
+        ],
+    )
+    def test_aware_local_is_converted(self, local, key):
+        from zoneinfo import ZoneInfo
+
+        aware = local.replace(tzinfo=ZoneInfo("America/Denver"))
+        assert _group_key(aware) == key
+
+    def test_aware_pandas_timestamp(self):
+        import pandas as pd
+
+        t = pd.Timestamp("2024-01-15 05:00", tz="America/Denver")
+        assert _group_key(t) == "sfc/20240115/20240115_12z_anl"
+
+    def test_chunk_url_uses_utc(self):
+        from zoneinfo import ZoneInfo
+
+        zid = hrrr.ZarrId(
+            dt.datetime(2024, 1, 15, 5, tzinfo=ZoneInfo("America/Denver")),
+            "sfc",
+            "10m_above_ground",
+            "UGRD",
+            "anl",
+        )
+        assert hrrr.create_s3_chunk_url(zid, "4.3") == (
+            "sfc/20240115/20240115_12z_anl.zarr/10m_above_ground/UGRD/"
+            "10m_above_ground/UGRD/4.3"
+        )
+
+
 def test_format_chunk_id_prepends_time(zarr_id):
     # fcst chunks are addressed as "0.<chunk_id>".
     assert zarr_id.format_chunk_id("3") == "0.3"
@@ -293,3 +349,41 @@ def test_winds_end_to_end(monkeypatch):
     # (3, 4) blows toward the NE, i.e. from 216.87 deg; (-2, 0.5) blows toward
     # the WNW, i.e. from 104.04 deg
     np.testing.assert_allclose(winds.data["wd"], [216.87, 104.04], atol=0.01)
+
+
+def test_winds_reads_utc_hour_for_aware_times(monkeypatch):
+    """Aware times read the analysis of their UTC hour; the index keeps their zone."""
+    from zoneinfo import ZoneInfo
+
+    import xarray as xr
+
+    lon, lat = -97.5, 38.5
+    index = _chunk_index(lon, lat)
+    utc_hours = [dt.datetime(2024, 1, 15, 12), dt.datetime(2024, 1, 15, 13)]
+    times = [
+        dt.datetime(2024, 1, 15, 5, tzinfo=ZoneInfo("America/Denver")),
+        dt.datetime(2024, 1, 15, 6, tzinfo=ZoneInfo("America/Denver")),
+    ]
+
+    # The fake archive holds only the 12 and 13 UTC analyses, keyed as on S3
+    objects = {}
+    for var, values in (("UGRD", [3.0, -2.0]), ("VGRD", [4.0, 0.5])):
+        for t, value in zip(utc_hours, values, strict=True):
+            grid = np.full((150, 150), 99.0, dtype="<f2")
+            grid[20, 20] = value
+            zid = hrrr.ZarrId(t, "sfc", "10m_above_ground", var, "anl")
+            objects[hrrr.create_s3_chunk_url(zid, "2.2")] = _blosc(grid)
+    s3 = _FakeS3(objects)
+
+    monkeypatch.setattr(hrrr.s3fs, "S3FileSystem", lambda anon: "fs")
+    monkeypatch.setattr(hrrr.s3fs, "S3Map", lambda url, s3: url)
+    monkeypatch.setattr(xr, "open_zarr", lambda store: index, raising=True)
+    monkeypatch.setattr(hrrr.boto3, "resource", lambda **kwargs: s3)
+
+    winds = hrrr.Winds(lat=lat, lon=lon, times=times)
+
+    assert sorted(key for _, key in s3.requested) == sorted(objects)
+    assert list(winds.data.index) == times
+    assert str(winds.data.index.tz) == "America/Denver"
+    np.testing.assert_allclose(winds.data["u"], [3.0, -2.0], atol=1e-6)
+    np.testing.assert_allclose(winds.data["v"], [4.0, 0.5], atol=1e-6)
