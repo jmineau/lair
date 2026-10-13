@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=78e93917"></script>
+    <script src="../_static/documentation_options.js?v=87138b6f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.background.thoning" href="lair.background.thoning.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev17+g595988584" />
+  <meta name="docsearch:version" content="2026.12.9.dev19+g264c0b64d" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -795,7 +795,21 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>pd.Series</em>) – Time series of data to be smoothed. Must have a datetime index.</p></li>
-<li><p><strong>**kwargs</strong> – Additional keyword arguments to pass to the ccgFilter class.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments to pass to the ccgFilter class. Its times
+are in days of 1/365 of a decimal year (a calendar day, or 366/365 of
+one in a leap year): the cutoffs <code class="docutils literal notranslate"><span class="pre">shortterm</span></code> (default 80) and
+<code class="docutils literal notranslate"><span class="pre">longterm</span></code> (default 667), and <code class="docutils literal notranslate"><span class="pre">sampleinterval</span></code>, the step of the
+even grid that the filter interpolates the data onto. With the default,
+<code class="docutils literal notranslate"><span class="pre">sampleinterval=0</span></code>, the filter uses the mean of the steps between
+samples that are about a day or more. When there are none (data more
+often than daily with no gap of a day, or daily data within one leap
+year), lair passes the median step between samples instead (1/24 for
+hourly data). For data more often than daily <em>with</em> gaps of a day or
+more, the filter’s estimate is the mean length of those gaps. The
+filter interpolates onto its grid, it does not average, so a grid that
+coarse samples the data at about the same hour each time and a diurnal
+cycle shifts the curve. Pass the data’s own step there
+(<code class="docutils literal notranslate"><span class="pre">sampleinterval=1/24</span></code> for hourly data).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
