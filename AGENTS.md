@@ -456,6 +456,10 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   time has no `fromtz` (it never guesses the machine's zone), and localizes
   naive times with pandas `tz_localize` semantics in both drivers, so a DST
   ambiguous/nonexistent time raises unless `ambiguous=`/`nonexistent=` is given.
+  A time formatted into a request, an S3 key or a file name is converted to UTC
+  first, because `strftime` and f-string formats write a tz-aware time in its
+  own zone: `soundings` (`_naive_utc`) and `hrrr` (`create_s3_group_url`) do,
+  and a new function that does this should too.
 - **Vulcan (fixed 2026-09-21):** the files are `(time, y, x)` on an LCC grid
   with 2D lat/lon, so `Inventory.__init__` picks x/y spatial dims when there's
   no `lon` dim. `Vulcan.clip`/`reproject` follow the base-class API (return the
