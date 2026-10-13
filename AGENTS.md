@@ -394,11 +394,10 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
   `records.ftp_download` against an in-memory `ftplib.FTP`, CarbonTracker/GML
   readers on small synthetic files. `pcaps.valleyheatdeficit` is checked
   against an independent trapezoid VHD of a synthetic sounding.
-- **Two pandas majors:** lair's dependencies allow pandas 2 and 3, but the uv
-  and pixi environments both lock pandas 3, so no maintained environment
-  exercises pandas 2 (the hand-built conda env that had pandas 2.2 is no
-  longer maintained). A pandas change is checked on pandas 3 only, unless you
-  build a pandas 2 environment for it.
+- **pandas 3 only:** `pyproject.toml` requires `pandas>=3.0`, and the uv and
+  pixi environments both lock pandas 3, so every environment exercises the
+  version lair supports. Don't add a branch, a `try/except` or a test for pandas
+  2; the test suite has run only on pandas 3.
 
 ## Conventions
 
@@ -452,17 +451,15 @@ test dirs; module-local fixtures stay in the module's dir; keep the top-level
 - **pandas 3 idioms:** hourly alias is lowercase (`'1h'`; `'1H'` raises) and
   daily is uppercase (`'D'`; `'d'` is deprecated). `read_csv(delim_whitespace=)`
   is gone (use `sep=r'\s+'`), `DataFrame.interpolate` refuses object-dtype
-  columns, and `pd.options.mode.copy_on_write` is always on. lair does not set
-  it on pandas 2 (that would change the caller's whole session): write
-  code that is correct either way (no chained assignment, `.copy()` a slice
-  before setting values). Audit with the suite on pandas 2 under
-  `copy_on_write = "warn"` and `-W error::pandas.errors.SettingWithCopyWarning`.
+  columns, and `pd.options.mode.copy_on_write` is always on: write code with no
+  chained assignment.
 - **Timezones in `clock`:** naive times are UTC by convention.
-  `dt2decimalDate` converts tz-aware input to UTC first (same answer under
-  pytz/pandas 2 and zoneinfo/pandas 3). `convert_timezones` raises if a naive
+  `dt2decimalDate` converts tz-aware input to UTC first (same answer for pytz and
+  zoneinfo zones). `convert_timezones` raises if a naive
   time has no `fromtz` (it never guesses the machine's zone), and localizes
   naive times with pandas `tz_localize` semantics in both drivers, so a DST
-  ambiguous/nonexistent time raises unless `ambiguous=`/`nonexistent=` is given.
+  ambiguous/nonexistent time raises a `ValueError` (from pandas) unless
+  `ambiguous=`/`nonexistent=` is given.
   A time formatted into a request, an S3 key or a file name is converted to UTC
   first, because `strftime` and f-string formats write a tz-aware time in its
   own zone: `soundings` (`_naive_utc`) and `hrrr` (`create_s3_group_url`) do,

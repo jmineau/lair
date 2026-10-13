@@ -1699,7 +1699,7 @@ requires-dist = [
     { name = "networkx", marker = "extra == 'geo'" },
     { name = "numcodecs", marker = "extra == 'formats'" },
     { name = "numpy" },
-    { name = "pandas" },
+    { name = "pandas", specifier = ">=3.0" },
     { name = "pint", specifier = ">=0.24.4" },
     { name = "pint-xarray" },
     { name = "pyproj", marker = "extra == 'geo'" },

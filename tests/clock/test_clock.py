@@ -190,8 +190,8 @@ class TestDecimalDate:
         assert clock.decimalDate2dt(clock.dt2decimalDate(d)) == d
 
     def test_aware_timestamp_is_converted_to_utc(self):
-        # 12:00 MDT is 18:00 UTC; pandas 2 (pytz) and 3 (zoneinfo) used to
-        # disagree here (wall clock vs elapsed-since-local-Jan-1)
+        # 12:00 MDT is 18:00 UTC (not the wall clock, and not the time elapsed
+        # since local Jan 1)
         t = pd.Timestamp("2024-06-01 12:00", tz="America/Denver")
         expected = 2024 + (152 + 18 / 24) / 366
         assert clock.dt2decimalDate(t) == pytest.approx(expected, abs=1e-12)
@@ -429,7 +429,7 @@ class TestAggregation:
         df = pd.DataFrame(
             {"v": range(48)}, index=pd.date_range("2024-01-01", periods=48, freq="h")
         )
-        out = clock.diurnal(df)  # default freq must parse on pandas >= 3.0
+        out = clock.diurnal(df)  # the default freq must parse (uppercase '1H' does not)
         assert len(out) == 24  # two days collapse onto 24 unique hours
 
     def test_seasonal_indexes_by_season_and_year(self):
