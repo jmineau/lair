@@ -23,6 +23,11 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `log10formatter`, `truncate_colormap` and `terrain_cmap` show a figure, drawn
   from synthetic data. The examples run whenever the docs build, so a change
   that breaks one fails the build.
+- A worked example that converts a methane flux from moles to mass with the
+  `mass_flux` pint context and a molecular weight, and warns that pint's `kt` is
+  a knot. The clock example gains a section on the errors `convert_timezones`
+  raises: a time without `fromtz`, and a local time that daylight saving time
+  repeats or skips (`ambiguous=`, `nonexistent=`).
 
 ### Changed
 
