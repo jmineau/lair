@@ -3,12 +3,17 @@ Average a time series by local hour and by season
 
 This example takes a year of hourly data stamped in UTC, moves it to local
 time, and averages it by hour of the day, over the afternoon, and by season.
-Two rules come out of it:
+Three rules come out of it:
 
 * **A time without a time zone is UTC** everywhere in lair. Convert to local
   time before you group by hour, or the hours are UTC hours.
 * :func:`~lair.clock.diurnal` **and** :func:`~lair.clock.seasonal` average by
   hour of the day and by season and year.
+* :func:`~lair.clock.convert_timezones` **does not guess.** The shortcuts
+  (``UTC2MST`` and the rest) name the zone they convert from. The function
+  itself needs ``fromtz`` for a time without a zone, and ``ambiguous=`` or
+  ``nonexistent=`` for a local time that daylight saving time repeats or skips
+  (see `Times that will not convert`_).
 
 This page runs when the docs build, on made-up data.
 
@@ -118,9 +123,94 @@ is converted to UTC first):
    dt2decimalDate(dt.datetime(2024, 7, 1))
    decimalDate2dt(2024.5)
 
+Times that will not convert
+---------------------------
+
+:func:`~lair.clock.convert_timezones` stops with a ``ValueError`` when it would
+have to guess. The message says what to add.
+
+**A time without a zone, and no** ``fromtz``. The shortcuts above pass
+``fromtz="UTC"``, which is the first rule at work. Called on its own, the
+function does not apply that rule: it asks.
+
+.. ipython:: python
+
+   from lair.clock import convert_timezones
+
+   try:
+       convert_timezones(data, "America/Denver", driver="pandas")
+   except ValueError as err:
+       print(err)
+
+   convert_timezones(data, "America/Denver", fromtz="UTC", driver="pandas").head(2)
+
+A time that already has a zone, such as ``local`` above, needs no ``fromtz``: it
+converts from its own.
+
+.. ipython:: python
+
+   convert_timezones(local, "UTC", driver="pandas").head(2)
+
+**A local time that happens twice, or not at all.** Only a zone with daylight
+saving time can do this, and only when you convert *from* it, as ``MTN2UTC`` does
+(local time in Utah to UTC). In Utah, the clocks go back at 2 a.m. on the first
+Sunday in November, so 1:00 to 2:00 happens twice. They go forward on the second
+Sunday in March, so 2:00 to 3:00 never happens. A file whose times are
+Utah clock time has these hours:
+
+.. ipython:: python
+
+   from lair.clock import MST2UTC, MTN2UTC
+
+   fall = pd.DataFrame(
+       {"ch4": range(5)},
+       index=pd.date_range("2023-11-05 00:00", periods=5, freq="1h"),
+   )  # Utah clock time
+   try:
+       MTN2UTC(fall, driver="pandas")
+   except ValueError as err:
+       print(err)
+
+``ambiguous=`` says which of the two 1:00s the file means: ``True`` the first
+(daylight time, 07:00 UTC) or ``False`` the second (standard time, 08:00 UTC).
+``"NaT"`` gives up on it and leaves a missing time, and ``"infer"`` works out
+which is which in a file that lists both, in order. Here is the 1:00 row each
+way:
+
+.. ipython:: python
+
+   MTN2UTC(fall, driver="pandas", ambiguous=True).index[1]
+   MTN2UTC(fall, driver="pandas", ambiguous=False).index[1]
+
+An hour that never happened is the same kind of error, and ``nonexistent=`` is
+the matching option. ``"shift_forward"`` moves a 2:00 time to 3:00, so it lands
+on the same instant as the real 3:00 row. ``"shift_backward"`` moves it to the
+last instant before the gap, and ``"NaT"`` leaves a missing time:
+
+.. ipython:: python
+
+   spring = pd.DataFrame(
+       {"ch4": range(5)},
+       index=pd.date_range("2024-03-10 00:00", periods=5, freq="1h"),
+   )  # Utah clock time
+   try:
+       MTN2UTC(spring, driver="pandas")
+   except ValueError as err:
+       print(err)
+
+   MTN2UTC(spring, driver="pandas", nonexistent="shift_forward")
+
+Standard time and UTC have no such hours, so ``UTC2MTN``, ``UTC2MST`` and
+``MST2UTC`` never raise them. If the instrument that wrote a file kept standard
+time all year (its manual or settings say), convert it with ``MST2UTC`` and
+nothing is ambiguous:
+
+.. ipython:: python
+
+   MST2UTC(fall, driver="pandas").index[1]
+
 Next
 ----
 
 :mod:`lair.clock` lists the rest, including ``TimeRange`` (a start and stop
-parsed from strings such as ``"2024-07"``) and ``convert_timezones``'s options
-for the hours that daylight saving time repeats or skips.
+parsed from strings such as ``"2024-07"``).

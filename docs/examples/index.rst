@@ -5,7 +5,9 @@ Worked examples, one per job, each from loading the data to a checked result.
 Each page says whether it runs when the docs build.
 
 * :doc:`clock`: move UTC data to local time and average it by hour and by
-  season.
+  season, and what to do when a time will not convert.
+* :doc:`units`: convert a flux between moles and mass with a molecular weight,
+  and why pint's ``kt`` is not a kilotonne.
 * :doc:`inventory`: total an emissions inventory over a region, and move it to
   another grid without losing mass.
 * :doc:`soundings`: download soundings, read them, and compute potential
@@ -18,6 +20,7 @@ Each page says whether it runs when the docs build.
    :hidden:
 
    clock
+   units
    inventory
    soundings
    hrrr_winds
