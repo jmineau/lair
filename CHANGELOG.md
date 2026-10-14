@@ -126,6 +126,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   open several files (Vulcan, WetCHARTs, EDGAR v8 annual, the CarbonTracker
   mole fractions). lair names today's values, so what the loaders return does
   not change when xarray's defaults do.
+- `parallel.parallelize` counts the CPUs the process may use, not every CPU of
+  the machine (#114). `num_processes="max"` started one process per CPU of the
+  node (104 on the node where it was found) in a Slurm job, or under `taskset`,
+  that was limited to a few, and an integer request was capped at that same
+  count. Both now use the CPUs the process is allowed (`os.sched_getaffinity`),
+  so a job with 16 CPUs gets at most 16 processes. On macOS and Windows, which
+  do not report them, the machine's CPU count is used, as before.
 
 ## [2026.12.8] - 2026-10-09
 

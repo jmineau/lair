@@ -4,11 +4,26 @@ Parallelization utilities.
 
 import logging
 import multiprocessing
+import os
 from collections.abc import Callable
 from functools import partial
 from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
+
+
+def _allowed_cpus() -> int:
+    """
+    Count the CPUs this process may run on.
+
+    A batch job or ``taskset`` can limit a process to a few CPUs of a machine
+    that has many; ``multiprocessing.cpu_count()`` counts them all.
+    Where the system does not report the allowed CPUs (macOS and Windows), this
+    is the machine's CPU count.
+    """
+    if hasattr(os, "sched_getaffinity"):
+        return len(os.sched_getaffinity(0))
+    return multiprocessing.cpu_count()
 
 
 def parallelize(func: Callable, num_processes: int | Literal["max"] = 1) -> Callable:
@@ -21,8 +36,10 @@ def parallelize(func: Callable, num_processes: int | Literal["max"] = 1) -> Call
         The function to parallelize.
     num_processes : int or 'max', optional
         The number of processes to use. Uses the minimum of the number of
-        items in the iterable and the number of CPUs requested. If 'max',
-        uses all available CPUs. Default is 1.
+        items in the iterable and the number of CPUs requested, and never
+        more than the CPUs this process may run on (a Slurm job's CPUs, not
+        every CPU of the node; macOS and Windows count the machine's CPUs). If
+        'max', uses all of those CPUs. Default is 1.
 
     Returns
     -------
@@ -65,12 +82,12 @@ def parallelize(func: Callable, num_processes: int | Literal["max"] = 1) -> Call
         items = list(iterable)
 
         # Determine the number of processes to use
-        cpu_count = multiprocessing.cpu_count()
+        cpu_count = _allowed_cpus()
         if num_processes == "max":
             processes = cpu_count
         elif num_processes > cpu_count:
             logger.warning(
-                "%s processes requested, but there are only %d CPU(s) available.",
+                "%s processes requested, but this process may use only %d CPU(s).",
                 num_processes,
                 cpu_count,
             )
