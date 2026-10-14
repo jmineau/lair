@@ -63,13 +63,36 @@ and `pixi.lock` with the change. CI fails on a `pixi.lock` that is out of date.
    (`just changelog` sorts the entries by type).
 5. Open a pull request. Link the issue it addresses ("Fixes #12").
 
-## Docs pages with recorded output
+## Docs examples
 
-Examples run when the docs build (see "Docs" in [AGENTS.md](AGENTS.md)), and
-the build has only the core dependencies. A page whose code needs an optional
-extra, ESMF, or a large download cannot run there. Such a page shows its code
-and output as `.. code-block:: ipython`, recorded from one real run in the
-pixi environment, and says so in a note at the top with the date of the run
+Examples run when the docs build, so they show real output, and the build
+fails when one breaks.
+
+- **A figure in a docstring:** put a `.. plot::` directive in the Examples
+  section. Its code runs (doctest `>>>` lines work), and the figure appears
+  under it.
+- **Code in an `.rst` page:** a `.. ipython:: python` block runs and shows each
+  line with its output, as in an IPython session. For a figure, put
+  `@savefig name.png` on the line above the plotting call. A block that raises
+  or warns fails the build; `:okexcept:` or `:okwarning:` under the directive
+  allows one that is meant to. All pages share one session, so each page
+  imports and defines what it uses.
+- **When they run:** `just build-docs` runs everything, as CI does;
+  `just docs-serve` reruns a page's blocks whenever that page is rebuilt.
+  Notebooks and code cells in Markdown pages are off in this project.
+- **Data:** an example uses synthetic data, a small file in the repository, or
+  a public download, never a machine-specific path. Seed random numbers so the
+  figures don't change from build to build.
+- **Optional dependencies:** the docs build in the lean uv environment, where
+  `docs/conf.py` mocks the extras, so an example that runs can use only the
+  core dependencies.
+
+### Pages with recorded output
+
+A page whose code needs an optional extra, ESMF, or a large download cannot
+run in the docs build. Such a page shows its code and output as
+`.. code-block:: ipython`, recorded from one real run in the pixi environment,
+and says so in a note at the top with the date of the run
 (`docs/examples/inventory.rst`, `soundings.rst`, `hrrr_winds.rst` and
 `carbontracker.rst` do; `clock.rst` runs when the docs build).
 
