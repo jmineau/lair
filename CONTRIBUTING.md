@@ -93,8 +93,9 @@ A page whose code needs an optional extra, ESMF, or a large download cannot
 run in the docs build. Such a page shows its code and output as
 `.. code-block:: ipython`, recorded from one real run in the pixi environment,
 and says so in a note at the top with the date of the run
-(`docs/examples/inventory.rst`, `soundings.rst`, `hrrr_winds.rst` and
-`carbontracker.rst` do; `clock.rst` runs when the docs build).
+(`docs/examples/inventory.rst`, `soundings.rst`, `hrrr_winds.rst`,
+`carbontracker.rst` and `background.rst` do; `clock.rst` runs when the docs
+build).
 
 When the code such a page calls changes, run the page's code again and paste
 the new output. Run it in an empty folder: the blocks use relative paths, so

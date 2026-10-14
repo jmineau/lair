@@ -102,6 +102,8 @@ value there; the ``ct_`` columns say which cell, time and level it came from.
 A point outside the grid gets NaN, and a point on a day with no file in the
 folder is dropped.
 
+.. _carbontracker-background:
+
 Background
 ----------
 

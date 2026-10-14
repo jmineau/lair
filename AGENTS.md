@@ -223,6 +223,7 @@ goes on the page that holds its kind:
 | Inventory totals; conservative against bilinear regridding | `examples/inventory` | link |
 | `get_soundings` heights and downloads | `examples/soundings` | link |
 | CarbonTracker sampling and background | `examples/carbontracker` | link |
+| Background methods, side by side, and which one to use | `examples/background` | link |
 | Function and class details | the API pages, from docstrings | `:func:` and `:class:` links, not `autofunction` |
 
 ## Tests
