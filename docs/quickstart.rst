@@ -62,14 +62,7 @@ carry no units.
 Where next
 ----------
 
-* :doc:`examples/inventory`: total an emissions inventory over a region, and
-  move it to another grid without losing mass.
-* :doc:`examples/soundings`: download soundings, read them, and compute
-  potential temperature.
-* :doc:`examples/clock`: move UTC data to local time and average it by hour
-  and by season.
-* :doc:`examples/hrrr_winds` and :doc:`examples/carbontracker`: HRRR winds at
-  a point, and CarbonTracker's background at a set of points.
+* :doc:`examples/index`: worked examples, one per job.
 * :doc:`api`: every module, with what each function and class does. In Python,
   ``help(lair.meteorology)`` shows the same text.
 * :ref:`optional-dependencies`: which extra a module needs.
