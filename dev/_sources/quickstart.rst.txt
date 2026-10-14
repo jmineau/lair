@@ -46,8 +46,9 @@ three pressure levels.
 The rule in :mod:`lair.meteorology` is plain SI in, plain SI out: pressure in
 pascals, temperature in kelvin, and the result in kelvin. So 850 hPa goes in as
 85000. If your values carry units, pass them as quantities of ``lair.units``
-(the `pint <https://pint.readthedocs.io>`_ unit registry). lair converts them to
-SI on the way in, and the result is still a plain number in kelvin:
+(the `pint <https://pint.readthedocs.io>`_ unit registry; :doc:`examples/units`
+converts a flux from moles to mass with it). lair converts them to SI on the way
+in, and the result is still a plain number in kelvin:
 
 .. ipython:: python
 

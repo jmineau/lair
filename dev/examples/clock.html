@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=80a9e58c"></script>
+    <script src="../_static/documentation_options.js?v=a0000583"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Total an inventory over a region" href="inventory.html" />
+    <link rel="next" title="Convert a methane flux from moles to mass" href="units.html" />
     <link rel="prev" title="Examples" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev34+g7dda596bc" />
+  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -381,6 +381,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Average a time series by local hour and by season</a></li>
+<li class="toctree-l1"><a class="reference internal" href="units.html">Convert a methane flux from moles to mass</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inventory.html">Total an inventory over a region</a></li>
 <li class="toctree-l1"><a class="reference internal" href="soundings.html">Read a sounding and compute its potential temperature</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hrrr_winds.html">Get HRRR winds at a point</a></li>
@@ -449,12 +450,17 @@
 <h1>Average a time series by local hour and by season<a class="headerlink" href="#average-a-time-series-by-local-hour-and-by-season" title="Link to this heading">#</a></h1>
 <p>This example takes a year of hourly data stamped in UTC, moves it to local
 time, and averages it by hour of the day, over the afternoon, and by season.
-Two rules come out of it:</p>
+Three rules come out of it:</p>
 <ul class="simple">
 <li><p><strong>A time without a time zone is UTC</strong> everywhere in lair. Convert to local
 time before you group by hour, or the hours are UTC hours.</p></li>
 <li><p><a class="reference internal" href="../_autosummary/lair.clock.diurnal.html#lair.clock.diurnal" title="lair.clock.diurnal"><code class="xref py py-func docutils literal notranslate"><span class="pre">diurnal()</span></code></a> <strong>and</strong> <a class="reference internal" href="../_autosummary/lair.clock.seasonal.html#lair.clock.seasonal" title="lair.clock.seasonal"><code class="xref py py-func docutils literal notranslate"><span class="pre">seasonal()</span></code></a> average by
 hour of the day and by season and year.</p></li>
+<li><p><a class="reference internal" href="../_autosummary/lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_timezones()</span></code></a> <strong>does not guess.</strong> The shortcuts
+(<code class="docutils literal notranslate"><span class="pre">UTC2MST</span></code> and the rest) name the zone they convert from. The function
+itself needs <code class="docutils literal notranslate"><span class="pre">fromtz</span></code> for a time without a zone, and <code class="docutils literal notranslate"><span class="pre">ambiguous=</span></code> or
+<code class="docutils literal notranslate"><span class="pre">nonexistent=</span></code> for a local time that daylight saving time repeats or skips
+(see <a class="reference internal" href="#times-that-will-not-convert">Times that will not convert</a>).</p></li>
 </ul>
 <p>This page runs when the docs build, on made-up data.</p>
 <section id="the-data">
@@ -596,11 +602,112 @@ is converted to UTC first):</p>
 </pre></div>
 </div>
 </section>
+<section id="times-that-will-not-convert">
+<h2>Times that will not convert<a class="headerlink" href="#times-that-will-not-convert" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_autosummary/lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_timezones()</span></code></a> stops with a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when it would
+have to guess. The message says what to add.</p>
+<p><strong>A time without a zone, and no</strong> <code class="docutils literal notranslate"><span class="pre">fromtz</span></code>. The shortcuts above pass
+<code class="docutils literal notranslate"><span class="pre">fromtz=&quot;UTC&quot;</span></code>, which is the first rule at work. Called on its own, the
+function does not apply that rule: it asks.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [26]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_timezones</span>
+
+<span class="gp">In [27]: </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">convert_timezones</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<span class="gp">   ....: </span><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">Naive times need fromtz: the timezone they are in</span>
+
+<span class="gp">In [28]: </span><span class="n">convert_timezones</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gh">Out[28]: </span>
+<span class="go">                                ch4</span>
+<span class="go">2023-11-30 17:00:00-07:00  1.965339</span>
+<span class="go">2023-11-30 18:00:00-07:00  1.964464</span>
+</pre></div>
+</div>
+<p>A time that already has a zone, such as <code class="docutils literal notranslate"><span class="pre">local</span></code> above, needs no <code class="docutils literal notranslate"><span class="pre">fromtz</span></code>: it
+converts from its own.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [29]: </span><span class="n">convert_timezones</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gh">Out[29]: </span>
+<span class="go">                                ch4</span>
+<span class="go">2023-12-01 00:00:00+00:00  1.965339</span>
+<span class="go">2023-12-01 01:00:00+00:00  1.964464</span>
+</pre></div>
+</div>
+<p><strong>A local time that happens twice, or not at all.</strong> Only a zone with daylight
+saving time can do this, and only when you convert <em>from</em> it, as <code class="docutils literal notranslate"><span class="pre">MTN2UTC</span></code> does
+(local time in Utah to UTC). In Utah, the clocks go back at 2 a.m. on the first
+Sunday in November, so 1:00 to 2:00 happens twice. They go forward on the second
+Sunday in March, so 2:00 to 3:00 never happens. A file whose times are
+Utah clock time has these hours:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [30]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">MST2UTC</span><span class="p">,</span> <span class="n">MTN2UTC</span>
+
+<span class="gp">In [31]: </span><span class="n">fall</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">   ....: </span>    <span class="p">{</span><span class="s2">&quot;ch4&quot;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)},</span>
+<span class="gp">   ....: </span>    <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2023-11-05 00:00&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">),</span>
+<span class="gp">   ....: </span><span class="p">)</span>  <span class="c1"># Utah clock time</span>
+<span class="gp">   ....: </span>
+
+<span class="gp">In [32]: </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<span class="gp">   ....: </span><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">Cannot infer dst time from 2023-11-05 01:00:00, try using the &#39;ambiguous&#39; argument</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ambiguous=</span></code> says which of the two 1:00s the file means: <code class="docutils literal notranslate"><span class="pre">True</span></code> the first
+(daylight time, 07:00 UTC) or <code class="docutils literal notranslate"><span class="pre">False</span></code> the second (standard time, 08:00 UTC).
+<code class="docutils literal notranslate"><span class="pre">&quot;NaT&quot;</span></code> gives up on it and leaves a missing time, and <code class="docutils literal notranslate"><span class="pre">&quot;infer&quot;</span></code> works out
+which is which in a file that lists both, in order. Here is the 1:00 row each
+way:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [33]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gh">Out[33]: </span><span class="go">Timestamp(&#39;2023-11-05 07:00:00+0000&#39;, tz=&#39;UTC&#39;)</span>
+
+<span class="gp">In [34]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gh">Out[34]: </span><span class="go">Timestamp(&#39;2023-11-05 08:00:00+0000&#39;, tz=&#39;UTC&#39;)</span>
+</pre></div>
+</div>
+<p>An hour that never happened is the same kind of error, and <code class="docutils literal notranslate"><span class="pre">nonexistent=</span></code> is
+the matching option. <code class="docutils literal notranslate"><span class="pre">&quot;shift_forward&quot;</span></code> moves a 2:00 time to 3:00, so it lands
+on the same instant as the real 3:00 row. <code class="docutils literal notranslate"><span class="pre">&quot;shift_backward&quot;</span></code> moves it to the
+last instant before the gap, and <code class="docutils literal notranslate"><span class="pre">&quot;NaT&quot;</span></code> leaves a missing time:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [35]: </span><span class="n">spring</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">   ....: </span>    <span class="p">{</span><span class="s2">&quot;ch4&quot;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)},</span>
+<span class="gp">   ....: </span>    <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2024-03-10 00:00&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">),</span>
+<span class="gp">   ....: </span><span class="p">)</span>  <span class="c1"># Utah clock time</span>
+<span class="gp">   ....: </span>
+
+<span class="gp">In [36]: </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">MTN2UTC</span><span class="p">(</span><span class="n">spring</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<span class="gp">   ....: </span><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+<span class="go">2024-03-10 02:00:00 is a nonexistent time due to daylight savings time. Try using the &#39;nonexistent&#39; argument.</span>
+
+<span class="gp">In [37]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">spring</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="n">nonexistent</span><span class="o">=</span><span class="s2">&quot;shift_forward&quot;</span><span class="p">)</span>
+<span class="gh">Out[37]: </span>
+<span class="go">                           ch4</span>
+<span class="go">2024-03-10 07:00:00+00:00    0</span>
+<span class="go">2024-03-10 08:00:00+00:00    1</span>
+<span class="go">2024-03-10 09:00:00+00:00    2</span>
+<span class="go">2024-03-10 09:00:00+00:00    3</span>
+<span class="go">2024-03-10 10:00:00+00:00    4</span>
+</pre></div>
+</div>
+<p>Standard time and UTC have no such hours, so <code class="docutils literal notranslate"><span class="pre">UTC2MTN</span></code>, <code class="docutils literal notranslate"><span class="pre">UTC2MST</span></code> and
+<code class="docutils literal notranslate"><span class="pre">MST2UTC</span></code> never raise them. If the instrument that wrote a file kept standard
+time all year (its manual or settings say), convert it with <code class="docutils literal notranslate"><span class="pre">MST2UTC</span></code> and
+nothing is ambiguous:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [38]: </span><span class="n">MST2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gh">Out[38]: </span><span class="go">Timestamp(&#39;2023-11-05 08:00:00+0000&#39;, tz=&#39;UTC&#39;)</span>
+</pre></div>
+</div>
+</section>
 <section id="next">
 <h2>Next<a class="headerlink" href="#next" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.clock.html#module-lair.clock" title="lair.clock"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.clock</span></code></a> lists the rest, including <code class="docutils literal notranslate"><span class="pre">TimeRange</span></code> (a start and stop
-parsed from strings such as <code class="docutils literal notranslate"><span class="pre">&quot;2024-07&quot;</span></code>) and <code class="docutils literal notranslate"><span class="pre">convert_timezones</span></code>’s options
-for the hours that daylight saving time repeats or skips.</p>
+parsed from strings such as <code class="docutils literal notranslate"><span class="pre">&quot;2024-07&quot;</span></code>).</p>
 </section>
 </section>
 
@@ -624,11 +731,11 @@ for the hours that daylight saving time repeats or skips.</p>
       </div>
     </a>
     <a class="right-next"
-       href="inventory.html"
+       href="units.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Total an inventory over a region</p>
+        <p class="prev-next-title">Convert a methane flux from moles to mass</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -657,6 +764,7 @@ for the hours that daylight saving time repeats or skips.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-afternoon">The afternoon</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#by-season">By season</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decimal-dates">Decimal dates</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#times-that-will-not-convert">Times that will not convert</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next">Next</a></li>
 </ul>
   </nav></div>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=80a9e58c"></script>
+    <script src="_static/documentation_options.js?v=a0000583"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="LAIR: Land-Air Interactions Research" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev34+g7dda596bc" />
+  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -482,8 +482,9 @@ three pressure levels.</p>
 <p>The rule in <a class="reference internal" href="_autosummary/lair.meteorology.html#module-lair.meteorology" title="lair.meteorology"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.meteorology</span></code></a> is plain SI in, plain SI out: pressure in
 pascals, temperature in kelvin, and the result in kelvin. So 850 hPa goes in as
 85000. If your values carry units, pass them as quantities of <code class="docutils literal notranslate"><span class="pre">lair.units</span></code>
-(the <a class="reference external" href="https://pint.readthedocs.io">pint</a> unit registry). lair converts them to
-SI on the way in, and the result is still a plain number in kelvin:</p>
+(the <a class="reference external" href="https://pint.readthedocs.io">pint</a> unit registry; <a class="reference internal" href="examples/units.html"><span class="doc">Convert a methane flux from moles to mass</span></a>
+converts a flux from moles to mass with it). lair converts them to SI on the way
+in, and the result is still a plain number in kelvin:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span>
 
 <span class="gp">In [8]: </span><span class="n">poisson</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;degC&quot;</span><span class="p">),</span> <span class="mi">850</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">hPa</span><span class="p">)</span>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=80a9e58c"></script>
+    <script src="../_static/documentation_options.js?v=a0000583"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Quickstart" href="../quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev34+g7dda596bc" />
+  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -381,6 +381,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="clock.html">Average a time series by local hour and by season</a></li>
+<li class="toctree-l1"><a class="reference internal" href="units.html">Convert a methane flux from moles to mass</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inventory.html">Total an inventory over a region</a></li>
 <li class="toctree-l1"><a class="reference internal" href="soundings.html">Read a sounding and compute its potential temperature</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hrrr_winds.html">Get HRRR winds at a point</a></li>
@@ -448,7 +449,9 @@
 Each page says whether it runs when the docs build.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="clock.html"><span class="doc">Average a time series by local hour and by season</span></a>: move UTC data to local time and average it by hour and by
-season.</p></li>
+season, and what to do when a time will not convert.</p></li>
+<li><p><a class="reference internal" href="units.html"><span class="doc">Convert a methane flux from moles to mass</span></a>: convert a flux between moles and mass with a molecular weight,
+and why pint’s <code class="docutils literal notranslate"><span class="pre">kt</span></code> is not a kilotonne.</p></li>
 <li><p><a class="reference internal" href="inventory.html"><span class="doc">Total an inventory over a region</span></a>: total an emissions inventory over a region, and move it to
 another grid without losing mass.</p></li>
 <li><p><a class="reference internal" href="soundings.html"><span class="doc">Read a sounding and compute its potential temperature</span></a>: download soundings, read them, and compute potential
