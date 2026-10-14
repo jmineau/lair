@@ -1043,6 +1043,18 @@ class EDGARv7(EDGAR):
     Research Centre (JRC), the International Energy Agency (IEA), and
     comprising IEA-EDGAR CO2, EDGAR CH4, EDGAR N2O, EDGAR F-GASES version 7.0,
     (2022) European Commission, JRC (Datasets).
+
+    Notes
+    -----
+    The folder is the pollutant's name as typed (``'CH4'``), below the
+    inventory root (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``), with
+    one folder per sector. lair takes the year from each file name and does not
+    read the ``TOTALS`` folder::
+
+        EDGAR/v7/CH4/
+          AGS/v7.0_FT2021_CH4_2021_AGS.0.1x0.1.nc
+          AWB/v7.0_FT2021_CH4_2021_AWB.0.1x0.1.nc
+          ...
     """
 
     version: str = "v7"
@@ -1116,6 +1128,21 @@ class EDGARv8(EDGAR):
     0.15 Mt gap is an inconsistency within EDGAR's own files, not data lair
     fails to read; EDGAR's ``TOTALS`` follow ``PRO_FFF``, so the sum of the
     sectors is 0.15 Mt below them (see GitHub issue #37).
+
+    Notes
+    -----
+    The annual files are in ``EDGAR/v8/CH4/``, as :ref:`the inventory example
+    <inventory-data>` shows. The monthly files (``time_step="monthly"``) are in
+    ``EDGAR/v8/monthly/CH4/``: one file per sector group and year, with the
+    groups ``AGRICULTURE``, ``BUILDINGS``, ``FUEL_EXPLOITATION``,
+    ``IND_COMBUSTION``, ``IND_PROCESSES``, ``POWER_INDUSTRY``, ``TRANSPORT`` and
+    ``WASTE`` each in a folder of its own::
+
+        EDGAR/v8/monthly/CH4/
+          AGRICULTURE/v8.0_FT2022_GHG_CH4_2000_AGRICULTURE_flx.nc
+          AGRICULTURE/v8.0_FT2022_GHG_CH4_2001_AGRICULTURE_flx.nc
+          ...
+          WASTE/v8.0_FT2022_GHG_CH4_2022_WASTE_flx.nc
     """
 
     version: str = "v8"
@@ -1274,6 +1301,18 @@ class EPAv1(EPA):
     - ``"daily"``: ``Forest_Fires`` only.
 
     So the monthly and daily totals are not U.S. totals.
+
+    Notes
+    -----
+    One file per time step, in ``EPA/v1/`` below the inventory root
+    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``). Each holds the year
+    2012, and the time step in the name starts with a capital letter (the
+    ``time_step`` argument itself ignores case)::
+
+        EPA/v1/
+          GEPA_Annual.nc
+          GEPA_Monthly.nc
+          GEPA_Daily.nc
     """
 
     version: str = "v1"
@@ -1353,6 +1392,26 @@ class EPAv2(EPA):
 
     ``scale_by_month=True`` keeps every sector, holding those without monthly scale
     factors at their annual rate, so its total covers the same sectors.
+
+    Notes
+    -----
+    One file per year, in ``EPA/v2/`` below the inventory root
+    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``). lair reads every
+    ``.nc`` file of the one folder it needs: ``EPA/v2/`` for the base product
+    (2012 to 2018), ``express/`` when ``express=True`` (2012 to 2020), and
+    ``monthly_scale_factors/`` as well when ``scale_by_month=True`` (2012 to
+    2018)::
+
+        EPA/v2/
+          Gridded_GHGI_Methane_v2_2012.nc
+          ...
+          Gridded_GHGI_Methane_v2_2018.nc
+          express/
+            Express_Extension_Gridded_GHGI_Methane_v2_2012.nc
+            ...
+          monthly_scale_factors/
+            Gridded_GHGI_Methane_v2_Monthly_Scale_Factors_2012.nc
+            ...
     """
 
     version: str = "v2"
@@ -1554,6 +1613,24 @@ class GFEIv1(GFEI):
     and coal exploitation based on national reports to the United Nations Framework
     Convention on Climate Change, Earth Syst. Sci. Data, 12, 563–575,
     https://doi.org/10.5194/essd-12-563-2020, 2020a.
+
+    Notes
+    -----
+    One file per sector, in ``GFEI/v1/`` below the inventory root
+    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``), for the year 2016.
+    A sector's ``_gsd`` and ``_rsd`` files (the geometric and the relative
+    standard deviation) are read only by ``get_standard_deviations``, and
+    the ``_All`` files (``Gas_All``, ``Oil_All``) are not read. Keep the
+    ``Total_Fuel_Exploitation`` file in the folder: lair drops its variable
+    after reading, and raises a ``ValueError`` when the file is missing::
+
+        GFEI/v1/
+          Global_Fuel_Exploitation_Inventory_Coal.nc
+          Global_Fuel_Exploitation_Inventory_Coal_gsd.nc
+          Global_Fuel_Exploitation_Inventory_Coal_rsd.nc
+          Global_Fuel_Exploitation_Inventory_Gas_Distribution.nc
+          ...
+          Global_Fuel_Exploitation_Inventory_Total_Fuel_Exploitation.nc
     """
 
     version: str = "v1"
@@ -1610,6 +1687,20 @@ class GFEIv2(GFEI):
     from the oil, gas, and coal sectors: evaluation with inversions of
     atmospheric methane observations, Atmos. Chem. Phys., 22, 3235–3249,
     https://doi.org/10.5194/acp-22-3235-2022, 2022.
+
+    Notes
+    -----
+    One file per sector, in ``GFEI/v2/`` below the inventory root
+    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``), for the year 2019.
+    lair does not read the ``_All`` files (``Gas_All``, ``Oil_All``). Keep the
+    ``Total_Fuel_Exploitation`` file in the folder: lair drops its variable
+    after reading, and raises a ``ValueError`` when the file is missing::
+
+        GFEI/v2/
+          Global_Fuel_Exploitation_Inventory_v2_2019_Coal.nc
+          Global_Fuel_Exploitation_Inventory_v2_2019_Gas_Distribution.nc
+          ...
+          Global_Fuel_Exploitation_Inventory_v2_2019_Total_Fuel_Exploitation.nc
     """
 
     version: str = "v2"
@@ -1640,6 +1731,27 @@ class Vulcan(Inventory):
         with ``pollutant='CO2'`` and with unit conversions to moles. Divide by
         that factor to recover the published tC values. Cells without
         emissions (NaN in the files) are set to 0.
+
+    Notes
+    -----
+    One file per sector, in ``vulcan/v3/data/native/`` below the inventory root
+    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``). lair reads the
+    ``US`` files of the central estimate (``mn``), and not the ``total`` file;
+    the ``lo`` and ``hi`` files (the 95% bounds) are read only by
+    ``get_uncertainties``, and files of other regions (``AK``) are ignored.
+    An annual file holds every year, 2010 to 2015. The hourly folder holds one
+    file per sector and day of 2015::
+
+        vulcan/v3/data/native/
+          annual/
+            Vulcan_v3_US_annual_1km_airport_mn.nc4
+            Vulcan_v3_US_annual_1km_airport_lo.nc4
+            Vulcan_v3_US_annual_1km_airport_hi.nc4
+            ...
+          hourly/
+            Vulcan.v3.US.hourly.1km.airport.mn.2015.d001.nc4
+            Vulcan.v3.US.hourly.1km.airport.mn.2015.d002.nc4
+            ...
     """
 
     # hourly data is 1.6 Tb !!!
@@ -1869,6 +1981,17 @@ class WetCHARTs(MultiModelInventory):
     R.J. Weidner, K.C. McDonald, and D.J. Jacob. 2021. CMS: Global 0.5-deg
     Wetland Methane Emissions and Uncertainty (WetCHARTs v1.3.1). ORNL DAAC,
     Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1915
+
+    Notes
+    -----
+    One file per year, in ``WetCHARTs/v1.3.1/`` below the inventory root
+    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``). lair reads every
+    ``.nc`` file of the folder::
+
+        WetCHARTs/v1.3.1/
+          WetCHARTs_v1_3_1_2001.nc
+          ...
+          WetCHARTs_v1_3_1_2019.nc
     """
 
     version: str = "v1.3.1"

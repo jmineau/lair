@@ -62,6 +62,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   instead of listing them. The front page links to the soundings example for
   when `get_soundings` downloads, and its Disclaimer has the README's text on
   AI coding agents.
+- "Data locations" and "What needs which data" are on a page of their own, second
+  in the top bar, instead of on the front page (a link to
+  `index.html#data-locations` no longer lands on them). The page also links each
+  variable to the example that shows its folder layout, says which pollutant
+  spellings are case-sensitive, and says what lair caches and how large that
+  gets. The layouts of EDGAR v7 and v8 monthly, EPA, GFEI, Vulcan, WetCHARTs and
+  `GMLData` are in the Notes of their classes.
 
 ### Removed
 
