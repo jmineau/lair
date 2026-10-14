@@ -1,3 +1,10 @@
+# AGENTS.md
+
+Orientation for contributors and coding agents working on lair. Contribution
+mechanics (setup, checks, the pixi environment, docs pages with recorded
+output, releasing) are in [CONTRIBUTING.md](CONTRIBUTING.md); the test layout
+is in [tests/README.md](tests/README.md).
+
 > **Keep this file current.** If you change the module layout, the build/test
 > commands, or learn a new invariant or gotcha, update the matching section in
 > the same change. A section that no longer matches the code is worse than no
@@ -9,532 +16,241 @@
 > they are not covered. Some agents stop reading `AGENTS.md` once a local
 > instruction file exists, so import or reference it from yours.
 
-# AGENTS.md — Developer and Agent Guide for lair
+## What this is
 
-`lair` (Land-Air Interactions Research) is a personal toolkit of atmospheric-
-science utilities the user has accumulated/adapted for their research. Less
-opinionated and more loosely organized than the user's newer packages — think
-"my standard library", not "a framework".
+`lair` (Land-Air Interactions Research) is a toolkit of atmospheric-science
+utilities: "a standard library for this research", not a framework. It is
+marked Alpha: modules and classes still move, so don't treat a symbol as
+stable for outside users without asking the maintainer. Distribution and
+import name `lair`, installed from GitHub (the `lair` on PyPI is an unrelated
+project). Flat layout (`lair/`, not `src/lair/`), no subpackages. Docs:
+<https://jmineau.github.io/lair/>.
 
-Distribution and import name: `lair` (installed from GitHub; the `lair` on PyPI is
-another project). Calendar-versioned (e.g. `2026.05.10`). Layout is
-**flat** (`lair/`, not `src/lair/`). Docs published on GitHub Pages at
-<https://jmineau.github.io/lair/> (the old CHPC site was retired 2026-09-21;
-`~/public_html/lair/` only holds redirect pages; `~/public_html/software.php`
-links to GitHub Pages).
-
-**Versioning (switched 2026-09-21):** setuptools-scm derives the version from
-git tags (`dynamic = ["version"]`; `lair.__version__` reads the installed
-metadata). Releases are CalVer tags `vYYYY.MM.PATCH` with MM = 05/08/12, made
-by `just release` (clean main, in sync with origin, a CHANGELOG section for the
-version; new release month -> .0, otherwise PATCH+1; `just next-version` prints
-it). It pushes the tag, and the Publish workflow creates the GitHub Release from
-the CHANGELOG section, so Zenodo archives it and mints a DOI (Zenodo ignores
-bare tags). Release notes up to 2026.12.7 are in the GitHub Releases. Citation metadata lives in
-`CITATION.cff` + `.zenodo.json` (same shape as fips/PYSTILT/slv). Between tags installs report e.g.
-`2026.12.4.dev3+g<hash>`. `just version` prints the current one. The old CI
-bump bot (`update_version.yml` + `lair/_version.py`) is gone, so no more
-pull-before-push. CI checkouts use `fetch-depth: 0` so the tags are visible;
-`.git_archival.txt` covers GitHub archive downloads. First scm tag:
-`v2026.12.3` (the last bot-bumped commit).
-
-## What lair is and isn't
-
-- **Is**: a grab-bag of analysis helpers — meteorology, geo, HRRR access,
-  inventories, NOAA GML data, upper-air soundings, PCAP/VHD calculations,
-  background CCG filtering, plotting helpers, parallel/file utilities.
-- **Isn't**: a strictly versioned API. The user marks it Alpha; classes
-  and module boundaries shift. Don't treat any symbol as load-bearing for
-  external consumers without checking with the user.
-
-## Layout (flat, single-package)
+## Layout
 
 ```
 lair/
-  __init__.py        sets up pint units (incl. custom mass_flux context),
-                     runs setup_ccg_filter() at import — see "Import side
-                     effects" below
-  _ccg_filter.py     NOAA GML CCG filter (downloaded on first import;
-                     **do not commit**)
-  _optional.py       import_optional_dependency() helper
-  config.py          data-dir resolution (get_data_dir), cache folder (get_cache_dir)
-  constants.py       physical constants (workaround until pint has them)
-  air.py             general atmospheric helpers (bin_polar, wind_components,
-                     wind_direction -- NaN for a zero vector, not 270)
-  background.py      background concentration via CCG filter
-  clock.py           time/date utilities (TimeRange-ish, decimal date conv.)
-  dev.py             dev helpers (e.g. public_attrs)
-  geo.py             geo-spatial utilities (cartopy / shapely / pyproj based)
-  hrrr.py            HRRR winds at a point (zarr / MesoWest backend)
-  inventories.py     emissions inventory loaders
-  meteorology.py     met calcs (ideal gas, hypsometric, poisson, ...)
-  noaa.py            NOAA greenhouse-gas data loaders
-  parallel.py        parallelize() wrapper around multiprocessing
-  pcaps.py           valley heat deficit (VHD) + PCAP detection
-  plotter.py         matplotlib helpers (log formatter, legend handlers, ...)
-  pollutants.py      Pollutant metadata registry (long name, LaTeX name/units,
-                     expected ambient range, molar mass via the `science`
-                     extra's molmass); get_pollutant() is case-insensitive.
-                     Instrument/archive column naming stays out (uataq.pollutants).
-  records.py         file/dir utilities (ftp_download, unzip)
-  soundings.py       upper-air sounding fetch/parse
-  synoptic.py        Synoptic Data API (MesoWest successor): metadata, timeseries,
-                     hourly_mean (vector-mean wind). Token from token= or
-                     $SYNOPTIC_TOKEN at call time; needs the `requests` extra.
-  transects.py       mobile transect matrices (obs[transit, point]): metrics
-                     (enhancement, robust_z, detection_frequency, magnitude,
-                     profile, merge_route_points/pool_routes) and the builder
-                     (lag_positions, snap_to_route, split_transits — one-way
-                     transits cut at reversals of travel via find_peaks prominence
-                     and at time gaps — transect_matrix). scipy is optional:
-                     the builder tests importorskip it. Platform specifics
-                     (TRAX) live in slv.measurements.mobile.transects.
-  utils.py           tiny helpers (updating_print, DotDict)
-docs/                Sphinx source (conf.py, index.rst, quickstart.rst, examples/,
-                     api.rst, _templates/, _ext/);
-                     .github/workflows/docs.yml pushes the gh-pages branch, which Pages serves
-pixi.lock            the environment with every extra, locked (`[tool.pixi]` in pyproject.toml)
-tests/               pytest suite, CONTAINERIZED per module (see "Testing")
-justfile             dev tasks (uv-based): sync/lint/type-check/test/...
-.pre-commit-config.yaml   pre-commit + ruff hooks (pyrefly deliberately omitted)
-.github/workflows/   tests.yml (matrix on uv.lock, no extras; Codecov upload from
-                     ubuntu/3.11, needs the CODECOV_TOKEN repo secret; and a `pixi`
-                     job: the whole suite with every extra, and the only job that
-                     downloads the CCG filter, so `tests/background` runs there),
-                     quality.yml (ruff + pyrefly gates), docs.yml (GitHub Pages)
+  __init__.py      pint setup and the CCG filter download (see "Import side effects")
+  _ccg_filter.py   NOAA's CCG filter, downloaded on first import; gitignored, never commit
+  _optional.py     import_optional_dependency()
+  config.py        get_data_dir(), get_cache_dir(); no file-system work
+  constants.py     physical constants (pint has no constants support yet)
+  air.py           bin_polar, wind_components, wind_direction (NaN for a zero vector)
+  background.py    background concentrations (CCG/thoning filter, rolling baseline)
+  clock.py         TimeRange, diurnal/seasonal means, decimal dates, timezones
+  dev.py           development helpers
+  geo.py           CRS, grids, clip, gridcell_area, regrid/resample
+  hrrr.py          HRRR winds at a point, from the HRRR-Zarr archive on AWS
+  inventories.py   Inventory and its loaders: EDGAR, EPA, GFEI, Vulcan, WetCHARTs
+  meteorology.py   ideal gas law, hypsometric, poisson, vapor pressure, ... (plain SI)
+  noaa.py          CarbonTracker and NOAA GML readers
+  parallel.py      parallelize() around multiprocessing
+  pcaps.py         valley heat deficit and PCAP detection
+  plotter.py       matplotlib helpers
+  pollutants.py    pollutant metadata registry; get_pollutant() is case-insensitive
+  records.py       file utilities (ftp_download, unzip, read_kml, Cacher)
+  soundings.py     upper-air soundings from the Wyoming archive (siphon)
+  synoptic.py      Synoptic Data API (MesoWest's successor); token= or $SYNOPTIC_TOKEN
+  transects.py     mobile transect matrices: metrics and the builder
+  utils.py         small helpers
 ```
 
-There are no subpackages; everything is a top-level module.
+Instrument and archive specifics stay out: pollutant column naming is in
+`uataq.pollutants`, and readers of one site's archive or one platform (such as
+TRAX transects) belong in the downstream packages. `lair` re-exports only
+`units` (pint-xarray's registry), `config`, `ftp_download`, `unzip`,
+`setup_ccg_filter` and `__version__`; everything else is imported from its
+module (`from lair.meteorology import poisson`).
 
-> **No WIP modules left:** `noaa.py` (CarbonTracker CH4/CO2 + GML) was the last
-> one excluded from ruff/pyrefly; it is fully linted and type-checked.
-> The SODAR reader (`lair.mesowest`) moved to the `uataq` package on 2026-09-21
-> (CHPC-archive readers don't belong in lair).
+## Import side effects
 
-## Public API surface
+`lair/__init__.py` does real work at import:
 
-`lair.__init__` only re-exports a couple of things explicitly
-(`ftp_download`, `unzip`, and `config`) plus the pint `units` registry. In
-practice everything else is reached via submodule import:
+1. Imports `cf_xarray.units` **before** `pint_xarray`. The order is
+   load-bearing; don't reorder.
+2. Adds the pint context `mass_flux` (`[substance]/[area]/[time]` <->
+   `[mass]/[area]/[time]` through a molecular weight `mw`). The registry is
+   process-global, so importing lair changes pint for other code too.
+3. Sets pint's default sort to `sort_by_dimensionality` (`kg/km**2/d`). Not
+   cosmetic: `Inventory.get_units` splits a flux unit on `/` and reads
+   quantity, area and time in that order. pint >= 0.26 exports the function;
+   0.24 and 0.25 (the newest on Python 3.11) have it only privately, so lair
+   tries both and pyrefly flags whichever the installed pint lacks (each line
+   carries its suppression). If neither exists, `import lair` raises
+   `ImportError` on purpose. `pint>=0.24.4` because 0.24.0 to 0.24.3 do not
+   import with flexparser 0.4. `tests/test_pkg.py` checks both.
+4. Calls `setup_ccg_filter()`. If `lair/_ccg_filter.py` is absent, it
+   downloads `ccg_filter.zip` from `ftp.gml.noaa.gov` into a temporary
+   `lair/.ccg_filter-*` folder, takes only `ccg_filter.py`, and moves it into
+   place with an atomic `os.replace`: concurrent first imports are safe and a
+   failure leaves no partial file. At import a failure (or a read-only lair
+   folder) only logs a WARNING; `lair.background` then raises an `ImportError`
+   that says to run `lair.setup_ccg_filter()`, which raises when called.
 
-```python
-from lair import units                    # pint unit registry (with mass_flux ctx)
-from lair.config import get_data_dir
-from lair.background import ccgFilter
-from lair.meteorology import ideal_gas_law, hypsometric, poisson
-from lair.pcaps import ...                # VHD / PCAP helpers
-from lair.hrrr import ...                 # HRRR point sampling
-from lair.inventories import ...
-from lair.noaa import ...
-```
+Consequences:
 
-## Import side effects (read this before debugging strange import behavior)
+- **`LAIR_SKIP_CCG_DOWNLOAD`** skips the download. Any non-empty value skips,
+  `0` included (`os.getenv`). `tests/conftest.py` and the Tests, Code Quality
+  and Documentation workflows set it. The Tests workflow's `pixi` job clears it
+  for one step to download the filter (cached by month), so `tests/background`
+  runs there; it is the only CI job that reaches NOAA.
+- **`lair.background` imports `_ccg_filter` at the top**, so even
+  `rolling_baseline` (pandas only) needs the downloaded file and scipy.
+- **The cache folder is made on first use, never at import.**
+  `config.get_cache_dir()` returns `$LAIR_CACHE_DIR` or `.cache/lair` in the
+  home folder, reading the variable at each call (no module-level constant).
+  `lair.noaa._cache_file` makes the folder when it first writes, and raises an
+  `OSError` naming the folder and `LAIR_CACHE_DIR` when it cannot; a new cache
+  user calls it. `tests/config` and `tests/noaa` check a read-only home.
+- **No global xarray options.** Code that needs attributes kept scopes it
+  (`@_keep_attrs` in `inventories`, or `with xr.set_options(keep_attrs=True):`).
+  Both locked environments have an xarray that keeps attributes by default, so
+  `TestAttributes` passes either way; check a change to the scoping on
+  xarray < 2025.11.
 
-`lair/__init__.py` runs unconditionally at import:
+## Commands
 
-1. Imports `cf_xarray.units` (**must come before `pint_xarray`** — order is
-   load-bearing).
-2. Registers a custom pint context `mass_flux` that converts
-   `[substance] / [area] / [time]` ↔ `[mass] / [area] / [time]` using
-   molecular weight.
-3. Sets pint's default sort to `sort_by_dimensionality`, so a unit prints
-   in dimension order (`kg/km**2/d`, not pint's alphabetical `kg/d/km**2`).
-   Not cosmetic: `inventories.Inventory.get_units` splits a flux unit on `/`
-   and reads quantity, area and time in that order. pint >= 0.26 exports the
-   function from `pint.delegates.formatter`; pint 0.24 and 0.25 have it only in
-   the private `_compound_unit_helpers`, and pint 0.26 needs Python >= 3.12, so
-   lair imports from both places while it supports Python 3.11 (pyrefly
-   flags the one the installed pint lacks; each line suppresses it). When
-   neither place has it (an older pint, or a pint that moves it again)
-   `import lair` raises `ImportError`: there is no fallback to pint's own
-   order, which would leave `get_units` mislabeling the parts. The pint
-   requirement is `>=0.24.4`: 0.24 is the oldest pint with the function, but
-   0.24.0 to 0.24.3 do not import with flexparser 0.4 (2024-11-07), which a new
-   install gets. `tests/test_pkg.py` checks the order and the failure.
-4. Calls `setup_ccg_filter()` which, **on first import**, FTP-downloads
-   `ccg_filter.zip` from `ftp.gml.noaa.gov` into a temporary directory
-   (`lair/.ccg_filter-*`, removed afterwards), takes only `ccg_filter.py` from
-   it (other zip members are ignored, so NOAA can change them), and moves it
-   into place as `_ccg_filter.py` with an atomic `os.replace`. A failed
-   download leaves no partial file and, at import, only logs a WARNING
-   (`import lair` still works; `lair.background` then raises an `ImportError`
-   saying to run `lair.setup_ccg_filter()`, which raises when called directly);
-   concurrent first imports (SLURM arrays) are safe. After that it's a no-op.
-   Tests call it with `lair_dir=` and a stubbed `lair.ftp_download`
-   (`tests/test_pkg.py`).
+uv manages the environment; every task is a `just` recipe (`uv run just
+--list`), and CI runs the same recipes.
 
-Implications:
-- First import does network I/O. Don't `import lair` inside a tight test
-  loop and don't run it on a machine without outbound FTP if you've never
-  imported it before.
-- **Escape hatch:** set `LAIR_SKIP_CCG_DOWNLOAD=1` to skip the FTP download
-  (for tests / CI / read-only / offline environments). It is read with
-  `os.getenv`, so any non-empty value skips, `0` included; only empty text
-  downloads. When skipped *and* the file is absent, `lair.background` is not
-  importable. The test suite sets this in `tests/conftest.py`; CI sets it at the
-  workflow level in all three workflows, except that the Tests workflow's `pixi`
-  job overrides it with an empty value for one step, which downloads the filter
-  (cached by month with `actions/cache`) so `tests/background` runs. That is the
-  only CI job that reaches NOAA: when NOAA is down and the month's cache is
-  missing, the step fails (a red job, not skipped tests). The lean uv job could
-  not run those tests anyway (no scipy).
-- `lair.config` makes no folder: `get_cache_dir()` (`LAIR_CACHE_DIR`, default
-  `~/.cache/lair`) only returns a path, and reads the environment at each call,
-  so the variable can be set after `import lair`. There is no `CACHE_DIR`
-  constant: it would be read at import. `lair.noaa` makes the folder when it
-  first caches (`_cache_file`) and raises an `OSError` that names the folder and
-  `LAIR_CACHE_DIR` when it cannot, so `import lair` works with a read-only home.
-  Keep `config.py` free of file-system work, and have a new cache user call
-  `_cache_file`. Tests point the cache elsewhere with `monkeypatch.setenv`.
-  `tests/config` and `tests/noaa` check a read-only home.
-- `lair/_ccg_filter.py` is generated, not authored. Do not commit it. The
-  user's `.gitignore`/`.git/info/exclude` already handles it.
-- The pint registry is process-global; importing `lair` mutates other code's
-  pint behavior in the same process.
-- **No global xarray options:** `lair.inventories` used to run
-  `xr.set_options(keep_attrs=True)` at import. Code that needs attributes kept
-  scopes it: `@_keep_attrs` (absolute_emissions, integrate, plot) or a `with
-  xr.set_options(keep_attrs=True):` block (loaders' `_open`/`_process` in
-  `Inventory.__init__`, `Vulcan.get_uncertainties`). Only xarray < 2025.11
-  drops attrs by default, and the uv and pixi environments both lock a newer
-  one, so the attr tests (`TestAttributes`) pass there with or without the
-  scoping: to check it, run them on an older xarray.
+| Task | Command |
+|---|---|
+| Set up / refresh `.venv` (lean: no extras) | `uv sync` |
+| Lint, type check, docstrings, tests | `just quality-check` |
+| Tests (no network/slow, parallel) | `just test` (extra args go to pytest) |
+| Lint / fix and format | `just lint` / `just format` |
+| Type check | `just type-check` (pyrefly) |
+| Docstring coverage (at least 88%) | `just docstr` |
+| Docs (runs every example; warnings are errors) | `just build-docs` / `just docs-serve` |
+| All pre-commit hooks | `just pre-commit` |
 
-## Logging
-
-lair uses the standard `logging` module (`config.verbose` and
-`vprint` are gone). Each module has `logger = logging.getLogger(__name__)`;
-no handler is attached anywhere. Never add handlers (not even a `NullHandler`,
-which would also hide warnings from Python's last-resort handler), set levels,
-or `print()` in library code: output is the application's choice
-(`logging.basicConfig(level=logging.INFO)`).
-
-Levels: progress ("Downloading ...", "Executing ... in parallel") is `INFO`;
-chatty per-item detail (cache hits, skipped files) is `DEBUG`; recoverable
-problems the caller should know about (a failed download that is skipped, an
-unreadable file) are `WARNING`, which shows by default. Use %-style arguments
-(`logger.info("x %s", y)`), not f-strings. `background.thoning_filter` turns
-the CCG filter's own `debug` prints on when `lair.background` is at `DEBUG`.
-
-## Dev workflow
-
-The tooling comes from [jmineau/python-template](https://github.com/jmineau/python-template)
-(`.copier-answers.yml`; `copier update` pulls in its changes): `uv` + `justfile`
-+ `ruff` + `pyrefly` + `pytest` + `pre-commit`, and CI runs the same recipes.
-Config lives in `pyproject.toml` (`[dependency-groups]`, `[tool.uv]`,
-`[tool.pytest]`, `[tool.coverage.*]`, `[tool.pyrefly]`, `[tool.ruff]`).
-
-```bash
-# uv-based dev env (LEAN: tooling only, no optional extras). Fast + reliable.
-uv sync                      # or: just sync
-just quality-check           # lint + type-check + docstr + tests (what CI checks)
-just test                    # pytest in parallel, excluding network and slow
-just lint                    # ruff check + format check (`just format` fixes)
-just type-check              # pyrefly (enforced gate)
-just docstr                  # docstring coverage, at least 88% (raise it as it grows)
-just build-docs              # Sphinx HTML -> docs/_build/html, running every example (`just docs-serve` previews)
-```
-
-`just build-docs` fails on warnings. Each class gets a page with tables of
-its attributes and methods, and each member a page of its own
-(`docs/_templates/autosummary/`); a subclass lists what it defines and links
-to what it inherits. `docs/_ext/api_pages.py` (from python-template) decides
-what gets a row, and drops from a class docstring the `Methods` section and
-the `Attributes` entries that have a row, so nothing is described twice.
-Writing those sections is still fine; plain attributes without a docstring
-stay in the class docstring. A property with no docstring shows an empty row,
-so give each one.
-
-Releases: `just next-version` prints the next CalVer version, the CHANGELOG
-gets its `## [X.Y.Z]` section, and `just release` pushes the tag; the Publish
-workflow creates the GitHub Release (Zenodo archives it). See CONTRIBUTING.md.
-Don't release unless James asks.
-
-`uv run just --list` shows all recipes. The uv dev group does **not** install
-the optional extras (geo/formats/regridding need conda-built ESMF / heavy
-wheels), and modules behind missing extras `importorskip` and skip cleanly.
-For full optional-dependency coverage, use the [pixi](https://pixi.sh)
-environment: `[tool.pixi]` in `pyproject.toml` names only what conda must
-supply (ESMF, esmpy, xesmf), pixi takes everything else from the extras and
-the `dev` group already listed there, and `pixi.lock` locks both.
-
-```bash
-# Every extra, incl. xesmf on conda-forge's ESMF (linux-64 only)
-pixi install                 # .pixi/envs/default, from pixi.lock
-pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow"
-pixi lock                    # after changing a dependency, beside `uv lock`
-```
-
-The Tests workflow's `pixi` job runs that suite and fails on a `pixi.lock`
-that is out of date with `pyproject.toml`. The `just` recipes call `uv run`,
-so they use the uv environment; in the pixi one, call the tool (`pixi run
-pytest`, `pixi run pyrefly check`). Three things to know:
-
-- **Two lockfiles, solved separately.** `uv.lock` and `pixi.lock` can hold
-  different versions of one package (2026-10-10: numpy 2.4.6 and pint 0.25.3
-  in `uv.lock`, numpy 2.5.4 and pint 0.26.1 in `pixi.lock`), so a failure in
-  one environment only is often a version difference. Dependabot updates
-  `uv.lock`, not `pixi.lock`.
-- **`[tool.pixi.pypi-dependencies]` holds one thing that is not a lair
-  dependency:** `geopandas` (one `geo.clip` test builds a GeoSeries).
-- **The no-MPI ESMF build** (`build = "nompi*"`): the MPICH build starts MPI
-  on `import xesmf`, and when that start-up fails it kills the whole pytest
-  process.
-
-**Linting/formatting (ruff):** `ruff check` (the template's rules: E, F, UP, B, SIM, I,
-D, NPY, RUF100) is an enforced gate, and
-since 2026-09-21 the whole of `lair/` and `tests/` is `ruff format`-ed (commit
-bc973df). Keep it that way: the
-pre-commit `ruff-format` hook formats on commit, or run `just format`.
-Suppression comments must sit on the line the tool reports; after a reflow,
-put `# pyrefly: ignore[...]` on its own line *above* the flagged line (the
-formatter never moves those), and `# noqa` on the first line of a multi-line
-statement. Generated/vendored modules are in `extend-exclude`.
-
-**Typing (pyrefly): enforced gate since 2026-09-21** (CI Code Quality job,
-`just quality-check`, pre-commit hook). It passes with 0 errors on the lean
-uv stack (pandas 3), where the gate runs. Rules: fix real
-annotation problems; where library stubs are wrong/narrow (pandas `cut`/
-`resample.agg` overloads, pint transformation callbacks, the two places
-pint keeps `sort_by_dimensionality`), suppress **inline on that line with a
-reason** (`# pyrefly: ignore[<kind>]`), not in config. Config only disables
-`bad-override-mutable-attribute` (subclass class constants like
-`version: str = 'v8'` over `str | None` base attrs). Optional extras are in
-`replace-imports-with-any` so both envs agree. `meteorology` uses a
-documented `Numeric = Any` alias (floats / numpy / xarray, plain SI);
-`geo`/`inventories` use a bound TypeVar `_XarrayT` so DataArray in ->
-DataArray out.
-
-## Examples in the docs
-
-Examples run when the docs build, so they show real output, and the build fails
-when one breaks.
-
-- **A figure in a docstring:** put a `.. plot::` directive in the Examples
-  section. Its code runs (doctest `>>>` lines work), and the figure appears
-  under it.
-
-  ```rst
-  Examples
-  --------
-  .. plot::
-
-     >>> import matplotlib.pyplot as plt
-     >>> _ = plt.plot([0, 1, 2], [0, 1, 4])
-  ```
-
-- **Code in an `.rst` page:** a `.. ipython:: python` block runs, and shows each
-  line with its output, as in an IPython session. Changing a
-  `.. code-block:: python` to `.. ipython:: python` is enough to make it run. For
-  a figure, put `@savefig name.png` on the line above the plotting call.
-
-  ```rst
-  .. ipython:: python
-
-     import matplotlib.pyplot as plt
-     import lair
-
-     lair.__version__
-
-     @savefig squares.png width=5in
-     plt.plot([0, 1, 2], [0, 1, 4]);
-  ```
-
-  A block that raises or warns fails the build; `:okexcept:` or `:okwarning:`
-  under the directive allows one that is meant to. All `.rst` pages share one
-  session, so each page imports and defines what it uses.
-- **When they run:** `just build-docs` runs everything, as CI does;
-  `just docs-serve` reruns a page's blocks whenever that page is rebuilt.
-- **Notebooks, and code cells in Markdown pages,** are off in this project.
-  `copier update --data docs_notebooks=true` turns them on; it adds myst-nb, and
-  Jupyter with it, to the dev tools.
-- **Data:** the docs build on GitHub Actions, so an example uses synthetic data,
-  a small file in the repository, or a public download, never a machine-specific
-  path. Seed random numbers so the figures don't change from build to build.
-- **Optional dependencies:** the docs build in the lean uv environment, which has
-  no extras, and `docs/conf.py` mocks them (`autodoc_mock_imports`). An example
-  can use only the core dependencies. One that needs an extra, such as cartopy
-  for the map functions in `lair.geo`, cannot run in the docs build.
-- **A page that cannot run** shows its code and output as `.. code-block::
-  ipython`, recorded from one real run in the pixi environment, and says so in
-  a note at the top with the date. Four do: `docs/examples/inventory.rst`
-  (ESMF and EDGAR's files), `soundings.rst` (siphon, a download from Wyoming),
-  `hrrr_winds.rst` (boto3, s3fs, zarr, cartopy, a download from AWS) and
-  `carbontracker.rst` (a 35 MB download from NOAA's FTP server). Run their code
-  in an empty folder (the blocks use relative paths, so no machine's paths
-  reach the page) and paste the new output when the code they call changes.
-  `docs/examples/clock.rst` needs only the core dependencies and runs when the
-  docs build.
-
-## Testing
-
-Tests are **containerized by module**: every submodule has its own directory
-under `tests/` (`lair.clock` → `tests/clock/`), holding that module's tests,
-`conftest.py` fixtures, and `data/`. Motivation: modules regularly graduate out
-of lair into their own packages — `git mv lair/<mod>.py` + `git mv tests/<mod>/`
-should be all it takes. See `tests/README.md`. Rules: no cross-imports between
-test dirs; module-local fixtures stay in the module's dir; keep the top-level
-`tests/conftest.py` minimal.
-
-- **Markers** (`pyproject.toml`): `network`, `slow`; `just test` and CI skip
-  both (no test uses them yet: network code is tested against fakes). Warnings
-  are errors (`[tool.pytest]`); a test that expects one asserts it with
-  `pytest.warns`, and one raised inside another library is ignored by its
-  message in `filterwarnings` there, with a comment naming the library and
-  version.
-- **Coverage so far:** every module has real tests. The suite is 679 tests:
-  the lean uv env runs 397 and skips 17 (five whole modules among them); the
-  pixi env skips none (as of 2026-10-11, with `lair/_ccg_filter.py` present;
-  CI's lean uv jobs have neither the filter nor scipy, so `tests/background`
-  skips there; its `pixi` job downloads the filter and runs it). Coverage was
-  97% in the full environment on 2026-10-03; thinnest: `inventories` and
-  `__init__` (93%), `meteorology` (94%).
-  Network code is tested against fakes, never live: HRRR chunks from a fake
-  boto3 resource, soundings with siphon's `WyomingUpperAir` stubbed,
-  `records.ftp_download` against an in-memory `ftplib.FTP`, CarbonTracker/GML
-  readers on small synthetic files. `pcaps.valleyheatdeficit` is checked
-  against an independent trapezoid VHD of a synthetic sounding.
-- **pandas 3 only:** `pyproject.toml` requires `pandas>=3.0`, and the uv and
-  pixi environments both lock pandas 3, so every environment exercises the
-  version lair supports. Don't add a branch, a `try/except` or a test for pandas
-  2; the test suite has run only on pandas 3.
+The uv environment has no optional extras (the README lists them), so tests of
+modules behind a missing extra `importorskip` and skip. The pixi environment
+has every extra, including xesmf on conda-forge's no-MPI ESMF (64-bit Linux
+only): `pixi install`, then `pixi run pytest ...` or `pixi run pyrefly check`
+(the `just` recipes use uv). After editing dependencies, run `uv lock` **and**
+`pixi lock` and commit both. They are solved separately and can hold different
+versions, so a failure in one environment only is usually a version
+difference. Dependabot updates `uv.lock` only; CI fails on a stale
+`pixi.lock`, which is `merge=binary`: after a conflict, rerun `pixi lock`.
 
 ## Conventions
 
-- **Style**: ruff-formatted; the template's lint rules (E, F, UP, B, SIM, I, NPY,
-  RUF100) and pydocstyle (`D`, NumPy convention, summary on the line after the
-  opening quotes: D213), as in the other packages. Keep diffs focused; don't mix refactors into fixes.
-- **Typing**: partial but checked, and shipped: `lair/py.typed` (PEP 561) tells
-  users' type checkers to read lair's annotations. pyrefly must stay at 0 errors — annotate
-  new code; don't add blanket `Any` to silence it.
-- **Pint**: prefer pint-aware code where it already exists, but SI units
-  are the implicit baseline (the meteorology module documents this).
-- **Paths (no CHPC locations in lair — done 2026-09-21)**: lair has no
-  built-in data paths. Readers take an explicit directory argument and fall
-  back to a `LAIR_*` env var via `lair.config.get_data_dir(env_var, path)`
-  (raises `ValueError` naming the variable). Current variables:
-  `LAIR_INVENTORY_DIR` (inventories root; every concrete inventory class takes
-  `inventory_dir=`), `LAIR_SOUNDING_DIR` (root with one subdir per station),
-  `LAIR_CARBONTRACKER_DIR`, `LAIR_GML_DIR`, plus `LAIR_CACHE_DIR`. Resolve
-  lazily (at call/construction time), never at import. Readers tied to a CHPC
-  archive belong in `uataq`/`slv`, not lair. Don't add new hard-coded paths.
-- **Attribution**: portions adapted from Brian Blaylock's Carpenter
-  Workshop, NOAA GML's CCG filter, and StackOverflow. Preserve attribution
-  if refactoring those sections.
-
-## Optional dependency groups
-
-| Extra | Adds | Why |
-|---|---|---|
-| `requests` | boto3, s3fs, siphon | Remote data (AWS, soundings) |
-| `formats` | zarr, numcodecs, fastkml, lxml | Alt file formats |
-| `geo` | cartopy, networkx, pyproj, rasterio, rioxarray, shapely | Geographic processing |
-| `science` | molmass, scipy | Chemistry / CCG filter |
-| `regridding` | xesmf | needs conda-built ESMF (see README); also `geo.gridcell_area`, so `Inventory.absolute_emissions` and `integrate()` |
-| `complete` | all of the above | one-shot |
-
-## Gotchas
-
-- `cf_xarray.units` *must* be imported before `pint_xarray` in
-  `__init__.py`. Don't reorder.
-- `lair.constants` exists because pint hasn't shipped real constants
-  support; if pint adds it (see linked issue 1078 in the module
-  docstring), revisit.
-- `lair.meteorology` is **plain SI in, plain SI out**: it uses
-  the `lair.constants` values as plain SI floats (`.m_as(...)`), so float /
-  numpy / xarray inputs give plain numbers (`hypsometric` -> m,
-  `ideal_gas_law("p")` -> Pa). pint Quantity inputs (incl. pint-quantified
-  DataArrays) are converted to SI magnitudes by the `_si_inputs` decorator;
-  the result is never a Quantity. Callers that want units (e.g.
+- Python 3.11+. Ruff rules `E, F, UP, B, SIM, I, D, D213, NPY, RUF100`
+  (NumPy-convention docstrings, summary on the line after the opening quotes);
+  `lair/` and `tests/` are `ruff format`-ed, and the pre-commit hook formats on
+  commit. Suppressions sit on the line the tool reports: after a reflow, put
+  `# pyrefly: ignore[<kind>]` on its own line *above* the flagged line and
+  `# noqa` on the first line of a multi-line statement.
+- **Typing:** pyrefly must report 0 errors (CI and a pre-commit hook), checked
+  as Python 3.11 in the lean environment. `lair/py.typed` ships, so
+  annotations are public API. Where a library's stubs are wrong (pandas
+  overloads, pint callbacks), suppress inline with a reason, not in config and
+  not with a blanket `Any`. The config disables only
+  `bad-override-mutable-attribute` and types the optional extras as `Any` so
+  both environments agree. `meteorology` uses a documented `Numeric = Any`;
+  `geo` and `inventories` use the bound TypeVar `_XarrayT`.
+- **Docstrings:** each public attribute and property gets its own API page, so
+  give each one a docstring (one without shows an empty row) and put its See
+  Also and Examples there.
+- **Logging:** `logger = logging.getLogger(__name__)` per module. Library code
+  never adds handlers (not even a `NullHandler`, which hides warnings from
+  Python's last-resort handler), sets levels, or prints (`utils.updating_print`,
+  whose job is printing, aside). Progress is `INFO`, per-item detail `DEBUG`,
+  recoverable problems the caller should know about `WARNING`; %-style
+  arguments, not f-strings.
+- **No built-in data paths.** A reader takes an explicit directory and falls
+  back to a `LAIR_*` variable through `config.get_data_dir(env_var, path)`
+  (a `ValueError` names the variable), resolved at call time, never at import.
+  The docs' "Data locations" lists the variables.
+- **Units:** SI is the baseline; prefer pint-aware code where it exists.
+  `meteorology` is plain SI in and out: `_si_inputs` converts pint inputs to SI
+  magnitudes, and results are never Quantities. Callers that want units (e.g.
   `pcaps.valleyheatdeficit`) convert at their own boundary.
-  `mixing_ratio` is the exact ε·e/(p − e).
-- **pandas 3 idioms:** hourly alias is lowercase (`'1h'`; `'1H'` raises) and
-  daily is uppercase (`'D'`; `'d'` is deprecated). `read_csv(delim_whitespace=)`
-  is gone (use `sep=r'\s+'`), `DataFrame.interpolate` refuses object-dtype
-  columns, and `pd.options.mode.copy_on_write` is always on: write code with no
-  chained assignment.
-- **Timezones in `clock`:** naive times are UTC by convention.
-  `dt2decimalDate` converts tz-aware input to UTC first (same answer for pytz and
-  zoneinfo zones). `convert_timezones` raises if a naive
-  time has no `fromtz` (it never guesses the machine's zone), and localizes
-  naive times with pandas `tz_localize` semantics in both drivers, so a DST
-  ambiguous/nonexistent time raises a `ValueError` (from pandas) unless
-  `ambiguous=`/`nonexistent=` is given.
-  A time formatted into a request, an S3 key or a file name is converted to UTC
-  first, because `strftime` and f-string formats write a tz-aware time in its
-  own zone: `soundings` (`_naive_utc`) and `hrrr` (`create_s3_group_url`) do,
-  and a new function that does this should too.
-- **Vulcan (fixed 2026-09-21):** the files are `(time, y, x)` on an LCC grid
-  with 2D lat/lon, so `Inventory.__init__` picks x/y spatial dims when there's
-  no `lon` dim. `Vulcan.clip`/`reproject` follow the base-class API (return the
-  result, `inplace=` optional; reproject refuses an unclipped grid unless
-  `force=True`). **Units:** Vulcan stores *tonnes of carbon*; `_process`
-  converts to tonnes of CO2 (x M(CO2)/M(C)) and fills NaN with 0.
-- **Inventory loaders (2026-10):** NaN "no emission" cells must be 0 before any
-  conservative regrid (Vulcan, WetCHARTs), or each coarse cell touching one goes
-  NaN. Without `src_units`, each variable is quantified with its own `units`
-  attr. EPA v2 monthly scale factors cover only 10 of ~28 sectors:
-  `scale_by_month` keeps the rest at their annual rate. EDGAR v8 drops
-  `Fuel_exploitation` (PRO_FFF) only when its COAL/GAS/OIL parts are loaded
-  (monthly has no split). Test loaders on tiny synthetic archives shaped like
-  the real files (check layouts with `ncdump -h`).
+- **pandas 3 only** (`pandas>=3.0`): no branches, `try/except` or tests for
+  pandas 2. `'1h'` (`'1H'` raises), `'D'`, `sep=r'\s+'`, no chained assignment
+  (copy-on-write is always on).
+- **Time:** a naive time is UTC. `convert_timezones` raises when a naive time
+  has no `fromtz` (it never guesses the machine's zone) and, like
+  `tz_localize`, on an ambiguous or nonexistent DST time unless
+  `ambiguous=`/`nonexistent=` is given. A time formatted into a request, an S3
+  key or a file name is converted to UTC first, because `strftime` and
+  f-strings write a tz-aware time in its own zone (`soundings._naive_utc`,
+  `hrrr.create_s3_group_url`).
+- **Attribution:** code adapted from Brian Blaylock's Carpenter Workshop
+  (credited in the README and docs), NOAA GML's CCG filter, and StackOverflow
+  (linked in docstrings) keeps its credit when refactored.
+
+## Module gotchas
+
+- **Inventories.** Every loader labels a time step by the *start* of its
+  period, from CF `time_bnds` when the file has them (`_label_period_starts`).
+  NaN "no emission" cells become 0 before any conservative regrid, or every
+  coarse cell touching one turns NaN. Without `src_units`, each variable is
+  quantified with its own `units` attribute. `tests/inventories` checks every
+  loader (`INVENTORY_CASES`) on tiny synthetic archives shaped like the real
+  files; add new loaders there.
+- **ESMF:** areas and totals (`gridcell_area`, `absolute_emissions`,
+  `integrate()`) need xesmf, which pip installs without ESMF. ESMF comes from
+  conda-forge's `esmf=*=nompi*` build; the MPICH build starts MPI on import,
+  and a failed start kills the process (pytest included).
 - **Opening many files:** call the module's `_open_mfdataset` (`inventories`,
-  `noaa`), not `xr.open_mfdataset`. xarray is changing the defaults of
-  `compat`, `data_vars`, `coords` and `join` and warns where the result would
-  differ (Vulcan, WetCHARTs, EDGAR v8 annual, the CarbonTracker mole
-  fractions); the helpers name today's values, so the data stays the same on
-  any xarray. `noaa`'s takes the arguments the cached call always had, so the
-  `Cacher` key, and with it every existing cache, is unchanged. The `xr.concat`
-  calls (EPA v2 monthly, soundings) still use the defaults; they did not warn
-  on the tests or on the real archives (2026-10-11).
-- **Inventory time labels (2026-10):** every loader labels a step by the
-  *start* of its period (Jan 1 / the 1st / 00:00 / top of the hour). Use the
-  file's CF `time_bnds` when it has them (`_label_period_starts`: Vulcan,
-  WetCHARTs); EDGAR v8 monthly has none (15th of each month) and is floored to
-  the month. `tests/inventories` checks every loader (`INVENTORY_CASES`) and
-  that totals don't depend on the labels; add new loaders there.
-- **Docs:** `just build-docs` (or `sphinx-build -M html docs docs/_build`).
-  They build in the lean uv env because `docs/conf.py` mocks every optional
-  extra via `autodoc_mock_imports` — add new optional imports there. Mocked
-  types can't be combined at import time (`Polygon | None` raises), so modules
-  whose annotations name optional types need `from __future__ import
-  annotations` (geo, inventories). `docs/api.rst` lists modules by hand; add
-  new modules to it. Each module's page lists what it defines.
-- **The `requests` extra floors s3fs (`>=2023.10.0`), not boto3.** The newest
-  boto3 is usually a few releases ahead of the botocore that s3fs's
-  aiobotocore allows. Without the floor, uv and pixi both kept the newest boto3
-  and went back to s3fs 0.4.2 (2020), the last s3fs without aiobotocore; with
-  it, they hold boto3 back instead (2026-10-11: boto3 1.43.106, not 1.43.111).
-  2023.10.0 is where s3fs's fsspec pin meets zarr 3's oldest fsspec for remote
-  stores; `HRRR`'s S3 calls ran on it (Python 3.11, 3.12, 3.14) and on later
-  releases. s3fs 0.5.2 and 2021.4.0 fail at import on current fsspec or
-  Python 3.12.
-- **ESMF and pip (checked 2026-10-11):** `pip install "lair[complete]"` installs
-  `xesmf` without ESMF, so `import xesmf` fails with `No module named 'ESMF'`
-  (a plain `ModuleNotFoundError`, not the `ImportError` of
-  `import_optional_dependency`). `geo.gridcell_area` calls `import xesmf` first,
-  even for a projected grid, so inventory totals need conda's ESMF. Asking
-  conda-forge only for `esmpy` gave the MPICH build of ESMF, which printed a
-  `UCX ERROR` line on `import xesmf` on a cluster compute node; the README and
-  docs ask for `esmf=*=nompi*` (the build the pixi environment uses).
-- **`lair.background` imports `_ccg_filter` (and so scipy) at the top**, so even
-  `rolling_baseline`, which uses only pandas, needs the `science` extra and the
-  downloaded file.
-- **`thoning`'s `sampleinterval` is in days of 1/365 decimal year**
-  (`dinterval = sampleinterval / 365` in NOAA's `ccgFilter`; `shortterm` and
-  `longterm` use the same days): the step of the even grid the filter
-  *interpolates* the residuals onto before its FFT. NOAA's default (0) averages
-  the steps longer than 0.002739 years and divides by zero when there are none
-  (sub-daily data without a day's gap, or daily data within one leap year,
-  whose steps are 1/366 year); only then `thoning_filter` passes the median
-  step (1/24 for hourly), so every call that worked before is unchanged. A
-  grid coarser than the data samples it rather than averaging it:
-  `sampleinterval=1` on hourly data with a 5 ppm diurnal cycle put the curve
-  5 ppm high, and hourly data with a 3-day gap gets NOAA's estimate of 3 and
-  the same bias. On a smooth series the hourly curve with 1/24 matched the
-  daily curve within 0.003 ppm. Test any change against the daily curve.
-- `setup_ccg_filter()` at import time touches the filesystem: it writes into
-  lair's own folder. Where that folder is read-only and `_ccg_filter.py` is
-  absent, `import lair` still works and logs a WARNING (checked 2026-10-13);
-  pre-install `_ccg_filter.py` or set `LAIR_SKIP_CCG_DOWNLOAD=1` to skip the
-  attempt and the warning.
+  `noaa`), not `xr.open_mfdataset`: it names today's `compat`, `data_vars`,
+  `coords` and `join`, which xarray is changing. In `noaa` it runs through
+  `records.Cacher`, keyed on the pickled call arguments, so changing what is
+  passed orphans every existing cache.
+- **`thoning_filter`'s `sampleinterval`** is in days: the step of the even grid
+  NOAA's filter interpolates onto before its FFT. lair passes the median step
+  only when NOAA's own estimate would divide by zero. A grid coarser than the
+  data samples it rather than averaging it, which biases hourly data with a
+  diurnal cycle; test a change against the daily curve.
+- **The `requests` extra floors `s3fs`, not boto3** (reason in
+  `pyproject.toml`); without it, resolvers fall back to an s3fs from 2020.
+
+## Docs
+
+- They build in the lean environment: `docs/conf.py` mocks every optional
+  extra (`autodoc_mock_imports`); add new optional imports there. Mocked types
+  can't be combined at import (`Polygon | None` raises), so a module whose
+  annotations name optional types needs `from __future__ import annotations`.
+- `docs/api.rst` lists modules by hand; add new ones. Each class and member
+  gets its own page (`docs/_templates/autosummary/`, `docs/_ext/api_pages.py`,
+  which drops a class docstring's `Methods` section and the `Attributes`
+  entries that have a row).
+- Examples run when the docs build: `.. plot::` in a docstring's Examples
+  section, `.. ipython:: python` in an `.rst` page (`@savefig name.png` above a
+  plotting call). A block that raises or warns fails the build unless marked
+  `:okexcept:`/`:okwarning:`; all pages share one session. Data is synthetic, a
+  small file in the repository, or a public download, never a local path; seed
+  random numbers. An example can use only the core dependencies; a page that
+  needs an extra or a large download shows recorded output instead
+  (CONTRIBUTING.md). Notebooks are off (`docs_notebooks: false`).
+
+## Tests
+
+- One directory per module (`lair.clock` -> `tests/clock/`) with its own
+  fixtures and data and no imports between test directories, so a module can
+  leave lair with two `git mv`s. Keep `tests/conftest.py` minimal.
+- Markers `network` and `slow`; `just test` and CI skip both. Network code is
+  tested against fakes, never live (`tests/README.md`).
+- Warnings are errors: assert an expected one with `pytest.warns`; ignore one
+  raised inside another library by message in `[tool.pytest]`
+  `filterwarnings`, with a comment naming the library and version.
+- Tests run in parallel, so must not share state. Debug serially:
+  `uv run pytest tests/<module> -x`.
+
+## Commits, changelog, releases
+
+- Conventional Commits with the module as scope (`fix(soundings): ...`), `!`
+  for a breaking change. User-visible changes go under `## [Unreleased]` in
+  `CHANGELOG.md`; `just changelog` drafts entries.
+- The version comes from git tags (setuptools-scm). Releases are CalVer tags
+  `vYYYY.MM.PATCH`, MM = 05, 08 or 12, made by `just release`; the Publish
+  workflow creates the GitHub Release and Zenodo archives it (CONTRIBUTING.md).
+  **Do not cut a release, tag, or push to `main` unless the maintainer asks.**
+
+## Template
+
+Tooling comes from [jmineau/python-template](https://github.com/jmineau/python-template)
+via copier (`.copier-answers.yml`, never edited by hand); `copier update` pulls
+in template changes. Tooling changes meant for every package belong there.

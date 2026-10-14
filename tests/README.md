@@ -48,19 +48,27 @@ nothing else referenced `tests/foo/`, the rest of the lair suite still passes.
 
 ## Markers
 
-Defined in `pyproject.toml` (`[tool.pytest.ini_options]`):
+Registered in `pyproject.toml` (`[tool.pytest]`; markers are strict, so an
+unregistered one is an error):
 
 | Marker     | Meaning                                                              |
-|------------|---------------------------------------------------------------------|
+|------------|----------------------------------------------------------------------|
 | `network`  | needs live network (NOAA GML/FTP, AWS S3, MesoWest, soundings)       |
 | `slow`     | expensive runtime / bandwidth / disk; excluded from the default run |
-| `chpc`     | needs CHPC filesystem paths or group data; not runnable off-cluster |
 
 ```bash
-just test                # everything except slow
-uv run pytest -m "not network and not slow and not chpc"   # hermetic subset (CI default)
-uv run pytest tests/clock                                  # just one module
+just test                                   # everything except network and slow (as CI)
+uv run pytest -m "not network and not slow" # the same, serially
+uv run pytest tests/clock                   # just one module
 ```
+
+## Network code is tested against fakes
+
+No test reaches a live service: HRRR chunks come from a fake boto3 resource,
+soundings run with siphon's `WyomingUpperAir` stubbed, `records.ftp_download`
+runs against an in-memory `ftplib.FTP`, and the CarbonTracker and GML readers
+read small synthetic files. `pcaps.valleyheatdeficit` is checked against an
+independent trapezoid integration of a synthetic sounding.
 
 ## Optional dependencies
 
