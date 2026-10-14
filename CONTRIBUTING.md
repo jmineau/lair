@@ -57,9 +57,25 @@ and `pixi.lock` with the change. CI fails on a `pixi.lock` that is out of date.
 2. Make the change, with tests and NumPy-style docstrings.
 3. Add a line under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for
    anything a user would notice.
-4. Commit with a short message that names the module, e.g.
-   `inventories: sum_sectors(exclude=)`.
+4. Commit with a [Conventional Commits](https://www.conventionalcommits.org/)
+   message that names the module as its scope, e.g.
+   `feat(inventories): sum_sectors(exclude=)` or `fix(soundings): ...`
+   (`just changelog` sorts the entries by type).
 5. Open a pull request. Link the issue it addresses ("Fixes #12").
+
+## Docs pages with recorded output
+
+Examples run when the docs build (see "Docs" in [AGENTS.md](AGENTS.md)), and
+the build has only the core dependencies. A page whose code needs an optional
+extra, ESMF, or a large download cannot run there. Such a page shows its code
+and output as `.. code-block:: ipython`, recorded from one real run in the
+pixi environment, and says so in a note at the top with the date of the run
+(`docs/examples/inventory.rst`, `soundings.rst`, `hrrr_winds.rst` and
+`carbontracker.rst` do; `clock.rst` runs when the docs build).
+
+When the code such a page calls changes, run the page's code again and paste
+the new output. Run it in an empty folder: the blocks use relative paths, so
+no machine's paths reach the page.
 
 ## Releasing
 
@@ -81,7 +97,8 @@ next one.
    Documentation workflow publishes the docs as `X.Y.Z/` (and as `stable/`) in
    the version dropdown.
 
-lair is not published to PyPI; it is installed from GitHub.
+lair is not published to PyPI; it is installed from GitHub. Citation
+metadata is in `CITATION.cff` and `.zenodo.json`.
 
 ## Dependency updates
 
