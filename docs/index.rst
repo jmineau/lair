@@ -30,6 +30,7 @@ New to lair? Install it (below), then start with the :doc:`quickstart`.
    :hidden:
 
    Quickstart <quickstart>
+   Data locations <data>
    Examples <examples/index>
    API Reference <api>
 
@@ -164,6 +165,8 @@ Check the install
 This prints the version, for example ``2026.12.8``. The first import in a new
 environment also downloads a file; the next section says which.
 
+.. _first-import-download:
+
 The first import downloads a file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -230,8 +233,8 @@ NOAA. Use conda, which CHPC provides as the ``miniforge3`` module:
   /path/to/lair-env``.
 * For a lighter environment without ESMF (about 0.6 GB), run ``module load uv``
   and then the ``uv`` commands above. pixi is not a CHPC module.
-* Your group may already keep copies of the data (see below). Ask where, and
-  point the ``LAIR_*`` variables at them.
+* Your group may already keep copies of the data (see :ref:`data-locations`). Ask
+  where, and point the ``LAIR_*`` variables at them.
 
 ``import cartopy`` prints a PROJ error
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -249,67 +252,6 @@ by its full path, from a job script, or in a notebook kernel. The message comes
 from GDAL, which ``fiona`` loads, and it is harmless: coordinates transform to
 the same numbers with and without it. ``conda activate`` removes it. Without
 activating, set ``PROJ_DATA`` to the environment's ``share/proj`` folder.
-
-.. _data-locations:
-
-Data locations
---------------
-
-``lair`` has no built-in data paths. Functions and classes that read from a
-local data archive take an explicit directory argument and otherwise fall back
-to an environment variable:
-
-============================ ==================================================
-Variable                     Used by
-============================ ==================================================
-``LAIR_INVENTORY_DIR``       ``lair.inventories`` (root with ``EDGAR/``,
-                             ``EPA/``, ``GFEI/``, ``vulcan/``, ``WetCHARTs/``)
-``LAIR_SOUNDING_DIR``        ``lair.soundings`` (one subdirectory per station)
-``LAIR_CARBONTRACKER_DIR``   ``lair.noaa.CarbonTracker``
-``LAIR_GML_DIR``             ``lair.noaa.GMLData``
-``LAIR_CACHE_DIR``           cached results (default ``~/.cache/lair``)
-============================ ==================================================
-
-For example:
-
-.. code-block:: bash
-
-   export LAIR_INVENTORY_DIR=/path/to/inventories
-
-Importing lair reads none of these folders. A variable is read when you call code
-that needs it, so you can set it in a script or notebook after ``import lair``,
-and a missing one raises a ``ValueError`` that names it. ``LAIR_CACHE_DIR`` is the
-exception: it has a default, so a missing one is no error. lair makes the folder
-the first time it saves something there (only ``lair.noaa``'s CarbonTracker
-classes do), not when it is imported, so ``import lair`` works with a read-only
-home directory. If the folder cannot be made, the error names it and
-``LAIR_CACHE_DIR``: set the variable to a folder you can write to, or pass
-``cache=False``.
-
-What needs which data
-^^^^^^^^^^^^^^^^^^^^^
-
-You can use lair with no data folder at all. These modules work on what you pass
-in, so they need no ``LAIR_*`` variable: ``air``, ``clock``, ``constants``,
-``meteorology``, ``pcaps``, ``plotter``, ``pollutants``, ``records``,
-``transects``, ``parallel`` and ``utils``, and ``lair.units`` (the pint unit
-registry). So does ``background``, which also needs the CCG filter and ``scipy``
-(see above). Some of their functions need an extra.
-
-These get data from somewhere else:
-
-* ``inventories`` reads ``LAIR_INVENTORY_DIR``. lair does not download
-  inventories: get them from their providers (EDGAR, EPA, GFEI, Vulcan,
-  WetCHARTs).
-* ``soundings`` uses ``LAIR_SOUNDING_DIR``. For when ``get_soundings``
-  downloads, see :ref:`soundings-download`.
-* ``noaa`` uses ``LAIR_CARBONTRACKER_DIR`` and ``LAIR_GML_DIR``. The
-  ``download()`` methods of ``CarbonTracker`` and ``GMLData`` fetch the files
-  from NOAA's FTP server into them.
-* ``hrrr`` reads a public Amazon S3 bucket. It needs the internet and the
-  ``requests``, ``formats`` and ``geo`` extras, and no folder.
-* ``synoptic`` needs a Synoptic Data API token, passed as ``token=`` or set as
-  ``SYNOPTIC_TOKEN``, and the ``requests`` extra.
 
 Logging
 -------

@@ -576,6 +576,26 @@ class GMLData:
         The template for the filename.
     driver_ext : dict
         The driver extensions.
+
+    Notes
+    -----
+    The file is read from, and ``download()`` saves it to, one folder per
+    species and sample type in the data root. ``specie`` and ``site`` are
+    names in the file name, so spell them as NOAA does, in lower case
+    (``'ch4'``, ``'uta'``)::
+
+        $LAIR_GML_DIR/
+          ch4/
+            flask/
+              ch4_uta_surface-flask_1_ccgg_event.txt
+              ch4_uta_surface-flask_1_ccgg_month.txt
+            pfp/
+              ch4_mbo_surface-pfp_1_ccgg_event.txt
+
+    Each name is ``{specie}_{site}_{platform}-{sample_type}_{lab_id}_{measurement_group}_{frequency}``
+    and ``.txt`` for ``driver='pandas'`` or ``.nc`` for ``driver='xarray'``.
+    ``download()`` copies the file of that name from NOAA GML's FTP server
+    (``/data/trace_gases/{specie}/{sample_type}/{platform}/{ext}/``).
     """
 
     file_template = "{specie}_{site}_{platform}-{sample_type}_{lab_id}_{measurement_group}_{frequency}.{ext}"

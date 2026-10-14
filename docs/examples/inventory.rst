@@ -18,6 +18,8 @@ out of it:
    for the docs build. The output below was recorded from one run of this code,
    with ESMF, on 2026-10-12.
 
+.. _inventory-data:
+
 The data
 --------
 

@@ -17,6 +17,8 @@ computes potential temperature on regular heights. Two rules come out of it:
    (see :ref:`installation`) and downloads from the University of Wyoming. The
    output below was recorded from one run of this code on 2026-10-12.
 
+.. _soundings-data:
+
 The data
 --------
 
