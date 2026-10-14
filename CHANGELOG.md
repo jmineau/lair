@@ -28,6 +28,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   a knot. The clock example gains a section on the errors `convert_timezones`
   raises: a time without `fromtz`, and a local time that daylight saving time
   repeats or skips (`ambiguous=`, `nonexistent=`).
+- A worked example, "Estimate a background", that runs `rolling_baseline`,
+  `get_well_mixed` with `thoning`, and `phase_shift_corrected_baseline` side by
+  side on one series with a known background, and links to CarbonTracker's
+  background for air from upwind.
 
 ### Changed
 

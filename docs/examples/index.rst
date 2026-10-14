@@ -14,6 +14,8 @@ Each page says whether it runs when the docs build.
   temperature.
 * :doc:`hrrr_winds`: HRRR winds at a point.
 * :doc:`carbontracker`: CarbonTracker's background at a set of points.
+* :doc:`background`: lair's background methods side by side on one series,
+  what each needs, and when to use which.
 
 .. toctree::
    :maxdepth: 1
@@ -25,3 +27,4 @@ Each page says whether it runs when the docs build.
    soundings
    hrrr_winds
    carbontracker
+   background
