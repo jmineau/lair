@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a0000583"></script>
+    <script src="../../_static/documentation_options.js?v=eb120740"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
+  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -147,6 +147,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
   </a>
 </li>
 
@@ -280,6 +287,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
   </a>
 </li>
 
@@ -1030,6 +1044,26 @@
 <span class="sd">        The template for the filename.</span>
 <span class="sd">    driver_ext : dict</span>
 <span class="sd">        The driver extensions.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The file is read from, and ``download()`` saves it to, one folder per</span>
+<span class="sd">    species and sample type in the data root. ``specie`` and ``site`` are</span>
+<span class="sd">    names in the file name, so spell them as NOAA does, in lower case</span>
+<span class="sd">    (``&#39;ch4&#39;``, ``&#39;uta&#39;``)::</span>
+
+<span class="sd">        $LAIR_GML_DIR/</span>
+<span class="sd">          ch4/</span>
+<span class="sd">            flask/</span>
+<span class="sd">              ch4_uta_surface-flask_1_ccgg_event.txt</span>
+<span class="sd">              ch4_uta_surface-flask_1_ccgg_month.txt</span>
+<span class="sd">            pfp/</span>
+<span class="sd">              ch4_mbo_surface-pfp_1_ccgg_event.txt</span>
+
+<span class="sd">    Each name is ``{specie}_{site}_{platform}-{sample_type}_{lab_id}_{measurement_group}_{frequency}``</span>
+<span class="sd">    and ``.txt`` for ``driver=&#39;pandas&#39;`` or ``.nc`` for ``driver=&#39;xarray&#39;``.</span>
+<span class="sd">    ``download()`` copies the file of that name from NOAA GML&#39;s FTP server</span>
+<span class="sd">    (``/data/trace_gases/{specie}/{sample_type}/{platform}/{ext}/``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">file_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{specie}</span><span class="s2">_</span><span class="si">{site}</span><span class="s2">_</span><span class="si">{platform}</span><span class="s2">-</span><span class="si">{sample_type}</span><span class="s2">_</span><span class="si">{lab_id}</span><span class="s2">_</span><span class="si">{measurement_group}</span><span class="s2">_</span><span class="si">{frequency}</span><span class="s2">.</span><span class="si">{ext}</span><span class="s2">&quot;</span>

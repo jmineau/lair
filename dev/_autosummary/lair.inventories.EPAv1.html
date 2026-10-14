@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a0000583"></script>
+    <script src="../_static/documentation_options.js?v=eb120740"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.EPA" href="lair.inventories.EPA.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
+  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -150,6 +150,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
   </a>
 </li>
 
@@ -285,6 +292,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
   </a>
 </li>
 
@@ -809,6 +823,17 @@ anthropogenic total.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;daily&quot;</span></code>: <code class="docutils literal notranslate"><span class="pre">Forest_Fires</span></code> only.</p></li>
 </ul>
 <p>So the monthly and daily totals are not U.S. totals.</p>
+<p class="rubric">Notes</p>
+<p>One file per time step, in <code class="docutils literal notranslate"><span class="pre">EPA/v1/</span></code> below the inventory root
+(<code class="docutils literal notranslate"><span class="pre">inventory_dir</span></code>, default <code class="docutils literal notranslate"><span class="pre">$LAIR_INVENTORY_DIR</span></code>). Each holds the year
+2012, and the time step in the name starts with a capital letter (the
+<code class="docutils literal notranslate"><span class="pre">time_step</span></code> argument itself ignores case):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">EPA</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span>
+  <span class="n">GEPA_Annual</span><span class="o">.</span><span class="n">nc</span>
+  <span class="n">GEPA_Monthly</span><span class="o">.</span><span class="n">nc</span>
+  <span class="n">GEPA_Daily</span><span class="o">.</span><span class="n">nc</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

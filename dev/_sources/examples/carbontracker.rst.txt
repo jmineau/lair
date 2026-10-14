@@ -16,6 +16,8 @@ come out of it:
    NOAA's FTP server. The output below was recorded from one run of this code
    on 2026-10-12.
 
+.. _carbontracker-data:
+
 The data
 --------
 
@@ -123,6 +125,6 @@ Next
 
 :class:`~lair.noaa.CarbonTrackerCO2` works the same way for CO2; it takes the
 version (``"CT2019B"``, for example) and the ``grid``. The ``molefractions``
-attribute opens every file of the version at once and saves a copy in
-``LAIR_CACHE_DIR``, so use ``sample`` or ``background`` when you need only a
+attribute opens every file of the version at once and caches that (see
+:ref:`data-cache`), so use ``sample`` or ``background`` when you need only a
 few days.

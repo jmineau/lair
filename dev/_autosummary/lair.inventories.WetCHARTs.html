@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a0000583"></script>
+    <script src="../_static/documentation_options.js?v=eb120740"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.Vulcan.reproject" href="lair.inventories.Vulcan.reproject.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
+  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -150,6 +150,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
   </a>
 </li>
 
@@ -285,6 +292,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
   </a>
 </li>
 
@@ -804,6 +818,16 @@ of WetCHARTs v1.0 Extended Ensemble.</p>
 R.J. Weidner, K.C. McDonald, and D.J. Jacob. 2021. CMS: Global 0.5-deg
 Wetland Methane Emissions and Uncertainty (WetCHARTs v1.3.1). ORNL DAAC,
 Oak Ridge, Tennessee, USA. <a class="reference external" href="https://doi.org/10.3334/ORNLDAAC/1915">https://doi.org/10.3334/ORNLDAAC/1915</a></p>
+<p class="rubric">Notes</p>
+<p>One file per year, in <code class="docutils literal notranslate"><span class="pre">WetCHARTs/v1.3.1/</span></code> below the inventory root
+(<code class="docutils literal notranslate"><span class="pre">inventory_dir</span></code>, default <code class="docutils literal notranslate"><span class="pre">$LAIR_INVENTORY_DIR</span></code>). lair reads every
+<code class="docutils literal notranslate"><span class="pre">.nc</span></code> file of the folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">WetCHARTs</span><span class="o">/</span><span class="n">v1</span><span class="mf">.3.1</span><span class="o">/</span>
+  <span class="n">WetCHARTs_v1_3_1_2001</span><span class="o">.</span><span class="n">nc</span>
+  <span class="o">...</span>
+  <span class="n">WetCHARTs_v1_3_1_2019</span><span class="o">.</span><span class="n">nc</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

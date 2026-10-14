@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a0000583"></script>
+    <script src="../../_static/documentation_options.js?v=eb120740"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
+  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -147,6 +147,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
   </a>
 </li>
 
@@ -280,6 +287,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
   </a>
 </li>
 
@@ -1518,6 +1532,18 @@
 <span class="sd">    Research Centre (JRC), the International Energy Agency (IEA), and</span>
 <span class="sd">    comprising IEA-EDGAR CO2, EDGAR CH4, EDGAR N2O, EDGAR F-GASES version 7.0,</span>
 <span class="sd">    (2022) European Commission, JRC (Datasets).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The folder is the pollutant&#39;s name as typed (``&#39;CH4&#39;``), below the</span>
+<span class="sd">    inventory root (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``), with</span>
+<span class="sd">    one folder per sector. lair takes the year from each file name and does not</span>
+<span class="sd">    read the ``TOTALS`` folder::</span>
+
+<span class="sd">        EDGAR/v7/CH4/</span>
+<span class="sd">          AGS/v7.0_FT2021_CH4_2021_AGS.0.1x0.1.nc</span>
+<span class="sd">          AWB/v7.0_FT2021_CH4_2021_AWB.0.1x0.1.nc</span>
+<span class="sd">          ...</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v7&quot;</span>
@@ -1594,6 +1620,21 @@
 <span class="sd">    0.15 Mt gap is an inconsistency within EDGAR&#39;s own files, not data lair</span>
 <span class="sd">    fails to read; EDGAR&#39;s ``TOTALS`` follow ``PRO_FFF``, so the sum of the</span>
 <span class="sd">    sectors is 0.15 Mt below them (see GitHub issue #37).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The annual files are in ``EDGAR/v8/CH4/``, as :ref:`the inventory example</span>
+<span class="sd">    &lt;inventory-data&gt;` shows. The monthly files (``time_step=&quot;monthly&quot;``) are in</span>
+<span class="sd">    ``EDGAR/v8/monthly/CH4/``: one file per sector group and year, with the</span>
+<span class="sd">    groups ``AGRICULTURE``, ``BUILDINGS``, ``FUEL_EXPLOITATION``,</span>
+<span class="sd">    ``IND_COMBUSTION``, ``IND_PROCESSES``, ``POWER_INDUSTRY``, ``TRANSPORT`` and</span>
+<span class="sd">    ``WASTE`` each in a folder of its own::</span>
+
+<span class="sd">        EDGAR/v8/monthly/CH4/</span>
+<span class="sd">          AGRICULTURE/v8.0_FT2022_GHG_CH4_2000_AGRICULTURE_flx.nc</span>
+<span class="sd">          AGRICULTURE/v8.0_FT2022_GHG_CH4_2001_AGRICULTURE_flx.nc</span>
+<span class="sd">          ...</span>
+<span class="sd">          WASTE/v8.0_FT2022_GHG_CH4_2022_WASTE_flx.nc</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v8&quot;</span>
@@ -1758,6 +1799,18 @@
 <span class="sd">    - ``&quot;daily&quot;``: ``Forest_Fires`` only.</span>
 
 <span class="sd">    So the monthly and daily totals are not U.S. totals.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    One file per time step, in ``EPA/v1/`` below the inventory root</span>
+<span class="sd">    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``). Each holds the year</span>
+<span class="sd">    2012, and the time step in the name starts with a capital letter (the</span>
+<span class="sd">    ``time_step`` argument itself ignores case)::</span>
+
+<span class="sd">        EPA/v1/</span>
+<span class="sd">          GEPA_Annual.nc</span>
+<span class="sd">          GEPA_Monthly.nc</span>
+<span class="sd">          GEPA_Daily.nc</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v1&quot;</span>
@@ -1840,6 +1893,26 @@
 
 <span class="sd">    ``scale_by_month=True`` keeps every sector, holding those without monthly scale</span>
 <span class="sd">    factors at their annual rate, so its total covers the same sectors.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    One file per year, in ``EPA/v2/`` below the inventory root</span>
+<span class="sd">    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``). lair reads every</span>
+<span class="sd">    ``.nc`` file of the one folder it needs: ``EPA/v2/`` for the base product</span>
+<span class="sd">    (2012 to 2018), ``express/`` when ``express=True`` (2012 to 2020), and</span>
+<span class="sd">    ``monthly_scale_factors/`` as well when ``scale_by_month=True`` (2012 to</span>
+<span class="sd">    2018)::</span>
+
+<span class="sd">        EPA/v2/</span>
+<span class="sd">          Gridded_GHGI_Methane_v2_2012.nc</span>
+<span class="sd">          ...</span>
+<span class="sd">          Gridded_GHGI_Methane_v2_2018.nc</span>
+<span class="sd">          express/</span>
+<span class="sd">            Express_Extension_Gridded_GHGI_Methane_v2_2012.nc</span>
+<span class="sd">            ...</span>
+<span class="sd">          monthly_scale_factors/</span>
+<span class="sd">            Gridded_GHGI_Methane_v2_Monthly_Scale_Factors_2012.nc</span>
+<span class="sd">            ...</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v2&quot;</span>
@@ -2053,6 +2126,24 @@
 <span class="sd">    and coal exploitation based on national reports to the United Nations Framework</span>
 <span class="sd">    Convention on Climate Change, Earth Syst. Sci. Data, 12, 563–575,</span>
 <span class="sd">    https://doi.org/10.5194/essd-12-563-2020, 2020a.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    One file per sector, in ``GFEI/v1/`` below the inventory root</span>
+<span class="sd">    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``), for the year 2016.</span>
+<span class="sd">    A sector&#39;s ``_gsd`` and ``_rsd`` files (the geometric and the relative</span>
+<span class="sd">    standard deviation) are read only by ``get_standard_deviations``, and</span>
+<span class="sd">    the ``_All`` files (``Gas_All``, ``Oil_All``) are not read. Keep the</span>
+<span class="sd">    ``Total_Fuel_Exploitation`` file in the folder: lair drops its variable</span>
+<span class="sd">    after reading, and raises a ``ValueError`` when the file is missing::</span>
+
+<span class="sd">        GFEI/v1/</span>
+<span class="sd">          Global_Fuel_Exploitation_Inventory_Coal.nc</span>
+<span class="sd">          Global_Fuel_Exploitation_Inventory_Coal_gsd.nc</span>
+<span class="sd">          Global_Fuel_Exploitation_Inventory_Coal_rsd.nc</span>
+<span class="sd">          Global_Fuel_Exploitation_Inventory_Gas_Distribution.nc</span>
+<span class="sd">          ...</span>
+<span class="sd">          Global_Fuel_Exploitation_Inventory_Total_Fuel_Exploitation.nc</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v1&quot;</span>
@@ -2115,6 +2206,20 @@
 <span class="sd">    from the oil, gas, and coal sectors: evaluation with inversions of</span>
 <span class="sd">    atmospheric methane observations, Atmos. Chem. Phys., 22, 3235–3249,</span>
 <span class="sd">    https://doi.org/10.5194/acp-22-3235-2022, 2022.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    One file per sector, in ``GFEI/v2/`` below the inventory root</span>
+<span class="sd">    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``), for the year 2019.</span>
+<span class="sd">    lair does not read the ``_All`` files (``Gas_All``, ``Oil_All``). Keep the</span>
+<span class="sd">    ``Total_Fuel_Exploitation`` file in the folder: lair drops its variable</span>
+<span class="sd">    after reading, and raises a ``ValueError`` when the file is missing::</span>
+
+<span class="sd">        GFEI/v2/</span>
+<span class="sd">          Global_Fuel_Exploitation_Inventory_v2_2019_Coal.nc</span>
+<span class="sd">          Global_Fuel_Exploitation_Inventory_v2_2019_Gas_Distribution.nc</span>
+<span class="sd">          ...</span>
+<span class="sd">          Global_Fuel_Exploitation_Inventory_v2_2019_Total_Fuel_Exploitation.nc</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v2&quot;</span>
@@ -2148,6 +2253,27 @@
 <span class="sd">        with ``pollutant=&#39;CO2&#39;`` and with unit conversions to moles. Divide by</span>
 <span class="sd">        that factor to recover the published tC values. Cells without</span>
 <span class="sd">        emissions (NaN in the files) are set to 0.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    One file per sector, in ``vulcan/v3/data/native/`` below the inventory root</span>
+<span class="sd">    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``). lair reads the</span>
+<span class="sd">    ``US`` files of the central estimate (``mn``), and not the ``total`` file;</span>
+<span class="sd">    the ``lo`` and ``hi`` files (the 95% bounds) are read only by</span>
+<span class="sd">    ``get_uncertainties``, and files of other regions (``AK``) are ignored.</span>
+<span class="sd">    An annual file holds every year, 2010 to 2015. The hourly folder holds one</span>
+<span class="sd">    file per sector and day of 2015::</span>
+
+<span class="sd">        vulcan/v3/data/native/</span>
+<span class="sd">          annual/</span>
+<span class="sd">            Vulcan_v3_US_annual_1km_airport_mn.nc4</span>
+<span class="sd">            Vulcan_v3_US_annual_1km_airport_lo.nc4</span>
+<span class="sd">            Vulcan_v3_US_annual_1km_airport_hi.nc4</span>
+<span class="sd">            ...</span>
+<span class="sd">          hourly/</span>
+<span class="sd">            Vulcan.v3.US.hourly.1km.airport.mn.2015.d001.nc4</span>
+<span class="sd">            Vulcan.v3.US.hourly.1km.airport.mn.2015.d002.nc4</span>
+<span class="sd">            ...</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># hourly data is 1.6 Tb !!!</span>
@@ -2392,6 +2518,17 @@
 <span class="sd">    R.J. Weidner, K.C. McDonald, and D.J. Jacob. 2021. CMS: Global 0.5-deg</span>
 <span class="sd">    Wetland Methane Emissions and Uncertainty (WetCHARTs v1.3.1). ORNL DAAC,</span>
 <span class="sd">    Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1915</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    One file per year, in ``WetCHARTs/v1.3.1/`` below the inventory root</span>
+<span class="sd">    (``inventory_dir``, default ``$LAIR_INVENTORY_DIR``). lair reads every</span>
+<span class="sd">    ``.nc`` file of the folder::</span>
+
+<span class="sd">        WetCHARTs/v1.3.1/</span>
+<span class="sd">          WetCHARTs_v1_3_1_2001.nc</span>
+<span class="sd">          ...</span>
+<span class="sd">          WetCHARTs_v1_3_1_2019.nc</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v1.3.1&quot;</span>

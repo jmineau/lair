@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a0000583"></script>
+    <script src="../_static/documentation_options.js?v=eb120740"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Total an inventory over a region" href="inventory.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
+  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -150,6 +150,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
   </a>
 </li>
 
@@ -285,6 +292,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
   </a>
 </li>
 
@@ -465,7 +479,7 @@ another station, interpolate each sounding yourself (below).</p></li>
 output below was recorded from one run of this code on 2026-10-12.</p>
 </div>
 <section id="the-data">
-<h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
+<span id="soundings-data"></span><h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
 <p>The <a class="reference external" href="https://weather.uwyo.edu/upperair/sounding.html">University of Wyoming</a>
 keeps the radiosonde soundings of stations around the world, launched at 00
 and 12 UTC. lair downloads them with <a class="reference external" href="https://unidata.github.io/siphon/">siphon</a>
@@ -479,7 +493,7 @@ per station:</p>
 </pre></div>
 </div>
 <p>The functions take that folder as <code class="docutils literal notranslate"><span class="pre">sounding_dir</span></code> (<code class="docutils literal notranslate"><span class="pre">dst</span></code> for the downloads),
-or use <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR/&lt;station&gt;</span></code> (see <a class="reference internal" href="../index.html#data-locations"><span class="std std-ref">Data locations</span></a>).</p>
+or use <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR/&lt;station&gt;</span></code> (see <a class="reference internal" href="../data.html#data-locations"><span class="std std-ref">Data locations</span></a>).</p>
 </section>
 <section id="download">
 <h2>Download<a class="headerlink" href="#download" title="Link to this heading">#</a></h2>

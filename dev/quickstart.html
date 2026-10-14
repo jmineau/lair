@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=a0000583"></script>
+    <script src="_static/documentation_options.js?v=eb120740"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples" href="examples/index.html" />
+    <link rel="next" title="Data locations" href="data.html" />
     <link rel="prev" title="LAIR: Land-Air Interactions Research" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
+  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -150,6 +150,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="#" aria-current="page">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="data.html">
+    Data locations
   </a>
 </li>
 
@@ -285,6 +292,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="#" aria-current="page">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="data.html">
+    Data locations
   </a>
 </li>
 
@@ -449,7 +463,7 @@ data (both need ESMF). For everything else, pip is enough.</p>
 <p>Most modules need no data folder. They work on the numbers you pass in.</p>
 <p>The modules that read files you keep on disk (<code class="docutils literal notranslate"><span class="pre">inventories</span></code>, <code class="docutils literal notranslate"><span class="pre">soundings</span></code>,
 and <code class="docutils literal notranslate"><span class="pre">noaa</span></code>’s <code class="docutils literal notranslate"><span class="pre">CarbonTracker</span></code> and <code class="docutils literal notranslate"><span class="pre">GMLData</span></code>) take the folder as an argument,
-or read it from a <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> environment variable. <a class="reference internal" href="index.html#data-locations"><span class="std std-ref">Data locations</span></a> lists
+or read it from a <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> environment variable. <a class="reference internal" href="data.html#data-locations"><span class="std std-ref">Data locations</span></a> lists
 the variables. Set the one you need before you start Python, for example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">LAIR_INVENTORY_DIR</span><span class="o">=</span>/path/to/inventories
 </pre></div>
@@ -526,11 +540,11 @@ carry no units.</p>
       </div>
     </a>
     <a class="right-next"
-       href="examples/index.html"
+       href="data.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Examples</p>
+        <p class="prev-next-title">Data locations</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=a0000583"></script>
+    <script src="_static/documentation_options.js?v=eb120740"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="next" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
+  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -149,6 +149,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="data.html">
+    Data locations
   </a>
 </li>
 
@@ -286,6 +293,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="data.html">
+    Data locations
   </a>
 </li>
 
@@ -543,7 +557,7 @@ same environment: see “conda” above.</p>
 environment also downloads a file; the next section says which.</p>
 </section>
 <section id="the-first-import-downloads-a-file">
-<h3>The first import downloads a file<a class="headerlink" href="#the-first-import-downloads-a-file" title="Link to this heading">#</a></h3>
+<span id="first-import-download"></span><h3>The first import downloads a file<a class="headerlink" href="#the-first-import-downloads-a-file" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">lair.background</span></code> uses the CCG filter, curve-fitting code that NOAA’s Global
 Monitoring Laboratory publishes. It is not part of lair’s repository. The first
 time you <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> in an environment, lair downloads NOAA’s
@@ -603,8 +617,8 @@ against your home directory’s quota. To put it elsewhere, use
 <span class="pre">/path/to/lair-env</span></code>.</p></li>
 <li><p>For a lighter environment without ESMF (about 0.6 GB), run <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span> <span class="pre">uv</span></code>
 and then the <code class="docutils literal notranslate"><span class="pre">uv</span></code> commands above. pixi is not a CHPC module.</p></li>
-<li><p>Your group may already keep copies of the data (see below). Ask where, and
-point the <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> variables at them.</p></li>
+<li><p>Your group may already keep copies of the data (see <a class="reference internal" href="data.html#data-locations"><span class="std std-ref">Data locations</span></a>). Ask
+where, and point the <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> variables at them.</p></li>
 </ul>
 </section>
 <section id="import-cartopy-prints-a-proj-error">
@@ -620,75 +634,6 @@ by its full path, from a job script, or in a notebook kernel. The message comes
 from GDAL, which <code class="docutils literal notranslate"><span class="pre">fiona</span></code> loads, and it is harmless: coordinates transform to
 the same numbers with and without it. <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span></code> removes it. Without
 activating, set <code class="docutils literal notranslate"><span class="pre">PROJ_DATA</span></code> to the environment’s <code class="docutils literal notranslate"><span class="pre">share/proj</span></code> folder.</p>
-</section>
-</section>
-<section id="data-locations">
-<span id="id3"></span><h2>Data locations<a class="headerlink" href="#data-locations" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">lair</span></code> has no built-in data paths. Functions and classes that read from a
-local data archive take an explicit directory argument and otherwise fall back
-to an environment variable:</p>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Variable</p></th>
-<th class="head"><p>Used by</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">LAIR_INVENTORY_DIR</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">lair.inventories</span></code> (root with <code class="docutils literal notranslate"><span class="pre">EDGAR/</span></code>,
-<code class="docutils literal notranslate"><span class="pre">EPA/</span></code>, <code class="docutils literal notranslate"><span class="pre">GFEI/</span></code>, <code class="docutils literal notranslate"><span class="pre">vulcan/</span></code>, <code class="docutils literal notranslate"><span class="pre">WetCHARTs/</span></code>)</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">LAIR_SOUNDING_DIR</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">lair.soundings</span></code> (one subdirectory per station)</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">LAIR_CARBONTRACKER_DIR</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">lair.noaa.CarbonTracker</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">LAIR_GML_DIR</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">lair.noaa.GMLData</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code></p></td>
-<td><p>cached results (default <code class="docutils literal notranslate"><span class="pre">~/.cache/lair</span></code>)</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>For example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">LAIR_INVENTORY_DIR</span><span class="o">=</span>/path/to/inventories
-</pre></div>
-</div>
-<p>Importing lair reads none of these folders. A variable is read when you call code
-that needs it, so you can set it in a script or notebook after <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code>,
-and a missing one raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> that names it. <code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code> is the
-exception: it has a default, so a missing one is no error. lair makes the folder
-the first time it saves something there (only <code class="docutils literal notranslate"><span class="pre">lair.noaa</span></code>’s CarbonTracker
-classes do), not when it is imported, so <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> works with a read-only
-home directory. If the folder cannot be made, the error names it and
-<code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code>: set the variable to a folder you can write to, or pass
-<code class="docutils literal notranslate"><span class="pre">cache=False</span></code>.</p>
-<section id="what-needs-which-data">
-<h3>What needs which data<a class="headerlink" href="#what-needs-which-data" title="Link to this heading">#</a></h3>
-<p>You can use lair with no data folder at all. These modules work on what you pass
-in, so they need no <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> variable: <code class="docutils literal notranslate"><span class="pre">air</span></code>, <code class="docutils literal notranslate"><span class="pre">clock</span></code>, <code class="docutils literal notranslate"><span class="pre">constants</span></code>,
-<code class="docutils literal notranslate"><span class="pre">meteorology</span></code>, <code class="docutils literal notranslate"><span class="pre">pcaps</span></code>, <code class="docutils literal notranslate"><span class="pre">plotter</span></code>, <code class="docutils literal notranslate"><span class="pre">pollutants</span></code>, <code class="docutils literal notranslate"><span class="pre">records</span></code>,
-<code class="docutils literal notranslate"><span class="pre">transects</span></code>, <code class="docutils literal notranslate"><span class="pre">parallel</span></code> and <code class="docutils literal notranslate"><span class="pre">utils</span></code>, and <code class="docutils literal notranslate"><span class="pre">lair.units</span></code> (the pint unit
-registry). So does <code class="docutils literal notranslate"><span class="pre">background</span></code>, which also needs the CCG filter and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>
-(see above). Some of their functions need an extra.</p>
-<p>These get data from somewhere else:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">inventories</span></code> reads <code class="docutils literal notranslate"><span class="pre">LAIR_INVENTORY_DIR</span></code>. lair does not download
-inventories: get them from their providers (EDGAR, EPA, GFEI, Vulcan,
-WetCHARTs).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">soundings</span></code> uses <code class="docutils literal notranslate"><span class="pre">LAIR_SOUNDING_DIR</span></code>. For when <code class="docutils literal notranslate"><span class="pre">get_soundings</span></code>
-downloads, see <a class="reference internal" href="examples/soundings.html#soundings-download"><span class="std std-ref">When get_soundings downloads</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">noaa</span></code> uses <code class="docutils literal notranslate"><span class="pre">LAIR_CARBONTRACKER_DIR</span></code> and <code class="docutils literal notranslate"><span class="pre">LAIR_GML_DIR</span></code>. The
-<code class="docutils literal notranslate"><span class="pre">download()</span></code> methods of <code class="docutils literal notranslate"><span class="pre">CarbonTracker</span></code> and <code class="docutils literal notranslate"><span class="pre">GMLData</span></code> fetch the files
-from NOAA’s FTP server into them.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">hrrr</span></code> reads a public Amazon S3 bucket. It needs the internet and the
-<code class="docutils literal notranslate"><span class="pre">requests</span></code>, <code class="docutils literal notranslate"><span class="pre">formats</span></code> and <code class="docutils literal notranslate"><span class="pre">geo</span></code> extras, and no folder.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">synoptic</span></code> needs a Synoptic Data API token, passed as <code class="docutils literal notranslate"><span class="pre">token=</span></code> or set as
-<code class="docutils literal notranslate"><span class="pre">SYNOPTIC_TOKEN</span></code>, and the <code class="docutils literal notranslate"><span class="pre">requests</span></code> extra.</p></li>
-</ul>
 </section>
 </section>
 <section id="logging">
@@ -779,10 +724,6 @@ software and/or acknowledge me.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-first-import-downloads-a-file">The first import downloads a file</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#on-chpc-university-of-utah">On CHPC (University of Utah)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#import-cartopy-prints-a-proj-error"><code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">cartopy</span></code> prints a PROJ error</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-locations">Data locations</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-needs-which-data">What needs which data</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#logging">Logging</a></li>

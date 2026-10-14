@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a0000583"></script>
+    <script src="../_static/documentation_options.js?v=eb120740"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.GFEI.get_files" href="lair.inventories.GFEI.get_files.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev35+ge7ad921a5" />
+  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -150,6 +150,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
   </a>
 </li>
 
@@ -285,6 +292,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../quickstart.html">
     Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
   </a>
 </li>
 
@@ -799,6 +813,23 @@ A global gridded (0.1° × 0.1°) inventory of methane emissions from oil, g
 and coal exploitation based on national reports to the United Nations Framework
 Convention on Climate Change, Earth Syst. Sci. Data, 12, 563–575,
 <a class="reference external" href="https://doi.org/10.5194/essd-12-563-2020">https://doi.org/10.5194/essd-12-563-2020</a>, 2020a.</p>
+<p class="rubric">Notes</p>
+<p>One file per sector, in <code class="docutils literal notranslate"><span class="pre">GFEI/v1/</span></code> below the inventory root
+(<code class="docutils literal notranslate"><span class="pre">inventory_dir</span></code>, default <code class="docutils literal notranslate"><span class="pre">$LAIR_INVENTORY_DIR</span></code>), for the year 2016.
+A sector’s <code class="docutils literal notranslate"><span class="pre">_gsd</span></code> and <code class="docutils literal notranslate"><span class="pre">_rsd</span></code> files (the geometric and the relative
+standard deviation) are read only by <code class="docutils literal notranslate"><span class="pre">get_standard_deviations</span></code>, and
+the <code class="docutils literal notranslate"><span class="pre">_All</span></code> files (<code class="docutils literal notranslate"><span class="pre">Gas_All</span></code>, <code class="docutils literal notranslate"><span class="pre">Oil_All</span></code>) are not read. Keep the
+<code class="docutils literal notranslate"><span class="pre">Total_Fuel_Exploitation</span></code> file in the folder: lair drops its variable
+after reading, and raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when the file is missing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GFEI</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span>
+  <span class="n">Global_Fuel_Exploitation_Inventory_Coal</span><span class="o">.</span><span class="n">nc</span>
+  <span class="n">Global_Fuel_Exploitation_Inventory_Coal_gsd</span><span class="o">.</span><span class="n">nc</span>
+  <span class="n">Global_Fuel_Exploitation_Inventory_Coal_rsd</span><span class="o">.</span><span class="n">nc</span>
+  <span class="n">Global_Fuel_Exploitation_Inventory_Gas_Distribution</span><span class="o">.</span><span class="n">nc</span>
+  <span class="o">...</span>
+  <span class="n">Global_Fuel_Exploitation_Inventory_Total_Fuel_Exploitation</span><span class="o">.</span><span class="n">nc</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>inventory_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>None</em>)</p>
