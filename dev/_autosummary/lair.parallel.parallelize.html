@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=691f6b92"></script>
+    <script src="../_static/documentation_options.js?v=80a9e58c"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.parallel" href="lair.parallel.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev33+gf5feb5732" />
+  <meta name="docsearch:version" content="2026.12.9.dev34+g7dda596bc" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -796,8 +796,10 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>func</strong> (<em>function</em>) – The function to parallelize.</p></li>
 <li><p><strong>num_processes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>'max'</em><em>, </em><em>optional</em>) – The number of processes to use. Uses the minimum of the number of
-items in the iterable and the number of CPUs requested. If ‘max’,
-uses all available CPUs. Default is 1.</p></li>
+items in the iterable and the number of CPUs requested, and never
+more than the CPUs this process may run on (a Slurm job’s CPUs, not
+every CPU of the node; macOS and Windows count the machine’s CPUs). If
+‘max’, uses all of those CPUs. Default is 1.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
