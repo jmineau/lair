@@ -53,6 +53,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `pyproject.toml` and `pixi.lock` (`pixi install`), with ESMF and `xesmf` from
   conda-forge. `env-dev.yml` is gone, so lair's dependencies are listed in one
   place, and CI runs the whole test suite in that environment.
+- The Examples page describes each example, and the quickstart links to it
+  instead of listing them. The front page links to the soundings example for
+  when `get_soundings` downloads, and its Disclaimer has the README's text on
+  AI coding agents.
 
 ### Removed
 

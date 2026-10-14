@@ -201,6 +201,29 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
   when the docs build and can use only the core dependencies; a page that
   needs more shows recorded output. CONTRIBUTING.md, "Docs examples", has how.
 
+## Docs pages
+
+Each page answers one question, the pages are listed in the order a new reader
+asks them, and each fact is written on one page: the others link to it
+(`:ref:`, `:doc:`) and do not restate it. A docs PR adds an example (one job,
+titled as the job, opening with the rules that come out of it) or text in a
+docstring, which shows on the API pages; it adds no "guide" page. A new example
+goes in `docs/examples/index.rst` only (a toctree entry and a line describing
+it); the quickstart links to the Examples page, not to each example. A new fact
+goes on the page that holds its kind:
+
+| Fact | Its page | The others |
+|---|---|---|
+| Install routes, extras, the first-import download, CHPC | front page, "Installation" | link by `installation` or `optional-dependencies`; the README keeps a short copy, as GitHub's front page |
+| `LAIR_*` variables, what needs which data, the cache | front page, "Data locations" | link by `data-locations` |
+| A dataset's folder layout and where to get it | its example, "The data" | "Data locations" links to the example |
+| A time without a zone is UTC; time zones; seasons | `examples/clock` | a clause and a link |
+| Plain SI in and out of `meteorology` | quickstart, "A first calculation" | link |
+| Inventory totals; conservative against bilinear regridding | `examples/inventory` | link |
+| `get_soundings` heights and downloads | `examples/soundings` | link |
+| CarbonTracker sampling and background | `examples/carbontracker` | link |
+| Function and class details | the API pages, from docstrings | `:func:` and `:class:` links, not `autofunction` |
+
 ## Tests
 
 One directory per module (`lair.clock` -> `tests/clock/`), with no imports
