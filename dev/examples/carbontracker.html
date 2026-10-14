@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=eb120740"></script>
+    <script src="../_static/documentation_options.js?v=d3045afe"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="next" title="Estimate a background" href="background.html" />
     <link rel="prev" title="Get HRRR winds at a point" href="hrrr_winds.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev36+g6df488f58" />
+  <meta name="docsearch:version" content="2026.12.9.dev37+gb4e2ec798" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -400,6 +400,7 @@
 <li class="toctree-l1"><a class="reference internal" href="soundings.html">Read a sounding and compute its potential temperature</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hrrr_winds.html">Get HRRR winds at a point</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Sample CarbonTracker at points</a></li>
+<li class="toctree-l1"><a class="reference internal" href="background.html">Estimate a background</a></li>
 </ul>
 </div>
 </nav></div>
@@ -552,7 +553,7 @@ A point outside the grid gets NaN, and a point on a day with no file in the
 folder is dropped.</p>
 </section>
 <section id="background">
-<h2>Background<a class="headerlink" href="#background" title="Link to this heading">#</a></h2>
+<span id="carbontracker-background"></span><h2>Background<a class="headerlink" href="#background" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.noaa.CarbonTracker.background.html#lair.noaa.CarbonTracker.background" title="lair.noaa.CarbonTracker.background"><code class="xref py py-meth docutils literal notranslate"><span class="pre">background()</span></code></a> samples the points and averages
 them:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">ct</span><span class="o">.</span><span class="n">background</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
@@ -596,11 +597,11 @@ few days.</p>
       </div>
     </a>
     <a class="right-next"
-       href="../api.html"
+       href="background.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Estimate a background</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
