@@ -301,9 +301,8 @@ These get data from somewhere else:
 * ``inventories`` reads ``LAIR_INVENTORY_DIR``. lair does not download
   inventories: get them from their providers (EDGAR, EPA, GFEI, Vulcan,
   WetCHARTs).
-* ``soundings`` uses ``LAIR_SOUNDING_DIR``. ``get_soundings`` and
-  ``download_sounding`` fetch missing soundings from the University of Wyoming
-  into one subfolder per station, so an empty folder is enough to start.
+* ``soundings`` uses ``LAIR_SOUNDING_DIR``. For when ``get_soundings``
+  downloads, see :ref:`soundings-download`.
 * ``noaa`` uses ``LAIR_CARBONTRACKER_DIR`` and ``LAIR_GML_DIR``. The
   ``download()`` methods of ``CarbonTracker`` and ``GMLData`` fetch the files
   from NOAA's FTP server into them.
@@ -341,10 +340,12 @@ NOAA GML's `CCG curve-fitting code
 Disclaimer
 ----------
 
-* Portions of this package were written with AI-based tools including GitHub
-  Copilot, ChatGPT, and Google Gemini.
-* Various code snippets were borrowed from StackOverflow and other online
-  resources.
+This project is developed with the help of AI coding agents, directed and
+reviewed by the maintainer, who owns the design and the science.
+
+Portions of this package were also written with AI-based tools including
+GitHub Copilot, ChatGPT, and Google Gemini, and some code snippets were
+borrowed from StackOverflow and other online resources.
 
 Contributing
 ------------

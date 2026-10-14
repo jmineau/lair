@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=8cad638a"></script>
+    <script src="_static/documentation_options.js?v=691f6b92"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="next" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev32+g0863d9979" />
+  <meta name="docsearch:version" content="2026.12.9.dev33+gf5feb5732" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -679,9 +679,8 @@ registry). So does <code class="docutils literal notranslate"><span class="pre">
 <li><p><code class="docutils literal notranslate"><span class="pre">inventories</span></code> reads <code class="docutils literal notranslate"><span class="pre">LAIR_INVENTORY_DIR</span></code>. lair does not download
 inventories: get them from their providers (EDGAR, EPA, GFEI, Vulcan,
 WetCHARTs).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">soundings</span></code> uses <code class="docutils literal notranslate"><span class="pre">LAIR_SOUNDING_DIR</span></code>. <code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> and
-<code class="docutils literal notranslate"><span class="pre">download_sounding</span></code> fetch missing soundings from the University of Wyoming
-into one subfolder per station, so an empty folder is enough to start.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">soundings</span></code> uses <code class="docutils literal notranslate"><span class="pre">LAIR_SOUNDING_DIR</span></code>. For when <code class="docutils literal notranslate"><span class="pre">get_soundings</span></code>
+downloads, see <a class="reference internal" href="examples/soundings.html#soundings-download"><span class="std std-ref">When get_soundings downloads</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">noaa</span></code> uses <code class="docutils literal notranslate"><span class="pre">LAIR_CARBONTRACKER_DIR</span></code> and <code class="docutils literal notranslate"><span class="pre">LAIR_GML_DIR</span></code>. The
 <code class="docutils literal notranslate"><span class="pre">download()</span></code> methods of <code class="docutils literal notranslate"><span class="pre">CarbonTracker</span></code> and <code class="docutils literal notranslate"><span class="pre">GMLData</span></code> fetch the files
 from NOAA’s FTP server into them.</p></li>
@@ -714,12 +713,11 @@ NOAA GML’s <a class="reference external" href="https://gml.noaa.gov/ccgg/mbl/c
 </section>
 <section id="disclaimer">
 <h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p>Portions of this package were written with AI-based tools including GitHub
-Copilot, ChatGPT, and Google Gemini.</p></li>
-<li><p>Various code snippets were borrowed from StackOverflow and other online
-resources.</p></li>
-</ul>
+<p>This project is developed with the help of AI coding agents, directed and
+reviewed by the maintainer, who owns the design and the science.</p>
+<p>Portions of this package were also written with AI-based tools including
+GitHub Copilot, ChatGPT, and Google Gemini, and some code snippets were
+borrowed from StackOverflow and other online resources.</p>
 </section>
 <section id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">#</a></h2>

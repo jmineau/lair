@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=8cad638a"></script>
+    <script src="../_static/documentation_options.js?v=691f6b92"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Average a time series by local hour and by season" href="clock.html" />
+    <link rel="next" title="Get HRRR winds at a point" href="hrrr_winds.html" />
     <link rel="prev" title="Total an inventory over a region" href="inventory.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev32+g0863d9979" />
+  <meta name="docsearch:version" content="2026.12.9.dev33+gf5feb5732" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -380,9 +380,9 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="clock.html">Average a time series by local hour and by season</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inventory.html">Total an inventory over a region</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Read a sounding and compute its potential temperature</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clock.html">Average a time series by local hour and by season</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hrrr_winds.html">Get HRRR winds at a point</a></li>
 <li class="toctree-l1"><a class="reference internal" href="carbontracker.html">Sample CarbonTracker at points</a></li>
 </ul>
@@ -586,7 +586,7 @@ valley was stable. At 12 UTC (5 a.m. in Salt Lake City) it rose 2.3 K in the
 lowest 210 m: a surface inversion.</p>
 </section>
 <section id="when-get-soundings-downloads">
-<h2>When get_soundings downloads<a class="headerlink" href="#when-get-soundings-downloads" title="Link to this heading">#</a></h2>
+<span id="soundings-download"></span><h2>When get_soundings downloads<a class="headerlink" href="#when-get-soundings-downloads" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> can also download. If the station’s folder (<code class="docutils literal notranslate"><span class="pre">sounding_dir</span></code>,
 or <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR/&lt;station&gt;</span></code>) does not exist or holds no files, it
 downloads every sounding from <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code> into it (only those in
@@ -630,11 +630,11 @@ deficit from the output of <code class="docutils literal notranslate"><span clas
       </div>
     </a>
     <a class="right-next"
-       href="clock.html"
+       href="hrrr_winds.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Average a time series by local hour and by season</p>
+        <p class="prev-next-title">Get HRRR winds at a point</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -155,6 +155,8 @@ Potential temperature rises with height in both soundings, so the air over the
 valley was stable. At 12 UTC (5 a.m. in Salt Lake City) it rose 2.3 K in the
 lowest 210 m: a surface inversion.
 
+.. _soundings-download:
+
 When get_soundings downloads
 ----------------------------
 

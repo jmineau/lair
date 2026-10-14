@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=8cad638a"></script>
+    <script src="../_static/documentation_options.js?v=691f6b92"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,10 +56,10 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Sample CarbonTracker at points" href="carbontracker.html" />
-    <link rel="prev" title="Average a time series by local hour and by season" href="clock.html" />
+    <link rel="prev" title="Read a sounding and compute its potential temperature" href="soundings.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev32+g0863d9979" />
+  <meta name="docsearch:version" content="2026.12.9.dev33+gf5feb5732" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -380,9 +380,9 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="clock.html">Average a time series by local hour and by season</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inventory.html">Total an inventory over a region</a></li>
 <li class="toctree-l1"><a class="reference internal" href="soundings.html">Read a sounding and compute its potential temperature</a></li>
-<li class="toctree-l1"><a class="reference internal" href="clock.html">Average a time series by local hour and by season</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Get HRRR winds at a point</a></li>
 <li class="toctree-l1"><a class="reference internal" href="carbontracker.html">Sample CarbonTracker at points</a></li>
 </ul>
@@ -454,9 +454,9 @@ Utah campus. Two rules come out of it:</p>
 wind analysis at the HRRR grid point nearest to the point you give, one hour
 at a time, from a public archive on AWS. Nothing is saved to disk, and no
 <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> variable is needed.</p></li>
-<li><p><strong>A time without a time zone is UTC.</strong> A time with one is converted to UTC
-to choose the hour, and <code class="docutils literal notranslate"><span class="pre">data</span></code> keeps it as you gave it, so you can ask in
-local time and get local time back (see <a class="reference internal" href="#local-time">Local time</a>).</p></li>
+<li><p><strong>A time without a time zone is UTC</strong> (see <a class="reference internal" href="clock.html"><span class="doc">Average a time series by local hour and by season</span></a>). A time with one is
+converted to UTC to choose the hour, and <code class="docutils literal notranslate"><span class="pre">data</span></code> keeps it as you gave it, so
+you can ask in local time and get local time back (see <a class="reference internal" href="#local-time">Local time</a>).</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -564,12 +564,12 @@ and the index stays in Mountain time:</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="clock.html"
+       href="soundings.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Average a time series by local hour and by season</p>
+        <p class="prev-next-title">Read a sounding and compute its potential temperature</p>
       </div>
     </a>
     <a class="right-next"
