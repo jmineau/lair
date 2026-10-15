@@ -8,6 +8,19 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Changed
+
+- `CarbonTrackerCH4.molefractions` and `CarbonTrackerCO2.molefractions` raise a
+  `ValueError` when two files cover one day, naming the day and both files. They
+  read every file of the folder, and two files for a day (the same day from two
+  releases, such as `CTCH4_2024.molefrac_...` beside `CTCH4_2025.molefrac_...`)
+  made them compare and keep every value of the two, so the cache grew to the
+  size of the data and the open could run out of memory. The day is the date the
+  file name ends with, so no file is opened to find it. A folder where an older
+  release's files sit beside the current release's raises until those files are
+  moved out; two releases that cover different days read as before. `sample`
+  and `background` still take the last file of a day by name, and do not stop.
+
 ## [2026.12.9] - 2026-10-20
 
 ### Added
