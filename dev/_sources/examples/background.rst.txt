@@ -266,7 +266,7 @@ The methods above estimate the background from the site's own data. The other
 way is to take it from upwind: sample a global model, such as NOAA's
 CarbonTracker, where the air arriving at the site came from. That needs no
 clean hour at the site, and it is the way lair's maintainer took for the Salt
-Lake Valley methane inversion of his first paper (in preparation):
+Lake Valley methane inversion of his first paper:
 CarbonTracker-CH4 version ``CT-CH4-2025``, sampled with
 :meth:`~lair.noaa.CarbonTracker.background` at the ends of 24-hour STILT back
 trajectories released from the site in the afternoon, and averaged to one value
