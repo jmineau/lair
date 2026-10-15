@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2396858d"></script>
+    <script src="../_static/documentation_options.js?v=3563eaca"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.Inventory.integrate" href="lair.inventories.Inventory.integrate.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev38+g43aca1a25" />
+  <meta name="docsearch:version" content="2026.12.9.dev39+g534476fd5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -812,8 +812,11 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>matplotlib.axes.Axes</em></a>) – The axes to plot on.</p></li>
-<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The time step to plot, by default ‘mean’. If ‘mean’, the mean emissions are plotted.
-Otherwise pass a string selector or integer index.</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The time step to plot, by default ‘mean’. If ‘mean’, the mean of every
+time step is plotted, which reads all of them: for the 53 years of EDGAR
+v8 CH4 that takes about a minute. Otherwise pass a string selector or
+integer index, such as <code class="docutils literal notranslate"><span class="pre">&quot;2022-01-01&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">-1</span></code> (the last), to read one
+step.</p></li>
 <li><p><strong>sector</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The sector to plot, by default None. If None, the total emissions are plotted.</p></li>
 <li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Additional keyword arguments to pass to <cite>xarray</cite>’s plot method.</p></li>
 </ul>
@@ -825,6 +828,11 @@ Otherwise pass a string selector or integer index.</p></li>
 <dd class="field-odd"><p><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>Axes</em></a></p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>Without <code class="docutils literal notranslate"><span class="pre">ax</span></code> the plot gets a new cartopy <code class="docutils literal notranslate"><span class="pre">GeoAxes</span></code> in PlateCarree. Only
+the field is drawn, with no state lines, coastlines or tick labels.
+<a class="reference internal" href="../examples/maps.html#maps-plot"><span class="std std-ref">The maps example</span></a> times the default time step and adds
+them.</p>
 </dd></dl>
 
 </section>
