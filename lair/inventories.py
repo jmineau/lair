@@ -709,8 +709,11 @@ class Inventory(BaseGrid):
         ax : matplotlib.axes.Axes
             The axes to plot on.
         time : str | int, optional
-            The time step to plot, by default 'mean'. If 'mean', the mean emissions are plotted.
-            Otherwise pass a string selector or integer index.
+            The time step to plot, by default 'mean'. If 'mean', the mean of every
+            time step is plotted, which reads all of them: for the 53 years of EDGAR
+            v8 CH4 that takes about a minute. Otherwise pass a string selector or
+            integer index, such as ``"2022-01-01"`` or ``-1`` (the last), to read one
+            step.
         sector : str, optional
             The sector to plot, by default None. If None, the total emissions are plotted.
         kwargs : dict
@@ -720,6 +723,13 @@ class Inventory(BaseGrid):
         -------
         matplotlib.axes.Axes
             The axes with the plot.
+
+        Notes
+        -----
+        Without ``ax`` the plot gets a new cartopy ``GeoAxes`` in PlateCarree. Only
+        the field is drawn, with no state lines, coastlines or tick labels.
+        :ref:`The maps example <maps-plot>` times the default time step and adds
+        them.
         """
         if ax is None:
             fig, ax = plt.subplots(subplot_kw={"projection": PC})
