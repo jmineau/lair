@@ -5,8 +5,12 @@ This example takes a year of hourly data stamped in UTC, moves it to local
 time, and averages it by hour of the day, over the afternoon, and by season.
 Three rules come out of it:
 
-* **A time without a time zone is UTC** everywhere in lair. Convert to local
-  time before you group by hour, or the hours are UTC hours.
+* **A time without a time zone is UTC** in lair's functions that take a time,
+  such as :func:`~lair.soundings.get_soundings` and
+  :func:`~lair.clock.dt2decimalDate`. The exception is
+  :func:`~lair.clock.convert_timezones`, which raises on one unless you give
+  ``fromtz`` (the third rule). Convert to local time before you group by hour,
+  or the hours are UTC hours.
 * :func:`~lair.clock.diurnal` **and** :func:`~lair.clock.seasonal` average by
   hour of the day and by season and year.
 * :func:`~lair.clock.convert_timezones` **does not guess.** The shortcuts
