@@ -618,6 +618,77 @@ class TestMolefractionsProperty:
             _ = ct.molefractions
 
 
+class TestOneFilePerDay:
+    """``molefractions`` stops when two files cover one day, before it opens any."""
+
+    @staticmethod
+    def _older_release(ct, day, values):
+        """A file of an older release, beside the fixture's file for ``day``."""
+        path = (
+            ct.molefractions_dir
+            / day[:4]
+            / day[5:7]
+            / f"CTCH4_2024.molefrac_glb3x2_{day}.nc"
+        )
+        _molefraction_day(day, values).to_netcdf(path)
+        return path
+
+    @pytest.mark.parametrize(
+        "values", [(1900.0, 1850.0), (1800.0, 1750.0)], ids=["same", "other values"]
+    )
+    def test_ch4_two_files_for_one_day_raise(self, ct_ch4, values):
+        # The values do not matter: two files for a day are refused either way
+        older = self._older_release(ct_ch4, "2020-01-01", values)
+        newer = older.with_name("CT-CH4-2023.molefrac_glb3x2_2020-01-01.nc")
+        assert newer.is_file()
+        with pytest.raises(ValueError, match="2020-01-01") as err:
+            _ = ct_ch4.molefractions
+        assert str(older) in str(err.value)
+        assert str(newer) in str(err.value)
+        assert "days in all" not in str(err.value)  # only one day is repeated
+
+    def test_the_message_counts_the_repeated_days(self, ct_ch4):
+        self._older_release(ct_ch4, "2020-01-01", (1900.0, 1850.0))
+        self._older_release(ct_ch4, "2020-01-02", (1950.0, 1800.0))
+        with pytest.raises(ValueError, match="2020-01-01") as err:
+            _ = ct_ch4.molefractions
+        assert "2 days in all have more than one file" in str(err.value)
+        assert "from 2020-01-01 to 2020-01-02" in str(err.value)
+
+    def test_ch4_error_comes_before_the_cache(self, ct_ch4, tmp_path, monkeypatch):
+        cache_dir = tmp_path / "cache"
+        monkeypatch.setenv("LAIR_CACHE_DIR", str(cache_dir))
+        self._older_release(ct_ch4, "2020-01-02", (1950.0, 1800.0))
+        ct_ch4.cache = True
+        with pytest.raises(ValueError, match="2020-01-02"):
+            _ = ct_ch4.molefractions
+        assert not cache_dir.exists()
+
+    def test_ch4_older_release_on_other_days_reads(self, ct_ch4):
+        # Two releases are fine while each day has one file: the fixture holds
+        # 2020-01-01 and 2020-01-02, this adds 2020-01-03 from an older release
+        self._older_release(ct_ch4, "2020-01-03", (1700.0, 1650.0))
+        ds = ct_ch4.molefractions
+        assert pd.DatetimeIndex(ds.time.values).normalize().unique().tolist() == list(
+            pd.to_datetime(["2020-01-01", "2020-01-02", "2020-01-03"])
+        )
+
+    def test_co2_two_files_for_one_day_raise(self, ct_co2):
+        day = "2015-06-01"
+        newer = ct_co2.molefractions_dir / f"CT2022.molefrac_nam1x1_{day}.nc"
+        _molefraction_day(day, (402.0, 397.0), "co2", ch4_time=False).to_netcdf(newer)
+        older = ct_co2.molefractions_dir / f"CT2019B.molefrac_nam1x1_{day}.nc"
+        with pytest.raises(ValueError, match=day) as err:
+            _ = ct_co2.molefractions
+        assert str(older) in str(err.value)
+        assert str(newer) in str(err.value)
+
+    def test_co2_other_grid_on_the_same_day_is_not_a_second_file(self, ct_co2):
+        # The fixture has nam1x1 and glb3x2 files for 2015-06-01, and
+        # molefractions reads one grid
+        assert len(ct_co2.molefractions.time) == 2
+
+
 class TestParallelParse:
     """``parallel_parse`` (the default) opens many files at once (#121)."""
 
