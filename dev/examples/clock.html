@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=f2307f49"></script>
+    <script src="../_static/documentation_options.js?v=3c6f2ecd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Examples" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev40+g295b9009b" />
+  <meta name="docsearch:version" content="2026.12.9.dev41+gae069b157" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -468,8 +468,12 @@
 time, and averages it by hour of the day, over the afternoon, and by season.
 Three rules come out of it:</p>
 <ul class="simple">
-<li><p><strong>A time without a time zone is UTC</strong> everywhere in lair. Convert to local
-time before you group by hour, or the hours are UTC hours.</p></li>
+<li><p><strong>A time without a time zone is UTC</strong> in lair’s functions that take a time,
+such as <a class="reference internal" href="../_autosummary/lair.soundings.get_soundings.html#lair.soundings.get_soundings" title="lair.soundings.get_soundings"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_soundings()</span></code></a> and
+<a class="reference internal" href="../_autosummary/lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate" title="lair.clock.dt2decimalDate"><code class="xref py py-func docutils literal notranslate"><span class="pre">dt2decimalDate()</span></code></a>. The exception is
+<a class="reference internal" href="../_autosummary/lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_timezones()</span></code></a>, which raises on one unless you give
+<code class="docutils literal notranslate"><span class="pre">fromtz</span></code> (the third rule). Convert to local time before you group by hour,
+or the hours are UTC hours.</p></li>
 <li><p><a class="reference internal" href="../_autosummary/lair.clock.diurnal.html#lair.clock.diurnal" title="lair.clock.diurnal"><code class="xref py py-func docutils literal notranslate"><span class="pre">diurnal()</span></code></a> <strong>and</strong> <a class="reference internal" href="../_autosummary/lair.clock.seasonal.html#lair.clock.seasonal" title="lair.clock.seasonal"><code class="xref py py-func docutils literal notranslate"><span class="pre">seasonal()</span></code></a> average by
 hour of the day and by season and year.</p></li>
 <li><p><a class="reference internal" href="../_autosummary/lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_timezones()</span></code></a> <strong>does not guess.</strong> The shortcuts
