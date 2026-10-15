@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=3563eaca"></script>
+    <script src="../_static/documentation_options.js?v=f2307f49"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Get HRRR winds at a point" href="hrrr_winds.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev39+g534476fd5" />
+  <meta name="docsearch:version" content="2026.12.9.dev40+g295b9009b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -575,6 +575,26 @@ version (<code class="docutils literal notranslate"><span class="pre">&quot;CT20
 attribute opens every file of the version at once and caches that (see
 <a class="reference internal" href="../data.html#data-cache"><span class="std std-ref">What lair caches</span></a>), so use <code class="docutils literal notranslate"><span class="pre">sample</span></code> or <code class="docutils literal notranslate"><span class="pre">background</span></code> when you need only a
 few days.</p>
+<p><code class="docutils literal notranslate"><span class="pre">molefractions</span></code> opens the files in worker processes, one for each CPU your
+job may use: a year of daily CT-CH4-2025 files, opened for the first time with
+8 CPUs, took 9 seconds this way and 25 seconds one at a time. Each worker
+starts by importing your script again, so a script that reads
+<code class="docutils literal notranslate"><span class="pre">molefractions</span></code> puts its work under the guard Python’s <a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">multiprocessing</span></code></a>
+asks for:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.noaa</span><span class="w"> </span><span class="kn">import</span> <span class="n">CarbonTrackerCH4</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">ct</span> <span class="o">=</span> <span class="n">CarbonTrackerCH4</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">molefractions</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Without it, <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> raises a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> that says so. A notebook
+needs no guard. <code class="docutils literal notranslate"><span class="pre">parallel_parse=False</span></code> opens the files one at a time.</p>
 </section>
 </section>
 

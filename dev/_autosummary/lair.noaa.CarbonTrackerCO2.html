@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=3563eaca"></script>
+    <script src="../_static/documentation_options.js?v=f2307f49"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure" href="lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev39+g534476fd5" />
+  <meta name="docsearch:version" content="2026.12.9.dev40+g295b9009b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -811,9 +811,15 @@ the daily molefraction files flat in <code class="docutils literal notranslate">
 per grid (<code class="docutils literal notranslate"><span class="pre">CT2019B.molefrac_nam1x1_2015-06-01.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">..._glb3x2_...</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>grid</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The molefraction grid to read, e.g. <code class="docutils literal notranslate"><span class="pre">'nam1x1'</span></code> (North America,
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grid</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The molefraction grid to read, e.g. <code class="docutils literal notranslate"><span class="pre">'nam1x1'</span></code> (North America,
 1x1 deg) or <code class="docutils literal notranslate"><span class="pre">'glb3x2'</span></code> (global, 3x2 deg). Points outside the grid
-sample as NaN.</p>
+sample as NaN.</p></li>
+<li><p><strong>parallel_parse</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> opens the files in worker processes, one for
+each CPU this process may use (default True), or one at a time. The
+workers import the calling script again, so a script that reads
+<code class="docutils literal notranslate"><span class="pre">molefractions</span></code> needs the <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;:</span></code> guard.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">

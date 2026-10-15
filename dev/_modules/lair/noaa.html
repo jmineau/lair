@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=3563eaca"></script>
+    <script src="../../_static/documentation_options.js?v=f2307f49"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev39+g534476fd5" />
+  <meta name="docsearch:version" content="2026.12.9.dev40+g295b9009b" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -438,15 +438,20 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures.process</span><span class="w"> </span><span class="kn">import</span> <span class="n">BrokenProcessPool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">nullcontext</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xarray.backends.locks</span><span class="w"> </span><span class="kn">import</span> <span class="n">HDF5_LOCK</span><span class="p">,</span> <span class="n">NETCDFC_LOCK</span><span class="p">,</span> <span class="n">combine_locks</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cache_dir</span><span class="p">,</span> <span class="n">get_data_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">_allowed_cpus</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.records</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cacher</span><span class="p">,</span> <span class="n">ftp_download</span><span class="p">,</span> <span class="n">list_files</span>
 
 <span class="c1">#: Environment variable holding the CarbonTracker data root</span>
@@ -464,17 +469,50 @@
 <span class="sd">    since 2025.08), and it warns that the new ``data_vars`` changes what the</span>
 <span class="sd">    CarbonTracker mole fractions load. Naming today&#39;s values keeps the result</span>
 <span class="sd">    the same on any xarray, and keeps the warning quiet.</span>
+
+<span class="sd">    With ``parallel=True`` the files are opened in worker processes, one for</span>
+<span class="sd">    each CPU this process may use (no more than there are files), not on</span>
+<span class="sd">    dask&#39;s default threads. netCDF-C and HDF5 are not thread-safe, and xarray</span>
+<span class="sd">    holds its lock only while it opens a file, not while it reads the file&#39;s</span>
+<span class="sd">    variables and attributes, so opening files on threads at once crashes the</span>
+<span class="sd">    process or fails with an HDF error (issue #121). Worker processes start by</span>
+<span class="sd">    importing the caller&#39;s script again, so a script needs the</span>
+<span class="sd">    ``if __name__ == &quot;__main__&quot;:`` guard.</span>
+
+<span class="sd">    The workers are given this process&#39;s netCDF lock. A file opened in a</span>
+<span class="sd">    worker comes back with the lock it was opened with, and each process&#39;s own</span>
+<span class="sd">    lock is a different one, so without this the files from different workers</span>
+<span class="sd">    would be read at once, and crash, when the data is loaded here.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span>
-        <span class="n">files</span><span class="p">,</span>
-        <span class="n">preprocess</span><span class="o">=</span><span class="n">preprocess</span><span class="p">,</span>
-        <span class="n">parallel</span><span class="o">=</span><span class="n">parallel</span><span class="p">,</span>
-        <span class="n">combine</span><span class="o">=</span><span class="s2">&quot;by_coords&quot;</span><span class="p">,</span>
-        <span class="n">compat</span><span class="o">=</span><span class="s2">&quot;no_conflicts&quot;</span><span class="p">,</span>
-        <span class="n">data_vars</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
-        <span class="n">coords</span><span class="o">=</span><span class="s2">&quot;different&quot;</span><span class="p">,</span>
-        <span class="n">join</span><span class="o">=</span><span class="s2">&quot;outer&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
+        <span class="c1"># The lock xarray&#39;s netCDF4 backend uses for local files</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="n">combine_locks</span><span class="p">([</span><span class="n">NETCDFC_LOCK</span><span class="p">,</span> <span class="n">HDF5_LOCK</span><span class="p">])</span>
+        <span class="n">workers</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">),</span> <span class="n">_allowed_cpus</span><span class="p">()))</span>
+        <span class="c1"># Takes effect as it is made; the `with` below restores the old config</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;processes&quot;</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># xarray&#39;s own choice</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">nullcontext</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">scheduler</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span>
+                <span class="n">files</span><span class="p">,</span>
+                <span class="n">preprocess</span><span class="o">=</span><span class="n">preprocess</span><span class="p">,</span>
+                <span class="n">parallel</span><span class="o">=</span><span class="n">parallel</span><span class="p">,</span>
+                <span class="n">lock</span><span class="o">=</span><span class="n">lock</span><span class="p">,</span>
+                <span class="n">combine</span><span class="o">=</span><span class="s2">&quot;by_coords&quot;</span><span class="p">,</span>
+                <span class="n">compat</span><span class="o">=</span><span class="s2">&quot;no_conflicts&quot;</span><span class="p">,</span>
+                <span class="n">data_vars</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
+                <span class="n">coords</span><span class="o">=</span><span class="s2">&quot;different&quot;</span><span class="p">,</span>
+                <span class="n">join</span><span class="o">=</span><span class="s2">&quot;outer&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">except</span> <span class="n">BrokenProcessPool</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;A worker process opening the files stopped. In a script, put the &quot;</span>
+            <span class="s1">&#39;code that runs under `if __name__ == &quot;__main__&quot;:` (each worker &#39;</span>
+            <span class="s2">&quot;imports the script again), or pass parallel_parse=False to open &quot;</span>
+            <span class="s2">&quot;the files one at a time.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_cache_file</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
@@ -837,6 +875,11 @@
 <span class="sd">    ----------</span>
 <span class="sd">    molefractions : xr.Dataset</span>
 <span class="sd">        The molefractions Dataset.</span>
+<span class="sd">    parallel_parse : bool</span>
+<span class="sd">        Whether ``molefractions`` opens the files in worker processes, one for</span>
+<span class="sd">        each CPU this process may use (default True), or one at a time. The</span>
+<span class="sd">        workers import the calling script again, so a script that reads</span>
+<span class="sd">        ``molefractions`` needs the ``if __name__ == &quot;__main__&quot;:`` guard.</span>
 
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
@@ -941,6 +984,11 @@
 <span class="sd">        sample as NaN.</span>
 <span class="sd">    molefractions : xr.Dataset</span>
 <span class="sd">        The molefractions Dataset.</span>
+<span class="sd">    parallel_parse : bool</span>
+<span class="sd">        Whether ``molefractions`` opens the files in worker processes, one for</span>
+<span class="sd">        each CPU this process may use (default True), or one at a time. The</span>
+<span class="sd">        workers import the calling script again, so a script that reads</span>
+<span class="sd">        ``molefractions`` needs the ``if __name__ == &quot;__main__&quot;:`` guard.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">specie</span> <span class="o">=</span> <span class="s2">&quot;co2&quot;</span>

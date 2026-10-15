@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=3563eaca"></script>
+    <script src="../_static/documentation_options.js?v=f2307f49"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTracker.sample" href="lair.noaa.CarbonTracker.sample.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev39+g534476fd5" />
+  <meta name="docsearch:version" content="2026.12.9.dev40+g295b9009b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -806,6 +806,14 @@
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lair.noaa.</span></span><span class="sig-name descname"><span class="pre">CarbonTrackerCH4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CT-CH4-2025'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">carbon_tracker_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_parse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/noaa.html#CarbonTrackerCH4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.noaa.CarbonTrackerCH4" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker" title="lair.noaa.CarbonTracker"><code class="xref py py-class docutils literal notranslate"><span class="pre">CarbonTracker</span></code></a></p>
 <p>NOAA CarbonTracker-CH4</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parallel_parse</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> opens the files in worker processes, one for
+each CPU this process may use (default True), or one at a time. The
+workers import the calling script again, so a script that reads
+<code class="docutils literal notranslate"><span class="pre">molefractions</span></code> needs the <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;:</span></code> guard.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
