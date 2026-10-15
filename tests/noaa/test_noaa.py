@@ -7,6 +7,8 @@ CarbonTracker-like grid, and sample()/background()/.molefractions/.data against
 small synthetic files shaped like the real releases.
 """
 
+from concurrent.futures.process import BrokenProcessPool
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -614,6 +616,42 @@ class TestMolefractionsProperty:
         ct = CarbonTrackerCO2("CT2019B", carbon_tracker_directory=tmp_path)
         with pytest.raises(FileNotFoundError, match="nam1x1"):
             _ = ct.molefractions
+
+
+class TestParallelParse:
+    """``parallel_parse`` (the default) opens many files at once (#121)."""
+
+    def test_default_opens_many_files_as_one_at_a_time_does(self, tmp_path):
+        # Many files with many variables and attributes: opening them on threads
+        # at once crashed the process or raised an HDF error nearly every time,
+        # and loading files opened by different worker processes, each with
+        # its own lock, crashed it too.
+        ct = CarbonTrackerCH4(carbon_tracker_directory=tmp_path, cache=False)
+        month = ct.molefractions_dir / "2020" / "01"
+        month.mkdir(parents=True)
+        attrs = {f"attribute_{k}": f"value {k}" for k in range(10)}
+        for day in pd.date_range("2020-01-01", periods=60):
+            ds = _molefraction_day(f"{day:%Y-%m-%d}", (1900.0, 1850.0), ch4_time=False)
+            for j in range(10):
+                ds[f"extra_{j}"] = ds["ch4"].assign_attrs(attrs)
+            ds.to_netcdf(month / f"CTCH4_2025.molefrac_glb3x2_{day:%Y-%m-%d}.nc")
+
+        assert ct.parallel_parse
+        parallel = ct.molefractions.load()
+        one_at_a_time = CarbonTrackerCH4(
+            carbon_tracker_directory=tmp_path, cache=False, parallel_parse=False
+        ).molefractions.load()
+        xr.testing.assert_identical(parallel, one_at_a_time)
+        assert parallel.sizes["time"] == 120
+
+    def test_a_stopped_worker_says_what_to_do(self, ct_ch4, monkeypatch):
+        def broken(*args, **kwargs):
+            raise BrokenProcessPool("a worker stopped")
+
+        monkeypatch.setattr(xr, "open_mfdataset", broken)
+        ct_ch4.parallel_parse = True
+        with pytest.raises(RuntimeError, match="__main__.*parallel_parse=False"):
+            _ = ct_ch4.molefractions
 
 
 class TestCacheFolder:

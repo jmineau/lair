@@ -89,6 +89,19 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- `CarbonTrackerCH4.molefractions` and `CarbonTrackerCO2.molefractions` no
+  longer crash or fail with `NetCDF: HDF error` when they open the files in
+  parallel, the default (#121). The files were opened on threads, and netCDF-C
+  and HDF5 are not thread-safe; xarray holds its lock only while it opens a
+  file, so reading the files' variables and attributes at once fails with
+  netCDF4 1.6.1 and later, which release Python's GIL around each netCDF-C
+  call (most often with 1.7). They are now opened in worker processes, one for each CPU the
+  job may use, which also makes the first open of a year of daily files about
+  three times faster than opening them one at a time (9 s against 25 s with 8
+  CPUs). A script that reads `molefractions` needs the
+  `if __name__ == "__main__":` guard (the workers import it again); without
+  it, a `RuntimeError` says so. `parallel_parse=False` opens the files one at a
+  time, as before.
 - `hrrr.Winds` reads the right hour for times with a time zone (#99). The S3
   key was formatted in the time's own zone, so 05:00 in `America/Denver` (12:00
   UTC) read the 05 UTC analysis while the index still showed 05:00-07:00. Times

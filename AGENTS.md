@@ -178,7 +178,10 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
   `noaa`), not `xr.open_mfdataset`: it names today's `compat`, `data_vars`,
   `coords` and `join`, which xarray is changing. In `noaa` it runs through
   `records.Cacher`, keyed on the pickled call arguments, so changing what is
-  passed orphans every existing cache.
+  passed orphans every existing cache. Never open NetCDF files on threads
+  (dask's default for `parallel=True`): netCDF-C and HDF5 are not thread-safe
+  and xarray reads metadata outside its lock, so the process crashes. `noaa`'s
+  `parallel=True` uses worker processes, which need a `__main__` guard in scripts.
 - **`thoning_filter`'s `sampleinterval`** is in days: the step of the even grid
   NOAA's filter interpolates onto before its FFT. lair passes the median step
   only when NOAA's own estimate would divide by zero. A grid coarser than the

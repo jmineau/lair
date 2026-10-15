@@ -5,15 +5,20 @@ NOAA greenhouse gas data.
 import datetime as dt
 from abc import ABCMeta
 from collections.abc import Sequence
+from concurrent.futures.process import BrokenProcessPool
+from contextlib import nullcontext
 from functools import cached_property
 from pathlib import Path
 from typing import Literal, cast
 
+import dask
 import numpy as np
 import pandas as pd
 import xarray as xr
+from xarray.backends.locks import HDF5_LOCK, NETCDFC_LOCK, combine_locks
 
 from lair.config import get_cache_dir, get_data_dir
+from lair.parallel import _allowed_cpus
 from lair.records import Cacher, ftp_download, list_files
 
 #: Environment variable holding the CarbonTracker data root
@@ -31,17 +36,50 @@ def _open_mfdataset(files, preprocess=None, parallel: bool = False) -> xr.Datase
     since 2025.08), and it warns that the new ``data_vars`` changes what the
     CarbonTracker mole fractions load. Naming today's values keeps the result
     the same on any xarray, and keeps the warning quiet.
+
+    With ``parallel=True`` the files are opened in worker processes, one for
+    each CPU this process may use (no more than there are files), not on
+    dask's default threads. netCDF-C and HDF5 are not thread-safe, and xarray
+    holds its lock only while it opens a file, not while it reads the file's
+    variables and attributes, so opening files on threads at once crashes the
+    process or fails with an HDF error (issue #121). Worker processes start by
+    importing the caller's script again, so a script needs the
+    ``if __name__ == "__main__":`` guard.
+
+    The workers are given this process's netCDF lock. A file opened in a
+    worker comes back with the lock it was opened with, and each process's own
+    lock is a different one, so without this the files from different workers
+    would be read at once, and crash, when the data is loaded here.
     """
-    return xr.open_mfdataset(
-        files,
-        preprocess=preprocess,
-        parallel=parallel,
-        combine="by_coords",
-        compat="no_conflicts",
-        data_vars="all",
-        coords="different",
-        join="outer",
-    )
+    if parallel:
+        # The lock xarray's netCDF4 backend uses for local files
+        lock = combine_locks([NETCDFC_LOCK, HDF5_LOCK])
+        workers = max(1, min(len(files), _allowed_cpus()))
+        # Takes effect as it is made; the `with` below restores the old config
+        scheduler = dask.config.set(scheduler="processes", num_workers=workers)
+    else:
+        lock = None  # xarray's own choice
+        scheduler = nullcontext()
+    try:
+        with scheduler:
+            return xr.open_mfdataset(
+                files,
+                preprocess=preprocess,
+                parallel=parallel,
+                lock=lock,
+                combine="by_coords",
+                compat="no_conflicts",
+                data_vars="all",
+                coords="different",
+                join="outer",
+            )
+    except BrokenProcessPool as e:
+        raise RuntimeError(
+            "A worker process opening the files stopped. In a script, put the "
+            'code that runs under `if __name__ == "__main__":` (each worker '
+            "imports the script again), or pass parallel_parse=False to open "
+            "the files one at a time."
+        ) from e
 
 
 def _cache_file(*parts: str) -> Path:
@@ -384,6 +422,11 @@ class CarbonTrackerCH4(CarbonTracker):
     ----------
     molefractions : xr.Dataset
         The molefractions Dataset.
+    parallel_parse : bool
+        Whether ``molefractions`` opens the files in worker processes, one for
+        each CPU this process may use (default True), or one at a time. The
+        workers import the calling script again, so a script that reads
+        ``molefractions`` needs the ``if __name__ == "__main__":`` guard.
 
     Methods
     -------
@@ -479,6 +522,11 @@ class CarbonTrackerCO2(CarbonTracker):
         sample as NaN.
     molefractions : xr.Dataset
         The molefractions Dataset.
+    parallel_parse : bool
+        Whether ``molefractions`` opens the files in worker processes, one for
+        each CPU this process may use (default True), or one at a time. The
+        workers import the calling script again, so a script that reads
+        ``molefractions`` needs the ``if __name__ == "__main__":`` guard.
     """
 
     specie = "co2"
