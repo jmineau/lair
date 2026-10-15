@@ -32,6 +32,11 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `get_well_mixed` with `thoning`, and `phase_shift_corrected_baseline` side by
   side on one series with a known background, and links to CarbonTracker's
   background for air from upwind.
+- A worked example, "Draw a map of an inventory": EDGAR's methane over Utah with
+  state lines, tick labels, the grid and a small map of where it is, and the same
+  for a made-up footprint. It says that `Inventory.plot()` averages every time
+  step by default (about a minute for EDGAR v8's 53 years), as the docstring now
+  does too.
 
 ### Changed
 
