@@ -130,3 +130,26 @@ version (``"CT2019B"``, for example) and the ``grid``. The ``molefractions``
 attribute opens every file of the version at once and caches that (see
 :ref:`data-cache`), so use ``sample`` or ``background`` when you need only a
 few days.
+
+``molefractions`` opens the files in worker processes, one for each CPU your
+job may use: a year of daily CT-CH4-2025 files, opened for the first time with
+8 CPUs, took 9 seconds this way and 25 seconds one at a time. Each worker
+starts by importing your script again, so a script that reads
+``molefractions`` puts its work under the guard Python's :mod:`multiprocessing`
+asks for:
+
+.. code-block:: python
+
+   from lair.noaa import CarbonTrackerCH4
+
+
+   def main():
+       ct = CarbonTrackerCH4()
+       print(ct.molefractions)
+
+
+   if __name__ == "__main__":
+       main()
+
+Without it, ``molefractions`` raises a ``RuntimeError`` that says so. A notebook
+needs no guard. ``parallel_parse=False`` opens the files one at a time.
