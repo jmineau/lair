@@ -180,6 +180,12 @@ class TestGetSoundings:
         ds = soundings.get_soundings("SLC", sounding_dir=str(tmp_path), months=[1, 3])
         assert sorted(pd.DatetimeIndex(ds.time.values).month) == [1, 3]
 
+    def test_misspelled_argument_raises(self, tmp_path):
+        # get_soundings once took **kwargs and ignored them: month=[1] read every month
+        _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-15 00:00"))
+        with pytest.raises(TypeError, match="month"):
+            soundings.get_soundings("SLC", sounding_dir=str(tmp_path), month=[1])
+
     def test_string_start_end(self, tmp_path):
         for t in pd.date_range("2024-01-01 00:00", periods=3, freq="12h"):
             _write_sounding(tmp_path, "SLC", t)

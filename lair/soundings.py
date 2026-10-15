@@ -308,7 +308,6 @@ def get_soundings(
     sounding_dir=None,
     months=None,
     driver="xarray",
-    **kwargs,
 ):
     """
     Get upper air soundings from the Wyoming archive.
