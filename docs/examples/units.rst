@@ -9,8 +9,9 @@ Two rules come out of it:
 * **Moles and mass need a molecular weight.** A flux in moles and a flux in mass
   are different dimensions, so pint converts between them only inside the
   ``mass_flux`` context, given ``mw``: the molecular weight, as a quantity in
-  g/mol. Without the context, or with ``mw`` as a plain number, the conversion
-  raises ``DimensionalityError``.
+  g/mol. Without the context the conversion raises ``DimensionalityError``;
+  inside it, a missing ``mw``, or one that is a plain number, raises a
+  ``TypeError`` that names ``mw`` and shows what to pass.
 * **pint reads** ``kt`` **as a knot**, a unit of speed. For a mass of a thousand
   tonnes, write ``Gg`` or ``kilotonne``.
 

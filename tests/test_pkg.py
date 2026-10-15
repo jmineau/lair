@@ -40,6 +40,53 @@ def test_mass_flux_context_registered():
         pass
 
 
+class TestMassFluxContext:
+    """The ``mass_flux`` context converts through ``mw``, a molar mass quantity."""
+
+    def test_converts_both_ways_with_a_molar_mass(self):
+        from lair import units
+
+        mw = 16.04 * units("g/mol")
+        with units.context("mass_flux", mw=mw):
+            mass = (1.0 * units("mol/m**2/s")).to("kg/m**2/s")
+            moles = (1.0 * units("kg/m**2/s")).to("mol/m**2/s")
+        assert mass.magnitude == pytest.approx(0.01604)
+        assert moles.magnitude == pytest.approx(1 / 0.01604)
+
+    @pytest.mark.parametrize(
+        "src, dst",
+        [("mol/m**2/s", "kg/m**2/s"), ("kg/m**2/s", "mol/m**2/s")],
+        ids=["moles to mass", "mass to moles"],
+    )
+    def test_no_mw_raises_and_names_it(self, src, dst):
+        from lair import units
+
+        with (
+            units.context("mass_flux"),
+            pytest.raises(TypeError, match=r"needs mw.*mw=None"),
+        ):
+            (1.0 * units(src)).to(dst)
+
+    @pytest.mark.parametrize(
+        "mw",
+        [
+            16.04,
+            "16.04 g/mol",
+            lair.units.Unit("g/mol"),
+            16.04 * lair.units("g"),
+        ],
+        ids=["plain number", "string", "unit without a number", "mass, not molar mass"],
+    )
+    def test_mw_that_is_not_a_molar_mass_raises_and_names_it(self, mw):
+        from lair import units
+
+        with (
+            units.context("mass_flux", mw=mw),
+            pytest.raises(TypeError, match=r"needs mw.*quantity.*g/mol"),
+        ):
+            (1.0 * units("mol/m**2/s")).to("kg/m**2/s")
+
+
 def test_compound_units_print_in_dimension_order():
     """
     A flux unit prints its parts by dimension, not alphabetically.

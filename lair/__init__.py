@@ -37,6 +37,17 @@ except PackageNotFoundError:  # running from a source tree that isn't installed
     __version__ = "0+unknown"
 
 
+def _molar_mass(mw):
+    """Return ``mw`` if it is a molar mass, else raise a TypeError that names it."""
+    if not isinstance(mw, pint.Quantity) or not mw.check("[mass] / [substance]"):
+        raise TypeError(
+            "The mass_flux context needs mw, the molar mass as a quantity, "
+            "e.g. units.context('mass_flux', mw=16.04 * units('g/mol')); "
+            f"got mw={mw!r}"
+        )
+    return mw
+
+
 # Custom pint context to convert fluxes from mass <--> substance
 mass_flux = pint.Context("mass_flux")
 mass_flux.add_transformation(
@@ -44,13 +55,13 @@ mass_flux.add_transformation(
     "[mass] / [area] / [time]",
     # pint types the callback narrowly; (units, value, mw) is what it calls
     # pyrefly: ignore[bad-argument-type]
-    lambda units, substance, mw: substance * mw,
+    lambda units, substance, mw=None: substance * _molar_mass(mw),
 )
 mass_flux.add_transformation(
     "[mass] / [area] / [time]",
     "[substance] / [area] / [time]",
     # pyrefly: ignore[bad-argument-type]
-    lambda units, mass, mw: mass / mw,
+    lambda units, mass, mw=None: mass / _molar_mass(mw),
 )
 units.add_context(mass_flux)
 

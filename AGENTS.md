@@ -61,8 +61,9 @@ module (`from lair.meteorology import poisson`).
 1. Imports `cf_xarray.units` **before** `pint_xarray`. The order is
    load-bearing.
 2. Adds the pint context `mass_flux` (`[substance]/[area]/[time]` <->
-   `[mass]/[area]/[time]` through a molecular weight `mw`). The registry is
-   process-global, so importing lair changes pint for other code too.
+   `[mass]/[area]/[time]` through a molecular weight `mw`, a quantity in g/mol;
+   without one the conversion raises a `TypeError` that names `mw`). The
+   registry is process-global, so importing lair changes pint for other code too.
 3. Sets pint's default sort to `sort_by_dimensionality` (`kg/km**2/d`). Not
    cosmetic: `Inventory.get_units` splits a flux unit on `/` and reads
    quantity, area and time in that order. pint >= 0.26 exports the function;

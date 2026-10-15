@@ -81,6 +81,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Removed
 
+- The `**kwargs` of `soundings.get_soundings`. It never used them, so a
+  misspelled argument was ignored without a message (`month=[1]` returned every
+  month); it now raises `TypeError`. The arguments are `station`, `start`, `end`,
+  `sounding_dir`, `months` and `driver`.
 - `lair.config.CACHE_DIR`, a string fixed when lair was imported (#105). Code
   that read it calls `lair.config.get_cache_dir()`, which returns a `Path`
   (`str(get_cache_dir())` for the old string). Code that set it, such as a test,
@@ -89,6 +93,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- A conversion in the `mass_flux` pint context without `mw` (the molar mass),
+  or with one that is not a molar mass (a plain number such as `16.04`), raises
+  a `TypeError` that names `mw` and shows what to pass,
+  `mw=16.04 * units("g/mol")`. It used to raise
+  `TypeError: <lambda>() missing 1 required positional argument: 'mw'`, or, for
+  a plain number, a `DimensionalityError` that did not mention `mw`. A
+  conversion given a molar mass is unchanged.
 - `CarbonTrackerCH4.molefractions` and `CarbonTrackerCO2.molefractions` no
   longer crash or fail with `NetCDF: HDF error` when they open the files in
   parallel, the default (#121). The files were opened on threads, and netCDF-C
