@@ -140,7 +140,8 @@ def test_smallest_extra_is_chosen_for_a_package_in_several():
 
 def test_table_matches_pyproject():
     """_EXTRA_OF is exactly the packages in ``[project.optional-dependencies]``."""
-    extras = tomllib.loads(PYPROJECT.read_text())["project"]["optional-dependencies"]
+    with PYPROJECT.open("rb") as f:
+        extras = tomllib.load(f)["project"]["optional-dependencies"]
     assert _extra_of(extras) == _EXTRA_OF
 
 
@@ -149,7 +150,7 @@ def test_every_call_in_lair_names_a_package_in_the_table():
     for path in sorted(Path(lair.__file__).parent.glob("*.py")):
         if path.name == "_ccg_filter.py":  # NOAA's code, downloaded
             continue
-        for node in ast.walk(ast.parse(path.read_text())):
+        for node in ast.walk(ast.parse(path.read_bytes())):
             if (
                 isinstance(node, ast.Call)
                 and isinstance(node.func, ast.Name)
