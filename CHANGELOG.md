@@ -119,6 +119,20 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `long_name: latitude` and, for a grid set up with `write_rio_crs`, `axis: 'Y'`
   and `standard_name: latitude`, which labeled a radius in kilometers as a
   latitude in degrees. A number or a NumPy array is unchanged.
+- `pcaps.determine_pcap_events` counts an event's length in time, on the
+  12-hourly grid of the soundings, not in rows (#112). A missing sounding was
+  skipped over, so soundings above the threshold on either side of a gap of any
+  length (a few days, or a summer without soundings) ran together into one
+  event; and a NaN value split an event in two, so five soundings above the
+  threshold with a NaN in the middle gave no event. Now one missing or NaN
+  sounding between two above the threshold is taken as above (and counts toward
+  `min_periods`), and a longer gap, or one next to a sounding at or below the
+  threshold, ends the event. A series whose times are not 12 hours apart, or
+  that repeats a time, raises `ValueError`. On the Salt Lake City soundings of
+  1998 to 2025 (threshold 4.04, `min_periods=3`), 175 events become 174: five
+  change, two of them since 2014 (December 2021, where two events become one
+  across a NaN sounding, and January 2025, which ends 36 hours earlier at two
+  missing soundings).
 - A conversion in the `mass_flux` pint context without `mw` (the molar mass),
   or with one that is not a molar mass (a plain number such as `16.04`), raises
   a `TypeError` that names `mw` and shows what to pass,
