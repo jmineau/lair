@@ -80,6 +80,15 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   where xarray asked each backend about each file. The data is the same (checked
   on the real EDGAR, EPA, GFEI, Vulcan and WetCHARTs files); opening EDGAR v8's
   1,247 annual files takes a few seconds less.
+- `background.get_well_mixed` takes a required keyword `tz`, the time zone its
+  hours are in (#113; breaking). It used to cut the index as it stood, so data in
+  UTC (all UATAQ data) was averaged over 12 to 16 UTC, which in Utah is 5 to 9 in
+  the morning, with nothing to say so. Now the index is converted to `tz` (a
+  naive index from UTC, as everywhere in lair) and each day is labeled at
+  midnight in `tz`, so a call without `tz` raises a `TypeError`, even when the
+  index is already in local time. For UTC data, pass `tz="MST"` (standard time
+  all year); for an index of local times with no zone, localize it first
+  (`data.tz_localize("MST")`), since `tz="MST"` would read it as UTC.
 
 ### Fixed
 

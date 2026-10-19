@@ -32,25 +32,65 @@ logger = logging.getLogger(__name__)
 
 
 def get_well_mixed(
-    data: pd.Series | pd.DataFrame, hours: list[int] = AFTERNOON
+    data: pd.Series | pd.DataFrame,
+    hours: list[int] = AFTERNOON,
+    *,
+    tz: str,
 ) -> pd.Series | pd.DataFrame:
     """
-    Subset the data to the well-mixed hours of the day.
+    Average the data over the well-mixed hours of each day.
+
+    The hours are read in the time zone ``tz``, which is always required: an
+    index in UTC (all UATAQ data) would otherwise give the hours in UTC, which in
+    the Americas are the morning, under the night-time inversion. A naive index
+    is UTC, as everywhere in lair.
 
     Parameters
     ----------
     data : pd.Series | pd.DataFrame
         Time series data to subset. Must have a datetime index.
     hours : list[int], optional
-        Hours of the day to subset. Default is LST afternoon hours.
+        Hours of the day to keep, in ``tz``. Default is
+        ``lair.clock.AFTERNOON``, 12 to 16 local standard time.
+    tz : str
+        The time zone ``hours`` are in, such as ``'MST'``. Keyword only. The
+        index is converted to it first (a naive index from UTC), and each day
+        runs from midnight in it; an index already in ``tz`` is unchanged. Give
+        a standard-time zone (``'MST'``, not ``'America/Denver'``) for hours in
+        local standard time, and ``'UTC'`` for UTC hours.
 
     Returns
     -------
     pd.Series | pd.DataFrame
-        Daily means over the well-mixed hours (non-numeric columns are dropped).
+        Daily means over the well-mixed hours (non-numeric columns are dropped),
+        each labeled at midnight in ``tz``.
+
+    Notes
+    -----
+    An index that holds local times without a time zone is read as UTC, so
+    ``tz='MST'`` would shift it by 7 hours: localize it first
+    (``data.tz_localize('MST')``).
+
+    Examples
+    --------
+    Hourly data stamped in UTC, averaged over the afternoon in Mountain
+    Standard Time:
+
+    >>> import pandas as pd
+    >>> from lair.background import get_well_mixed
+    >>> times = pd.date_range("2024-06-01", periods=48, freq="h", tz="UTC")
+    >>> local_hour = pd.Series(times.tz_convert("MST").hour, index=times)
+    >>> get_well_mixed(local_hour, tz="MST")
+    2024-06-01 00:00:00-07:00    14.0
+    2024-06-02 00:00:00-07:00    14.0
+    Freq: D, dtype: float64
     """
+    index = pd.DatetimeIndex(data.index)
+    if index.tz is None:
+        index = index.tz_localize("UTC")
+    index = index.tz_convert(tz)
     return (
-        data[pd.DatetimeIndex(data.index).hour.isin(hours)]
+        data.set_axis(index)[index.hour.isin(hours)]
         .resample("1D")
         .mean(numeric_only=True)
     )

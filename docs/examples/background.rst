@@ -14,8 +14,10 @@ against the background the data were made from. Three rules come out of it:
 * **A rolling window must be longer than the longest stretch without clean
   air.** Over a pollution episode of several days, the low quantile of a day is
   the episode, not the background.
-* :func:`~lair.background.get_well_mixed` **reads the hours in local standard
-  time.** Convert UTC data first (see the :doc:`clock page <clock>`).
+* :func:`~lair.background.get_well_mixed` **reads the hours in the zone you
+  give it.** ``tz`` is always required, also for data already in local time, so
+  that UTC data cannot be averaged over the morning without saying so (see the
+  :doc:`clock page <clock>`).
 
 .. note::
 
@@ -49,8 +51,9 @@ The methods
      - one-second data from a moving platform, whose background changes within
        the hour
    * - :func:`~lair.background.get_well_mixed`
-     - a ``Series`` or ``DataFrame`` indexed in local standard time, and the
-       hours to keep (12 to 16 by default, ``lair.clock.AFTERNOON``)
+     - a ``Series`` or ``DataFrame`` with a time index; ``tz``, the zone the
+       hours are in; and the hours to keep (12 to 16 by default,
+       ``lair.clock.AFTERNOON``)
      - one mean per day over those hours
      - the afternoon, when the boundary layer is deep and a site sees regional
        air
@@ -146,16 +149,16 @@ Afternoon means and a smooth curve
 given. Given every hour, it follows the mean of the data, enhancements
 included. Given afternoon means, it follows the afternoon, when the city's
 methane is mixed through a deep boundary layer.
-:func:`~lair.background.get_well_mixed` takes those means, from a series in
-local standard time:
+:func:`~lair.background.get_well_mixed` takes those means. The data are in
+UTC, so ``tz`` names the zone the hours are in: ``"MST"``, which is standard
+time all year, where ``"America/Denver"`` would move the hours an hour earlier in
+summer:
 
 .. code-block:: ipython
 
    In [3]: from lair.background import get_well_mixed, thoning
-      ...: from lair.clock import UTC2MST
       ...:
-      ...: local = UTC2MST(ch4.to_frame(), driver="pandas")["ch4"]
-      ...: afternoon = get_well_mixed(local)
+      ...: afternoon = get_well_mixed(ch4, tz="MST")
       ...: afternoon.head(3).round(3)
    Out[3]:
    2022-01-01 00:00:00-07:00    1.965
@@ -163,10 +166,10 @@ local standard time:
    2022-01-03 00:00:00-07:00    1.974
    Freq: D, Name: ch4, dtype: float64
 
-Each day is labeled at its local midnight. Given the UTC series instead, it
-would average 12:00 to 16:59 UTC, which is 5 to 9 in the morning in Utah, under
-the night-time inversion. ``smooth_time`` evaluates the curve
-at the hourly times, to put it beside the others:
+Each day is labeled at its local midnight. There is no default for ``tz``,
+because a series in UTC would give 12:00 to 16:59 UTC, which is 5 to 9 in the
+morning in Utah, under the night-time inversion. ``smooth_time`` evaluates the
+curve at the hourly times, to put it beside the others:
 
 .. code-block:: ipython
 

@@ -23,7 +23,7 @@ def test_importable():
 
 def test_get_well_mixed_subsets_afternoon(sample_timeseries):
     """get_well_mixed keeps only the well-mixed afternoon hours and resamples daily."""
-    result = background.get_well_mixed(sample_timeseries)
+    result = background.get_well_mixed(sample_timeseries, tz="UTC")
     # One input day -> one daily row.
     assert len(result) == 1
 
@@ -33,7 +33,7 @@ def test_get_well_mixed_multiple_days():
 
     idx = pd.to_datetime(["2024-01-01 13:00", "2024-01-01 14:00", "2024-01-02 13:00"])
     df = pd.DataFrame({"co2": [1.0, 2.0, 3.0]}, index=idx)
-    assert len(background.get_well_mixed(df)) == 2
+    assert len(background.get_well_mixed(df, tz="UTC")) == 2
 
 
 def test_get_well_mixed_ignores_text_columns():
@@ -41,9 +41,80 @@ def test_get_well_mixed_ignores_text_columns():
 
     idx = pd.to_datetime(["2024-01-01 13:00", "2024-01-01 14:00"])
     df = pd.DataFrame({"co2": [1.0, 3.0], "site": ["WBB", "WBB"]}, index=idx)
-    out = background.get_well_mixed(df)
+    out = background.get_well_mixed(df, tz="UTC")
     assert list(out.columns) == ["co2"]
     assert out["co2"].iloc[0] == 2.0
+
+
+class TestWellMixedTimeZone:
+    """get_well_mixed reads the hours in the time zone it is given (#113)."""
+
+    @staticmethod
+    def local_hour(tz="UTC"):
+        """Two days of hourly data whose value is the hour in MST."""
+        import pandas as pd
+
+        utc = pd.date_range("2024-06-01", "2024-06-02 23:00", freq="h", tz="UTC")
+        return pd.Series(
+            utc.tz_convert("MST").hour.astype(float), index=utc
+        ).tz_convert(tz)
+
+    def test_utc_index_with_tz_gives_the_local_afternoon(self):
+        out = background.get_well_mixed(self.local_hour(), tz="MST")
+        # mean of 12 to 16 MST, each day labeled at MST midnight
+        assert out.tolist() == [14.0, 14.0]
+        assert str(out.index.tz) == "MST"
+        assert out.index[0].hour == 0
+
+    def test_tz_is_required(self):
+        # a UTC, naive or local index alike: no default and no guess from the index
+        for data in (
+            self.local_hour(),
+            self.local_hour().tz_localize(None),
+            self.local_hour("MST"),
+        ):
+            with pytest.raises(TypeError, match="tz"):
+                background.get_well_mixed(data)
+
+    def test_tz_is_keyword_only(self):
+        with pytest.raises(TypeError):
+            background.get_well_mixed(self.local_hour(), [12, 13], "MST")
+
+    def test_index_already_in_tz_is_unchanged(self):
+        local = self.local_hour("MST")
+        assert background.get_well_mixed(local, tz="MST").equals(
+            background.get_well_mixed(self.local_hour(), tz="MST")
+        )
+
+    def test_naive_index_is_utc(self):
+        naive = self.local_hour().tz_localize(None)
+        out = background.get_well_mixed(naive, tz="MST")
+        assert out.tolist() == [14.0, 14.0]
+
+    def test_naive_local_times_are_shifted_unless_localized_first(self):
+        # the documented hazard: naive local times are read as UTC
+        local_naive = self.local_hour("MST").tz_localize(None)
+        shifted = background.get_well_mixed(local_naive, tz="MST")
+        assert shifted.tolist() != [14.0, 14.0]
+        localized = background.get_well_mixed(local_naive.tz_localize("MST"), tz="MST")
+        assert localized.tolist() == [14.0, 14.0]
+
+    def test_tz_utc_gives_utc_hours(self):
+        # 12 to 16 UTC is 5 to 9 MST
+        out = background.get_well_mixed(self.local_hour(), tz="UTC")
+        assert out.tolist() == [7.0, 7.0]
+
+    def test_zone_with_daylight_saving(self):
+        # 12 to 16 MDT in June is 11 to 15 MST
+        out = background.get_well_mixed(self.local_hour(), tz="America/Denver")
+        assert out.tolist() == [13.0, 13.0]
+        assert str(out.index.tz) == "America/Denver"
+
+    def test_dataframe_keeps_numeric_columns(self):
+        frame = self.local_hour().to_frame("co2").assign(site="WBB")
+        out = background.get_well_mixed(frame, tz="MST")
+        assert list(out.columns) == ["co2"]
+        assert out["co2"].tolist() == [14.0, 14.0]
 
 
 class TestRollingBaseline:
