@@ -8,6 +8,12 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Fixed
+
+- `Inventory.integrate()` no longer labels the regional total with
+  `absolute_emissions`' `standard_name`, `annual_emissions_per_gridcell` (#135).
+  Its attributes are now `long_name` and `units`, as for `total_emissions`.
+
 ## [2026.12.9] - 2026-10-20
 
 ### Added

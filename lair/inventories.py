@@ -599,7 +599,10 @@ class Inventory(BaseGrid):
             The integrated data.
         """
         x_dim, y_dim = self.data.rio.x_dim, self.data.rio.y_dim
-        return sum_sectors(self.absolute_emissions.sum([x_dim, y_dim]))
+        cells = self.absolute_emissions.sum([x_dim, y_dim])
+        # Summed over the cells, the per-gridcell names no longer describe it
+        cells.attrs = {}
+        return sum_sectors(cells)
 
     # Emission inventories only allow mass-conserving (conservative) regridding
     # pyrefly: ignore[bad-override]

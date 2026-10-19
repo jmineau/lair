@@ -338,8 +338,8 @@ class TestAttributes:
 
     def test_integrate(self, described):
         total = described.integrate()
-        assert total.attrs["long_name"] == "Total Emissions"
-        assert total.attrs["units"] == "kg"
+        # Not absolute_emissions' "annual_emissions_per_gridcell": cells are summed
+        assert total.attrs == {"long_name": "Total Emissions", "units": "kg"}
         assert total.dims == ("time",)
 
     def test_convert_units(self, described):
