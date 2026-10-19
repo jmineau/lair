@@ -8,6 +8,18 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Fixed
+
+- `soundings.Sounding.interpolate` starts its heights at the station's own
+  ground by default (`start=None`): its `elevation`, or the height of its first
+  level (Wyoming lists them from the ground up) when the file has no
+  `elevation` (#117). It started at 1289 m, the ground at Salt Lake City, for
+  every station, so a station lower down lost its lowest levels and one higher
+  up got empty levels below the ground. `get_soundings` gives every sounding the heights of the lowest ground
+  among them, so the profiles still share one evenly spaced set of heights.
+  Salt Lake City's soundings get the same heights as before (1289 to 4999 m);
+  a `start` you pass is used as before.
+
 ## [2026.12.9] - 2026-10-20
 
 ### Added

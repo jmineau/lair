@@ -40,9 +40,9 @@ def test_missing_requests_says_what_to_install(monkeypatch):
     assert isinstance(info.value.__cause__, ModuleNotFoundError)
 
 
-def _write_sounding(dirpath, station, time, top=3000.0, with_pw=True):
+def _write_sounding(dirpath, station, time, top=3000.0, with_pw=True, elevation=1289.0):
     """Write a small CSV shaped like a saved siphon/Wyoming response."""
-    heights = np.arange(1289.0, top + 1, 100.0)
+    heights = np.arange(elevation, top + 1, 100.0)
     df = pd.DataFrame(
         {
             "pressure": np.linspace(870.0, 700.0, heights.size),
@@ -58,7 +58,7 @@ def _write_sounding(dirpath, station, time, top=3000.0, with_pw=True):
             "time": time,
             "latitude": 40.77,
             "longitude": -111.95,
-            "elevation": 1289.0,
+            "elevation": elevation,
         }
     )
     if with_pw:
@@ -158,6 +158,101 @@ class TestInterpolate:
         )
         ds = soundings.Sounding(str(path)).interpolate()
         assert np.isnan(ds.pw.item())
+
+
+class TestInterpolateStart:
+    """The levels start at each station's own ground (#117), not at SLC's."""
+
+    def test_slc_default_is_unchanged(self, tmp_path):
+        path = _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01"))
+        ds = soundings.Sounding(str(path)).interpolate()
+        assert ds.height.values[0] == 1289.0
+        assert ds.height.values[-1] == 4999.0
+        assert ds.sizes["height"] == 372
+        assert ds.attrs["notes"] == "Interpolated to 1289-5000m at 10m intervals."
+
+    def test_low_station_keeps_its_lowest_levels(self, tmp_path):
+        # A station at 300 m used to lose everything below 1289 m
+        path = _write_sounding(
+            tmp_path, "OAK", pd.Timestamp("2024-01-01"), elevation=300.0, top=2000.0
+        )
+        snd = soundings.Sounding(str(path))
+        ds = snd.interpolate(interval=100)
+        T = ds.temperature.isel(time=0).to_series()
+        assert T.index[0] == 300.0
+        raw = snd.data.set_index("height")["temperature"]
+        assert T.loc[300.0] == pytest.approx(raw.loc[300.0])
+        assert T.loc[300.0:2000.0].notna().all()
+
+    def test_high_station_has_no_levels_below_ground(self, tmp_path):
+        # A station at 2000 m used to get 72 empty levels from 1289 to 1999 m
+        path = _write_sounding(
+            tmp_path, "XYZ", pd.Timestamp("2024-01-01"), elevation=2000.0, top=4000.0
+        )
+        ds = soundings.Sounding(str(path)).interpolate()
+        T = ds.temperature.isel(time=0).to_series()
+        assert T.index[0] == 2000.0
+        assert T.index[-1] == 4990.0
+        assert T.loc[:4000.0].notna().all()
+
+    def test_file_without_elevation_starts_at_first_level(self, tmp_path):
+        # Soundings downloaded from Wyoming today have no elevation column
+        path = _write_sounding(
+            tmp_path, "OAK", pd.Timestamp("2024-01-01"), elevation=3.0, top=1000.0
+        )
+        pd.read_csv(path).drop(columns="elevation").to_csv(path, index=False)
+        snd = soundings.Sounding(str(path))
+        assert not hasattr(snd, "elevation")
+        ds = snd.interpolate(interval=50)
+        assert ds.height.values[0] == 3.0
+        assert ds.temperature.isel(time=0).to_series().loc[3.0] == pytest.approx(0.0)
+
+    def test_without_elevation_a_wrong_height_does_not_move_the_start(self, tmp_path):
+        # One SLC file has a level at 15 m further up: the first level is the
+        # ground, not the lowest height
+        path = _write_sounding(
+            tmp_path, "OAK", pd.Timestamp("2024-01-01"), elevation=300.0, top=1000.0
+        )
+        df = pd.read_csv(path).drop(columns="elevation")
+        df.loc[3, "height"] = 15.0
+        df.to_csv(path, index=False)
+        ds = soundings.Sounding(str(path)).interpolate(interval=50)
+        assert ds.height.values[0] == 300.0
+
+    def test_explicit_start_still_wins(self, tmp_path):
+        path = _write_sounding(
+            tmp_path, "OAK", pd.Timestamp("2024-01-01"), elevation=300.0
+        )
+        ds = soundings.Sounding(str(path)).interpolate(start=0, stop=500, interval=50)
+        T = ds.temperature.isel(time=0).to_series()
+        assert T.index.tolist() == list(np.arange(0.0, 500.0, 50.0))
+        assert T.loc[:250.0].isna().all()  # below the ground
+        assert T.loc[300.0] == pytest.approx(0.0)
+
+    def test_get_soundings_starts_at_the_station_ground(self, tmp_path):
+        times = pd.date_range("2024-01-01 00:00", periods=2, freq="12h")
+        for t in times:
+            _write_sounding(tmp_path, "OAK", t, elevation=300.0)
+        ds = soundings.get_soundings("OAK", sounding_dir=str(tmp_path))
+        assert ds.height.values[0] == 300.0
+        assert ds.height.values[-1] == 4990.0
+        assert ds.temperature.sel(height=300.0).notnull().all()
+
+    def test_get_soundings_shares_one_evenly_spaced_grid(self, tmp_path):
+        # Two files whose elevations differ by less than the spacing: one grid
+        # from the lower ground, not the union of two grids 3 m apart
+        _write_sounding(
+            tmp_path, "OAK", pd.Timestamp("2024-01-01 00:00"), elevation=300.0
+        )
+        _write_sounding(
+            tmp_path, "OAK", pd.Timestamp("2024-01-01 12:00"), elevation=303.0
+        )
+        ds = soundings.get_soundings("OAK", sounding_dir=str(tmp_path))
+        assert ds.height.values[0] == 300.0
+        np.testing.assert_array_equal(np.diff(ds.height.values), 10.0)
+        T = ds.temperature.to_pandas()
+        assert np.isnan(T.iloc[1].loc[300.0])  # below the second station's ground
+        assert T.iloc[1].loc[310.0:2900.0].notna().all()
 
 
 class TestGetSoundings:
