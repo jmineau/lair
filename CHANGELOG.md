@@ -8,6 +8,15 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Removed
+
+- `clock.periodindex_to_binedges` (#115). Nothing used it, and its edges were
+  wrong: the last edge was the last period's end time (one instant before the
+  next period starts), and a period missing from the index was not an edge, so
+  a time in it was counted in the period before. To put times in periods, use
+  pandas: `times.to_period("M")`. For bin edges of consecutive periods,
+  `periods.start_time.append(pd.DatetimeIndex([(periods[-1] + 1).start_time]))`.
+
 ## [2026.12.9] - 2026-10-20
 
 ### Added
