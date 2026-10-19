@@ -45,6 +45,44 @@ def test_phase_shift_corrected_baseline_returns_series():
     assert len(out) > 0
 
 
+class TestPhaseShiftIndex:
+    """phase_shift_corrected_baseline returns the baseline at the input's times (#116)."""
+
+    def test_slower_than_1hz_keeps_the_input_index(self):
+        import numpy as np
+        import pandas as pd
+
+        idx = pd.date_range("2024-06-01 12:00", periods=60, freq="10s")
+        x = pd.Series(np.linspace(2.0, 2.1, 60), index=idx)
+        b = background.phase_shift_corrected_baseline(x)
+        assert b.index.equals(x.index)
+        assert b.notna().all()
+        assert (x - b).index.equals(x.index)
+
+    def test_values_are_the_one_second_baseline_at_those_times(self):
+        import numpy as np
+        import pandas as pd
+
+        idx = pd.date_range("2024-06-01 12:00", periods=60, freq="10s")
+        x = pd.Series(np.linspace(2.0, 2.1, 60), index=idx)
+        hz = x.asfreq("s")
+        # on 1 Hz input the index is already the grid
+        expected = background.phase_shift_corrected_baseline(hz, n=61)
+        out = background.phase_shift_corrected_baseline(x, n=61)
+        assert np.allclose(out, expected.reindex(idx))
+
+    def test_two_days_with_a_gap(self):
+        import numpy as np
+        import pandas as pd
+
+        day = pd.date_range("2024-06-01 12:00", periods=30, freq="5s")
+        idx = day.append(day + pd.Timedelta("2D"))
+        x = pd.Series(np.arange(60, dtype=float), index=idx)
+        b = background.phase_shift_corrected_baseline(x, n=11)
+        assert b.index.equals(idx)
+        assert b.notna().all()
+
+
 class TestThoning:
     @pytest.fixture
     def co2(self):
