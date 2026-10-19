@@ -8,6 +8,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Added
+
+- The inventory example sets `total_emissions` (a flux in each cell),
+  `absolute_emissions` (the mass in each cell, by sector) and `integrate()` (the
+  total over the region) side by side, with their units, a check of one cell by
+  hand, each sector's total, and why to convert the total rather than the flux.
+  The three docstrings say the same and link to each other.
+
 ### Fixed
 
 - `Inventory.integrate()` no longer labels the regional total with

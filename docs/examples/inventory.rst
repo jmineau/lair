@@ -2,12 +2,16 @@ Total an inventory over a region
 ================================
 
 This example totals EDGAR's methane emissions over the Salt Lake Valley, moves
-them to a finer grid, and checks that the total did not change. Two rules come
-out of it:
+them to a finer grid, and checks that the total did not change. Three rules
+come out of it:
 
-* **The regional total is** ``integrate()``. ``total_emissions`` is not a total
-  over the region: it sums the sectors in each grid cell, and is still a flux
-  per area and time.
+* **The regional total is** ``integrate()``: the mass emitted over the region
+  in each time step, in kilograms per year here. ``total_emissions`` is not a
+  total over the region: it sums the sectors in each grid cell, and is still a
+  flux per area and time. ``absolute_emissions`` is the mass in each cell,
+  sector by sector (see `Three sums`_).
+* **Convert the total, not the flux.** ``integrate()`` gives the inventory's own
+  mass unit (here kg); divide or convert the result (see `Other units`_).
 * **To change the grid of an inventory, use its own** ``regrid`` **or**
   ``resample``. They are conservative by default, so the total stays the same.
 
@@ -16,7 +20,7 @@ out of it:
    This page does not run when the docs build. It needs ESMF, which the conda
    route of :ref:`installation` installs, and EDGAR's files, which are too large
    for the docs build. The output below was recorded from one run of this code,
-   with ESMF, on 2026-10-12.
+   with ESMF, on 2026-10-19.
 
 .. _inventory-data:
 
@@ -74,8 +78,44 @@ box, 112.3 to 111.7 W and 40.4 to 41.0 N, holds 6 by 6 cells of 0.1 degrees.
       ...: slv.data.sizes
    Out[3]: Frozen({'time': 53, 'lat': 6, 'lon': 6})
 
-Total
------
+.. _inventory-totals:
+
+Three sums
+----------
+
+An inventory adds up in three ways, and only one of them is the total over the
+region:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 30 22 26
+
+   * - Name
+     - What it is
+     - Units here
+     - Use it for
+   * - ``total_emissions``
+     - the sectors added in each cell: a flux, on ``time``, ``lat``, ``lon``
+     - kg m-2 s-1
+     - a map; the flux at a place
+   * - ``absolute_emissions``
+     - each cell's flux times its area and the length of the time step: a mass,
+       one variable per sector, on ``time``, ``lat``, ``lon``
+     - kg per cell per year
+     - the mass in a cell; one sector's total
+   * - ``integrate()``
+     - ``absolute_emissions`` added over the cells and the sectors: a mass, on
+       ``time`` only
+     - kg per year
+     - **the total over the region**
+
+The kilograms are the mass unit of the inventory's flux: the area and the time
+cancel. "Per year" is because ``EDGARv8`` loads annual data, one value per year;
+with monthly data each value is one month's mass. The length of a year follows
+the calendar (366 days in a leap year).
+
+A flux in each cell: ``total_emissions``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``total_emissions`` sums the sectors in each cell. Its ``units`` attribute shows
 that it is still a flux, in kilograms per square meter per second:
@@ -85,12 +125,16 @@ that it is still a flux, in kilograms per square meter per second:
    In [4]: slv.total_emissions.attrs["units"]
    Out[4]: 'kg/m**2/s'
 
-:meth:`~lair.inventories.Inventory.integrate` gives the total. It multiplies
-each cell's flux by the cell's area and by the length of the time step, then
-sums the cells and the sectors. The ``units`` attribute of the result is just
-``kg``: the mass emitted over the whole region in one time step. ``EDGARv8``
-loads annual data by default, so here that is kilograms per year. The length of a year
-follows the calendar (366 days in a leap year).
+Do not add it up over the cells: the cells differ in area, so a sum of fluxes is
+not a mass.
+
+The total: ``integrate()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:meth:`~lair.inventories.Inventory.integrate` multiplies each cell's flux by the
+cell's area and by the length of the time step, then sums the cells and the
+sectors. The ``units`` attribute of the result is just ``kg``: the mass emitted
+over the whole region in one time step, here one year.
 
 ``integrate()`` returns a lazy (dask) array: ``compute()`` reads the files and
 does the work. That took a minute or two here.
@@ -98,8 +142,8 @@ does the work. That took a minute or two here.
 .. code-block:: ipython
 
    In [5]: total = slv.integrate().compute()
-      ...: total.attrs["units"]
-   Out[5]: 'kg'
+      ...: total.attrs
+   Out[5]: {'long_name': 'Total Emissions', 'units': 'kg'}
 
 .. code-block:: ipython
 
@@ -113,6 +157,79 @@ does the work. That took a minute or two here.
 
 So EDGAR puts 22.6 kt (thousand tonnes) of methane in this box in 2022.
 
+The mass in each cell: ``absolute_emissions``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:attr:`~lair.inventories.Inventory.absolute_emissions` is the step before the
+sum: the mass each cell emitted in each year, one variable per sector. To check
+it by hand, take one cell in 2022 (not a leap year): its flux, summed over the
+sectors, times its area (``gridcell_area``, in
+km2) times the seconds in the year:
+
+.. code-block:: ipython
+
+   In [7]: from lair.inventories import sum_sectors
+      ...:
+      ...: cell = dict(lat=40.75, lon=-111.95, method="nearest")  # one 0.1 degree cell
+      ...:
+      ...: flux = float(slv.total_emissions.sel(time="2022-01-01").sel(**cell))  # kg m-2 s-1
+      ...: area = float(slv.gridcell_area.sel(**cell)) * 1e6  # km2 to m2
+      ...: seconds = 365 * 24 * 3600
+      ...: mass = slv.absolute_emissions.sel(time="2022-01-01").sel(**cell).compute()
+      ...:
+      ...: print(f"by hand:            {flux * area * seconds:,.0f} kg")
+      ...: print(f"absolute_emissions: {float(sum_sectors(mass)):,.0f} kg")
+   by hand:            8,566,596 kg
+   absolute_emissions: 8,566,596 kg
+
+EDGAR leaves a sector's cell empty (NaN) where that sector emits nothing.
+:func:`~lair.inventories.sum_sectors`, which ``total_emissions`` and
+``integrate()`` use, skips those, as xarray's ``sum`` does; adding the sectors
+with Python's ``+`` or ``sum`` gives NaN.
+
+Summed over the cells, each sector gives its own total over the region. Added
+together, they are ``integrate()``'s total:
+
+.. code-block:: ipython
+
+   In [8]: by_sector = slv.absolute_emissions.sel(time="2022-01-01").sum(["lat", "lon"]).compute()
+      ...: kt = by_sector.to_pandas() / 1e6  # kg to kt
+      ...: print(kt.sort_values(ascending=False).head().round(3).to_string())
+      ...: print(f"all sectors: {kt.sum():.3f} kt")
+   Solid_waste_landfills       12.407
+   Waste_water_handling         5.195
+   Energy_for_buildings         1.601
+   Fuel_exploitation_GAS        1.269
+   Solid_waste_incineration     0.649
+   all sectors: 22.588 kt
+
+To leave a sector out of a total, pass it to
+:func:`~lair.inventories.sum_sectors` as ``exclude=``.
+
+Other units
+^^^^^^^^^^^
+
+``integrate()`` keeps the inventory's mass unit, so divide the result: kg /
+1e6 is kt (thousand tonnes), as above, which is also Gg. Converting the flux
+first gives a slightly different number. A flux per year (``Gg/km**2/yr``)
+goes through pint's year of 365.25 days, and ``integrate()`` then takes each
+value as one year's worth, whatever the year's length (the details are under
+:attr:`~lair.inventories.Inventory.absolute_emissions`):
+
+.. code-block:: ipython
+
+   In [9]: kg = total.sel(time=["2020-01-01", "2022-01-01"])
+      ...: gg = slv.convert_units("Gg/km**2/yr").integrate().sel(time=["2020-01-01", "2022-01-01"]).compute()
+      ...:
+      ...: (100 * (gg / (kg / 1e6) - 1)).to_series().round(3)  # percent
+   Out[9]:
+   time
+   2020-01-01   -0.205
+   2022-01-01    0.068
+   Name: emissions, dtype: float64
+
+2020 is a leap year: converting first loses 0.2% of it, and adds 0.07% to 2022.
+
 Regrid, and check the total
 ---------------------------
 
@@ -123,21 +240,21 @@ area, and with it the total, stays the same.
 
 .. code-block:: ipython
 
-   In [7]: fine = slv.resample(0.01)  # conservative by default
-      ...: fine.data.sizes
-   Out[7]: Frozen({'time': 53, 'lat': 60, 'lon': 60})
+   In [10]: fine = slv.resample(0.01)  # conservative by default
+       ...: fine.data.sizes
+   Out[10]: Frozen({'time': 53, 'lat': 60, 'lon': 60})
 
 Now compare the 2022 total before and after:
 
 .. code-block:: ipython
 
-   In [8]: fine_total = fine.integrate().compute()
-      ...:
-      ...: before = float(total.sel(time="2022-01-01"))
-      ...: after = float(fine_total.sel(time="2022-01-01"))
-      ...: print(f"before: {before / 1e6:.3f} kt")
-      ...: print(f"after:  {after / 1e6:.3f} kt")
-      ...: print(f"change: {100 * (after - before) / before:+.4f} %")
+   In [11]: fine_total = fine.integrate().compute()
+       ...:
+       ...: before = float(total.sel(time="2022-01-01"))
+       ...: after = float(fine_total.sel(time="2022-01-01"))
+       ...: print(f"before: {before / 1e6:.3f} kt")
+       ...: print(f"after:  {after / 1e6:.3f} kt")
+       ...: print(f"change: {100 * (after - before) / before:+.4f} %")
    before: 22.588 kt
    after:  22.588 kt
    change: -0.0005 %

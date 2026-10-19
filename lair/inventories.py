@@ -423,10 +423,22 @@ class Inventory(BaseGrid):
     @_keep_attrs
     def absolute_emissions(self) -> Dataset:
         """
-        Calculate the absolute emissions (total per gridcell for time step by variable).
+        The mass emitted in each grid cell in each time step, sector by sector.
 
-        Fluxes are multiplied by the gridcell area and by the length of each
-        time step:
+        Each sector's flux is multiplied by the area of its grid cell and by the
+        length of the time step. The area and time units cancel, so the values
+        are in the inventory's own mass (or amount) unit: ``kg`` for a flux in
+        ``kg/m**2/s``, ``Mg`` for one in ``Mg/km**2/yr``. With annual data, each
+        value is the mass the cell emitted in that year; with monthly data, in
+        that month.
+
+        Use it for the mass in one cell, or a sector's total over a region
+        (``absolute_emissions.sum(["lat", "lon"])``). For the total of every
+        sector over the region, use :meth:`Inventory.integrate`, which is that sum
+        added over the sectors. :ref:`The inventory example <inventory-totals>`
+        shows the three sums side by side.
+
+        The length of a time step:
 
         - When the flux is a rate per time step (``a-1`` with annual data,
           ``month-1`` with monthly, ``d-1`` with daily, ``hr-1`` with hourly
@@ -438,10 +450,21 @@ class Inventory(BaseGrid):
           month. This matches EDGAR, whose leap-year files state
           ``interval: 1 year, 366 days``.
 
+        So convert the result, not the flux. Converting ``kg/m**2/s`` to
+        ``Gg/km**2/yr`` first goes through pint's year of 365.25 days, and each
+        value is then taken as one step: a leap year comes out 0.2% low, any
+        other year 0.07% high.
+
         Returns
         -------
-        xr.DataArray
-            The absolute emissions.
+        xr.Dataset
+            One variable per sector, on the inventory's grid and time steps, each
+            with its mass unit in its ``units`` attribute.
+
+        See Also
+        --------
+        Inventory.integrate : The total over the grid, every sector added.
+        Inventory.total_emissions : The flux in each cell, every sector added.
         """
         # Extract current unit information
         _, area_unit, time_unit = self.get_units(pint=False)
@@ -499,7 +522,13 @@ class Inventory(BaseGrid):
     @property
     def total_emissions(self) -> DataArray:
         """
-        Calculate the total emissions by summation over all variables.
+        The flux in each grid cell, summed over the sectors.
+
+        This is not a total over a region. It is still a flux per area and time,
+        in the inventory's units (``kg/m**2/s`` for EDGAR), one value per cell
+        and time step. Use it for a map or for the flux at a place. Adding it up
+        over the cells gives no mass, since the cells differ in area: the mass
+        emitted over the region is :meth:`Inventory.integrate`.
 
         Every sector in the product is summed, so what the total covers depends on the
         product (see the inventory's docstring). To leave sectors out, use
@@ -508,7 +537,13 @@ class Inventory(BaseGrid):
         Returns
         -------
         xr.DataArray
-            The total emissions.
+            The summed flux, on the inventory's grid and time steps, with its
+            flux unit in its ``units`` attribute.
+
+        See Also
+        --------
+        Inventory.integrate : The total over the grid, as a mass per time step.
+        Inventory.absolute_emissions : The mass in each cell, by sector.
         """
         return sum_sectors(self.data)
 
@@ -591,12 +626,31 @@ class Inventory(BaseGrid):
     @_keep_attrs
     def integrate(self) -> DataArray:
         """
-        Integrate the data over the spatial dimensions: total emissions per time step.
+        Return the total mass emitted over the whole grid in each time step.
+
+        This is the regional total: :attr:`Inventory.absolute_emissions` (each
+        cell's flux times its area and the length of the time step) summed over
+        the cells and over the sectors, so ``clip()`` the inventory to the region
+        first. The result is in the inventory's own mass (or amount) unit,
+        ``kg`` for a flux in ``kg/m**2/s``, and each value is the mass emitted
+        in one time step: kilograms per year with annual data, per month with
+        monthly data.
+
+        Unlike :attr:`Inventory.total_emissions`, which sums only the sectors
+        and is still a flux per area, this is a mass. :ref:`The inventory example
+        <inventory-totals>` shows both, with a check by hand.
 
         Returns
         -------
         xr.DataArray
-            The integrated data.
+            The total, along ``time`` only, with the mass unit in its ``units``
+            attribute. It is lazy for an inventory read from files:
+            ``compute()`` reads them.
+
+        See Also
+        --------
+        Inventory.absolute_emissions : The mass in each cell, by sector.
+        Inventory.total_emissions : The flux in each cell, every sector added.
         """
         x_dim, y_dim = self.data.rio.x_dim, self.data.rio.y_dim
         cells = self.absolute_emissions.sum([x_dim, y_dim])
