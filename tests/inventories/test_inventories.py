@@ -176,6 +176,13 @@ class TestBaseInventory:
         assert integrated.sizes["time"] == 2
         assert bool((integrated.values > 0).all())
 
+    def test_absolute_emissions_attrs_describe_the_emissions(self, inventory):
+        # The grid's area is multiplied in; nothing of the grid comes with it.
+        # axis: 'Y' on a data variable marks it as the Y coordinate (issue #136).
+        absolute = inventory.absolute_emissions
+        for var in absolute.data_vars:
+            assert absolute[var].attrs == {"units": "kg"}
+
     @pytest.mark.parametrize("time_step, seconds", [("daily", 86400), ("hourly", 3600)])
     def test_absolute_emissions_sub_monthly(self, inventory, time_step, seconds):
         inv = inventories.Inventory(
