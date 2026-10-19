@@ -15,6 +15,12 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   total over the region) side by side, with their units, a check of one cell by
   hand, each sector's total, and why to convert the total rather than the flux.
   The three docstrings say the same and link to each other.
+- `inventories.convert_units` also converts a plain array or dataset, one with a
+  `units` attribute and no pint units, and returns it plain: the values and the
+  `units` attribute are converted and nothing else changes. Before, it raised
+  `PintExceptionGroup: Cannot convert variables` for anything that was not
+  already pint-quantified. A variable without a `units` attribute raises a
+  `ValueError` that names it. Pint-quantified data converts as before.
 
 ### Fixed
 

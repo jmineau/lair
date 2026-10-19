@@ -17,7 +17,7 @@ import functools
 import os
 import re
 from abc import ABCMeta
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, Literal, ParamSpec, Self, TypeVar
 
@@ -109,39 +109,106 @@ def molecular_weight(pollutant: str) -> pint.Quantity:
 
 def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
     """
-    Convert the units of a pint quantified data array or dataset.
+    Convert the units of a data array or dataset.
+
+    The data either has pint units (``.pint.quantify()``, what an
+    :class:`Inventory` holds) or is plain, with a ``units`` attribute. It comes
+    back the same way: pint units in, pint units out; plain in, plain out, with
+    the ``units`` attribute and the values converted and everything else (name,
+    coordinates and their attributes, other attributes) as it was. A conversion
+    between an amount (mol) and a mass (kg) uses the molecular weight of
+    ``pollutant``, through the ``mass_flux`` pint context.
 
     Parameters
     ----------
     data : xr.DataArray | xr.Dataset
-        The data to convert. Must have pint units.
+        The data to convert. A dataset converts every variable, so each needs
+        units.
     pollutant : str
-        The pollutant.
+        The pollutant, as a chemical formula (see :func:`molecular_weight`).
     dst_units : Any
         The destination units.
 
     Returns
     -------
     xr.DataArray | xr.Dataset
-        The data with converted units.
+        The data with converted units. ``data`` itself is not changed.
+
+    Raises
+    ------
+    TypeError
+        If ``data`` is not an xarray DataArray or Dataset.
+    ValueError
+        If plain data has no ``units`` attribute.
+
+    See Also
+    --------
+    Inventory.convert_units : The same for an inventory's data.
+    molecular_weight : The molecular weight the conversion uses.
+
+    Examples
+    --------
+    A grid of methane fluxes read from a file, in nmol m-2 s-1, to kg km-2 d-1:
+
+    >>> import xarray as xr
+    >>> from lair.inventories import convert_units
+    >>> flux = xr.DataArray(
+    ...     [[10.0, 20.0], [30.0, 40.0]],
+    ...     dims=("y", "x"),
+    ...     attrs={"units": "nmol m-2 s-1"},
+    ... )
+    >>> kg = convert_units(flux, "CH4", "kg km-2 d-1")
+    >>> kg.attrs["units"]
+    'kg km-2 d-1'
+    >>> round(float(kg[0, 0]), 2)
+    13.86
     """
+    if not isinstance(data, xr.Dataset | xr.DataArray):
+        raise TypeError("data must be an xarray Dataset or DataArray")
+
     data = data.copy()
+    arrays = [data] if isinstance(data, xr.DataArray) else list(data.data_vars.values())
+    plain = all(array.pint.units is None for array in arrays)
+    if plain:
+        _quantify_from_attrs(arrays)
 
     # Calculate molecular weight of pollutant
     mw = molecular_weight(pollutant)
 
     # Use custom pint context to convert mass <--> substance
     with units.context("mass_flux", mw=mw):
-        if isinstance(data, xr.Dataset):
-            data = data.pint.to(dst_units)
-            for var in data.data_vars:
-                data[var].attrs["units"] = dst_units
-        elif isinstance(data, xr.DataArray):
-            data = data.pint.to(dst_units)
-            data.attrs["units"] = dst_units
-        else:
-            raise TypeError("data must be an xarray Dataset or DataArray")
+        data = data.pint.to(dst_units)
+    if plain:
+        data = data.pint.dequantify()
+
+    if isinstance(data, xr.Dataset):
+        for var in data.data_vars:
+            data[var].attrs["units"] = dst_units
+    else:
+        data.attrs["units"] = dst_units
     return data
+
+
+def _quantify_from_attrs(arrays: Sequence[DataArray]) -> None:
+    """
+    Give each array the pint units of its ``units`` attribute, in place.
+
+    Only the values are wrapped. ``.pint.quantify()`` also reads the units of
+    the coordinates (``degrees_north``) and drops that attribute from them, which
+    a caller who passed plain data does not expect to lose.
+    """
+    missing = [
+        "data" if array.name is None else array.name
+        for array in arrays
+        if "units" not in array.attrs
+    ]
+    if missing:
+        raise ValueError(
+            "Data without pint units needs a 'units' attribute "
+            f"(no units attribute on {missing})"
+        )
+    for array in arrays:
+        array.data = units.Quantity(array.data, array.attrs.pop("units"))
 
 
 def _open_mfdataset(
