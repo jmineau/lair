@@ -542,6 +542,15 @@ class TestGridcellArea:
         area = geo.gridcell_area(ds)
         assert area.dims == ("y", "x")
         np.testing.assert_allclose(area.values, 2.0)
+        assert area.attrs == {"units": "km2"}
+
+    def test_attributes_are_only_units(self, latlon_grid):
+        # The earth radius carried the latitude's attributes in, among them
+        # axis: 'Y', which marks a coordinate (issue #136).
+        assert geo.gridcell_area(latlon_grid).attrs == {"units": "km2"}
+        assert geo.gridcell_area(latlon_grid.emis).attrs == {"units": "km2"}
+        radius = geo.earth_radius(latlon_grid["lat"])
+        assert geo.gridcell_area(latlon_grid, R=radius).attrs == {"units": "km2"}
 
     def test_from_latlon(self, latlon_grid):
         area = geo.gridcell_area_from_latlon(latlon_grid.lat, latlon_grid.lon)

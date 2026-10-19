@@ -93,6 +93,11 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- `geo.gridcell_area` returns an array whose only attribute is `units` (`km2`).
+  On a lat-lon grid it also carried the latitude's `axis: 'Y'`, which marks a
+  coordinate, and `Inventory.absolute_emissions` passed it on to the variable of
+  every sector (#136). On a projected grid `units` now reads `km2`, not pint's
+  `kilometer ** 2`.
 - A conversion in the `mass_flux` pint context without `mw` (the molar mass),
   or with one that is not a molar mass (a plain number such as `16.04`), raises
   a `TypeError` that names `mw` and shows what to pass,

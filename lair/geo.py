@@ -773,7 +773,9 @@ def gridcell_area(
     Returns
     -------
     xr.DataArray
-        grid-cell area in square-kilometers, with the grid's (y, x) dims
+        grid-cell area in square-kilometers, with the grid's (y, x) dims. Its
+        only attribute is ``units`` (``'km2'``), so an array multiplied by it
+        (``Inventory.absolute_emissions``) takes no description of the grid.
     """
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
@@ -799,6 +801,10 @@ def gridcell_area(
         area = cell_area_m2.pint.quantify("m2").pint.to("km2").pint.dequantify()
     else:
         raise ValueError("Only lat-lon and meter grids are supported.")
+    # The area is multiplied into data variables (Inventory.absolute_emissions),
+    # which keep its attributes: keep only the units. The earth radius brought
+    # the latitude's attributes along, among them axis: 'Y' (issues #136, #139).
+    area.attrs = {"units": "km2"}
     return area
 
 
