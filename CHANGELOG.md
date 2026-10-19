@@ -47,7 +47,18 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `locator_extent` and `locator_crs`; `main_extent`, `main_extent_crs`, `color`,
   `linewidth` and `zorder` are unchanged, so a call that passes the arguments by
   position only needs the new function name.
-  
+- `soundings.get_soundings` downloads only when asked (breaking). It used to
+  download every sounding from `start` to `end` by itself when the station's
+  folder did not exist or held no files, which could write into a shared
+  archive. It now reads only what is on disk, and a folder without soundings
+  for the period raises the `ValueError` "No soundings found in ...", which now
+  says to pass `download=True`. The new `download=True` first
+  downloads the soundings from `start` to `end` that the folder lacks (it needs
+  both; a file already there is not downloaded again), then reads. That also
+  adds a missing period to a folder that has files, which used to raise. If your
+  code relied on the automatic download, pass `download=True`. The soundings
+  example's "When get_soundings downloads" shows both.
+
 ### Fixed
 
 - `geo.resample` with `regrid_method="conservative"`, and with it

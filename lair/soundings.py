@@ -335,9 +335,13 @@ def get_soundings(
     sounding_dir=None,
     months=None,
     driver="xarray",
+    download=False,
 ):
     """
     Get upper air soundings from the Wyoming archive.
+
+    Reads the soundings that are in the station's folder. It downloads only when
+    asked (``download=True``).
 
     Parameters
     ----------
@@ -353,18 +357,37 @@ def get_soundings(
         The directory containing the station's sounding files. Defaults to
         ``$LAIR_SOUNDING_DIR/<station>``.
     months : list[int], optional
-        Only use (and download) soundings from these months.
+        Only use soundings from these months (with ``download``, only download
+        those).
     driver : {'xarray', 'pandas'}, optional
         Return interpolated profiles as an xarray Dataset (default), or the
         merged raw soundings as a pandas DataFrame. The profiles share one set
         of heights, every 10 m from the station's ground (its ``elevation``,
         the lowest among the files if they differ; see
         :meth:`Sounding.interpolate`) up to 5000 m, not included.
+    download : bool, optional
+        Download the soundings from ``start`` to ``end`` that the folder does
+        not have from the Wyoming archive, into the folder, before reading
+        (needs the network and a folder you can write to). The default, False,
+        reads what is on disk and downloads nothing. A file already in the
+        folder is not downloaded again; a sounding Wyoming does not have is
+        asked for on every call.
 
     Returns
     -------
     xr.Dataset | pd.DataFrame
         The sounding data.
+
+    Raises
+    ------
+    ValueError
+        If no sounding is found for the period (the message says to pass
+        ``download=True`` when it is False); if ``download`` is True without
+        ``start`` and ``end``; or for an invalid ``driver``.
+
+    See Also
+    --------
+    download_soundings : Download soundings without reading them.
     """
     # File times are naive UTC, so compare against naive UTC bounds
     start = _naive_utc(start).to_pydatetime() if start is not None else None
@@ -373,16 +396,12 @@ def get_soundings(
     if sounding_dir is None:
         sounding_dir = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)
 
-    files = os.listdir(sounding_dir) if os.path.isdir(sounding_dir) else []
-    if len(files) == 0:
-        logger.info("No soundings found. Downloading...")
-
-        if not all([start, end]):
-            raise ValueError(
-                "start and end must be specified if no soundings are found."
-            )
+    if download:
+        if start is None or end is None:
+            raise ValueError("start and end must be specified to download soundings.")
         download_soundings(station, start, end, sounding_dir, months)
-        files = os.listdir(sounding_dir)
+
+    files = os.listdir(sounding_dir) if os.path.isdir(sounding_dir) else []
 
     soundings = []
     for file in files:
@@ -408,9 +427,10 @@ def get_soundings(
             continue
 
     if not soundings:
-        raise ValueError(
-            f"No soundings found in {sounding_dir} for the requested period."
-        )
+        message = f"No soundings found in {sounding_dir} for the requested period."
+        if not download:
+            message += " Pass download=True (with start and end) to download them."
+        raise ValueError(message)
 
     if driver in ["xarray", "nc"]:
         # One set of heights for every sounding, from the lowest surface, so
