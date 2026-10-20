@@ -170,8 +170,9 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
   coarse cell touching one turns NaN. A conservative `geo.resample` covers the
   whole source: a resolution that does not divide the width adds a last cell
   that reaches past the edge, filled with only what was inside. Without
-  `src_units`, each variable is
-  quantified with its own `units` attribute. `tests/inventories` checks every
+  `src_units`, each variable is quantified with its own `units` attribute; the
+  totals (`sum_sectors`, `integrate()`) and `get_units` raise when the variables
+  differ in units. `tests/inventories` checks every
   loader (`INVENTORY_CASES`) on tiny synthetic archives shaped like the real
   files; add new loaders there.
 - **ESMF:** regridding (`geo.regrid`, `geo.resample` and the grids'

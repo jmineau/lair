@@ -78,6 +78,16 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   - `Inventory.integrate()` no longer labels the regional total with
   `absolute_emissions`' `standard_name`, `annual_emissions_per_gridcell` (#135).
   Its attributes are now `long_name` and `units`, as for `total_emissions`.
+- `sum_sectors`, and so `Inventory.total_emissions` and `integrate()`, raise a
+  `ValueError` when the sectors are in different units (#146). They added the
+  numbers as they were and labeled the sum with the first sector's units: a
+  sector in kg m-2 s-1 and one in g m-2 s-1 gave 2 kg m-2 s-1, not 1.001.
+  `Inventory.get_units()`, and with it `absolute_emissions`, also raise instead of
+  using the first sector's area and time units for all of them. The message names
+  each sector's units and says to convert them to one first
+  (`Inventory.convert_units`, or `standardize_units=True` when building the
+  inventory). Two spellings of one unit (`kg/m2/s`, `kg m-2 s-1`) are the same
+  unit. lair's own loaders put every sector in one unit, so they are unchanged.
 
 ### Removed
 

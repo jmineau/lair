@@ -66,6 +66,43 @@ class TestSumSectors:
         with pytest.raises(ValueError, match="Not sectors in this inventory"):
             inventories.sum_sectors(self._three_sectors(), exclude=["Post_Meter"])
 
+    @staticmethod
+    def _two_sectors(units_a, units_b):
+        ds = xr.Dataset(
+            {"a": (("y", "x"), np.ones((2, 2))), "b": (("y", "x"), np.ones((2, 2)))}
+        )
+        ds["a"].attrs["units"] = units_a
+        ds["b"].attrs["units"] = units_b
+        return ds
+
+    def test_sectors_in_different_units_raise(self):
+        # 1 kg + 1 g is 1.001 kg, not 2 "kg"
+        ds = self._two_sectors("kg m-2 s-1", "g m-2 s-1")
+        with pytest.raises(
+            ValueError, match=r"different units.*a: kg m-2 s-1, b: g m-2"
+        ):
+            inventories.sum_sectors(ds)
+
+    def test_a_sector_without_units_raises(self):
+        ds = self._two_sectors("kg m-2 s-1", "kg m-2 s-1")
+        del ds["b"].attrs["units"]
+        with pytest.raises(ValueError, match="different units.*b: None"):
+            inventories.sum_sectors(ds)
+
+    def test_two_spellings_of_one_unit_are_the_same(self):
+        ds = self._two_sectors("kg/m2/s", "kg m-2 s-1")
+        total = inventories.sum_sectors(ds)
+        assert np.unique(total.values).tolist() == [2.0]
+        assert total.attrs["units"] == "kg/m2/s"
+
+    def test_excluded_sector_may_differ(self):
+        ds = self._two_sectors("kg m-2 s-1", "g m-2 s-1")
+        ds["c"] = ds["a"] * 2
+        ds["c"].attrs["units"] = "kg m-2 s-1"
+        total = inventories.sum_sectors(ds, exclude=["b"])
+        assert np.unique(total.values).tolist() == [3.0]
+        assert total.attrs["units"] == "kg m-2 s-1"
+
 
 class TestConvertUnits:
     def test_substance_to_mass_flux(self):
@@ -986,6 +1023,42 @@ class TestPerVariableUnits:
             self._ds("mol m-2 s-1"), pollutant="CH4", src_units="kg m-2 s-1"
         )
         assert inv._data["b"].pint.units == inventories.units("kg m-2 s-1")
+
+    def test_totals_of_mixed_units_raise(self):
+        # kg + g added as plain numbers gave 2 kg instead of 1.001 kg
+        inv = inventories.Inventory(self._ds("g m-2 s-1"), pollutant="CH4")
+        for use in (
+            lambda: inv.total_emissions,
+            lambda: inv.get_units(),
+            lambda: inv.absolute_emissions,
+            lambda: inv.integrate(),
+        ):
+            with pytest.raises(ValueError, match="different units"):
+                use()
+
+    def test_message_names_each_sectors_units(self):
+        inv = inventories.Inventory(self._ds("g m-2 s-1"), pollutant="CH4")
+        with pytest.raises(ValueError, match=r"a: kg/m\*\*2/s, b: g/m\*\*2/s"):
+            inv.get_units()
+
+    def test_convert_units_then_totals(self):
+        pytest.importorskip("xesmf")
+        inv = inventories.Inventory(self._ds("g m-2 s-1"), pollutant="CH4")
+        inv = inv.convert_units("kg m-2 s-1")
+        assert inv.get_units() == ("kg", "m**2", "s")
+        total = inv.total_emissions
+        assert np.unique(total.values).tolist() == pytest.approx([1.001])
+        assert total.attrs["units"] == "kg/m**2/s"
+        assert float(inv.integrate().isel(time=0)) > 0
+
+    def test_standardize_units_then_totals(self):
+        inv = inventories.Inventory(
+            self._ds("g m-2 s-1"), pollutant="CH4", standardize_units=True
+        )
+        total = inv.total_emissions
+        assert total.attrs["units"] == "kg/km**2/d"
+        # 1 kg + 1 g per m2 per s, in kg per km2 per day
+        assert np.unique(total.values).tolist() == pytest.approx([1.001 * 1e6 * 86400])
 
 
 @pytest.fixture

@@ -206,6 +206,12 @@ together, they are ``integrate()``'s total:
 To leave a sector out of a total, pass it to
 :func:`~lair.inventories.sum_sectors` as ``exclude=``.
 
+A total adds the sectors as numbers, so they must be in the same unit. EDGAR's
+are. An inventory built from sectors in different units (a dataset whose
+variables carry their own ``units``) raises a ``ValueError`` from
+``total_emissions`` and ``integrate()`` that names each sector's units; convert
+them first with ``convert_units``.
+
 Other units
 ^^^^^^^^^^^
 

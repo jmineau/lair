@@ -17,7 +17,7 @@ import functools
 import os
 import re
 from abc import ABCMeta
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, Literal, ParamSpec, Self, TypeVar
 
@@ -251,6 +251,30 @@ def _quantify_data_only(
     return data.pint.quantify(mapping)
 
 
+def _require_same_units(unit_of: Mapping[str, Any]) -> None:
+    """
+    Raise a ``ValueError`` unless every sector is in the same units.
+
+    ``unit_of`` maps each sector to its units: a string (the ``units`` attribute,
+    or ``None`` when it has none) or a pint unit. Two spellings of one unit
+    (``kg/m2/s``, ``kg m-2 s-1``) are the same.
+    """
+    values = list(unit_of.values())
+    if all(u == values[0] for u in values):
+        return
+    if all(u is not None for u in values) and len({units.Unit(u) for u in values}) == 1:
+        return
+    listed = ", ".join(
+        f"{sector}: {u:~C}" if isinstance(u, pint.Unit) else f"{sector}: {u}"
+        for sector, u in unit_of.items()
+    )
+    raise ValueError(
+        f"The sectors are in different units ({listed}). Convert them to one unit "
+        "first: Inventory.convert_units, or standardize_units=True when building "
+        "the inventory."
+    )
+
+
 def sum_sectors(data: Dataset, exclude: list[str] | None = None) -> DataArray:
     """
     Sum emissions from all sectors in the dataset.
@@ -262,19 +286,22 @@ def sum_sectors(data: Dataset, exclude: list[str] | None = None) -> DataArray:
     Parameters
     ----------
     data : xr.Dataset
-        The inventory data with emissions from multiple sectors as different variables.
+        The inventory data with emissions from multiple sectors as different
+        variables, each with a ``units`` attribute, all in the same units.
     exclude : list of str, optional
         Sectors to leave out of the sum, e.g. ``["Forest_Fires"]``.
 
     Returns
     -------
     xr.DataArray
-        The sum of emissions from the sectors.
+        The sum of emissions from the sectors, in their units.
 
     Raises
     ------
     ValueError
-        If ``exclude`` names a sector that is not in ``data``.
+        If ``exclude`` names a sector that is not in ``data``, or if the sectors
+        that are summed are in different units (the numbers cannot be added as
+        they are; convert them to one unit first).
     """
     if exclude:
         unknown = sorted(set(exclude) - set(data.data_vars))
@@ -284,6 +311,9 @@ def sum_sectors(data: Dataset, exclude: list[str] | None = None) -> DataArray:
                 f"Sectors: {sorted(map(str, data.data_vars))}"
             )
         data = data.drop_vars(exclude)
+    _require_same_units(
+        {str(var): data[var].attrs.get("units") for var in data.data_vars}
+    )
     total = data.to_array(dim="sector", name="emissions").sum("sector")
     total.attrs["long_name"] = "Total Emissions"
     total.attrs["units"] = data[list(data.data_vars)[0]].attrs["units"]
@@ -350,7 +380,11 @@ class Inventory(BaseGrid):
         src_units : str, optional
             The source units of the data, by default None. If given, every variable
             is taken to be in these units. If None, each variable's own ``units``
-            attribute is used (and every variable must have one).
+            attribute is used (and every variable must have one). Variables in
+            different units are kept as they are, but the totals
+            (:attr:`total_emissions`, :meth:`integrate`) raise a ``ValueError``
+            until they are converted to one unit: ``standardize_units=True``, or
+            :meth:`convert_units`.
         time_step : str, optional
             The time step of the data, by default 'annual'.
         crs : str, optional
@@ -473,8 +507,17 @@ class Inventory(BaseGrid):
         -------
         tuple[Any, Any, Any]
             The quantity, area, and time units.
+
+        Raises
+        ------
+        ValueError
+            If the sectors are in different units, which have no single quantity,
+            area and time unit.
         """
-        # All variables should be in the same units
+        # The area and time units of the first variable are used for all of them
+        _require_same_units(
+            {str(var): self._data[var].pint.units for var in self._data.data_vars}
+        )
         var = list(self._data.data_vars)[0]
         data_units = (
             f"{self._data[var].pint.units: ~C}"  # compact symbols like "kg/km**2/day"
