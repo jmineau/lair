@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=45f924b2"></script>
+    <script src="../_static/documentation_options.js?v=ff088ed6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo.generate_regular_grid" href="lair.geo.generate_regular_grid.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev42+gd3a785d03" />
+  <meta name="docsearch:version" content="2026.12.9.dev43+gd0a064b81" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -823,7 +823,9 @@ grid, e.g. a DataArray along <code class="docutils literal notranslate"><span cl
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>xr.DataArray</em> – grid-cell area in square-kilometers, with the grid’s (y, x) dims</p>
+<dd class="field-even"><p><em>xr.DataArray</em> – grid-cell area in square-kilometers, with the grid’s (y, x) dims. Its
+only attribute is <code class="docutils literal notranslate"><span class="pre">units</span></code> (<code class="docutils literal notranslate"><span class="pre">'km2'</span></code>), so an array multiplied by it
+(<code class="docutils literal notranslate"><span class="pre">Inventory.absolute_emissions</span></code>) takes no description of the grid.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.9.0)"><em>DataArray</em></a></p>
