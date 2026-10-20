@@ -108,6 +108,70 @@ class TestPreprocessMolefractions:
         out = CarbonTrackerCH4._preprocess_molefractions(ds)
         assert np.issubdtype(out["time"].dtype, np.datetime64)
 
+    def test_no_time_variable_takes_the_centers(self):
+        # CT-CH4-2023 and the CTCH4_2024 files: a time dimension, no variable
+        ds = _ct_ch4_2025_layout().drop_vars(["time", "time_bounds"])
+        out = CarbonTrackerCH4._preprocess_molefractions(ds)
+        assert out["time"].dtype == "datetime64[ns]"
+        assert pd.DatetimeIndex(out["time"].values).strftime("%H:%M").tolist() == [
+            "01:30",
+            "04:30",
+            "07:30",
+        ]
+
+    def test_ct_ch4_2025_time_moves_to_the_centers(self):
+        # CT-CH4-2025: time is the end of each 3-hour mean, time_bounds are
+        # 1.5 h late too, and time_components hold the centers (#143)
+        out = CarbonTrackerCH4._preprocess_molefractions(_ct_ch4_2025_layout())
+        assert pd.DatetimeIndex(out["time"].values).tolist() == list(
+            pd.to_datetime(["2015-06-15 01:30", "2015-06-15 04:30", "2015-06-15 07:30"])
+        )
+        bounds = pd.DatetimeIndex(out["time_bounds"].values.ravel())
+        assert bounds.strftime("%H:%M").tolist() == [
+            "00:00",
+            "03:00",
+            "03:00",
+            "06:00",
+            "06:00",
+            "09:00",
+        ]
+        assert "time_components" not in out
+        assert out["ch4"].values.tolist() == [1.0, 2.0, 3.0]
+
+    def test_co2_times_that_agree_are_kept(self):
+        # CT2019B: time already holds the centers, as time_components do
+        ds = _ct_ch4_2025_layout().drop_vars("time_bounds")
+        ds = ds.assign_coords(
+            time=pd.to_datetime(
+                ["2015-06-15 01:30", "2015-06-15 04:30", "2015-06-15 07:30"]
+            ).as_unit("ns")
+        )
+        ds["decimal_date"] = ("time", [2015.45, 2015.46, 2015.47])
+        out = CarbonTrackerCO2._preprocess_molefractions(ds)
+        xr.testing.assert_identical(
+            out, ds.drop_vars(["time_components", "decimal_date"])
+        )
+
+
+def _ct_ch4_2025_layout() -> xr.Dataset:
+    """Three 3-hour steps of 2015-06-15 as CT-CH4-2025 holds them, decoded."""
+    ends = pd.to_datetime(["2015-06-15 03:00", "2015-06-15 06:00", "2015-06-15 09:00"])
+    late = ends - pd.Timedelta("1.5h")
+    return xr.Dataset(
+        {
+            "ch4": ("time", [1.0, 2.0, 3.0]),
+            "time_bounds": (
+                ("time", "bound2"),
+                np.stack([late, late + pd.Timedelta("3h")], axis=1),
+            ),
+            "time_components": (
+                ("time", "components"),
+                np.array([[2015, 6, 15, h, 30, 0] for h in (1, 4, 7)]),
+            ),
+        },
+        coords={"time": ends.as_unit("ns")},
+    )
+
 
 class TestCalcMolefractionsPressure:
     def test_hybrid_sigma_pressure(self):
@@ -529,6 +593,56 @@ class TestSampleFromFiles:
         ]
         assert out["ct_latitude"].tolist() == [40.0, 41.0]
         assert out["ct_longitude"].tolist() == [-112.0, -111.0]
+
+    def test_ct_ch4_2025_points_take_the_period_they_are_in(self, tmp_path):
+        # A CT-CH4-2025 file as NOAA writes it: time and time_bounds encoded
+        # 1.5 h late, time_components at the centers (#143)
+        ct = CarbonTrackerCH4(
+            carbon_tracker_directory=tmp_path, cache=False, parallel_parse=False
+        )
+        month = ct.molefractions_dir / "2015" / "06"
+        month.mkdir(parents=True)
+        day = _molefraction_day("2015-06-15", (1900.0, 1850.0))
+        day["ch4"] = day["ch4"] + xr.DataArray([0.0, 100.0], dims="time")
+        hours = 398427.0 + np.array([0.0, 3.0])  # 03:00 and 06:00, the ends
+        day = day.assign_coords(
+            time=(
+                "time",
+                hours,
+                {"units": "hours since 1970-01-01T00:00:00", "bounds": "time_bounds"},
+            )
+        )
+        day["time_bounds"] = (
+            ("time", "bound2"),
+            np.stack([hours - 1.5, hours + 1.5], 1),
+        )
+        day["time_components"] = (
+            ("time", "ncomp"),
+            np.array([[2015, 6, 15, 1, 30, 0], [2015, 6, 15, 4, 30, 0]]),
+        )
+        day.to_netcdf(month / "CTCH4_2025.molefrac_glb3x2_2015-06-15.nc")
+
+        points = pd.DataFrame(
+            {
+                # In the first period (00:00-03:00), in the second (03:00-06:00)
+                # but nearer the first's file time, and on the boundary
+                "datetime": [
+                    "2015-06-15 02:30",
+                    "2015-06-15 03:30",
+                    "2015-06-15 03:00",
+                ],
+                "lati": [40.0] * 3,
+                "long": [-112.0] * 3,
+                "zagl": [10.0] * 3,
+            }
+        )
+        out = ct.sample(points)
+        assert out["ct_time"].tolist() == list(
+            pd.to_datetime(["2015-06-15 01:30", "2015-06-15 04:30", "2015-06-15 04:30"])
+        )
+        assert out["ct_ch4_ppb"].tolist() == [1900.0, 2000.0, 2000.0]
+        bounds = pd.DatetimeIndex(ct.molefractions["time_bounds"].values.ravel())
+        assert bounds.strftime("%H:%M").tolist() == ["00:00", "03:00", "03:00", "06:00"]
 
     def test_background_from_files_in_ppm(self, ct_ch4):
         out = ct_ch4.background(_POINTS, by="receptor")

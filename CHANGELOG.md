@@ -119,6 +119,20 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `long_name: latitude` and, for a grid set up with `write_rio_crs`, `axis: 'Y'`
   and `standard_name: latitude`, which labeled a radius in kilometers as a
   latitude in degrees. A number or a NumPy array is unchanged.
+- CarbonTracker-CH4 2025 mole fractions are labeled by the center of each
+  3-hour mean (01:30, 04:30, ... UTC), as CT-CH4-2023 and CarbonTracker CO2
+  already were (#143). lair took the file's `time`, which in CT-CH4-2025 is the
+  end of each period (03:00, 06:00, ...), so `molefractions`, `sample` and
+  `background` gave every CT-CH4-2025 value a time 1.5 hours late, and
+  `sample`, which takes the nearest time, gave a point in the first half of a
+  period the period before. Every release now takes its times from the file's
+  `time_components`, which hold the centers, and `time_bounds` (only in
+  CT-CH4-2025) move with them (00:00-03:00, ...). The times are
+  `datetime64[ns]` for every release (CT-CH4-2023's were `datetime64[us]`).
+  CT-CH4-2023 and CT2019B values and times are unchanged. A `molefractions`
+  cache of CarbonTracker-CH4 made before this change is not used again (its key
+  names the old function), so the next read opens the files.
+
 - A conversion in the `mass_flux` pint context without `mw` (the molar mass),
   or with one that is not a molar mass (a plain number such as `16.04`), raises
   a `TypeError` that names `mw` and shows what to pass,

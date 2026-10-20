@@ -277,8 +277,30 @@ class CarbonTracker(metaclass=ABCMeta):
 
     @staticmethod
     def _preprocess_molefractions(ds: xr.Dataset) -> xr.Dataset:
-        """Normalize a molefraction dataset on open. Overridden per specie."""
-        return ds
+        """
+        Label each time step of a molefraction file by its period's center.
+
+        Each step is a mean over a period (3 hours in the files lair reads),
+        and the file's ``time_components`` (year, month, day, hour, minute,
+        second, UTC) hold the center of it: 01:30, 04:30, ... in every
+        release. ``time`` does not always: CT-CH4-2023 has none, and in
+        CT-CH4-2025 it is the end of each period (03:00, 06:00, ...), its
+        ``time_bounds`` 1.5 hours late too, though the file's ``notes`` say
+        the times are centers. So when a file has ``time_components`` the
+        time comes from them (as ``datetime64[ns]``, the resolution xarray
+        decodes ``time`` to), ``time_bounds`` move with it, and
+        ``time_components`` are dropped.
+        """
+        if "time_components" not in ds:
+            return ds
+        centers = np.array(
+            [dt.datetime(*row) for row in ds["time_components"].values],
+            dtype="datetime64[ns]",
+        )
+        if "time_bounds" in ds and np.issubdtype(ds["time"].dtype, np.datetime64):
+            shift = xr.DataArray(ds["time"].values - centers, dims="time")
+            ds = ds.assign(time_bounds=ds["time_bounds"] - shift)
+        return ds.assign_coords(time=centers).drop_vars("time_components")
 
     def _molefraction_file_for_date(self, date) -> Path | None:
         """Molefraction file covering a UTC ``date`` (newest match), if present."""
@@ -364,6 +386,11 @@ class CarbonTracker(metaclass=ABCMeta):
         ``indx``, ``receptor``) are carried through for downstream grouping. Returns one row
         per input point with ``ct_<specie>_<units>`` and the CT cell/level used.
         Points whose UTC date has no molefraction file are dropped.
+
+        Each point takes the time step whose center is nearest: the steps are
+        3-hour means labeled by their centers (``ct_time``: 01:30, 04:30, ...
+        UTC), so a point takes the mean of the period it is in, and a point on
+        the boundary of two periods (03:00) takes the later one.
         """
         points = points.reset_index(drop=True)
         if points.empty:
@@ -446,17 +473,6 @@ class CarbonTrackerCH4(CarbonTracker):
     ):
         super().__init__(version, carbon_tracker_directory, cache)
         self.parallel_parse = parallel_parse
-
-    @staticmethod
-    def _preprocess_molefractions(ds):
-        # CT-CH4-2025+ ships with a proper datetime64 time coordinate already;
-        # older versions (CT-CH4-2023) encode time in a `time_components` variable.
-        if not np.issubdtype(ds["time"].dtype, np.datetime64):
-            time_components = ds["time_components"].values
-            time = [dt.datetime(*row) for row in time_components]
-            ds = ds.assign_coords(time=time)
-        ds = ds.drop_vars("time_components", errors="ignore")
-        return ds
 
     @cached_property
     def molefractions(self) -> xr.Dataset:
@@ -586,8 +602,9 @@ class CarbonTrackerCO2(CarbonTracker):
 
     @staticmethod
     def _preprocess_molefractions(ds: xr.Dataset) -> xr.Dataset:
-        # Times decode natively; drop the redundant component/decimal encodings
-        return ds.drop_vars(["time_components", "decimal_date"], errors="ignore")
+        # The times as for CH4; decimal_date repeats them as fractional years
+        ds = CarbonTracker._preprocess_molefractions(ds)
+        return ds.drop_vars("decimal_date", errors="ignore")
 
 
 class GMLData:
