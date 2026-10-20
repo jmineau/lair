@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=ff088ed6"></script>
+    <script src="../_static/documentation_options.js?v=466818b3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo.gridcell_area" href="lair.geo.gridcell_area.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev43+gd0a064b81" />
+  <meta name="docsearch:version" content="2026.12.9.dev44+gefb3c368d" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -810,7 +810,8 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lat</strong> (<em>ArrayLike</em>) – Latitude array</p></li>
 <li><p><strong>lon</strong> (<em>ArrayLike</em>) – Longitude array</p></li>
-<li><p><strong>R</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Radius of earth in kilometers, by default calculated based on the latitude.</p></li>
+<li><p><strong>R</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Radius of a sphere in kilometers to use instead of the WGS84
+ellipsoid, by default None (see <a class="reference internal" href="lair.geo.gridcell_area.html#lair.geo.gridcell_area" title="lair.geo.gridcell_area"><code class="xref py py-func docutils literal notranslate"><span class="pre">gridcell_area()</span></code></a>).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

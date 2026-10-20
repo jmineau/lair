@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=ff088ed6"></script>
+    <script src="_static/documentation_options.js?v=466818b3"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="next" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev43+gd0a064b81" />
+  <meta name="docsearch:version" content="2026.12.9.dev44+gefb3c368d" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -439,13 +439,13 @@ stay apart from the rest of your work.</p>
 macOS and Windows, without the extras.</p>
 <section id="pick-a-route">
 <h3>Pick a route<a class="headerlink" href="#pick-a-route" title="Link to this heading">#</a></h3>
-<p>Grid-cell areas (<code class="docutils literal notranslate"><span class="pre">geo.gridcell_area</span></code>) and regridding (<code class="docutils literal notranslate"><span class="pre">geo.regrid</span></code>,
-<code class="docutils literal notranslate"><span class="pre">geo.resample</span></code>) need ESMF, a compiled library that pip cannot install. The
-inventories use both, so <code class="docutils literal notranslate"><span class="pre">Inventory.integrate()</span></code> (the total of an inventory
-over a region) and <code class="docutils literal notranslate"><span class="pre">Inventory.absolute_emissions</span></code> need ESMF too.</p>
+<p>Regridding (<code class="docutils literal notranslate"><span class="pre">geo.regrid</span></code>, <code class="docutils literal notranslate"><span class="pre">geo.resample</span></code>, and an inventory’s <code class="docutils literal notranslate"><span class="pre">regrid</span></code>
+and <code class="docutils literal notranslate"><span class="pre">resample</span></code>) needs ESMF, a compiled library that pip cannot install.
+Grid-cell areas and inventory totals (<code class="docutils literal notranslate"><span class="pre">geo.gridcell_area</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Inventory.integrate()</span></code>, <code class="docutils literal notranslate"><span class="pre">Inventory.absolute_emissions</span></code>) do not.</p>
 <ul class="simple">
-<li><p>To use the inventories or to regrid, use <strong>conda</strong>.</p></li>
-<li><p>For everything else, <strong>pip</strong> is enough.</p></li>
+<li><p>To regrid, use <strong>conda</strong>.</p></li>
+<li><p>For everything else, inventory totals included, <strong>pip</strong> is enough.</p></li>
 </ul>
 </section>
 <section id="conda-everything">
@@ -535,8 +535,8 @@ rioxarray, shapely</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">regridding</span></code></p></td>
 <td><p>xesmf</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">geo</span></code> (areas, regrid, resample),
-<code class="docutils literal notranslate"><span class="pre">inventories</span></code> (totals, regrid)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">geo</span></code> (regrid, resample),
+<code class="docutils literal notranslate"><span class="pre">inventories</span></code> (regrid, resample)</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">complete</span></code></p></td>
 <td><p>all of the above</p></td>

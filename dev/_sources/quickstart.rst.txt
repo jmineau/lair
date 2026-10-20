@@ -7,8 +7,8 @@ Install
 -------
 
 lair is installed from GitHub, not from PyPI: :ref:`installation` has the
-commands. Use the conda route if you will total emissions inventories or regrid
-data (both need ESMF). For everything else, pip is enough.
+commands. Use the conda route if you will regrid data (it needs ESMF). For
+everything else, pip is enough.
 
 Point lair at your data
 -----------------------

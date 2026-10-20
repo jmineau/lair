@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=ff088ed6"></script>
+    <script src="../../_static/documentation_options.js?v=466818b3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev43+gd0a064b81" />
+  <meta name="docsearch:version" content="2026.12.9.dev44+gefb3c368d" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1238,29 +1238,51 @@
 
 
 
+<span class="c1">#: WGS84 semi-major axis [km] and flattening (NGA TR8350.2, table 3.1)</span>
+<span class="n">_WGS84_A</span> <span class="o">=</span> <span class="mf">6378.137</span>
+<span class="n">_WGS84_F</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">298.257223563</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_authalic_q</span><span class="p">(</span><span class="n">lat</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return ``q`` of the authalic latitude on the WGS84 ellipsoid.</span>
+
+<span class="sd">    The area of the ellipsoid between the equator and latitude ``lat`` (degrees)</span>
+<span class="sd">    over a longitude span ``dlon`` (radians) is ``a**2 / 2 * dlon * q(lat)``</span>
+<span class="sd">    (Snyder 1987, *Map Projections: A Working Manual*, eq. 3-12).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">e2</span> <span class="o">=</span> <span class="n">_WGS84_F</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">_WGS84_F</span><span class="p">)</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">e2</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">s</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e2</span> <span class="o">*</span> <span class="n">s</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arctanh</span><span class="p">(</span><span class="n">e</span> <span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="o">/</span> <span class="n">e</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="gridcell_area">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.gridcell_area.html#lair.geo.gridcell_area">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">gridcell_area</span><span class="p">(</span>
-    <span class="n">grid</span><span class="p">:</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the area of each grid cell in a grid.</span>
 
-<span class="sd">    .. note::</span>
-<span class="sd">        For lat-lon grids, `xesmf.utils.grid_area` is used to calculate the area,</span>
-<span class="sd">        which requires the radius of the earth in kilometers. If the radius of the</span>
-<span class="sd">        earth is not provided, it will be calculated based on the latitude.</span>
+<span class="sd">    On a lat-lon grid each cell is bounded by two meridians and two parallels,</span>
+<span class="sd">    halfway between the cell centers, and its area is the exact area of that</span>
+<span class="sd">    cell on the WGS84 ellipsoid: ``a**2 / 2 * dlon * (q(lat2) - q(lat1))``,</span>
+<span class="sd">    with ``q`` the function of the authalic latitude (Snyder 1987, eq. 3-12).</span>
+<span class="sd">    With ``R``, it is the area on a sphere of that radius instead,</span>
+<span class="sd">    ``R**2 * dlon * (sin(lat2) - sin(lat1))``. On a projected grid in meters</span>
+<span class="sd">    it is ``dx * dy``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    grid : xr.DataArray | xr.Dataset</span>
 <span class="sd">        Grid data with a `rioxarray` CRS: geographic (any datum, e.g.</span>
-<span class="sd">        EPSG:4326, OGC:CRS84, EPSG:4269) with ``lat``/``lon`` coordinates,</span>
-<span class="sd">        or projected in meters.</span>
-<span class="sd">    R : float | array-like, optional</span>
-<span class="sd">        Radius of earth in kilometers (lat-lon grids only), by default</span>
-<span class="sd">        calculated based on the latitude. An array must broadcast against the</span>
-<span class="sd">        grid, e.g. a DataArray along ``lat``.</span>
+<span class="sd">        EPSG:4326, OGC:CRS84, EPSG:4269) with 1-D ``lat``/``lon``</span>
+<span class="sd">        coordinates, or projected in meters.</span>
+<span class="sd">    R : float | np.ndarray | xr.DataArray, optional</span>
+<span class="sd">        Radius of a sphere in kilometers to use instead of the WGS84</span>
+<span class="sd">        ellipsoid (lat-lon grids only), by default None. An array must</span>
+<span class="sd">        broadcast against the grid, e.g. a DataArray along ``lat``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1268,10 +1290,29 @@
 <span class="sd">        grid-cell area in square-kilometers, with the grid&#39;s (y, x) dims. Its</span>
 <span class="sd">        only attribute is ``units`` (``&#39;km2&#39;``), so an array multiplied by it</span>
 <span class="sd">        (``Inventory.absolute_emissions``) takes no description of the grid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Optional dependency for advanced regridding</span>
-    <span class="n">xe</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;xesmf&quot;</span><span class="p">)</span>
 
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the grid has no CRS, its CRS is neither geographic nor in meters, or</span>
+<span class="sd">        a lat-lon grid&#39;s ``lat`` or ``lon`` is not 1-D.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    A sphere is close but not exact. With ``R=6371`` a 1-degree cell is 0.45%</span>
+<span class="sd">    too large at the equator, 0.12% too small at 40.5 N and 0.9% too small</span>
+<span class="sd">    next to a pole; a 0.1-degree cell centered at 40.75 N is 93.668 km2</span>
+<span class="sd">    against 93.783 km2 on the ellipsoid. A sphere whose radius is the</span>
+<span class="sd">    ellipsoid&#39;s radius at the cell&#39;s latitude (:func:`earth_radius`) is worse</span>
+<span class="sd">    at 40.75 N (93.611 km2, 0.18% too small).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from lair import geo</span>
+<span class="sd">    &gt;&gt;&gt; area = geo.gridcell_area_from_latlon([40.65, 40.75, 40.85], [-111.95, -111.85])</span>
+<span class="sd">    &gt;&gt;&gt; round(float(area[1, 1]), 3)  # the 0.1-degree cell at 40.75 N, 111.85 W</span>
+<span class="sd">    93.783</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">crs</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">crs</span>
     <span class="k">if</span> <span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;grid has no CRS; set one with write_rio_crs(grid, crs).&quot;</span><span class="p">)</span>
@@ -1280,9 +1321,27 @@
     <span class="n">grid</span> <span class="o">=</span> <span class="n">_as_dataset</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">crs</span><span class="o">.</span><span class="n">is_geographic</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">grid</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">grid</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;gridcell_area needs 1-D lat and lon coordinates on a lat-lon grid.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span>
+        <span class="c1"># Each cell&#39;s edges, halfway between the centers (a pole stays a pole)</span>
+        <span class="n">lat_b</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">lat_bounds</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+        <span class="n">lat_lo</span> <span class="o">=</span> <span class="n">lat_b</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">bounds</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">lat_hi</span> <span class="o">=</span> <span class="n">lat_b</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">bounds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">lon_bounds</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="c1"># abs: north-up rasters store lat descending. The latitude term comes</span>
+        <span class="c1"># first, so the result is (y, x) like the data.</span>
         <span class="k">if</span> <span class="n">R</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">R</span> <span class="o">=</span> <span class="n">earth_radius</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">])</span>
-        <span class="n">area</span> <span class="o">=</span> <span class="n">xe</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cell_area</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">earth_radius</span><span class="o">=</span><span class="n">R</span><span class="p">)</span>
+            <span class="n">dq</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">_authalic_q</span><span class="p">(</span><span class="n">lat_hi</span><span class="p">)</span> <span class="o">-</span> <span class="n">_authalic_q</span><span class="p">(</span><span class="n">lat_lo</span><span class="p">))</span>
+            <span class="n">area</span> <span class="o">=</span> <span class="n">_WGS84_A</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dq</span> <span class="o">*</span> <span class="n">dlon</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dsin</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat_hi</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat_lo</span><span class="p">)))</span>
+            <span class="n">area</span> <span class="o">=</span> <span class="n">R</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dsin</span> <span class="o">*</span> <span class="n">dlon</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">&quot;lat_bounds&quot;</span><span class="p">,</span> <span class="s2">&quot;lon_bounds&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">crs</span><span class="o">.</span><span class="n">linear_units</span> <span class="o">==</span> <span class="s2">&quot;metre&quot;</span><span class="p">:</span>
         <span class="n">bounds</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
         <span class="n">dx</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">x_bounds</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1294,8 +1353,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only lat-lon and meter grids are supported.&quot;</span><span class="p">)</span>
     <span class="c1"># The area is multiplied into data variables (Inventory.absolute_emissions),</span>
-    <span class="c1"># which keep its attributes: keep only the units. The earth radius brought</span>
-    <span class="c1"># the latitude&#39;s attributes along, among them axis: &#39;Y&#39; (issues #136, #139).</span>
+    <span class="c1"># which keep its attributes: keep only the units (issue #136).</span>
     <span class="n">area</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;km2&quot;</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">area</span></div>
 
@@ -1716,6 +1774,10 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate radius of Earth assuming oblate spheroid defined by WGS84</span>
 
+<span class="sd">    The radius is the distance from the Earth&#39;s center to the ellipsoid at each</span>
+<span class="sd">    latitude. It is not the radius of a sphere with the ellipsoid&#39;s areas:</span>
+<span class="sd">    :func:`gridcell_area` computes those on the ellipsoid itself.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    lat : array-like</span>
@@ -1765,7 +1827,8 @@
 <span class="sd">    lon : ArrayLike</span>
 <span class="sd">        Longitude array</span>
 <span class="sd">    R : float, optional</span>
-<span class="sd">        Radius of earth in kilometers, by default calculated based on the latitude.</span>
+<span class="sd">        Radius of a sphere in kilometers to use instead of the WGS84</span>
+<span class="sd">        ellipsoid, by default None (see :func:`gridcell_area`).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
