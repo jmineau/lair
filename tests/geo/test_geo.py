@@ -179,6 +179,37 @@ class TestBearing:
         assert r[0] == pytest.approx(6378.137, abs=1e-3)  # equatorial
         assert r[1] < r[0]  # polar radius is smaller
 
+    def test_earth_radius_dataarray_has_its_own_attributes(self):
+        # The radius used to carry the latitude's attributes, among them
+        # units: degrees_north and axis: 'Y' (issue #139).
+        lat_attrs = {
+            "units": "degrees_north",
+            "long_name": "latitude",
+            "standard_name": "latitude",
+            "axis": "Y",
+        }
+        lat = DataArray(np.arange(40.0, 45.0), dims="lat", attrs=dict(lat_attrs))
+        radius = geo.earth_radius(lat)
+        assert radius.attrs == {"long_name": "Earth radius", "units": "km"}
+        assert radius.name == "earth_radius"
+        assert radius.dims == ("lat",)
+        np.testing.assert_allclose(radius.values, geo.earth_radius(lat.values))
+        # The latitude is untouched
+        assert lat.attrs == lat_attrs
+        assert lat.name is None
+
+    def test_earth_radius_of_a_coordinate(self, latlon_grid):
+        # A coordinate is named for itself (lat), which a Dataset refuses as the
+        # name of a variable on that coordinate.
+        lat = latlon_grid["lat"]
+        lat_attrs = dict(lat.attrs)
+        radius = geo.earth_radius(lat)
+        assert radius.attrs == {"long_name": "Earth radius", "units": "km"}
+        assert radius.name == "earth_radius"
+        assert list(radius.to_dataset()) == ["earth_radius"]
+        assert lat.attrs == lat_attrs
+        assert lat.name == "lat"
+
 
 class TestCRS:
     def test_epsg_roundtrip(self):

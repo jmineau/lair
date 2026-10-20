@@ -1267,12 +1267,25 @@ def earth_radius(lat: ArrayLike) -> ArrayLike:
     Returns
     -------
     array-like
-        vector of radius in kilometers
+        vector of radius in kilometers. For a ``DataArray`` it is named
+        ``earth_radius`` and its only attributes are its own, ``long_name``
+        and ``units`` (``km``), not the latitude's.
 
     Notes
     -----
      - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
      - WGS84: https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
+
+    Examples
+    --------
+    >>> import xarray as xr
+    >>> from lair import geo
+    >>> lat = xr.DataArray([0.0, 90.0], dims="lat", attrs={"units": "degrees_north"})
+    >>> radius = geo.earth_radius(lat)
+    >>> radius.values.round(3)
+    array([6378.137, 6356.752])
+    >>> radius.attrs
+    {'long_name': 'Earth radius', 'units': 'km'}
     """
     # define oblate spheroid from WGS84
     a = 6378137
@@ -1289,6 +1302,11 @@ def earth_radius(lat: ArrayLike) -> ArrayLike:
     r = (a * (1 - e2) ** 0.5) / (1 - (e2 * np.cos(lat_gc) ** 2)) ** 0.5
 
     r /= 1000  # convert to km
+    if isinstance(r, DataArray):
+        # The ufuncs above kept the latitude's attributes (units: degrees_north,
+        # axis: 'Y', ...) and name: label the radius as what it is (issue #139).
+        r.attrs = {"long_name": "Earth radius", "units": "km"}
+        r.name = "earth_radius"
     return r
 
 

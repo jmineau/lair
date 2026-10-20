@@ -113,6 +113,12 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   coordinate, and `Inventory.absolute_emissions` passed it on to the variable of
   every sector (#136). On a projected grid `units` now reads `km2`, not pint's
   `kilometer ** 2`.
+- `geo.earth_radius` of a `DataArray` returns the radius under its own
+  attributes (`long_name: Earth radius`, `units: km`) and the name
+  `earth_radius` (#139). It kept the latitude's, `units: degrees_north`,
+  `long_name: latitude` and, for a grid set up with `write_rio_crs`, `axis: 'Y'`
+  and `standard_name: latitude`, which labeled a radius in kilometers as a
+  latitude in degrees. A number or a NumPy array is unchanged.
 - A conversion in the `mass_flux` pint context without `mw` (the molar mass),
   or with one that is not a molar mass (a plain number such as `16.04`), raises
   a `TypeError` that names `mw` and shows what to pass,
