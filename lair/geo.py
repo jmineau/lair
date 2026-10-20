@@ -748,27 +748,49 @@ def clip(
     return data
 
 
+#: WGS84 semi-major axis [km] and flattening (NGA TR8350.2, table 3.1)
+_WGS84_A = 6378.137
+_WGS84_F = 1 / 298.257223563
+
+
+def _authalic_q(lat: ArrayLike) -> np.ndarray:
+    """
+    Return ``q`` of the authalic latitude on the WGS84 ellipsoid.
+
+    The area of the ellipsoid between the equator and latitude ``lat`` (degrees)
+    over a longitude span ``dlon`` (radians) is ``a**2 / 2 * dlon * q(lat)``
+    (Snyder 1987, *Map Projections: A Working Manual*, eq. 3-12).
+    """
+    e2 = _WGS84_F * (2 - _WGS84_F)
+    e = np.sqrt(e2)
+    s = np.sin(np.deg2rad(lat))
+    return (1 - e2) * (s / (1 - e2 * s**2) + np.arctanh(e * s) / e)
+
+
 def gridcell_area(
-    grid: DataArray | Dataset, R: float | ArrayLike | None = None
+    grid: DataArray | Dataset, R: float | np.ndarray | DataArray | None = None
 ) -> DataArray:
     """
     Calculate the area of each grid cell in a grid.
 
-    .. note::
-        For lat-lon grids, `xesmf.utils.grid_area` is used to calculate the area,
-        which requires the radius of the earth in kilometers. If the radius of the
-        earth is not provided, it will be calculated based on the latitude.
+    On a lat-lon grid each cell is bounded by two meridians and two parallels,
+    halfway between the cell centers, and its area is the exact area of that
+    cell on the WGS84 ellipsoid: ``a**2 / 2 * dlon * (q(lat2) - q(lat1))``,
+    with ``q`` the function of the authalic latitude (Snyder 1987, eq. 3-12).
+    With ``R``, it is the area on a sphere of that radius instead,
+    ``R**2 * dlon * (sin(lat2) - sin(lat1))``. On a projected grid in meters
+    it is ``dx * dy``.
 
     Parameters
     ----------
     grid : xr.DataArray | xr.Dataset
         Grid data with a `rioxarray` CRS: geographic (any datum, e.g.
-        EPSG:4326, OGC:CRS84, EPSG:4269) with ``lat``/``lon`` coordinates,
-        or projected in meters.
-    R : float | array-like, optional
-        Radius of earth in kilometers (lat-lon grids only), by default
-        calculated based on the latitude. An array must broadcast against the
-        grid, e.g. a DataArray along ``lat``.
+        EPSG:4326, OGC:CRS84, EPSG:4269) with 1-D ``lat``/``lon``
+        coordinates, or projected in meters.
+    R : float | np.ndarray | xr.DataArray, optional
+        Radius of a sphere in kilometers to use instead of the WGS84
+        ellipsoid (lat-lon grids only), by default None. An array must
+        broadcast against the grid, e.g. a DataArray along ``lat``.
 
     Returns
     -------
@@ -776,10 +798,29 @@ def gridcell_area(
         grid-cell area in square-kilometers, with the grid's (y, x) dims. Its
         only attribute is ``units`` (``'km2'``), so an array multiplied by it
         (``Inventory.absolute_emissions``) takes no description of the grid.
-    """
-    # Optional dependency for advanced regridding
-    xe = import_optional_dependency("xesmf")
 
+    Raises
+    ------
+    ValueError
+        If the grid has no CRS, its CRS is neither geographic nor in meters, or
+        a lat-lon grid's ``lat`` or ``lon`` is not 1-D.
+
+    Notes
+    -----
+    A sphere is close but not exact. With ``R=6371`` a 1-degree cell is 0.45%
+    too large at the equator, 0.12% too small at 40.5 N and 0.9% too small
+    next to a pole; a 0.1-degree cell centered at 40.75 N is 93.668 km2
+    against 93.783 km2 on the ellipsoid. A sphere whose radius is the
+    ellipsoid's radius at the cell's latitude (:func:`earth_radius`) is worse
+    at 40.75 N (93.611 km2, 0.18% too small).
+
+    Examples
+    --------
+    >>> from lair import geo
+    >>> area = geo.gridcell_area_from_latlon([40.65, 40.75, 40.85], [-111.95, -111.85])
+    >>> round(float(area[1, 1]), 3)  # the 0.1-degree cell at 40.75 N, 111.85 W
+    93.783
+    """
     crs = grid.rio.crs
     if crs is None:
         raise ValueError("grid has no CRS; set one with write_rio_crs(grid, crs).")
@@ -788,9 +829,27 @@ def gridcell_area(
     grid = _as_dataset(grid)
 
     if crs.is_geographic:
+        if grid["lat"].ndim != 1 or grid["lon"].ndim != 1:
+            raise ValueError(
+                "gridcell_area needs 1-D lat and lon coordinates on a lat-lon grid."
+            )
+        bounds = grid.cf.add_bounds(["lat", "lon"])
+        # Each cell's edges, halfway between the centers (a pole stays a pole)
+        lat_b = bounds.lat_bounds.clip(-90, 90)
+        lat_lo = lat_b.isel(bounds=0, drop=True)
+        lat_hi = lat_b.isel(bounds=1, drop=True)
+        dlon = np.deg2rad(
+            abs(bounds.lon_bounds.diff("bounds").squeeze("bounds", drop=True))
+        )
+        # abs: north-up rasters store lat descending. The latitude term comes
+        # first, so the result is (y, x) like the data.
         if R is None:
-            R = earth_radius(grid["lat"])
-        area = xe.util.cell_area(grid, earth_radius=R)
+            dq = abs(_authalic_q(lat_hi) - _authalic_q(lat_lo))
+            area = _WGS84_A**2 / 2 * dq * dlon
+        else:
+            dsin = abs(np.sin(np.deg2rad(lat_hi)) - np.sin(np.deg2rad(lat_lo)))
+            area = R**2 * dsin * dlon
+        area = area.drop_vars(["lat_bounds", "lon_bounds"], errors="ignore")
     elif crs.linear_units == "metre":
         bounds = grid.cf.add_bounds(["x", "y"])
         dx = bounds.x_bounds.diff("bounds").squeeze("bounds", drop=True)
@@ -802,8 +861,7 @@ def gridcell_area(
     else:
         raise ValueError("Only lat-lon and meter grids are supported.")
     # The area is multiplied into data variables (Inventory.absolute_emissions),
-    # which keep its attributes: keep only the units. The earth radius brought
-    # the latitude's attributes along, among them axis: 'Y' (issues #136, #139).
+    # which keep its attributes: keep only the units (issue #136).
     area.attrs = {"units": "km2"}
     return area
 
@@ -1197,6 +1255,10 @@ def earth_radius(lat: ArrayLike) -> ArrayLike:
     """
     Calculate radius of Earth assuming oblate spheroid defined by WGS84
 
+    The radius is the distance from the Earth's center to the ellipsoid at each
+    latitude. It is not the radius of a sphere with the ellipsoid's areas:
+    :func:`gridcell_area` computes those on the ellipsoid itself.
+
     Parameters
     ----------
     lat : array-like
@@ -1243,7 +1305,8 @@ def gridcell_area_from_latlon(
     lon : ArrayLike
         Longitude array
     R : float, optional
-        Radius of earth in kilometers, by default calculated based on the latitude.
+        Radius of a sphere in kilometers to use instead of the WGS84
+        ellipsoid, by default None (see :func:`gridcell_area`).
 
     Returns
     -------

@@ -29,9 +29,9 @@ wrong package.
 You need Python 3.11 or newer and [git](https://git-scm.com/). Install lair into a
 new environment, so that its packages stay apart from the rest of your work.
 
-Grid-cell areas and regridding need ESMF, a compiled library that pip cannot
-install. The inventories use both, so totaling an inventory over a region
-(`Inventory.integrate()`) needs ESMF too. For these, use conda:
+Regridding (`geo.regrid`, `geo.resample`, and an inventory's `regrid` and
+`resample`) needs ESMF, a compiled library that pip cannot install. For it, use
+conda:
 
 ```bash
 mamba create -n lair -c conda-forge python=3.12 esmpy "esmf=*=nompi*"
@@ -55,7 +55,7 @@ The names in square brackets are the extras, groups of optional packages:
 | `formats` | zarr, numcodecs, fastkml, lxml | `hrrr`, `records.read_kml` |
 | `geo` | cartopy, networkx, pyproj, rasterio, rioxarray, shapely | `geo`, `hrrr`, `inventories`, `transects` |
 | `science` | molmass, scipy | `background`, `inventories`, `pollutants`, `transects` |
-| `regridding` | xesmf (needs ESMF) | `geo` (areas, regrid, resample), `inventories` (totals, regrid) |
+| `regridding` | xesmf (needs ESMF) | `geo` (regrid, resample), `inventories` (regrid, resample) |
 | `complete` | all of the above | |
 
 The first `import lair` in a new environment downloads one file, NOAA's CCG

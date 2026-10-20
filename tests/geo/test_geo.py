@@ -515,10 +515,13 @@ class TestGridcellArea:
         assert float(area.isel(lat=0).mean()) > float(area.isel(lat=-1).mean())
 
     def test_radius_array(self, latlon_grid):
-        # An array R (e.g. per-latitude radius) must not be truth-tested.
+        # An array R (e.g. per-latitude radius) must not be truth-tested, and
+        # each row takes its own radius.
         R = geo.earth_radius(latlon_grid["lat"])
         area = geo.gridcell_area(latlon_grid, R=R)
-        np.testing.assert_allclose(area, geo.gridcell_area(latlon_grid))
+        for i, r in enumerate(np.asarray(R)):
+            row = geo.gridcell_area(latlon_grid, R=float(r)).isel(lat=i)
+            np.testing.assert_allclose(area.isel(lat=i), row)
 
     def test_radius_scalar(self, latlon_grid):
         a1 = geo.gridcell_area(latlon_grid, R=1.0)
@@ -642,6 +645,91 @@ class TestDataArrayInput:
         assert isinstance(coarse.data, DataArray)
         assert coarse.data.sizes["lat"] < da.sizes["lat"]
         assert float(bgrid.gridcell_area.min()) > 0
+
+
+def _geod_cell_area(lat1, lat2, lon1, lon2, n=400):
+    """A lat-lon cell's area [km2] from pyproj's geodesics, its parallels densified."""
+    pyproj = pytest.importorskip("pyproj")
+    lons = np.linspace(lon1, lon2, n)
+    poly_lon = np.r_[lons, lons[::-1]]
+    poly_lat = np.r_[np.full(n, lat1), np.full(n, lat2)]
+    area, _ = pyproj.Geod(ellps="WGS84").polygon_area_perimeter(poly_lon, poly_lat)
+    return abs(area) / 1e6
+
+
+class TestGridcellAreaEllipsoid:
+    """Areas on the WGS84 ellipsoid, not on a sphere of the latitude's radius (#144)."""
+
+    def test_cell_near_salt_lake_city(self):
+        # 0.1-degree cell 40.70-40.80 N, 111.90-111.80 W. The latitude's radius
+        # on a sphere gave 93.611 km2, EPA's own grid_cell_area (a sphere of
+        # about 6371 km) is 93.667, the ellipsoid 93.783.
+        area = geo.gridcell_area_from_latlon([40.65, 40.75, 40.85], [-111.95, -111.85])
+        assert area[1, 1] == pytest.approx(93.7834690077, rel=1e-10)
+        assert area[1, 1] == pytest.approx(
+            _geod_cell_area(40.7, 40.8, -111.9, -111.8), rel=1e-9
+        )
+
+    @pytest.mark.parametrize("lat", [0.5, 30.5, 40.5, 60.5, 80.5, 89.5])
+    def test_one_degree_cells_match_geodesic_areas(self, lat):
+        area = geo.gridcell_area_from_latlon([lat - 1, lat], [0.5, 1.5])[1, 0]
+        expected = _geod_cell_area(lat - 0.5, lat + 0.5, 1.0, 2.0)
+        assert area == pytest.approx(expected, rel=1e-8)
+
+    def test_global_grid_sums_to_the_ellipsoid_area(self):
+        # The surface area of the WGS84 ellipsoid: 510,065,621.724 km2
+        area = geo.gridcell_area_from_latlon(
+            np.arange(-89.5, 90.0), np.arange(-179.5, 180.0)
+        )
+        assert area.sum() == pytest.approx(510_065_621.724, rel=1e-11)
+
+    def test_centers_on_the_poles(self):
+        # The cells at the poles are half as tall: their edges stop at 90
+        area = geo.gridcell_area_from_latlon(np.arange(-90.0, 91.0), [0.5, 1.5])
+        assert area[0, 0] == pytest.approx(area[-1, 0])
+        assert area[0, 0] == pytest.approx(
+            _geod_cell_area(89.5, 90.0, 1.0, 2.0), rel=1e-6
+        )
+        # One 1-degree column from pole to pole: 1/360 of the ellipsoid
+        assert area[:, 0].sum() == pytest.approx(510_065_621.724 / 360, rel=1e-11)
+
+    def test_sphere_with_R(self):
+        R = 6371.0
+        area = geo.gridcell_area_from_latlon(
+            [40.65, 40.75, 40.85], [-111.95, -111.85], R=R
+        )
+        expected = (
+            R**2
+            * np.deg2rad(0.1)
+            * (np.sin(np.deg2rad(40.8)) - np.sin(np.deg2rad(40.7)))
+        )
+        assert area[1, 1] == pytest.approx(expected, rel=1e-12)
+
+    def test_descending_lat_gives_the_same_areas(self, latlon_grid):
+        area = geo.gridcell_area(latlon_grid)
+        flipped = geo.gridcell_area(latlon_grid.isel(lat=slice(None, None, -1)))
+        np.testing.assert_allclose(flipped.values[::-1], area.values)
+
+    def test_coordinates_are_the_grid_s(self, latlon_grid):
+        area = geo.gridcell_area(latlon_grid)
+        assert area.dims == ("lat", "lon")
+        assert set(area.coords) == {"lat", "lon", "spatial_ref"}
+
+    def test_two_dimensional_lat_lon_raises(self, latlon_grid):
+        import xarray as xr
+
+        lon2d, lat2d = np.meshgrid(latlon_grid.lon.values, latlon_grid.lat.values)
+        grid = xr.Dataset(
+            coords={
+                "lat": (("y", "x"), lat2d, {"units": "degrees_north"}),
+                "lon": (("y", "x"), lon2d, {"units": "degrees_east"}),
+                "y": np.arange(lat2d.shape[0]),
+                "x": np.arange(lat2d.shape[1]),
+            }
+        ).rio.set_spatial_dims(x_dim="x", y_dim="y")
+        grid = geo.write_rio_crs(grid, 4326)
+        with pytest.raises(ValueError, match="1-D lat and lon"):
+            geo.gridcell_area(grid)
 
 
 class TestGridcellAreaCRS:
