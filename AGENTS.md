@@ -180,6 +180,11 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
   `absolute_emissions` and `integrate()` need none either. A sphere (`R=`) is
   0.1-0.9% off depending on latitude; `tests/geo` checks against pyproj's
   geodesic areas and the ellipsoid's total.
+- **CarbonTracker times:** each mole fraction step is a 3-hour mean labeled by
+  its center, taken from the file's `time_components` in every release
+  (`CarbonTracker._preprocess_molefractions`): CT-CH4-2025's own `time` and
+  `time_bounds` are 1.5 h late. Check a new release's `time` against its
+  `time_components` before trusting either.
 - **Opening many files:** call the module's `_open_mfdataset` (`inventories`,
   `noaa`), not `xr.open_mfdataset`: it names today's `compat`, `data_vars`,
   `coords` and `join`, which xarray is changing. In `noaa` it runs through
