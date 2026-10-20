@@ -1,0 +1,6 @@
+lair.clock.TimeRange.total\_seconds
+===================================
+
+.. currentmodule:: lair.clock
+
+.. autoproperty:: TimeRange.total_seconds

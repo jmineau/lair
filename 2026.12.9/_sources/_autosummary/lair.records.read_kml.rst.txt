@@ -1,0 +1,6 @@
+lair.records.read\_kml
+======================
+
+.. currentmodule:: lair.records
+
+.. autofunction:: read_kml

@@ -1,0 +1,6 @@
+lair.meteorology.poisson
+========================
+
+.. currentmodule:: lair.meteorology
+
+.. autofunction:: poisson

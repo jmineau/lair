@@ -1,0 +1,6 @@
+lair.constants.Rstar
+====================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: Rstar

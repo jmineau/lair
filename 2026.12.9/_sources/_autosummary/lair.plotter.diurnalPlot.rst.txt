@@ -1,0 +1,6 @@
+lair.plotter.diurnalPlot
+========================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: diurnalPlot

@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Draw a map of an inventory &#8212; lair 2026.12.9</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/maps';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            true;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Read a sounding and compute its potential temperature" href="soundings.html" />
+    <link rel="prev" title="Total an inventory over a region" href="inventory.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.12.9" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/lair_forlight_r.png" class="logo__image only-light" alt="LAIR - Home"/>
+    <img src="../_static/lair_fordark_r.png" class="logo__image only-dark pst-js-only" alt="LAIR - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="clock.html">Average a time series by local hour and by season</a></li>
+<li class="toctree-l1"><a class="reference internal" href="units.html">Convert a methane flux from moles to mass</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html">Total an inventory over a region</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Draw a map of an inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="soundings.html">Read a sounding and compute its potential temperature</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hrrr_winds.html">Get HRRR winds at a point</a></li>
+<li class="toctree-l1"><a class="reference internal" href="carbontracker.html">Sample CarbonTracker at points</a></li>
+<li class="toctree-l1"><a class="reference internal" href="background.html">Estimate a background</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Examples</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Draw a map of an inventory</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="draw-a-map-of-an-inventory">
+<h1>Draw a map of an inventory<a class="headerlink" href="#draw-a-map-of-an-inventory" title="Link to this heading">#</a></h1>
+<p>This example draws a map of EDGAR’s methane emissions over Utah in 2022, adds
+state lines and tick labels, outlines the grid cells, and puts a small map of
+where it is in a corner. It ends with a field that is not an inventory. Three
+rules come out of it:</p>
+<ul class="simple">
+<li><p><strong>Inventory.plot averages every time step, and reads all of them.</strong> For
+EDGAR v8’s 53 years that takes about a minute. Pass <code class="docutils literal notranslate"><span class="pre">time=</span></code> to draw one (see
+<a class="reference internal" href="#plot-one-year">Plot one year</a>).</p></li>
+<li><p><strong>lair draws the field, and you add the map.</strong> <code class="docutils literal notranslate"><span class="pre">plot</span></code> returns a cartopy
+axes with only the field on it. State lines and coastlines are cartopy
+features, and <a class="reference internal" href="../_autosummary/lair.geo.add_latlon_ticks.html#lair.geo.add_latlon_ticks" title="lair.geo.add_latlon_ticks"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_latlon_ticks()</span></code></a> writes the tick labels in
+degrees (see <a class="reference internal" href="#state-lines-and-tick-labels">State lines and tick labels</a>).</p></li>
+<li><p><strong>The map helpers take an extent</strong>, <code class="docutils literal notranslate"><span class="pre">[west,</span> <span class="pre">east,</span> <span class="pre">south,</span> <span class="pre">north]</span></code>. <code class="docutils literal notranslate"><span class="pre">clip</span></code>
+takes the same extent, or a bbox, <code class="docutils literal notranslate"><span class="pre">(west,</span> <span class="pre">south,</span> <span class="pre">east,</span> <span class="pre">north)</span></code>: the same
+four numbers in another order. <a class="reference internal" href="../_autosummary/lair.geo.bbox2extent.html#lair.geo.bbox2extent" title="lair.geo.bbox2extent"><code class="xref py py-func docutils literal notranslate"><span class="pre">bbox2extent()</span></code></a> converts.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This page does not run when the docs build. It needs the <code class="docutils literal notranslate"><span class="pre">geo</span></code> and
+<code class="docutils literal notranslate"><span class="pre">science</span></code> extras (see <a class="reference internal" href="../index.html#optional-dependencies"><span class="std std-ref">Optional dependencies</span></a>), EDGAR’s files, and the
+internet the first time cartopy draws a feature. The output and the figures
+below were recorded from one run of this code on 2026-10-14.</p>
+</div>
+<section id="the-data">
+<h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
+<p>EDGAR v8’s methane files, laid out as in <a class="reference internal" href="inventory.html#inventory-data"><span class="std std-ref">the inventory example</span></a>, under <code class="docutils literal notranslate"><span class="pre">LAIR_INVENTORY_DIR</span></code> (see <a class="reference internal" href="../data.html#data-locations"><span class="std std-ref">Data locations</span></a>).
+Drawing a map needs no ESMF, which the inventory example needs to regrid.</p>
+</section>
+<section id="plot-one-year">
+<span id="maps-plot"></span><h2>Plot one year<a class="headerlink" href="#plot-one-year" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_autosummary/lair.inventories.Inventory.plot.html#lair.inventories.Inventory.plot" title="lair.inventories.Inventory.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> draws <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code>: the sum of
+the sectors in each cell, a flux in kg m-2 s-1. With no <code class="docutils literal notranslate"><span class="pre">time</span></code> it first takes
+the mean over every time step, so it reads every file. Here that is the 53
+years of EDGAR v8’s methane, on the whole globe, and it takes about a minute:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">EDGARv8</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv8</span><span class="p">(</span><span class="s2">&quot;CH4&quot;</span><span class="p">)</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="gp">   ...: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mean of every year: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
+<span class="go">mean of every year: 51 s</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">time</span></code> picks one step instead: an integer position (<code class="docutils literal notranslate"><span class="pre">-1</span></code> is the last), or a
+label such as <code class="docutils literal notranslate"><span class="pre">&quot;2022-01-01&quot;</span></code>. EDGAR’s annual steps are labeled by the start of
+the year (see <a class="reference internal" href="inventory.html"><span class="doc">Total an inventory over a region</span></a>). Reading one year is far quicker:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="gp">   ...: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;2022 only: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
+<span class="go">2022 only: 3 s</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sector=</span></code> draws one sector instead of the total. Use a name from
+<code class="docutils literal notranslate"><span class="pre">inv.data.data_vars</span></code>, spelled as it is there (<code class="docutils literal notranslate"><span class="pre">&quot;Power_Industry&quot;</span></code>).</p>
+</section>
+<section id="state-lines-and-tick-labels">
+<h2>State lines and tick labels<a class="headerlink" href="#state-lines-and-tick-labels" title="Link to this heading">#</a></h2>
+<p>A whole-globe map is no use for Utah, so clip first. This extent, in degrees
+and in the order the map helpers want, holds 60 by 60 cells of 0.1 degrees:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.feature</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cfeature</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">geo</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">108.5</span><span class="p">,</span> <span class="mf">36.5</span><span class="p">,</span> <span class="mf">42.5</span><span class="p">]</span>  <span class="c1"># west, east, south, north</span>
+<span class="gp">   ...: </span><span class="n">utah</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">utah</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span>
+<span class="gh">Out[3]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 60, &#39;lon&#39;: 60})</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot</span></code> passes its other arguments to xarray’s plot. <code class="docutils literal notranslate"><span class="pre">cmap</span></code> picks the colors,
+and <code class="docutils literal notranslate"><span class="pre">robust=True</span></code> sets the color range from the 2nd to the 98th percentile of
+the values, so the few largest sources do not set it. xarray titles the plot
+with the scalar coordinates it finds (<code class="docutils literal notranslate"><span class="pre">time</span> <span class="pre">=</span> <span class="pre">2022-01-01,</span> <span class="pre">spatial_ref</span> <span class="pre">=</span> <span class="pre">0</span></code>),
+so set a title of your own. <code class="docutils literal notranslate"><span class="pre">plot</span></code> returns the axes, and <code class="docutils literal notranslate"><span class="pre">add_feature</span></code> and
+<a class="reference internal" href="../_autosummary/lair.geo.add_latlon_ticks.html#lair.geo.add_latlon_ticks" title="lair.geo.add_latlon_ticks"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_latlon_ticks()</span></code></a> draw on it:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">utah</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;YlOrRd&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;EDGAR v8 methane, 2022&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_latlon_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">extent</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;maps_inventory.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="A map of Utah in 2022 in 0.1 degree cells, with state lines and tick labels in degrees. Methane is highest along the Wasatch Front and in the northeast, with a few isolated sources elsewhere." src="../_images/maps_inventory.png" />
+<p>cartopy downloads the state lines from <a class="reference external" href="https://www.naturalearthdata.com/">Natural Earth</a> the first time it draws them, and prints
+a <code class="docutils literal notranslate"><span class="pre">DownloadWarning</span></code>. That needs the internet once: cartopy keeps the file in
+its data folder and reads it from there afterward. The size of that folder, in
+megabytes, after the map above:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="kn">import</span><span class="w"> </span><span class="nn">cartopy</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cartopy</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;data_dir&quot;</span><span class="p">])</span>
+<span class="gp">   ...: </span><span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">data_dir</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gh">Out[5]: </span><span class="go">36.4</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ax.coastlines()</span></code> draws a coast in the same way. <code class="docutils literal notranslate"><span class="pre">add_latlon_ticks</span></code> needs a
+rectangular map such as the PlateCarree one <code class="docutils literal notranslate"><span class="pre">plot</span></code> makes; on a projected axes
+(Lambert, for example) it raises <code class="docutils literal notranslate"><span class="pre">RuntimeError:</span> <span class="pre">Cannot</span> <span class="pre">handle</span> <span class="pre">non-rectangular</span>
+<span class="pre">coordinate</span> <span class="pre">systems.</span></code></p>
+<p>To draw on axes of your own, such as a panel of a larger figure or a projected
+map, pass <code class="docutils literal notranslate"><span class="pre">ax=</span></code>. <code class="docutils literal notranslate"><span class="pre">plot</span></code> draws the inventory in longitude and latitude and
+cartopy transforms it, so any cartopy axes works.</p>
+</section>
+<section id="the-grid">
+<h2>The grid<a class="headerlink" href="#the-grid" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_autosummary/lair.geo.plot_grid.html#lair.geo.plot_grid" title="lair.geo.plot_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_grid()</span></code></a> outlines the cells of a grid on the axes you give
+it. It draws with xarray’s plot, which adds a colorbar, and passes its other
+arguments on, so <code class="docutils literal notranslate"><span class="pre">add_colorbar=False</span></code> leaves the colorbar out. Here it
+outlines the Salt Lake Valley box of the <a class="reference internal" href="inventory.html"><span class="doc">inventory example</span></a>
+(there as a bbox), 6 by 6 cells of 0.1 degrees, over a map of its emissions. A
+small map has many close ticks, so <code class="docutils literal notranslate"><span class="pre">x_rotation=45</span></code> tilts the longitude
+labels:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">slv_extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">112.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.7</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">]</span>
+<span class="gp">   ...: </span><span class="n">slv</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">slv_extent</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;YlOrRd&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;EDGAR v8 methane, 2022&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">plot_grid</span><span class="p">(</span><span class="n">slv</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">add_colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_latlon_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">slv_extent</span><span class="p">,</span> <span class="n">x_rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;maps_grid.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="The Salt Lake Valley in 2022 in six by six cells, each outlined in black, with tick labels in degrees." src="../_images/maps_grid.png" />
+<p>With no <code class="docutils literal notranslate"><span class="pre">ax</span></code>, <code class="docutils literal notranslate"><span class="pre">plot_grid</span></code> makes a map of its own. Give it <code class="docutils literal notranslate"><span class="pre">extent=</span></code> in
+longitude and latitude to set the view, and <code class="docutils literal notranslate"><span class="pre">crs=</span></code> (an EPSG code such as
+<code class="docutils literal notranslate"><span class="pre">5070</span></code>, or a cartopy projection) to draw on a projected map; the extent is
+still in degrees.</p>
+</section>
+<section id="another-field-and-where-it-is">
+<h2>Another field, and where it is<a class="headerlink" href="#another-field-and-where-it-is" title="Link to this heading">#</a></h2>
+<p>Any <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> with <code class="docutils literal notranslate"><span class="pre">lat</span></code> and <code class="docutils literal notranslate"><span class="pre">lon</span></code> coordinates can be drawn on the same
+kind of map, so a footprint or a model field gets state lines, tick labels and a
+grid in the same way. With xarray’s own <code class="docutils literal notranslate"><span class="pre">plot</span></code>, pass <code class="docutils literal notranslate"><span class="pre">transform=</span></code> to say
+that the coordinates are degrees, as <code class="docutils literal notranslate"><span class="pre">Inventory.plot</span></code> does for you. Here is a
+made-up footprint on a 0.01 degree grid from
+<a class="reference internal" href="../_autosummary/lair.geo.generate_regular_grid.html#lair.geo.generate_regular_grid" title="lair.geo.generate_regular_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_regular_grid()</span></code></a>, longer north to south than east to
+west, around a point in the Salt Lake Valley:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>
+<span class="gp">   ...: </span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="gp">   ...: </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">   ...: </span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogNorm</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">grid</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">generate_regular_grid</span><span class="p">(</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.5</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">east</span> <span class="o">=</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">lon</span> <span class="o">+</span> <span class="mf">111.85</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mf">40.77</span><span class="p">))</span>  <span class="c1"># degrees from the point</span>
+<span class="gp">   ...: </span><span class="n">north</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">lat</span> <span class="o">-</span> <span class="mf">40.77</span>
+<span class="gp">   ...: </span><span class="n">sx</span><span class="p">,</span> <span class="n">sy</span> <span class="o">=</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.12</span>  <span class="c1"># widths of the plume, in degrees</span>
+<span class="gp">   ...: </span><span class="n">footprint</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">east</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sx</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">north</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sy</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
+<span class="gp">   ...: </span><span class="n">footprint</span><span class="o">.</span><span class="n">sizes</span>
+<span class="gh">Out[7]: </span><span class="go">Frozen({&#39;lon&#39;: 70, &#39;lat&#39;: 60})</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../_autosummary/lair.geo.add_extent_map.html#lair.geo.add_extent_map" title="lair.geo.add_extent_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_extent_map()</span></code></a> adds a small map of where the main map is, in
+the corner of the figure. It takes the main map’s extent and projection, the
+inset’s position in the figure as <code class="docutils literal notranslate"><span class="pre">(left,</span> <span class="pre">bottom,</span> <span class="pre">width,</span> <span class="pre">height)</span></code>, fractions
+of the figure’s size, its own extent and projection, and the color and width of
+the outline it draws around the main extent:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;projection&quot;</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()})</span>
+<span class="gp">   ...: </span><span class="n">footprint</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span> <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">))</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;A made-up footprint&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">main_extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.5</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">]</span>
+<span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_latlon_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">main_extent</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_extent_map</span><span class="p">(</span>
+<span class="gp">   ...: </span>    <span class="n">fig</span><span class="p">,</span>
+<span class="gp">   ...: </span>    <span class="n">main_extent</span><span class="o">=</span><span class="n">main_extent</span><span class="p">,</span>
+<span class="gp">   ...: </span>    <span class="n">main_extent_crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
+<span class="gp">   ...: </span>    <span class="n">extent_map_rect</span><span class="o">=</span><span class="p">(</span><span class="mf">0.14</span><span class="p">,</span> <span class="mf">0.58</span><span class="p">,</span> <span class="mf">0.24</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">),</span>
+<span class="gp">   ...: </span>    <span class="n">extent_map_extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">117</span><span class="p">,</span> <span class="o">-</span><span class="mi">106</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">43</span><span class="p">],</span>
+<span class="gp">   ...: </span>    <span class="n">extent_map_crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
+<span class="gp">   ...: </span>    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+<span class="gp">   ...: </span>    <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+<span class="gp">   ...: </span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;maps_footprint.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="A made-up footprint over the Salt Lake Valley, a bright oval that fades outward on a log color scale, with a small map of Utah in the upper left corner and a red box on it marking the main map." src="../_images/maps_footprint.png" />
+</section>
+<section id="next">
+<h2>Next<a class="headerlink" href="#next" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_autosummary/lair.geo.html#module-lair.geo" title="lair.geo"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.geo</span></code></a> also has <a class="reference internal" href="../_autosummary/lair.geo.add_lat_ticks.html#lair.geo.add_lat_ticks" title="lair.geo.add_lat_ticks"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_lat_ticks()</span></code></a> and
+<a class="reference internal" href="../_autosummary/lair.geo.add_lon_ticks.html#lair.geo.add_lon_ticks" title="lair.geo.add_lon_ticks"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_lon_ticks()</span></code></a>, for a map that needs only one axis labeled.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="inventory.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Total an inventory over a region</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="soundings.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Read a sounding and compute its potential temperature</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-data">The data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-one-year">Plot one year</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#state-lines-and-tick-labels">State lines and tick labels</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-grid">The grid</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#another-field-and-where-it-is">Another field, and where it is</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next">Next</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/examples/maps.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, James Mineau.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

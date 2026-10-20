@@ -1,0 +1,6 @@
+lair.geo.resample
+=================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: resample

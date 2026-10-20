@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.noaa &#8212; lair 2026.12.8</title>
+    <title>lair.noaa &#8212; lair 2026.12.9</title>
   
   
   
@@ -29,6 +29,7 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
@@ -37,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=018e8e46"></script>
+    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -46,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.8';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8" />
+  <meta name="docsearch:version" content="2026.12.9" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -143,6 +144,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -262,6 +284,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -395,15 +438,20 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures.process</span><span class="w"> </span><span class="kn">import</span> <span class="n">BrokenProcessPool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">nullcontext</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xarray.backends.locks</span><span class="w"> </span><span class="kn">import</span> <span class="n">HDF5_LOCK</span><span class="p">,</span> <span class="n">NETCDFC_LOCK</span><span class="p">,</span> <span class="n">combine_locks</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_data_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cache_dir</span><span class="p">,</span> <span class="n">get_data_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">_allowed_cpus</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.records</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cacher</span><span class="p">,</span> <span class="n">ftp_download</span><span class="p">,</span> <span class="n">list_files</span>
 
 <span class="c1">#: Environment variable holding the CarbonTracker data root</span>
@@ -411,6 +459,101 @@
 
 <span class="c1">#: Environment variable holding the NOAA GML data root</span>
 <span class="n">GML_DIR_ENV</span> <span class="o">=</span> <span class="s2">&quot;LAIR_GML_DIR&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_open_mfdataset</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">preprocess</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Open ``files`` as one dataset, combined the way xarray does it today.</span>
+
+<span class="sd">    xarray is changing the defaults of the four arguments named here (it warns</span>
+<span class="sd">    since 2025.08), and it warns that the new ``data_vars`` changes what the</span>
+<span class="sd">    CarbonTracker mole fractions load. Naming today&#39;s values keeps the result</span>
+<span class="sd">    the same on any xarray, and keeps the warning quiet.</span>
+
+<span class="sd">    With ``parallel=True`` the files are opened in worker processes, one for</span>
+<span class="sd">    each CPU this process may use (no more than there are files), not on</span>
+<span class="sd">    dask&#39;s default threads. netCDF-C and HDF5 are not thread-safe, and xarray</span>
+<span class="sd">    holds its lock only while it opens a file, not while it reads the file&#39;s</span>
+<span class="sd">    variables and attributes, so opening files on threads at once crashes the</span>
+<span class="sd">    process or fails with an HDF error (issue #121). Worker processes start by</span>
+<span class="sd">    importing the caller&#39;s script again, so a script needs the</span>
+<span class="sd">    ``if __name__ == &quot;__main__&quot;:`` guard.</span>
+
+<span class="sd">    The workers are given this process&#39;s netCDF lock. A file opened in a</span>
+<span class="sd">    worker comes back with the lock it was opened with, and each process&#39;s own</span>
+<span class="sd">    lock is a different one, so without this the files from different workers</span>
+<span class="sd">    would be read at once, and crash, when the data is loaded here.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
+        <span class="c1"># The lock xarray&#39;s netCDF4 backend uses for local files</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="n">combine_locks</span><span class="p">([</span><span class="n">NETCDFC_LOCK</span><span class="p">,</span> <span class="n">HDF5_LOCK</span><span class="p">])</span>
+        <span class="n">workers</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">),</span> <span class="n">_allowed_cpus</span><span class="p">()))</span>
+        <span class="c1"># Takes effect as it is made; the `with` below restores the old config</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;processes&quot;</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># xarray&#39;s own choice</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">nullcontext</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">scheduler</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span>
+                <span class="n">files</span><span class="p">,</span>
+                <span class="n">preprocess</span><span class="o">=</span><span class="n">preprocess</span><span class="p">,</span>
+                <span class="n">parallel</span><span class="o">=</span><span class="n">parallel</span><span class="p">,</span>
+                <span class="n">lock</span><span class="o">=</span><span class="n">lock</span><span class="p">,</span>
+                <span class="n">combine</span><span class="o">=</span><span class="s2">&quot;by_coords&quot;</span><span class="p">,</span>
+                <span class="n">compat</span><span class="o">=</span><span class="s2">&quot;no_conflicts&quot;</span><span class="p">,</span>
+                <span class="n">data_vars</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
+                <span class="n">coords</span><span class="o">=</span><span class="s2">&quot;different&quot;</span><span class="p">,</span>
+                <span class="n">join</span><span class="o">=</span><span class="s2">&quot;outer&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">except</span> <span class="n">BrokenProcessPool</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;A worker process opening the files stopped. In a script, put the &quot;</span>
+            <span class="s1">&#39;code that runs under `if __name__ == &quot;__main__&quot;:` (each worker &#39;</span>
+            <span class="s2">&quot;imports the script again), or pass parallel_parse=False to open &quot;</span>
+            <span class="s2">&quot;the files one at a time.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cache_file</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Path of a file in the lair cache, with its folder made.</span>
+
+<span class="sd">    The cache folder (``LAIR_CACHE_DIR``, default ``~/.cache/lair``) is read</span>
+<span class="sd">    and made here, the first time something is cached, and not when lair is</span>
+<span class="sd">    imported.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *parts : str</span>
+<span class="sd">        Path of the file below the cache folder.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Path</span>
+<span class="sd">        The cache file (not created).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    OSError</span>
+<span class="sd">        If the folder cannot be made (a :exc:`PermissionError` when the</span>
+<span class="sd">        location is read-only). The message names the folder and says to set</span>
+<span class="sd">        ``LAIR_CACHE_DIR``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">get_cache_dir</span><span class="p">()</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">cache_dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># exist_ok: many processes (e.g. SLURM tasks) may make it at once</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># OSError(errno, ...) gives the matching subclass, e.g. PermissionError</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Cannot make the cache folder </span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">strerror</span><span class="si">}</span><span class="s2">). Set &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the LAIR_CACHE_DIR environment variable (now </span><span class="si">{</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">) to a &quot;</span>
+            <span class="s2">&quot;folder you can write to, or pass cache=False.&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">return</span> <span class="n">path</span>
 
 
 <div class="viewcode-block" id="CarbonTracker">
@@ -428,7 +571,7 @@
 <span class="sd">    directory : str</span>
 <span class="sd">        The directory for the version.</span>
 <span class="sd">    cache : bool</span>
-<span class="sd">        Whether to cache the data.</span>
+<span class="sd">        Whether to cache the data (in ``LAIR_CACHE_DIR``).</span>
 
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
@@ -461,7 +604,10 @@
 <span class="sd">        carbon_tracker_directory : str, optional</span>
 <span class="sd">            The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.</span>
 <span class="sd">        cache : bool, optional</span>
-<span class="sd">            Whether to cache the data, by default True.</span>
+<span class="sd">            Whether to cache the data, by default True. The cache is a file in</span>
+<span class="sd">            ``LAIR_CACHE_DIR`` (default ``~/.cache/lair``), and the folder is</span>
+<span class="sd">            made the first time the data is read, so ``cache=False`` needs no</span>
+<span class="sd">            writable folder.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;specie&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
@@ -575,8 +721,30 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize a molefraction dataset on open. Overridden per specie.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Label each time step of a molefraction file by its period&#39;s center.</span>
+
+<span class="sd">        Each step is a mean over a period (3 hours in the files lair reads),</span>
+<span class="sd">        and the file&#39;s ``time_components`` (year, month, day, hour, minute,</span>
+<span class="sd">        second, UTC) hold the center of it: 01:30, 04:30, ... in every</span>
+<span class="sd">        release. ``time`` does not always: CT-CH4-2023 has none, and in</span>
+<span class="sd">        CT-CH4-2025 it is the end of each period (03:00, 06:00, ...), its</span>
+<span class="sd">        ``time_bounds`` 1.5 hours late too, though the file&#39;s ``notes`` say</span>
+<span class="sd">        the times are centers. So when a file has ``time_components`` the</span>
+<span class="sd">        time comes from them (as ``datetime64[ns]``, the resolution xarray</span>
+<span class="sd">        decodes ``time`` to), ``time_bounds`` move with it, and</span>
+<span class="sd">        ``time_components`` are dropped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;time_components&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ds</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time_components&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;time_bounds&quot;</span> <span class="ow">in</span> <span class="n">ds</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="n">centers</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">time_bounds</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time_bounds&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">centers</span><span class="p">)</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time_components&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_molefraction_file_for_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Molefraction file covering a UTC ``date`` (newest match), if present.&quot;&quot;&quot;</span>
@@ -664,6 +832,11 @@
 <span class="sd">        ``indx``, ``receptor``) are carried through for downstream grouping. Returns one row</span>
 <span class="sd">        per input point with ``ct_&lt;specie&gt;_&lt;units&gt;`` and the CT cell/level used.</span>
 <span class="sd">        Points whose UTC date has no molefraction file are dropped.</span>
+
+<span class="sd">        Each point takes the time step whose center is nearest: the steps are</span>
+<span class="sd">        3-hour means labeled by their centers (``ct_time``: 01:30, 04:30, ...</span>
+<span class="sd">        UTC), so a point takes the mean of the period it is in, and a point on</span>
+<span class="sd">        the boundary of two periods (03:00) takes the later one.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
@@ -677,12 +850,7 @@
         <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">file_for</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
         <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">empty</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">files</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">points</span>
-        <span class="k">with</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span>
-            <span class="n">files</span><span class="p">,</span>
-            <span class="n">preprocess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">,</span>
-            <span class="n">data_vars</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
-            <span class="n">combine</span><span class="o">=</span><span class="s2">&quot;by_coords&quot;</span><span class="p">,</span>
-        <span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">_open_mfdataset</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">preprocess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_field</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">)</span></div>
 
 
@@ -734,6 +902,11 @@
 <span class="sd">    ----------</span>
 <span class="sd">    molefractions : xr.Dataset</span>
 <span class="sd">        The molefractions Dataset.</span>
+<span class="sd">    parallel_parse : bool</span>
+<span class="sd">        Whether ``molefractions`` opens the files in worker processes, one for</span>
+<span class="sd">        each CPU this process may use (default True), or one at a time. The</span>
+<span class="sd">        workers import the calling script again, so a script that reads</span>
+<span class="sd">        ``molefractions`` needs the ``if __name__ == &quot;__main__&quot;:`` guard.</span>
 
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
@@ -754,17 +927,6 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parallel_parse</span> <span class="o">=</span> <span class="n">parallel_parse</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
-        <span class="c1"># CT-CH4-2025+ ships with a proper datetime64 time coordinate already;</span>
-        <span class="c1"># older versions (CT-CH4-2023) encode time in a `time_components` variable.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
-            <span class="n">time_components</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time_components&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-            <span class="n">time</span> <span class="o">=</span> <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">time_components</span><span class="p">]</span>
-            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time_components&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ds</span>
-
 <div class="viewcode-block" id="CarbonTrackerCH4.molefractions">
 <a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.molefractions.html#lair.noaa.CarbonTrackerCH4.molefractions">[docs]</a>
     <span class="nd">@cached_property</span>
@@ -775,18 +937,12 @@
         <span class="n">files</span> <span class="o">=</span> <span class="n">list_files</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">&quot;*nc&quot;</span><span class="p">,</span> <span class="n">full_names</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CACHE_DIR</span>
-
-            <span class="n">cache_file</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">Path</span><span class="p">(</span><span class="n">CACHE_DIR</span><span class="p">)</span>
-                <span class="o">/</span> <span class="s2">&quot;carbontracker&quot;</span>
-                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span>
-                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
-                <span class="o">/</span> <span class="s2">&quot;molefractions.pkl&quot;</span>
+            <span class="n">cache_file</span> <span class="o">=</span> <span class="n">_cache_file</span><span class="p">(</span>
+                <span class="s2">&quot;carbontracker&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="s2">&quot;molefractions.pkl&quot;</span>
             <span class="p">)</span>
-            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
+            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">_open_mfdataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span>
+            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">_open_mfdataset</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="n">open_mfdataset</span><span class="p">(</span>
             <span class="n">files</span><span class="p">,</span>
             <span class="n">preprocess</span><span class="o">=</span><span class="n">CarbonTrackerCH4</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">,</span>
@@ -844,6 +1000,11 @@
 <span class="sd">        sample as NaN.</span>
 <span class="sd">    molefractions : xr.Dataset</span>
 <span class="sd">        The molefractions Dataset.</span>
+<span class="sd">    parallel_parse : bool</span>
+<span class="sd">        Whether ``molefractions`` opens the files in worker processes, one for</span>
+<span class="sd">        each CPU this process may use (default True), or one at a time. The</span>
+<span class="sd">        workers import the calling script again, so a script that reads</span>
+<span class="sd">        ``molefractions`` needs the ``if __name__ == &quot;__main__&quot;:`` guard.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">specie</span> <span class="o">=</span> <span class="s2">&quot;co2&quot;</span>
@@ -888,18 +1049,15 @@
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CACHE_DIR</span>
-
-            <span class="n">cache_file</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">Path</span><span class="p">(</span><span class="n">CACHE_DIR</span><span class="p">)</span>
-                <span class="o">/</span> <span class="s2">&quot;carbontracker&quot;</span>
-                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">specie</span>
-                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
-                <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;molefractions_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+            <span class="n">cache_file</span> <span class="o">=</span> <span class="n">_cache_file</span><span class="p">(</span>
+                <span class="s2">&quot;carbontracker&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;molefractions_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
+            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">_open_mfdataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span>
+            <span class="n">open_mfdataset</span> <span class="o">=</span> <span class="n">_open_mfdataset</span>
         <span class="k">return</span> <span class="n">open_mfdataset</span><span class="p">(</span>
             <span class="n">files</span><span class="p">,</span>
             <span class="n">preprocess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">,</span>
@@ -909,8 +1067,9 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-        <span class="c1"># Times decode natively; drop the redundant component/decimal encodings</span>
-        <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">&quot;time_components&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal_date&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span></div>
+        <span class="c1"># The times as for CH4; decimal_date repeats them as fractional years</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">CarbonTracker</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;decimal_date&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span></div>
 
 
 
@@ -950,6 +1109,26 @@
 <span class="sd">        The template for the filename.</span>
 <span class="sd">    driver_ext : dict</span>
 <span class="sd">        The driver extensions.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The file is read from, and ``download()`` saves it to, one folder per</span>
+<span class="sd">    species and sample type in the data root. ``specie`` and ``site`` are</span>
+<span class="sd">    names in the file name, so spell them as NOAA does, in lower case</span>
+<span class="sd">    (``&#39;ch4&#39;``, ``&#39;uta&#39;``)::</span>
+
+<span class="sd">        $LAIR_GML_DIR/</span>
+<span class="sd">          ch4/</span>
+<span class="sd">            flask/</span>
+<span class="sd">              ch4_uta_surface-flask_1_ccgg_event.txt</span>
+<span class="sd">              ch4_uta_surface-flask_1_ccgg_month.txt</span>
+<span class="sd">            pfp/</span>
+<span class="sd">              ch4_mbo_surface-pfp_1_ccgg_event.txt</span>
+
+<span class="sd">    Each name is ``{specie}_{site}_{platform}-{sample_type}_{lab_id}_{measurement_group}_{frequency}``</span>
+<span class="sd">    and ``.txt`` for ``driver=&#39;pandas&#39;`` or ``.nc`` for ``driver=&#39;xarray&#39;``.</span>
+<span class="sd">    ``download()`` copies the file of that name from NOAA GML&#39;s FTP server</span>
+<span class="sd">    (``/data/trace_gases/{specie}/{sample_type}/{platform}/{ext}/``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">file_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{specie}</span><span class="s2">_</span><span class="si">{site}</span><span class="s2">_</span><span class="si">{platform}</span><span class="s2">-</span><span class="si">{sample_type}</span><span class="s2">_</span><span class="si">{lab_id}</span><span class="s2">_</span><span class="si">{measurement_group}</span><span class="s2">_</span><span class="si">{frequency}</span><span class="s2">.</span><span class="si">{ext}</span><span class="s2">&quot;</span>

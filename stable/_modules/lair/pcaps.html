@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.pcaps &#8212; lair 2026.12.8</title>
+    <title>lair.pcaps &#8212; lair 2026.12.9</title>
   
   
   
@@ -29,6 +29,7 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
@@ -37,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=018e8e46"></script>
+    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -46,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.8';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8" />
+  <meta name="docsearch:version" content="2026.12.9" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -143,6 +144,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -262,6 +284,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -401,8 +444,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.meteorology</span><span class="w"> </span><span class="kn">import</span> <span class="n">hypsometric</span><span class="p">,</span> <span class="n">ideal_gas_law</span><span class="p">,</span> <span class="n">poisson</span>
 
 <span class="c1"># Plain SI floats (lair.meteorology is plain SI in, plain SI out)</span>
-<span class="n">Rd</span> <span class="o">=</span> <span class="n">_Rd</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;J / kg / K&quot;</span><span class="p">)</span>
-<span class="n">cp</span> <span class="o">=</span> <span class="n">_cp</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;J / kg / K&quot;</span><span class="p">)</span>
+<span class="n">Rd</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_Rd</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;J / kg / K&quot;</span><span class="p">))</span>
+<span class="n">cp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_cp</span><span class="o">.</span><span class="n">m_as</span><span class="p">(</span><span class="s2">&quot;J / kg / K&quot;</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="valleyheatdeficit">
@@ -485,33 +528,104 @@
     <span class="n">vhd</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">min_periods</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Determine persistent cold air pool (PCAP) periods from the valley heat deficit.</span>
+<span class="sd">    Determine persistent cold air pool (PCAP) events from the valley heat deficit.</span>
 
-<span class="sd">    The valley heat deficit (VHD) is the metric.</span>
+<span class="sd">    An event is a run of 12-hourly soundings whose valley heat deficit (VHD) is</span>
+<span class="sd">    above ``threshold``, lasting at least ``min_periods`` soundings. The run is</span>
+<span class="sd">    counted in time, on the 12-hourly grid from the first time in ``vhd`` to the</span>
+<span class="sd">    last, not in rows: a sounding missing from ``vhd`` is a gap in the run, as</span>
+<span class="sd">    is a VHD that is NaN.</span>
+
+<span class="sd">    A gap of one sounding between two soundings above the threshold is taken as</span>
+<span class="sd">    above, and counts toward ``min_periods``. A longer gap, or one next to a</span>
+<span class="sd">    sounding at or below the threshold, ends the event.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vhd : pd.Series</span>
+<span class="sd">        The valley heat deficit [MJ/m^2], indexed by time, one value every 12</span>
+<span class="sd">        hours (the output of :func:`valleyheatdeficit`). Soundings may be</span>
+<span class="sd">        missing or NaN.</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        A sounding is in an event when its VHD is above this value [MJ/m^2].</span>
+<span class="sd">        Whiteman et al. (2014) use 4.04.</span>
+<span class="sd">    min_periods : int, optional</span>
+<span class="sd">        The fewest soundings an event lasts, a gap of one included. Default</span>
+<span class="sd">        is 3 (36 hours).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        One row per event, with its ``start`` (the first sounding) and ``end``</span>
+<span class="sd">        (12 hours after the last sounding, less one second), indexed by</span>
+<span class="sd">        ``event_id`` from 0.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a time in ``vhd`` is not a whole number of 12-hour steps from the</span>
+<span class="sd">        first, or a time is repeated.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The missing 2024-01-02 12:00 sounding is one gap between two soundings</span>
+<span class="sd">    above the threshold, so the event runs through it:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.to_datetime(</span>
+<span class="sd">    ...     [&quot;2024-01-01 12:00&quot;, &quot;2024-01-02 00:00&quot;, &quot;2024-01-03 00:00&quot;]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; vhd = pd.Series([5.0, 6.0, 5.5], index=times)</span>
+<span class="sd">    &gt;&gt;&gt; determine_pcap_events(vhd, threshold=4.04)</span>
+<span class="sd">                           start                 end</span>
+<span class="sd">    event_id</span>
+<span class="sd">    0        2024-01-01 12:00:00 2024-01-03 11:59:59</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Create a boolean mask for values above the threshold</span>
-    <span class="n">above_thres</span> <span class="o">=</span> <span class="n">vhd</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+    <span class="k">if</span> <span class="n">vhd</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">([]),</span> <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">([])}</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">rename_axis</span><span class="p">(</span><span class="s2">&quot;event_id&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vhd</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">has_duplicates</span><span class="p">:</span>
+        <span class="n">repeated</span> <span class="o">=</span> <span class="n">vhd</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">vhd</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vhd has more than one value at </span><span class="si">{</span><span class="n">repeated</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="n">vhd</span> <span class="o">=</span> <span class="n">vhd</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>  <span class="c1"># the time between two soundings</span>
 
-    <span class="c1"># Group consecutive values above the threshold and count the number of periods in each group</span>
-    <span class="n">groups</span> <span class="o">=</span> <span class="p">(</span><span class="n">above_thres</span> <span class="o">!=</span> <span class="n">above_thres</span><span class="o">.</span><span class="n">shift</span><span class="p">())</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+    <span class="c1"># Put the series on the 12-hourly grid, so a missing sounding is a NaN</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">vhd</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vhd</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">freq</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+    <span class="n">off_grid</span> <span class="o">=</span> <span class="n">vhd</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">off_grid</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;vhd must be 12-hourly: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">off_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> is not a whole number of 12-hour steps &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;from the first time, </span><span class="si">{</span><span class="n">vhd</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">vhd</span> <span class="o">=</span> <span class="n">vhd</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
 
-    <span class="c1"># Create a mask for groups that have at least min_periods consecutive values above the threshold</span>
-    <span class="n">event_mask</span> <span class="o">=</span> <span class="n">above_thres</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_periods</span>
-
-    <span class="c1"># Subset the original series to include only the values that are part of a PCAP event</span>
-    <span class="n">pcap_vhd</span> <span class="o">=</span> <span class="n">vhd</span><span class="p">[</span><span class="n">above_thres</span> <span class="o">&amp;</span> <span class="n">event_mask</span><span class="p">]</span>
-
-    <span class="c1"># Add event id to the series as a new column in a DataFrame</span>
-    <span class="n">pcap_vhd</span> <span class="o">=</span> <span class="n">pcap_vhd</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
-    <span class="n">pcap_vhd</span><span class="p">[</span><span class="s2">&quot;event_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">groups</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pcap_vhd</span><span class="o">.</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-
-    <span class="c1"># Group by event_id and determine the start and end time of each event</span>
-    <span class="n">times</span> <span class="o">=</span> <span class="n">pcap_vhd</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">pcap_vhd</span><span class="p">[</span><span class="s2">&quot;event_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
-    <span class="n">pcap_events</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">times</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="n">times</span><span class="o">.</span><span class="n">max</span><span class="p">()})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
-        <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">above</span> <span class="o">=</span> <span class="n">vhd</span> <span class="o">&gt;</span> <span class="n">threshold</span>  <span class="c1"># NaN is not above</span>
+    <span class="c1"># One missing or NaN sounding between two above the threshold is taken as</span>
+    <span class="c1"># above. Both neighbors above means neither is missing, so the gap is one.</span>
+    <span class="n">gap</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">vhd</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+        <span class="o">&amp;</span> <span class="n">above</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="n">above</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="p">)</span>
-    <span class="c1"># inclusive of following 12 hours (VHD is 12-hourly)</span>
-    <span class="n">pcap_events</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">59</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">59</span><span class="p">)</span>
+    <span class="n">in_event</span> <span class="o">=</span> <span class="n">above</span> <span class="o">|</span> <span class="n">gap</span>
+
+    <span class="c1"># Number the runs of consecutive grid times in or out of an event</span>
+    <span class="n">run</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_event</span> <span class="o">!=</span> <span class="n">in_event</span><span class="o">.</span><span class="n">shift</span><span class="p">())</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+    <span class="n">event_times</span> <span class="o">=</span> <span class="n">times</span><span class="o">.</span><span class="n">to_series</span><span class="p">()[</span><span class="n">in_event</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">run</span><span class="p">[</span><span class="n">in_event</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+    <span class="n">pcap_events</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">event_times</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+            <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="n">event_times</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+            <span class="s2">&quot;periods&quot;</span><span class="p">:</span> <span class="n">event_times</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">pcap_events</span> <span class="o">=</span> <span class="n">pcap_events</span><span class="p">[</span><span class="n">pcap_events</span><span class="p">[</span><span class="s2">&quot;periods&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_periods</span><span class="p">]</span>
+    <span class="n">pcap_events</span> <span class="o">=</span> <span class="n">pcap_events</span><span class="p">[[</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># inclusive of the following 12 hours, less a second</span>
+    <span class="n">pcap_events</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">step</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">pcap_events</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;event_id&quot;</span>
 
     <span class="k">return</span> <span class="n">pcap_events</span></div>

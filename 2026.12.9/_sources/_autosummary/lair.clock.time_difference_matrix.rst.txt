@@ -1,0 +1,6 @@
+lair.clock.time\_difference\_matrix
+===================================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: time_difference_matrix

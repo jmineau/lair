@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.soundings &#8212; lair 2026.12.8</title>
+    <title>lair.soundings &#8212; lair 2026.12.9</title>
   
   
   
@@ -29,6 +29,7 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
@@ -37,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=018e8e46"></script>
+    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -46,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.8';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8" />
+  <meta name="docsearch:version" content="2026.12.9" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -143,6 +144,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -262,6 +284,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -400,14 +443,14 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair._optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional_dependency</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">wind_direction</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_data_dir</span>
 
-<span class="c1"># Optional dependency</span>
+<span class="c1"># Optional dependencies</span>
+<span class="n">requests</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;requests&quot;</span><span class="p">)</span>
 <span class="n">siphon</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;siphon&quot;</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">siphon.simplewebservice.wyoming</span><span class="w"> </span><span class="kn">import</span> <span class="n">WyomingUpperAir</span>
 
@@ -436,6 +479,12 @@
 <span class="sd">        The date and time of the sounding.</span>
 <span class="sd">    data : pd.DataFrame</span>
 <span class="sd">        The sounding data.</span>
+<span class="sd">    units : dict[str, str]</span>
+<span class="sd">        The unit of each column of ``data`` and of each station attribute,</span>
+<span class="sd">        keyed by name: ``pressure`` in hPa; ``height`` and ``elevation`` in</span>
+<span class="sd">        meters; ``temperature`` and ``dewpoint`` in degrees Celsius</span>
+<span class="sd">        (``degC``); ``direction``, ``latitude`` and ``longitude`` in degrees;</span>
+<span class="sd">        ``speed``, ``u_wind`` and ``v_wind`` in knots; ``pw`` in millimeters.</span>
 
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
@@ -499,16 +548,17 @@
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1289</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Interpolate sounding data to a specified height.</span>
+<span class="sd">        Interpolate sounding data to regular height levels.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start : int</span>
-<span class="sd">            The starting height.</span>
-<span class="sd">        stop : int</span>
-<span class="sd">            The stopping height.</span>
-<span class="sd">        step : int</span>
-<span class="sd">            The height step.</span>
+<span class="sd">        start : int, optional</span>
+<span class="sd">            The lowest height, in meters. Default is 1289.</span>
+<span class="sd">        stop : int, optional</span>
+<span class="sd">            The height to stop at, in meters. Like the end of a ``range``, it</span>
+<span class="sd">            is not itself a level. Default is 5000.</span>
+<span class="sd">        interval : int, optional</span>
+<span class="sd">            The spacing between levels, in meters. Default is 10.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -611,7 +661,9 @@
 <span class="sd">        The 3-letter station identifier (e.g. ``&#39;SLC&#39;``) passed to the Wyoming</span>
 <span class="sd">        service via siphon. Also used as the file-name prefix.</span>
 <span class="sd">    date : datetime</span>
-<span class="sd">        The date and time.</span>
+<span class="sd">        The date and time. Naive times are taken as UTC; tz-aware times are</span>
+<span class="sd">        converted to UTC. Wyoming reads the time as UTC, and the file is named</span>
+<span class="sd">        for the UTC hour (``SLC_2024011512.csv`` for 12 UTC).</span>
 <span class="sd">    dst : str</span>
 <span class="sd">        The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
 
@@ -620,6 +672,7 @@
 <span class="sd">    str</span>
 <span class="sd">        The path to the downloaded sounding data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">dst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_data_dir</span><span class="p">(</span><span class="n">SOUNDING_DIR_ENV</span><span class="p">),</span> <span class="n">station</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -708,7 +761,6 @@
     <span class="n">sounding_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">months</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;xarray&quot;</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get upper air soundings from the Wyoming archive.</span>

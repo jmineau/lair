@@ -1,0 +1,6 @@
+lair.geo.CRS.proj4
+==================
+
+.. currentmodule:: lair.geo
+
+.. autoproperty:: CRS.proj4

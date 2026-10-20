@@ -1,0 +1,6 @@
+lair.geo.plot\_grid
+===================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: plot_grid

@@ -1,0 +1,6 @@
+lair.inventories.Inventory.data
+===============================
+
+.. currentmodule:: lair.inventories
+
+.. autoproperty:: Inventory.data

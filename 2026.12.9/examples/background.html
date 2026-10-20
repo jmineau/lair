@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Estimate a background &#8212; lair 2026.12.9</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/background';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            true;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="Sample CarbonTracker at points" href="carbontracker.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.12.9" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/lair_forlight_r.png" class="logo__image only-light" alt="LAIR - Home"/>
+    <img src="../_static/lair_fordark_r.png" class="logo__image only-dark pst-js-only" alt="LAIR - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="clock.html">Average a time series by local hour and by season</a></li>
+<li class="toctree-l1"><a class="reference internal" href="units.html">Convert a methane flux from moles to mass</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inventory.html">Total an inventory over a region</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maps.html">Draw a map of an inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="soundings.html">Read a sounding and compute its potential temperature</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hrrr_winds.html">Get HRRR winds at a point</a></li>
+<li class="toctree-l1"><a class="reference internal" href="carbontracker.html">Sample CarbonTracker at points</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Estimate a background</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Examples</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Estimate a background</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="estimate-a-background">
+<h1>Estimate a background<a class="headerlink" href="#estimate-a-background" title="Link to this heading">#</a></h1>
+<p>This example estimates the methane background under two years of made-up hourly
+data from a city site, with each of lair’s background methods, and checks each
+against the background the data were made from. Three rules come out of it:</p>
+<ul class="simple">
+<li><p><strong>Each method finds the clean part of the data in its own way.</strong>
+<a class="reference internal" href="../_autosummary/lair.background.rolling_baseline.html#lair.background.rolling_baseline" title="lair.background.rolling_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling_baseline()</span></code></a> and
+<a class="reference internal" href="../_autosummary/lair.background.phase_shift_corrected_baseline.html#lair.background.phase_shift_corrected_baseline" title="lair.background.phase_shift_corrected_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">phase_shift_corrected_baseline()</span></code></a> take a low quantile
+over a window. <a class="reference internal" href="../_autosummary/lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning()</span></code></a> fits a smooth curve through
+every value it is given, spikes included, so give it data that is already
+clean, such as afternoon means or a clean site’s record.</p></li>
+<li><p><strong>A rolling window must be longer than the longest stretch without clean
+air.</strong> Over a pollution episode of several days, the low quantile of a day is
+the episode, not the background.</p></li>
+<li><p><a class="reference internal" href="../_autosummary/lair.background.get_well_mixed.html#lair.background.get_well_mixed" title="lair.background.get_well_mixed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_well_mixed()</span></code></a> <strong>reads the hours in local standard
+time.</strong> Convert UTC data first (see the <a class="reference internal" href="clock.html"><span class="doc">clock page</span></a>).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This page does not run when the docs build. <code class="docutils literal notranslate"><span class="pre">lair.background</span></code> needs NOAA’s
+CCG filter, which lair downloads the first time it is imported (see
+<a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a>), and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>, from the <code class="docutils literal notranslate"><span class="pre">science</span></code> extra
+(see <a class="reference internal" href="../index.html#optional-dependencies"><span class="std std-ref">Optional dependencies</span></a>). The output below was recorded from one
+run of this code on 2026-10-14.</p>
+</div>
+<section id="the-methods">
+<h2>The methods<a class="headerlink" href="#the-methods" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 24.0%" />
+<col style="width: 26.0%" />
+<col style="width: 26.0%" />
+<col style="width: 24.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Function</p></th>
+<th class="head"><p>Needs</p></th>
+<th class="head"><p>Returns</p></th>
+<th class="head"><p>Use it for</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../_autosummary/lair.background.rolling_baseline.html#lair.background.rolling_baseline" title="lair.background.rolling_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling_baseline()</span></code></a></p></td>
+<td><p>a <code class="docutils literal notranslate"><span class="pre">Series</span></code> with a time index; <code class="docutils literal notranslate"><span class="pre">window</span></code> (24 hours by default) and the
+quantile <code class="docutils literal notranslate"><span class="pre">q</span></code> (0.01)</p></td>
+<td><p>the rolling low quantile, smoothed with a rolling mean over the same
+window, at the times of the data</p></td>
+<td><p>a continuous record from one site, when every window holds some clean air</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_autosummary/lair.background.phase_shift_corrected_baseline.html#lair.background.phase_shift_corrected_baseline" title="lair.background.phase_shift_corrected_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">phase_shift_corrected_baseline()</span></code></a></p></td>
+<td><p>a <code class="docutils literal notranslate"><span class="pre">Series</span></code> of one-second data; the window <code class="docutils literal notranslate"><span class="pre">n</span></code> in seconds (3600) and
+<code class="docutils literal notranslate"><span class="pre">q</span></code> (0.01); each calendar day of the index is done on its own</p></td>
+<td><p>a low quantile from windows ahead of and behind each time, smoothed</p></td>
+<td><p>one-second data from a moving platform, whose background changes within
+the hour</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../_autosummary/lair.background.get_well_mixed.html#lair.background.get_well_mixed" title="lair.background.get_well_mixed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_well_mixed()</span></code></a></p></td>
+<td><p>a <code class="docutils literal notranslate"><span class="pre">Series</span></code> or <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> indexed in local standard time, and the
+hours to keep (12 to 16 by default, <code class="docutils literal notranslate"><span class="pre">lair.clock.AFTERNOON</span></code>)</p></td>
+<td><p>one mean per day over those hours</p></td>
+<td><p>the afternoon, when the boundary layer is deep and a site sees regional
+air</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_autosummary/lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning()</span></code></a></p></td>
+<td><p>a <code class="docutils literal notranslate"><span class="pre">Series</span></code> with a time index (NaN values are dropped), and the times
+to evaluate at, <code class="docutils literal notranslate"><span class="pre">smooth_time</span></code></p></td>
+<td><p>NOAA’s smooth curve (a polynomial trend and yearly harmonics, plus the
+residuals smoothed) at <code class="docutils literal notranslate"><span class="pre">smooth_time</span></code>, NaN outside the time range of the
+data</p></td>
+<td><p>a record that is already background: afternoon means, flasks, a clean
+site</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../_autosummary/lair.noaa.CarbonTracker.background.html#lair.noaa.CarbonTracker.background" title="lair.noaa.CarbonTracker.background"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CarbonTracker.background</span></code></a></p></td>
+<td><p>CarbonTracker’s files and a set of points, such as the ends of STILT
+back trajectories</p></td>
+<td><p>the mean mole fraction at the points, in ppm</p></td>
+<td><p>air from upwind, with no measurement from the site (see <a class="reference internal" href="#from-upwind">From upwind</a>)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="the-data">
+<h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
+<p>Two years of hourly methane, in ppm, stamped in UTC. The true background rises
+0.01 ppm a year and peaks in winter. On top of it, the city adds an enhancement:
+large at night, under the night-time inversion, and small in the afternoon. For
+six days in January 2023 a winter inversion holds the city’s methane in all day.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">   ...: </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2023-12-31 23:00&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">)</span>  <span class="c1"># UTC</span>
+<span class="gp">   ...: </span><span class="n">years</span> <span class="o">=</span> <span class="p">(</span><span class="n">times</span> <span class="o">-</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">days</span> <span class="o">/</span> <span class="mi">365</span>
+<span class="gp">   ...: </span><span class="n">true</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
+<span class="gp">   ...: </span>    <span class="mf">1.95</span> <span class="o">+</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">years</span> <span class="o">+</span> <span class="mf">0.008</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">dayofyear</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span> <span class="o">/</span> <span class="mi">365</span><span class="p">),</span>
+<span class="gp">   ...: </span>    <span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">,</span>
+<span class="gp">   ...: </span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">hour</span> <span class="o">=</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">hour</span> <span class="o">-</span> <span class="mi">7</span><span class="p">)</span> <span class="o">%</span> <span class="mi">24</span>  <span class="c1"># Mountain Standard Time</span>
+<span class="gp">   ...: </span><span class="n">night</span> <span class="o">=</span> <span class="p">(</span><span class="n">hour</span> <span class="o">&gt;=</span> <span class="mi">19</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">hour</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">episode</span> <span class="o">=</span> <span class="p">(</span><span class="n">times</span> <span class="o">&gt;=</span> <span class="s2">&quot;2023-01-20&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">times</span> <span class="o">&lt;</span> <span class="s2">&quot;2023-01-26&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">enhancement</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">night</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">episode</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ch4</span> <span class="o">=</span> <span class="p">(</span><span class="n">true</span> <span class="o">+</span> <span class="n">enhancement</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="n">times</span><span class="o">.</span><span class="n">size</span><span class="p">))</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">&quot;ch4&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ch4</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gh">Out[1]:</span>
+<span class="go">count    17520.000</span>
+<span class="go">mean         2.023</span>
+<span class="go">std          0.089</span>
+<span class="go">min          1.943</span>
+<span class="go">25%          1.968</span>
+<span class="go">50%          1.985</span>
+<span class="go">75%          2.047</span>
+<span class="go">max          2.826</span>
+<span class="go">Name: ch4, dtype: float64</span>
+</pre></div>
+</div>
+</section>
+<section id="a-rolling-low-quantile">
+<h2>A rolling low quantile<a class="headerlink" href="#a-rolling-low-quantile" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_autosummary/lair.background.rolling_baseline.html#lair.background.rolling_baseline" title="lair.background.rolling_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling_baseline()</span></code></a> needs nothing but the data. It takes
+the 1st percentile over a window centered on each time, then smooths it with a
+rolling mean over the same window:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.background</span><span class="w"> </span><span class="kn">import</span> <span class="n">rolling_baseline</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">day</span> <span class="o">=</span> <span class="n">rolling_baseline</span><span class="p">(</span><span class="n">ch4</span><span class="p">)</span>  <span class="c1"># window=&quot;24h&quot;, q=0.01</span>
+<span class="gp">   ...: </span><span class="n">two_weeks</span> <span class="o">=</span> <span class="n">rolling_baseline</span><span class="p">(</span><span class="n">ch4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s2">&quot;14d&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">check</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;true&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;24h&quot;</span><span class="p">:</span> <span class="n">day</span><span class="p">,</span> <span class="s2">&quot;14d&quot;</span><span class="p">:</span> <span class="n">two_weeks</span><span class="p">})</span>
+<span class="gp">   ...: </span><span class="n">check</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot;2023-01-18&quot;</span><span class="p">:</span><span class="s2">&quot;2023-01-27&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">at_time</span><span class="p">(</span><span class="s2">&quot;19:00&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gh">Out[2]:</span>
+<span class="go">                      true    24h    14d</span>
+<span class="go">2023-01-18 19:00:00  1.968  1.969  1.967</span>
+<span class="go">2023-01-19 19:00:00  1.968  1.978  1.967</span>
+<span class="go">2023-01-20 19:00:00  1.968  2.104  1.967</span>
+<span class="go">2023-01-21 19:00:00  1.968  2.118  1.968</span>
+<span class="go">2023-01-22 19:00:00  1.968  2.120  1.968</span>
+<span class="go">2023-01-23 19:00:00  1.969  2.120  1.968</span>
+<span class="go">2023-01-24 19:00:00  1.969  2.119  1.968</span>
+<span class="go">2023-01-25 19:00:00  1.969  1.999  1.968</span>
+<span class="go">2023-01-26 19:00:00  1.969  1.967  1.968</span>
+<span class="go">2023-01-27 19:00:00  1.969  1.969  1.968</span>
+</pre></div>
+</div>
+<p>Outside the episode both windows hold clean afternoons, and both follow the
+true background. During the episode no hour of the day is clean, so the 24-hour
+window rises with the city’s methane. The 14-day window still holds clean days
+on either side.</p>
+</section>
+<section id="afternoon-means-and-a-smooth-curve">
+<h2>Afternoon means and a smooth curve<a class="headerlink" href="#afternoon-means-and-a-smooth-curve" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_autosummary/lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning()</span></code></a> fits NOAA’s curve (see
+<a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a> for where it comes from) through every value it is
+given. Given every hour, it follows the mean of the data, enhancements
+included. Given afternoon means, it follows the afternoon, when the city’s
+methane is mixed through a deep boundary layer.
+<a class="reference internal" href="../_autosummary/lair.background.get_well_mixed.html#lair.background.get_well_mixed" title="lair.background.get_well_mixed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_well_mixed()</span></code></a> takes those means, from a series in
+local standard time:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.background</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_well_mixed</span><span class="p">,</span> <span class="n">thoning</span>
+<span class="gp">   ...: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC2MST</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">local</span> <span class="o">=</span> <span class="n">UTC2MST</span><span class="p">(</span><span class="n">ch4</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)[</span><span class="s2">&quot;ch4&quot;</span><span class="p">]</span>
+<span class="gp">   ...: </span><span class="n">afternoon</span> <span class="o">=</span> <span class="n">get_well_mixed</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">afternoon</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gh">Out[3]:</span>
+<span class="go">2022-01-01 00:00:00-07:00    1.965</span>
+<span class="go">2022-01-02 00:00:00-07:00    1.965</span>
+<span class="go">2022-01-03 00:00:00-07:00    1.974</span>
+<span class="go">Freq: D, Name: ch4, dtype: float64</span>
+</pre></div>
+</div>
+<p>Each day is labeled at its local midnight. Given the UTC series instead, it
+would average 12:00 to 16:59 UTC, which is 5 to 9 in the morning in Utah, under
+the night-time inversion. <code class="docutils literal notranslate"><span class="pre">smooth_time</span></code> evaluates the curve
+at the hourly times, to put it beside the others:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">every_hour</span> <span class="o">=</span> <span class="n">thoning</span><span class="p">(</span><span class="n">ch4</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">afternoons</span> <span class="o">=</span> <span class="n">thoning</span><span class="p">(</span><span class="n">afternoon</span><span class="p">,</span> <span class="n">smooth_time</span><span class="o">=</span><span class="n">ch4</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="nb">int</span><span class="p">(</span><span class="n">afternoons</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="gh">Out[4]: </span><span class="go">23</span>
+</pre></div>
+</div>
+<p>The 23 missing values are the hours before the first afternoon mean and after
+the last: the curve is NaN outside the time range of its data.</p>
+</section>
+<section id="side-by-side">
+<h2>Side by side<a class="headerlink" href="#side-by-side" title="Link to this heading">#</a></h2>
+<p>How far above the true background each estimate is, on average over every
+hour, and over the hours of the episode:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">methods</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">   ...: </span>    <span class="p">{</span>
+<span class="gp">   ...: </span>        <span class="s2">&quot;rolling_baseline, 24h&quot;</span><span class="p">:</span> <span class="n">day</span><span class="p">,</span>
+<span class="gp">   ...: </span>        <span class="s2">&quot;rolling_baseline, 14d&quot;</span><span class="p">:</span> <span class="n">two_weeks</span><span class="p">,</span>
+<span class="gp">   ...: </span>        <span class="s2">&quot;thoning, every hour&quot;</span><span class="p">:</span> <span class="n">every_hour</span><span class="p">,</span>
+<span class="gp">   ...: </span>        <span class="s2">&quot;thoning, afternoon means&quot;</span><span class="p">:</span> <span class="n">afternoons</span><span class="p">,</span>
+<span class="gp">   ...: </span>    <span class="p">}</span>
+<span class="gp">   ...: </span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">above</span> <span class="o">=</span> <span class="n">methods</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">true</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;all hours&quot;</span><span class="p">:</span> <span class="n">above</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">&quot;episode&quot;</span><span class="p">:</span> <span class="n">above</span><span class="p">[</span><span class="n">episode</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()})</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gh">Out[5]:</span>
+<span class="go">                          all hours  episode</span>
+<span class="go">rolling_baseline, 24h         0.001    0.128</span>
+<span class="go">rolling_baseline, 14d        -0.001   -0.001</span>
+<span class="go">thoning, every hour           0.063    0.084</span>
+<span class="go">thoning, afternoon means      0.011    0.035</span>
+</pre></div>
+</div>
+<p>The curve through every hour sits above the background by about the mean
+enhancement, night-time plumes included. The curve through the afternoon means
+sits above it by about the afternoon’s enhancement, which is small at this
+made-up site and larger at a real site in the middle of a city. Both rise
+during the episode, when the afternoons are not clean either. The rolling low
+quantile is close whenever its window holds clean air.</p>
+</section>
+<section id="one-second-data">
+<h2>One-second data<a class="headerlink" href="#one-second-data" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_autosummary/lair.background.phase_shift_corrected_baseline.html#lair.background.phase_shift_corrected_baseline" title="lair.background.phase_shift_corrected_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">phase_shift_corrected_baseline()</span></code></a> is for one-second data
+from a moving platform, a car or a train, whose background can change within
+the hour. Here, two hours of it: a background that rises 0.05 ppm over 20
+minutes, and 30 short plumes.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.background</span><span class="w"> </span><span class="kn">import</span> <span class="n">phase_shift_corrected_baseline</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">seconds</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2024-06-01 18:00&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">7200</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1s&quot;</span><span class="p">)</span>  <span class="c1"># UTC, 1 Hz</span>
+<span class="gp">   ...: </span><span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">seconds</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">true_drive</span> <span class="o">=</span> <span class="mf">1.98</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">i</span> <span class="o">-</span> <span class="mi">3000</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1200</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">plumes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">seconds</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="k">for</span> <span class="n">center</span> <span class="ow">in</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">seconds</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">30</span><span class="p">):</span>
+<span class="gp">   ...: </span>    <span class="n">width</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>  <span class="c1"># seconds</span>
+<span class="gp">   ...: </span>    <span class="n">plumes</span> <span class="o">+=</span> <span class="n">rng</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">i</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span> <span class="o">/</span> <span class="n">width</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">drive</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">true_drive</span> <span class="o">+</span> <span class="n">plumes</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.003</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">seconds</span><span class="p">)</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">fast</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">   ...: </span>    <span class="p">{</span>
+<span class="gp">   ...: </span>        <span class="s2">&quot;phase_shift_corrected_baseline&quot;</span><span class="p">:</span> <span class="n">phase_shift_corrected_baseline</span><span class="p">(</span><span class="n">drive</span><span class="p">),</span>
+<span class="gp">   ...: </span>        <span class="s2">&quot;rolling_baseline, 1h&quot;</span><span class="p">:</span> <span class="n">rolling_baseline</span><span class="p">(</span><span class="n">drive</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">),</span>
+<span class="gp">   ...: </span>    <span class="p">}</span>
+<span class="gp">   ...: </span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">fast</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">true_drive</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;10min&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gh">Out[6]:</span>
+<span class="go">                     phase_shift_corrected_baseline  rolling_baseline, 1h</span>
+<span class="go">2024-06-01 18:00:00                           0.010                -0.006</span>
+<span class="go">2024-06-01 18:10:00                          -0.001                -0.006</span>
+<span class="go">2024-06-01 18:20:00                          -0.004                -0.006</span>
+<span class="go">2024-06-01 18:30:00                          -0.003                -0.006</span>
+<span class="go">2024-06-01 18:40:00                           0.003                -0.005</span>
+<span class="go">2024-06-01 18:50:00                           0.004                -0.016</span>
+<span class="go">2024-06-01 19:00:00                          -0.006                -0.035</span>
+<span class="go">2024-06-01 19:10:00                          -0.009                -0.040</span>
+<span class="go">2024-06-01 19:20:00                          -0.007                -0.032</span>
+<span class="go">2024-06-01 19:30:00                          -0.007                -0.025</span>
+<span class="go">2024-06-01 19:40:00                          -0.006                -0.019</span>
+<span class="go">2024-06-01 19:50:00                          -0.006                -0.012</span>
+</pre></div>
+</div>
+<p>Both use a one-hour window. While the background is flat, both stay within about
+0.01 ppm of it. Where it rises, from 18:50 to 19:10, the rolling quantile,
+centered on each time, falls up to 0.04 ppm below it and is still 0.01 ppm below
+at the end. The phase shift corrected baseline, which looks ahead and behind
+separately, stays within about 0.01 ppm.</p>
+</section>
+<section id="from-upwind">
+<h2>From upwind<a class="headerlink" href="#from-upwind" title="Link to this heading">#</a></h2>
+<p>The methods above estimate the background from the site’s own data. The other
+way is to take it from upwind: sample a global model, such as NOAA’s
+CarbonTracker, where the air arriving at the site came from. That needs no
+clean hour at the site, and it is the way lair’s maintainer took for the Salt
+Lake Valley methane inversion of his first paper:
+CarbonTracker-CH4 version <code class="docutils literal notranslate"><span class="pre">CT-CH4-2025</span></code>, sampled with
+<a class="reference internal" href="../_autosummary/lair.noaa.CarbonTracker.background.html#lair.noaa.CarbonTracker.background" title="lair.noaa.CarbonTracker.background"><code class="xref py py-meth docutils literal notranslate"><span class="pre">background()</span></code></a> at the ends of 24-hour STILT back
+trajectories released from the site in the afternoon, and averaged to one value
+per day. How to sample CarbonTracker at a set of points is on the
+<a class="reference internal" href="carbontracker.html#carbontracker-background"><span class="std std-ref">CarbonTracker page</span></a>.</p>
+</section>
+<section id="next">
+<h2>Next<a class="headerlink" href="#next" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_autosummary/lair.background.thoning_filter.html#lair.background.thoning_filter" title="lair.background.thoning_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning_filter()</span></code></a> returns NOAA’s filter itself, which
+also gives the trend and the growth rate. For mobile data on a fixed route,
+<a class="reference internal" href="../_autosummary/lair.transects.enhancement.html#lair.transects.enhancement" title="lair.transects.enhancement"><code class="xref py py-func docutils literal notranslate"><span class="pre">lair.transects.enhancement()</span></code></a> subtracts each transit’s own low percentile
+instead.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="carbontracker.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Sample CarbonTracker at points</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../api.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-methods">The methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-data">The data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-rolling-low-quantile">A rolling low quantile</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#afternoon-means-and-a-smooth-curve">Afternoon means and a smooth curve</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#side-by-side">Side by side</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#one-second-data">One-second data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-upwind">From upwind</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next">Next</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/examples/background.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, James Mineau.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

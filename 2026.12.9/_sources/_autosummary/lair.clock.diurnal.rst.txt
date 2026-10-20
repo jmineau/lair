@@ -1,0 +1,6 @@
+lair.clock.diurnal
+==================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: diurnal

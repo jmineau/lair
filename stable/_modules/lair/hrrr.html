@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.hrrr &#8212; lair 2026.12.8</title>
+    <title>lair.hrrr &#8212; lair 2026.12.9</title>
   
   
   
@@ -29,6 +29,7 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
@@ -37,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=018e8e46"></script>
+    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -46,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.8';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8" />
+  <meta name="docsearch:version" content="2026.12.9" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -143,6 +144,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -262,6 +284,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -404,6 +447,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair._optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional_dependency</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.air</span><span class="w"> </span><span class="kn">import</span> <span class="n">rotate_winds</span><span class="p">,</span> <span class="n">wind_direction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_timezones</span>
 
 <span class="c1"># Optional dependencies</span>
 <span class="n">boto3</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;boto3&quot;</span><span class="p">)</span>
@@ -435,7 +479,8 @@
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    run_hour : dt.datetime</span>
-<span class="sd">        run hour of the model</span>
+<span class="sd">        run hour of the model. A naive time is taken as UTC; a tz-aware time</span>
+<span class="sd">        is converted to UTC when the S3 key is built.</span>
 <span class="sd">    level_type : &#39;sfc&#39; | &#39;prs&#39;</span>
 <span class="sd">        vertical level</span>
 <span class="sd">    var_level : str</span>
@@ -465,8 +510,8 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        chunk_id : int</span>
-<span class="sd">            chunk_id</span>
+<span class="sd">        chunk_id : str</span>
+<span class="sd">            Chunk id, for example ``&quot;4.5&quot;``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -526,16 +571,20 @@
 <span class="sd">    lon : float</span>
 <span class="sd">        longitude of point</span>
 <span class="sd">    times : list[dt.datetime]</span>
-<span class="sd">        list of times to download</span>
+<span class="sd">        Hours of the analyses to download. A naive time is taken as UTC. A</span>
+<span class="sd">        tz-aware time is converted to UTC to choose the analysis, so 05:00 in</span>
+<span class="sd">        ``America/Denver`` in January reads the 12 UTC analysis.</span>
 <span class="sd">    nearest_point : xr.Dataset</span>
 <span class="sd">        nearest point to lat, lon</span>
-<span class="sd">    chunk_id : float</span>
-<span class="sd">        chunk id of nearest point</span>
+<span class="sd">    chunk_id : numpy.ndarray</span>
+<span class="sd">        chunk id of nearest point (a 0-d array holding a string such as</span>
+<span class="sd">        ``&quot;4.5&quot;``)</span>
 <span class="sd">    zarr_ids : dict[str, list[ZarrId]]</span>
 <span class="sd">        dictionary of zarr ids with var as key</span>
 <span class="sd">    data : pd.DataFrame</span>
 <span class="sd">        10 m winds: ``u``, ``v`` (earth-relative), ``ws`` (speed from u and v)</span>
-<span class="sd">        and ``wd`` (see :func:`winds_frame`).</span>
+<span class="sd">        and ``wd`` (see :func:`winds_frame`). The index is ``times`` as given,</span>
+<span class="sd">        so tz-aware times keep their time zone.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">lat</span><span class="p">:</span> <span class="nb">float</span>
@@ -590,6 +639,9 @@
 <span class="sd">     - Start of the zarr array data format</span>
 <span class="sd">     - Includes metadata such as the grid</span>
 
+<span class="sd">    The archive is keyed by the UTC run hour: a naive ``run_hour`` is taken as</span>
+<span class="sd">    UTC, and a tz-aware one is converted to UTC.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    zarr_id : ZarrId</span>
@@ -603,7 +655,11 @@
 <span class="sd">        s3 group url</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;s3://hrrrzarr/&quot;</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Skip when using boto3</span>
-    <span class="n">url</span> <span class="o">+=</span> <span class="n">zarr_id</span><span class="o">.</span><span class="n">run_hour</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+    <span class="c1"># strftime formats a tz-aware time in its own zone, so convert it first</span>
+    <span class="p">(</span><span class="n">run_hour</span><span class="p">,)</span> <span class="o">=</span> <span class="n">convert_timezones</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">run_hour</span><span class="p">],</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">localize</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">url</span> <span class="o">+=</span> <span class="n">run_hour</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">level_type</span><span class="si">}</span><span class="s2">/%Y%m%d/%Y%m%d_%Hz_</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">model_type</span><span class="si">}</span><span class="s2">.zarr/&quot;</span>
     <span class="p">)</span>
     <span class="n">url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">var_level</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">zarr_id</span><span class="o">.</span><span class="n">var_name</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -653,8 +709,11 @@
 <span class="sd">    ----------</span>
 <span class="sd">    zarr_id : ZarrId</span>
 <span class="sd">        ZarrId instance</span>
-<span class="sd">    chunk_id : int  # TODO check this</span>
-<span class="sd">        chunk id</span>
+<span class="sd">    chunk_id : str</span>
+<span class="sd">        Name of the chunk&#39;s object in the zarr group, for example ``&quot;4.5&quot;``</span>
+<span class="sd">        (forecasts get a leading time index, see ``ZarrId.format_chunk_id``).</span>
+<span class="sd">        It is the ``chunk_id`` of a point in the HRRR chunk index (see</span>
+<span class="sd">        ``get_nearest_point``).</span>
 <span class="sd">    prefix : bool</span>
 <span class="sd">        include prefix</span>
 
@@ -733,7 +792,8 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    times : [dt.datetime]</span>
-<span class="sd">        list of datetime objects with hour specified [UTC]</span>
+<span class="sd">        list of datetime objects with hour specified. Naive times are taken as</span>
+<span class="sd">        UTC; tz-aware times are converted to UTC when the S3 keys are built.</span>
 <span class="sd">    level_type : str</span>
 <span class="sd">        veritical level</span>
 <span class="sd">    variables : [(str, str)]</span>
@@ -813,8 +873,8 @@
 <span class="sd">        s3 resource</span>
 <span class="sd">    zarr_id : ZarrId</span>
 <span class="sd">        ZarrId instance</span>
-<span class="sd">    chunk_id : float</span>
-<span class="sd">        chunk id</span>
+<span class="sd">    chunk_id : str</span>
+<span class="sd">        Chunk id, for example ``&quot;4.5&quot;``.</span>
 <span class="sd">    nearest_point : xr.Dataset</span>
 <span class="sd">        nearest point</span>
 

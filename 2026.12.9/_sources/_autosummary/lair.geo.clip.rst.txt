@@ -1,0 +1,6 @@
+lair.geo.clip
+=============
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: clip

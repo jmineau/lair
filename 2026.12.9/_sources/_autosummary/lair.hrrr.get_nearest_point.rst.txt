@@ -1,0 +1,6 @@
+lair.hrrr.get\_nearest\_point
+=============================
+
+.. currentmodule:: lair.hrrr
+
+.. autofunction:: get_nearest_point

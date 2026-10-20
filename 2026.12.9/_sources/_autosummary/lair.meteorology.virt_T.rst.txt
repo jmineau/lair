@@ -1,0 +1,6 @@
+lair.meteorology.virt\_T
+========================
+
+.. currentmodule:: lair.meteorology
+
+.. autofunction:: virt_T

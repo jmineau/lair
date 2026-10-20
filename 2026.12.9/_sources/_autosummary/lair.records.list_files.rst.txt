@@ -1,0 +1,6 @@
+lair.records.list\_files
+========================
+
+.. currentmodule:: lair.records
+
+.. autofunction:: list_files

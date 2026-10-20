@@ -1,0 +1,6 @@
+lair.geo.gridcell\_area
+=======================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: gridcell_area

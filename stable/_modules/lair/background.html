@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.background &#8212; lair 2026.12.8</title>
+    <title>lair.background &#8212; lair 2026.12.9</title>
   
   
   
@@ -29,6 +29,7 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
@@ -37,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=018e8e46"></script>
+    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -46,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.8';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8" />
+  <meta name="docsearch:version" content="2026.12.9" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -143,6 +144,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -262,6 +284,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../api.html">
     API Reference
@@ -396,6 +439,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="k">try</span><span class="p">:</span>
@@ -452,7 +496,8 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the baseline concentration as a rolling quantile.</span>
 
-<span class="sd">    The baseline is the {q} quantile of a rolling window of {window} hours.</span>
+<span class="sd">    The baseline is the rolling ``q`` quantile over ``window``, smoothed with a</span>
+<span class="sd">    rolling mean over the same window.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -505,13 +550,14 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : pd.Series</span>
-<span class="sd">        Signal time series with local datetime index.</span>
-<span class="sd">    n : int</span>
-<span class="sd">        Window size in seconds.</span>
-<span class="sd">    q : float</span>
-<span class="sd">        Quantile to extract from signal.</span>
-<span class="sd">    timezone : str, optional</span>
-<span class="sd">        Timezone to convert the datetime index to.</span>
+<span class="sd">        Signal time series with a datetime index. The baseline is calculated</span>
+<span class="sd">        separately for each calendar day of the index, in the index&#39;s own time</span>
+<span class="sd">        zone (the function does no time zone conversion), so pass local time to</span>
+<span class="sd">        get local days.</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        Window size in seconds. Default is 3600.</span>
+<span class="sd">    q : float, optional</span>
+<span class="sd">        Quantile to extract from signal. Default is 0.01.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -552,7 +598,21 @@
 <span class="sd">    data : pd.Series</span>
 <span class="sd">        Time series of data to be smoothed. Must have a datetime index.</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        Additional keyword arguments to pass to the ccgFilter class.</span>
+<span class="sd">        Additional keyword arguments to pass to the ccgFilter class. Its times</span>
+<span class="sd">        are in days of 1/365 of a decimal year (a calendar day, or 366/365 of</span>
+<span class="sd">        one in a leap year): the cutoffs ``shortterm`` (default 80) and</span>
+<span class="sd">        ``longterm`` (default 667), and ``sampleinterval``, the step of the</span>
+<span class="sd">        even grid that the filter interpolates the data onto. With the default,</span>
+<span class="sd">        ``sampleinterval=0``, the filter uses the mean of the steps between</span>
+<span class="sd">        samples that are about a day or more. When there are none (data more</span>
+<span class="sd">        often than daily with no gap of a day, or daily data within one leap</span>
+<span class="sd">        year), lair passes the median step between samples instead (1/24 for</span>
+<span class="sd">        hourly data). For data more often than daily *with* gaps of a day or</span>
+<span class="sd">        more, the filter&#39;s estimate is the mean length of those gaps. The</span>
+<span class="sd">        filter interpolates onto its grid, it does not average, so a grid that</span>
+<span class="sd">        coarse samples the data at about the same hour each time and a diurnal</span>
+<span class="sd">        cycle shifts the curve. Pass the data&#39;s own step there</span>
+<span class="sd">        (``sampleinterval=1/24`` for hourly data).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -563,8 +623,20 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data contains NaN values.&quot;</span><span class="p">)</span>
 
     <span class="c1"># Convert datetime index to decimal date</span>
-    <span class="n">xp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">dt2decimalDate</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">dt2decimalDate</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">yp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sampleinterval&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># ccgFilter estimates the interval from the steps longer than 0.002739</span>
+        <span class="c1"># years (about a day) and divides by zero when there are none. Only then,</span>
+        <span class="c1"># pass the median step, in the filter&#39;s unit (1/365 of a decimal year).</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">xp</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">steps</span> <span class="o">&gt;</span> <span class="mf">0.002739</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span><span class="p">[</span><span class="n">steps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">steps</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data needs samples at two or more distinct times.&quot;</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sampleinterval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">steps</span><span class="p">))</span> <span class="o">*</span> <span class="mi">365</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sampleinterval set to </span><span class="si">%g</span><span class="s2"> days&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sampleinterval&quot;</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="c1"># Print the filter&#39;s diagnostics when lair.background logs at DEBUG</span>
@@ -594,14 +666,24 @@
 <span class="sd">    ----------</span>
 <span class="sd">    data : pd.Series</span>
 <span class="sd">        Time series of data to be smoothed. Must have a datetime index.</span>
-
+<span class="sd">        NaN values are dropped before the curve is fitted.</span>
+<span class="sd">    smooth_time : list[datetime] | pd.Index, optional</span>
+<span class="sd">        Times at which to evaluate the fitted curve; they become the index of</span>
+<span class="sd">        the result. Default is the index of ``data``, so rows where ``data`` is</span>
+<span class="sd">        NaN get the curve&#39;s value.</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        Additional keyword arguments to pass to the ccgFilter class.</span>
+<span class="sd">        Additional keyword arguments to pass to the ccgFilter class (see</span>
+<span class="sd">        :func:`thoning_filter`). ``sampleinterval`` is the step, in days, of</span>
+<span class="sd">        the even grid the filter interpolates the data onto. The default (0)</span>
+<span class="sd">        lets the filter estimate it from the steps of about a day or more;</span>
+<span class="sd">        when the data has none, as hourly data without a gap of a day does,</span>
+<span class="sd">        lair uses the median step (1/24 for hourly data). Hourly data with</span>
+<span class="sd">        such gaps needs ``sampleinterval=1/24``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    pd.Series</span>
-<span class="sd">        Smoothed data.</span>
+<span class="sd">        Smoothed data, at ``smooth_time``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Drop nans (filter does not handle them)</span>
     <span class="n">orig_index</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># however, we may want to return the original index</span>

@@ -1,0 +1,6 @@
+lair.noaa.CARBONTRACKER\_DIR\_ENV
+=================================
+
+.. currentmodule:: lair.noaa
+
+.. autodata:: CARBONTRACKER_DIR_ENV

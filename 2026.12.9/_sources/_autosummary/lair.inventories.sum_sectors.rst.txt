@@ -1,0 +1,6 @@
+lair.inventories.sum\_sectors
+=============================
+
+.. currentmodule:: lair.inventories
+
+.. autofunction:: sum_sectors

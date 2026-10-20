@@ -1,0 +1,6 @@
+lair.soundings.download\_sounding
+=================================
+
+.. currentmodule:: lair.soundings
+
+.. autofunction:: download_sounding

@@ -1,0 +1,6 @@
+lair.background.thoning
+=======================
+
+.. currentmodule:: lair.background
+
+.. autofunction:: thoning

@@ -1,0 +1,6 @@
+lair.constants.sigma
+====================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: sigma

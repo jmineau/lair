@@ -1,0 +1,29 @@
+﻿lair.background
+===============
+
+.. automodule:: lair.background
+   :no-members:
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   get_well_mixed
+   phase_shift_corrected_baseline
+   rolling_baseline
+   thoning
+   thoning_filter
+
+
+
+
+
+
+
+
+

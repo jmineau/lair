@@ -1,0 +1,16 @@
+lair.utils.DotDict
+==================
+
+.. currentmodule:: lair.utils
+
+.. autoclass:: DotDict
+   :no-members:
+   :show-inheritance:
+
+
+
+
+
+
+
+

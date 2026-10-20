@@ -1,0 +1,6 @@
+lair.transects.detection\_frequency
+===================================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: detection_frequency

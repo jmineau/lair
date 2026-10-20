@@ -1,0 +1,6 @@
+lair.air.wind\_direction
+========================
+
+.. currentmodule:: lair.air
+
+.. autofunction:: wind_direction

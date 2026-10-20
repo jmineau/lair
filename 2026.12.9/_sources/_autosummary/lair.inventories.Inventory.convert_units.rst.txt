@@ -1,0 +1,6 @@
+lair.inventories.Inventory.convert\_units
+=========================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Inventory.convert_units

@@ -1,0 +1,6 @@
+lair.geo.bbox2extent
+====================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: bbox2extent

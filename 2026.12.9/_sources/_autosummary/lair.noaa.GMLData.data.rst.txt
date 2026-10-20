@@ -1,0 +1,6 @@
+lair.noaa.GMLData.data
+======================
+
+.. currentmodule:: lair.noaa
+
+.. autoproperty:: GMLData.data

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lair.inventories.EDGARv8 &#8212; lair 2026.12.8</title>
+    <title>lair.inventories.EDGARv8 &#8212; lair 2026.12.9</title>
   
   
   
@@ -30,6 +30,7 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
@@ -38,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=018e8e46"></script>
+    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.8';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -58,7 +59,7 @@
     <link rel="prev" title="lair.inventories.EDGARv7" href="lair.inventories.EDGARv7.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8" />
+  <meta name="docsearch:version" content="2026.12.9" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -146,6 +147,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../api.html">
     API Reference
@@ -267,6 +289,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../api.html">
     API Reference
@@ -640,7 +683,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.config.html">lair.config</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.config.CACHE_DIR.html">lair.config.CACHE_DIR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.config.get_cache_dir.html">lair.config.get_cache_dir</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.config.get_data_dir.html">lair.config.get_data_dir</a></li>
 </ul>
 </details></li>
@@ -770,10 +813,23 @@ Research Centre (JRC), the International Energy Agency (IEA), and
 comprising IEA-EDGAR CO2, EDGAR CH4, EDGAR N2O, EDGAR F-GASES
 version 8.0, (2023) European Commission, JRC (Datasets).</p>
 <p>Annual data drop EDGAR’s combined fuel-exploitation file <code class="docutils literal notranslate"><span class="pre">PRO_FFF</span></code>
-(CH4 2020: 109.42 Mt) in favour of its COAL/GAS/OIL parts (109.27 Mt). The
+(CH4 2020: 109.42 Mt) in favor of its COAL/GAS/OIL parts (109.27 Mt). The
 0.15 Mt gap is an inconsistency within EDGAR’s own files, not data lair
 fails to read; EDGAR’s <code class="docutils literal notranslate"><span class="pre">TOTALS</span></code> follow <code class="docutils literal notranslate"><span class="pre">PRO_FFF</span></code>, so the sum of the
 sectors is 0.15 Mt below them (see GitHub issue #37).</p>
+<p class="rubric">Notes</p>
+<p>The annual files are in <code class="docutils literal notranslate"><span class="pre">EDGAR/v8/CH4/</span></code>, as <a class="reference internal" href="../examples/inventory.html#inventory-data"><span class="std std-ref">the inventory example</span></a> shows. The monthly files (<code class="docutils literal notranslate"><span class="pre">time_step=&quot;monthly&quot;</span></code>) are in
+<code class="docutils literal notranslate"><span class="pre">EDGAR/v8/monthly/CH4/</span></code>: one file per sector group and year, with the
+groups <code class="docutils literal notranslate"><span class="pre">AGRICULTURE</span></code>, <code class="docutils literal notranslate"><span class="pre">BUILDINGS</span></code>, <code class="docutils literal notranslate"><span class="pre">FUEL_EXPLOITATION</span></code>,
+<code class="docutils literal notranslate"><span class="pre">IND_COMBUSTION</span></code>, <code class="docutils literal notranslate"><span class="pre">IND_PROCESSES</span></code>, <code class="docutils literal notranslate"><span class="pre">POWER_INDUSTRY</span></code>, <code class="docutils literal notranslate"><span class="pre">TRANSPORT</span></code> and
+<code class="docutils literal notranslate"><span class="pre">WASTE</span></code> each in a folder of its own:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">EDGAR</span><span class="o">/</span><span class="n">v8</span><span class="o">/</span><span class="n">monthly</span><span class="o">/</span><span class="n">CH4</span><span class="o">/</span>
+  <span class="n">AGRICULTURE</span><span class="o">/</span><span class="n">v8</span><span class="mf">.0</span><span class="n">_FT2022_GHG_CH4_2000_AGRICULTURE_flx</span><span class="o">.</span><span class="n">nc</span>
+  <span class="n">AGRICULTURE</span><span class="o">/</span><span class="n">v8</span><span class="mf">.0</span><span class="n">_FT2022_GHG_CH4_2001_AGRICULTURE_flx</span><span class="o">.</span><span class="n">nc</span>
+  <span class="o">...</span>
+  <span class="n">WASTE</span><span class="o">/</span><span class="n">v8</span><span class="mf">.0</span><span class="n">_FT2022_GHG_CH4_2022_WASTE_flx</span><span class="o">.</span><span class="n">nc</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

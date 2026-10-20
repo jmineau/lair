@@ -1,0 +1,6 @@
+lair.inventories.Inventory.plot
+===============================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Inventory.plot

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lair.geo.gridcell_area &#8212; lair 2026.12.8</title>
+    <title>lair.geo.gridcell_area &#8212; lair 2026.12.9</title>
   
   
   
@@ -30,6 +30,7 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
@@ -38,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=018e8e46"></script>
+    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.8';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -58,7 +59,7 @@
     <link rel="prev" title="lair.geo.generate_regular_grid" href="lair.geo.generate_regular_grid.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.8" />
+  <meta name="docsearch:version" content="2026.12.9" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -146,6 +147,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../api.html">
     API Reference
@@ -267,6 +289,27 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../api.html">
     API Reference
@@ -640,7 +683,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.config.html">lair.config</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.config.CACHE_DIR.html">lair.config.CACHE_DIR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.config.get_cache_dir.html">lair.config.get_cache_dir</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.config.get_data_dir.html">lair.config.get_data_dir</a></li>
 </ul>
 </details></li>
@@ -762,30 +805,51 @@
 <dt class="sig sig-object py" id="lair.geo.gridcell_area">
 <span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">gridcell_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#gridcell_area"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.gridcell_area" title="Link to this definition">#</a></dt>
 <dd><p>Calculate the area of each grid cell in a grid.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For lat-lon grids, <cite>xesmf.utils.grid_area</cite> is used to calculate the area,
-which requires the radius of the earth in kilometers. If the radius of the
-earth is not provided, it will be calculated based on the latitude.</p>
-</div>
+<p>On a lat-lon grid each cell is bounded by two meridians and two parallels,
+halfway between the cell centers, and its area is the exact area of that
+cell on the WGS84 ellipsoid: <code class="docutils literal notranslate"><span class="pre">a**2</span> <span class="pre">/</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">dlon</span> <span class="pre">*</span> <span class="pre">(q(lat2)</span> <span class="pre">-</span> <span class="pre">q(lat1))</span></code>,
+with <code class="docutils literal notranslate"><span class="pre">q</span></code> the function of the authalic latitude (Snyder 1987, eq. 3-12).
+With <code class="docutils literal notranslate"><span class="pre">R</span></code>, it is the area on a sphere of that radius instead,
+<code class="docutils literal notranslate"><span class="pre">R**2</span> <span class="pre">*</span> <span class="pre">dlon</span> <span class="pre">*</span> <span class="pre">(sin(lat2)</span> <span class="pre">-</span> <span class="pre">sin(lat1))</span></code>. On a projected grid in meters
+it is <code class="docutils literal notranslate"><span class="pre">dx</span> <span class="pre">*</span> <span class="pre">dy</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>grid</strong> (<em>xr.DataArray</em><em> | </em><em>xr.Dataset</em>) – Grid data with a <cite>rioxarray</cite> CRS: geographic (any datum, e.g.
-EPSG:4326, OGC:CRS84, EPSG:4269) with <code class="docutils literal notranslate"><span class="pre">lat</span></code>/<code class="docutils literal notranslate"><span class="pre">lon</span></code> coordinates,
-or projected in metres.</p></li>
-<li><p><strong>R</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> | </em><em>array-like</em><em>, </em><em>optional</em>) – Radius of earth in kilometers (lat-lon grids only), by default
-calculated based on the latitude. An array must broadcast against the
-grid, e.g. a DataArray along <code class="docutils literal notranslate"><span class="pre">lat</span></code>.</p></li>
+EPSG:4326, OGC:CRS84, EPSG:4269) with 1-D <code class="docutils literal notranslate"><span class="pre">lat</span></code>/<code class="docutils literal notranslate"><span class="pre">lon</span></code>
+coordinates, or projected in meters.</p></li>
+<li><p><strong>R</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> | </em><em>np.ndarray</em><em> | </em><em>xr.DataArray</em><em>, </em><em>optional</em>) – Radius of a sphere in kilometers to use instead of the WGS84
+ellipsoid (lat-lon grids only), by default None. An array must
+broadcast against the grid, e.g. a DataArray along <code class="docutils literal notranslate"><span class="pre">lat</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>xr.DataArray</em> – grid-cell area in square-kilometers, with the grid’s (y, x) dims</p>
+<dd class="field-even"><p><em>xr.DataArray</em> – grid-cell area in square-kilometers, with the grid’s (y, x) dims. Its
+only attribute is <code class="docutils literal notranslate"><span class="pre">units</span></code> (<code class="docutils literal notranslate"><span class="pre">'km2'</span></code>), so an array multiplied by it
+(<code class="docutils literal notranslate"><span class="pre">Inventory.absolute_emissions</span></code>) takes no description of the grid.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.9.0)"><em>DataArray</em></a></p>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the grid has no CRS, its CRS is neither geographic nor in meters, or
+    a lat-lon grid’s <code class="docutils literal notranslate"><span class="pre">lat</span></code> or <code class="docutils literal notranslate"><span class="pre">lon</span></code> is not 1-D.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.9.0)"><em>DataArray</em></a></p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>A sphere is close but not exact. With <code class="docutils literal notranslate"><span class="pre">R=6371</span></code> a 1-degree cell is 0.45%
+too large at the equator, 0.12% too small at 40.5 N and 0.9% too small
+next to a pole; a 0.1-degree cell centered at 40.75 N is 93.668 km2
+against 93.783 km2 on the ellipsoid. A sphere whose radius is the
+ellipsoid’s radius at the cell’s latitude (<a class="reference internal" href="lair.geo.earth_radius.html#lair.geo.earth_radius" title="lair.geo.earth_radius"><code class="xref py py-func docutils literal notranslate"><span class="pre">earth_radius()</span></code></a>) is worse
+at 40.75 N (93.611 km2, 0.18% too small).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">geo</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">area</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">gridcell_area_from_latlon</span><span class="p">([</span><span class="mf">40.65</span><span class="p">,</span> <span class="mf">40.75</span><span class="p">,</span> <span class="mf">40.85</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">111.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.85</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">area</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># the 0.1-degree cell at 40.75 N, 111.85 W</span>
+<span class="go">93.783</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

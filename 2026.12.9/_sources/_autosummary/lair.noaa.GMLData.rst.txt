@@ -1,0 +1,30 @@
+lair.noaa.GMLData
+=================
+
+.. currentmodule:: lair.noaa
+
+.. autoclass:: GMLData
+   :no-members:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~GMLData.data
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~GMLData.apply_qaqc
+   ~GMLData.download
+
+
+
