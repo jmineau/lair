@@ -606,6 +606,78 @@ class TestResampleRegrid:
         assert coarse.sizes["lon"] < latlon_grid.sizes["lon"]
         assert coarse.rio.crs is not None
 
+    @staticmethod
+    def _fine_flux():
+        """A random flux on a 0.1 degree grid, 3.0 degrees north-south and 4.0 east-west."""
+        import xarray as xr
+
+        lat = np.round(np.arange(39.05, 42.0, 0.1), 2)
+        lon = np.round(np.arange(-113.95, -110.0, 0.1), 2)
+        rng = np.random.default_rng(0)
+        ds = xr.Dataset(
+            {"flux": (("lat", "lon"), rng.random((lat.size, lon.size)))},
+            coords={"lat": lat, "lon": lon},
+        )
+        ds.lat.attrs["units"] = "degrees_north"
+        ds.lon.attrs["units"] = "degrees_east"
+        ds = ds.rio.set_spatial_dims(x_dim="lon", y_dim="lat")
+        return geo.write_rio_crs(ds, 4326)
+
+    @staticmethod
+    def _total(ds):
+        """Flux times area, summed: the quantity a conservative regrid keeps."""
+        return float((ds.flux * geo.gridcell_area(ds)).sum())
+
+    @pytest.mark.parametrize(
+        "resolution, shape",
+        [
+            (0.5, (6, 8)),  # divides both widths: no extra cell
+            (0.2, (15, 20)),
+            (0.3, (10, 14)),  # 4.0 / 0.3: a 14th cell, 110.1 W to 109.8 W
+            (0.7, (5, 6)),
+            ((0.3, 0.7), (5, 14)),  # (x_res, y_res)
+        ],
+    )
+    def test_resample_covers_the_source(self, resolution, shape):
+        pytest.importorskip("xesmf")
+        out = geo.resample(self._fine_flux(), resolution, regrid_method="conservative")
+        assert (out.sizes["lat"], out.sizes["lon"]) == shape
+        dx, dy = (
+            resolution if isinstance(resolution, tuple) else (resolution, resolution)
+        )
+        # The cells start at the source's edge and the last one ends at or past it
+        assert out.lon.values[0] - dx / 2 == pytest.approx(-114.0)
+        assert out.lat.values[0] - dy / 2 == pytest.approx(39.0)
+        assert out.lon.values[-1] + dx / 2 >= -110.0 - 1e-9
+        assert out.lat.values[-1] + dy / 2 >= 42.0 - 1e-9
+        assert out.lon.values[-1] - dx / 2 < -110.0
+        assert out.lat.values[-1] - dy / 2 < 42.0
+
+    @pytest.mark.parametrize("resolution", [0.5, 0.2, 0.3, 0.7, (0.3, 0.7)])
+    def test_conservative_resample_keeps_the_total(self, resolution):
+        pytest.importorskip("xesmf")
+        # 0.3 over 4.0 degrees lost the last 0.1 degree strip: 2.4% of the total
+        flux = self._fine_flux()
+        out = geo.resample(flux, resolution, regrid_method="conservative")
+        assert self._total(out) == pytest.approx(self._total(flux), rel=1e-3)
+
+    def test_last_cell_holds_the_part_inside(self):
+        # The last longitude cell is a third inside the source: a third of the flux
+        pytest.importorskip("xesmf")
+        flux = self._fine_flux()
+        flux["flux"][:] = 1.0
+        out = geo.resample(flux, 0.3, regrid_method="conservative")
+        np.testing.assert_allclose(out.flux.isel(lon=slice(None, -1)), 1.0, atol=1e-3)
+        np.testing.assert_allclose(out.flux.isel(lon=-1), 1 / 3, atol=1e-3)
+
+    def test_bilinear_keeps_the_cells_with_a_center_inside(self):
+        # A point method would put a zero in a last cell centered outside the source
+        pytest.importorskip("xesmf")
+        flux = self._fine_flux()
+        out = geo.resample(flux, 0.3)
+        assert (out.sizes["lat"], out.sizes["lon"]) == (10, 13)
+        assert out.lon.values[-1] < -110.0
+
     def test_regrid_to_target_grid(self, latlon_grid):
         out_grid = geo.generate_regular_grid(
             -114, -108, 2.0, 40, 45, 2.0, x_label="lon", y_label="lat"
