@@ -8,6 +8,8 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+## [2026.12.9] - 2026-10-20
+
 ### Added
 
 - A quickstart page, and a worked example that totals an inventory over a
