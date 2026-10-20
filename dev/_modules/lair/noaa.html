@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=488f44f2"></script>
+    <script src="../../_static/documentation_options.js?v=bb90a564"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev45+g0a325218c" />
+  <meta name="docsearch:version" content="2026.12.9.dev46+gd40f09e19" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -721,8 +721,30 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize a molefraction dataset on open. Overridden per specie.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Label each time step of a molefraction file by its period&#39;s center.</span>
+
+<span class="sd">        Each step is a mean over a period (3 hours in the files lair reads),</span>
+<span class="sd">        and the file&#39;s ``time_components`` (year, month, day, hour, minute,</span>
+<span class="sd">        second, UTC) hold the center of it: 01:30, 04:30, ... in every</span>
+<span class="sd">        release. ``time`` does not always: CT-CH4-2023 has none, and in</span>
+<span class="sd">        CT-CH4-2025 it is the end of each period (03:00, 06:00, ...), its</span>
+<span class="sd">        ``time_bounds`` 1.5 hours late too, though the file&#39;s ``notes`` say</span>
+<span class="sd">        the times are centers. So when a file has ``time_components`` the</span>
+<span class="sd">        time comes from them (as ``datetime64[ns]``, the resolution xarray</span>
+<span class="sd">        decodes ``time`` to), ``time_bounds`` move with it, and</span>
+<span class="sd">        ``time_components`` are dropped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;time_components&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ds</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time_components&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;time_bounds&quot;</span> <span class="ow">in</span> <span class="n">ds</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="n">centers</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">time_bounds</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time_bounds&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">centers</span><span class="p">)</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time_components&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_molefraction_file_for_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Molefraction file covering a UTC ``date`` (newest match), if present.&quot;&quot;&quot;</span>
@@ -810,6 +832,11 @@
 <span class="sd">        ``indx``, ``receptor``) are carried through for downstream grouping. Returns one row</span>
 <span class="sd">        per input point with ``ct_&lt;specie&gt;_&lt;units&gt;`` and the CT cell/level used.</span>
 <span class="sd">        Points whose UTC date has no molefraction file are dropped.</span>
+
+<span class="sd">        Each point takes the time step whose center is nearest: the steps are</span>
+<span class="sd">        3-hour means labeled by their centers (``ct_time``: 01:30, 04:30, ...</span>
+<span class="sd">        UTC), so a point takes the mean of the period it is in, and a point on</span>
+<span class="sd">        the boundary of two periods (03:00) takes the later one.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
@@ -899,17 +926,6 @@
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">carbon_tracker_directory</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parallel_parse</span> <span class="o">=</span> <span class="n">parallel_parse</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
-        <span class="c1"># CT-CH4-2025+ ships with a proper datetime64 time coordinate already;</span>
-        <span class="c1"># older versions (CT-CH4-2023) encode time in a `time_components` variable.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
-            <span class="n">time_components</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;time_components&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-            <span class="n">time</span> <span class="o">=</span> <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">time_components</span><span class="p">]</span>
-            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;time_components&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ds</span>
 
 <div class="viewcode-block" id="CarbonTrackerCH4.molefractions">
 <a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.molefractions.html#lair.noaa.CarbonTrackerCH4.molefractions">[docs]</a>
@@ -1051,8 +1067,9 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-        <span class="c1"># Times decode natively; drop the redundant component/decimal encodings</span>
-        <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">&quot;time_components&quot;</span><span class="p">,</span> <span class="s2">&quot;decimal_date&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span></div>
+        <span class="c1"># The times as for CH4; decimal_date repeats them as fractional years</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">CarbonTracker</span><span class="o">.</span><span class="n">_preprocess_molefractions</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="s2">&quot;decimal_date&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span></div>
 
 
 

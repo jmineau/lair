@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=488f44f2"></script>
+    <script src="../_static/documentation_options.js?v=bb90a564"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Get HRRR winds at a point" href="hrrr_winds.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev45+g0a325218c" />
+  <meta name="docsearch:version" content="2026.12.9.dev46+gd40f09e19" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -477,7 +477,7 @@ set of points</strong>, in ppm, such as the ends of STILT back trajectories.</p>
 <p class="admonition-title">Note</p>
 <p>This page does not run when the docs build. It downloads a 35 MB file from
 NOAA’s FTP server. The output below was recorded from one run of this code
-on 2026-10-12.</p>
+on 2026-10-19.</p>
 </div>
 <section id="the-data">
 <span id="carbontracker-data"></span><h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
@@ -530,26 +530,29 @@ of a PYSTILT particle table. Here, four made-up points west of Salt Lake City:</
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="n">points</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
 <span class="gp">   ...: </span>    <span class="p">{</span>
-<span class="gp">   ...: </span>        <span class="s2">&quot;datetime&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s2">&quot;2020-01-15 18:00&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>  <span class="c1"># UTC</span>
+<span class="gp">   ...: </span>        <span class="s2">&quot;datetime&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s2">&quot;2020-01-15 17:00&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>  <span class="c1"># UTC</span>
 <span class="gp">   ...: </span>        <span class="s2">&quot;lati&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">41.5</span><span class="p">,</span> <span class="mf">41.5</span><span class="p">,</span> <span class="mf">39.5</span><span class="p">,</span> <span class="mf">39.5</span><span class="p">],</span>
 <span class="gp">   ...: </span>        <span class="s2">&quot;long&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">],</span>
 <span class="gp">   ...: </span>        <span class="s2">&quot;zagl&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">2000.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">2000.0</span><span class="p">],</span>
 <span class="gp">   ...: </span>    <span class="p">}</span>
 <span class="gp">   ...: </span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">sampled</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">sampled</span><span class="p">[[</span><span class="s2">&quot;lati&quot;</span><span class="p">,</span> <span class="s2">&quot;zagl&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_ch4_ppb&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_level&quot;</span><span class="p">]]</span>
+<span class="gp">   ...: </span><span class="n">sampled</span><span class="p">[[</span><span class="s2">&quot;lati&quot;</span><span class="p">,</span> <span class="s2">&quot;zagl&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_ch4_ppb&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_time&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_level&quot;</span><span class="p">]]</span>
 <span class="gh">Out[3]:</span>
-<span class="go">   lati    zagl   ct_ch4_ppb  ct_latitude  ct_longitude  ct_level</span>
-<span class="go">0  41.5   100.0  1953.038326         41.0        -115.5       2.0</span>
-<span class="go">1  41.5  2000.0  1925.469503         41.0        -115.5       8.0</span>
-<span class="go">2  39.5   100.0  1983.360137         39.0        -115.5       2.0</span>
-<span class="go">3  39.5  2000.0  1916.952418         39.0        -115.5       8.0</span>
+<span class="go">   lati    zagl   ct_ch4_ppb             ct_time  ct_latitude  ct_level</span>
+<span class="go">0  41.5   100.0  1953.038326 2020-01-15 16:30:00         41.0       2.0</span>
+<span class="go">1  41.5  2000.0  1925.469503 2020-01-15 16:30:00         41.0       8.0</span>
+<span class="go">2  39.5   100.0  1983.360137 2020-01-15 16:30:00         39.0       2.0</span>
+<span class="go">3  39.5  2000.0  1916.952418 2020-01-15 16:30:00         39.0       8.0</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="../_autosummary/lair.noaa.CarbonTracker.sample.html#lair.noaa.CarbonTracker.sample" title="lair.noaa.CarbonTracker.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a> takes the grid cell and time nearest to
 each point, and the model level whose layer holds the point’s height (its
 <code class="docutils literal notranslate"><span class="pre">zagl</span></code> plus the height of the ground in the model). <code class="docutils literal notranslate"><span class="pre">ct_ch4_ppb</span></code> is the
 value there; the <code class="docutils literal notranslate"><span class="pre">ct_</span></code> columns say which cell, time and level it came from.
+Each time step is a mean over 3 hours, labeled by the center of its period
+(<code class="docutils literal notranslate"><span class="pre">ct_time</span></code>: 01:30, 04:30, … UTC) in every release, so a point takes the
+mean of the period it is in: 17:00 takes 15:00 to 18:00, labeled 16:30.
 A point outside the grid gets NaN, and a point on a day with no file in the
 folder is dropped.</p>
 </section>

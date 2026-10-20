@@ -14,7 +14,7 @@ come out of it:
 
    This page does not run when the docs build. It downloads a 35 MB file from
    NOAA's FTP server. The output below was recorded from one run of this code
-   on 2026-10-12.
+   on 2026-10-19.
 
 .. _carbontracker-data:
 
@@ -80,25 +80,28 @@ of a PYSTILT particle table. Here, four made-up points west of Salt Lake City:
       ...:
       ...: points = pd.DataFrame(
       ...:     {
-      ...:         "datetime": pd.to_datetime(["2020-01-15 18:00"] * 4),  # UTC
+      ...:         "datetime": pd.to_datetime(["2020-01-15 17:00"] * 4),  # UTC
       ...:         "lati": [41.5, 41.5, 39.5, 39.5],
       ...:         "long": [-114.5, -114.5, -114.5, -114.5],
       ...:         "zagl": [100.0, 2000.0, 100.0, 2000.0],
       ...:     }
       ...: )
       ...: sampled = ct.sample(points)
-      ...: sampled[["lati", "zagl", "ct_ch4_ppb", "ct_latitude", "ct_longitude", "ct_level"]]
+      ...: sampled[["lati", "zagl", "ct_ch4_ppb", "ct_time", "ct_latitude", "ct_level"]]
    Out[3]:
-      lati    zagl   ct_ch4_ppb  ct_latitude  ct_longitude  ct_level
-   0  41.5   100.0  1953.038326         41.0        -115.5       2.0
-   1  41.5  2000.0  1925.469503         41.0        -115.5       8.0
-   2  39.5   100.0  1983.360137         39.0        -115.5       2.0
-   3  39.5  2000.0  1916.952418         39.0        -115.5       8.0
+      lati    zagl   ct_ch4_ppb             ct_time  ct_latitude  ct_level
+   0  41.5   100.0  1953.038326 2020-01-15 16:30:00         41.0       2.0
+   1  41.5  2000.0  1925.469503 2020-01-15 16:30:00         41.0       8.0
+   2  39.5   100.0  1983.360137 2020-01-15 16:30:00         39.0       2.0
+   3  39.5  2000.0  1916.952418 2020-01-15 16:30:00         39.0       8.0
 
 :meth:`~lair.noaa.CarbonTracker.sample` takes the grid cell and time nearest to
 each point, and the model level whose layer holds the point's height (its
 ``zagl`` plus the height of the ground in the model). ``ct_ch4_ppb`` is the
 value there; the ``ct_`` columns say which cell, time and level it came from.
+Each time step is a mean over 3 hours, labeled by the center of its period
+(``ct_time``: 01:30, 04:30, ... UTC) in every release, so a point takes the
+mean of the period it is in: 17:00 takes 15:00 to 18:00, labeled 16:30.
 A point outside the grid gets NaN, and a point on a day with no file in the
 folder is dropped.
 
