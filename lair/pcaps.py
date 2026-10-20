@@ -90,33 +90,104 @@ def determine_pcap_events(
     vhd: pd.Series, threshold: float, min_periods: int = 3
 ) -> pd.DataFrame:
     """
-    Determine persistent cold air pool (PCAP) periods from the valley heat deficit.
+    Determine persistent cold air pool (PCAP) events from the valley heat deficit.
 
-    The valley heat deficit (VHD) is the metric.
+    An event is a run of 12-hourly soundings whose valley heat deficit (VHD) is
+    above ``threshold``, lasting at least ``min_periods`` soundings. The run is
+    counted in time, on the 12-hourly grid from the first time in ``vhd`` to the
+    last, not in rows: a sounding missing from ``vhd`` is a gap in the run, as
+    is a VHD that is NaN.
+
+    A gap of one sounding between two soundings above the threshold is taken as
+    above, and counts toward ``min_periods``. A longer gap, or one next to a
+    sounding at or below the threshold, ends the event.
+
+    Parameters
+    ----------
+    vhd : pd.Series
+        The valley heat deficit [MJ/m^2], indexed by time, one value every 12
+        hours (the output of :func:`valleyheatdeficit`). Soundings may be
+        missing or NaN.
+    threshold : float
+        A sounding is in an event when its VHD is above this value [MJ/m^2].
+        Whiteman et al. (2014) use 4.04.
+    min_periods : int, optional
+        The fewest soundings an event lasts, a gap of one included. Default
+        is 3 (36 hours).
+
+    Returns
+    -------
+    pd.DataFrame
+        One row per event, with its ``start`` (the first sounding) and ``end``
+        (12 hours after the last sounding, less one second), indexed by
+        ``event_id`` from 0.
+
+    Raises
+    ------
+    ValueError
+        If a time in ``vhd`` is not a whole number of 12-hour steps from the
+        first, or a time is repeated.
+
+    Examples
+    --------
+    The missing 2024-01-02 12:00 sounding is one gap between two soundings
+    above the threshold, so the event runs through it:
+
+    >>> import pandas as pd
+    >>> times = pd.to_datetime(
+    ...     ["2024-01-01 12:00", "2024-01-02 00:00", "2024-01-03 00:00"]
+    ... )
+    >>> vhd = pd.Series([5.0, 6.0, 5.5], index=times)
+    >>> determine_pcap_events(vhd, threshold=4.04)
+                           start                 end
+    event_id
+    0        2024-01-01 12:00:00 2024-01-03 11:59:59
     """
-    # Create a boolean mask for values above the threshold
-    above_thres = vhd > threshold
+    if vhd.empty:
+        return pd.DataFrame(
+            {"start": pd.DatetimeIndex([]), "end": pd.DatetimeIndex([])}
+        ).rename_axis("event_id")
+    if vhd.index.has_duplicates:
+        repeated = vhd.index[vhd.index.duplicated()][0]
+        raise ValueError(f"vhd has more than one value at {repeated}.")
+    vhd = vhd.sort_index()
+    step = pd.Timedelta(hours=12)  # the time between two soundings
 
-    # Group consecutive values above the threshold and count the number of periods in each group
-    groups = (above_thres != above_thres.shift()).cumsum()
+    # Put the series on the 12-hourly grid, so a missing sounding is a NaN
+    times = pd.date_range(vhd.index.min(), vhd.index.max(), freq=step)
+    off_grid = vhd.index.difference(times)
+    if len(off_grid) > 0:
+        raise ValueError(
+            "vhd must be 12-hourly: "
+            f"{off_grid[0]} is not a whole number of 12-hour steps "
+            f"from the first time, {vhd.index.min()}."
+        )
+    vhd = vhd.reindex(times)
 
-    # Create a mask for groups that have at least min_periods consecutive values above the threshold
-    event_mask = above_thres.groupby(groups).transform("sum") >= min_periods
-
-    # Subset the original series to include only the values that are part of a PCAP event
-    pcap_vhd = vhd[above_thres & event_mask]
-
-    # Add event id to the series as a new column in a DataFrame
-    pcap_vhd = pcap_vhd.to_frame()
-    pcap_vhd["event_id"] = groups.loc[pcap_vhd.index].values
-
-    # Group by event_id and determine the start and end time of each event
-    times = pcap_vhd.index.to_series().groupby(pcap_vhd["event_id"].to_numpy())
-    pcap_events = pd.DataFrame({"start": times.min(), "end": times.max()}).reset_index(
-        drop=True
+    above = vhd > threshold  # NaN is not above
+    # One missing or NaN sounding between two above the threshold is taken as
+    # above. Both neighbors above means neither is missing, so the gap is one.
+    gap = (
+        vhd.isna()
+        & above.shift(1, fill_value=False)
+        & above.shift(-1, fill_value=False)
     )
-    # inclusive of following 12 hours (VHD is 12-hourly)
-    pcap_events["end"] += pd.Timedelta(hours=11, minutes=59, seconds=59)
+    in_event = above | gap
+
+    # Number the runs of consecutive grid times in or out of an event
+    run = (in_event != in_event.shift()).cumsum()
+    event_times = times.to_series()[in_event].groupby(run[in_event].to_numpy())
+    pcap_events = pd.DataFrame(
+        {
+            "start": event_times.min(),
+            "end": event_times.max(),
+            "periods": event_times.size(),
+        }
+    )
+    pcap_events = pcap_events[pcap_events["periods"] >= min_periods]
+    pcap_events = pcap_events[["start", "end"]].reset_index(drop=True)
+    # inclusive of the following 12 hours, less a second
+    pcap_events["end"] += step - pd.Timedelta(seconds=1)
     pcap_events.index.name = "event_id"
 
     return pcap_events
