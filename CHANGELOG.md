@@ -93,6 +93,21 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- `geo.gridcell_area` gives each cell of a lat-lon grid its exact area on the
+  WGS84 ellipsoid (#144). It used the ellipsoid's radius at the cell's latitude
+  as the radius of a sphere, which made a 1-degree cell 0.67% too large at the
+  equator, 0.18% too small at 40.5 N and 1.3% too small at 80.5 N, and
+  `Inventory.gridcell_area`, `absolute_emissions` and `integrate()` carried the
+  same error (a total over the Salt Lake Valley 0.18% low). The area is now
+  computed in closed form from the cell's edges, with the authalic latitude,
+  and agrees with pyproj's geodesic areas to 1e-9; a 0.1-degree cell at 40.75 N
+  is 93.783 km2 (it was 93.611; EPA's own `grid_cell_area`, a sphere of 6371
+  km, gives 93.667). `R=` still gives the area on a sphere of that radius.
+- Grid-cell areas, and so `Inventory.absolute_emissions` and `integrate()`, no
+  longer need ESMF: they are computed without xesmf, so a pip install can total
+  an inventory. Regridding still needs ESMF. A lat-lon grid whose `lat` and
+  `lon` are 2-D raises a `ValueError` (it failed with a `KeyError` before).
+
 - `geo.gridcell_area` returns an array whose only attribute is `units` (`km2`).
   On a lat-lon grid it also carried the latitude's `axis: 'Y'`, which marks a
   coordinate, and `Inventory.absolute_emissions` passed it on to the variable of

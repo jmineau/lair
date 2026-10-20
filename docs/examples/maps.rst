@@ -29,7 +29,7 @@ The data
 
 EDGAR v8's methane files, laid out as in :ref:`the inventory example
 <inventory-data>`, under ``LAIR_INVENTORY_DIR`` (see :ref:`data-locations`).
-Drawing a map needs no ESMF, which the inventory example needs for its totals.
+Drawing a map needs no ESMF, which the inventory example needs to regrid.
 
 .. _maps-plot:
 

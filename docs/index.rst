@@ -53,13 +53,13 @@ macOS and Windows, without the extras.
 Pick a route
 ^^^^^^^^^^^^
 
-Grid-cell areas (``geo.gridcell_area``) and regridding (``geo.regrid``,
-``geo.resample``) need ESMF, a compiled library that pip cannot install. The
-inventories use both, so ``Inventory.integrate()`` (the total of an inventory
-over a region) and ``Inventory.absolute_emissions`` need ESMF too.
+Regridding (``geo.regrid``, ``geo.resample``, and an inventory's ``regrid``
+and ``resample``) needs ESMF, a compiled library that pip cannot install.
+Grid-cell areas and inventory totals (``geo.gridcell_area``,
+``Inventory.integrate()``, ``Inventory.absolute_emissions``) do not.
 
-* To use the inventories or to regrid, use **conda**.
-* For everything else, **pip** is enough.
+* To regrid, use **conda**.
+* For everything else, inventory totals included, **pip** is enough.
 
 conda (everything)
 ^^^^^^^^^^^^^^^^^^
@@ -147,8 +147,8 @@ Extra          Packages                               Used by
                rioxarray, shapely                     ``transects``
 ``science``    molmass, scipy                         ``background``, ``inventories``,
                                                       ``pollutants``, ``transects``
-``regridding`` xesmf                                  ``geo`` (areas, regrid, resample),
-                                                      ``inventories`` (totals, regrid)
+``regridding`` xesmf                                  ``geo`` (regrid, resample),
+                                                      ``inventories`` (regrid, resample)
 ``complete``   all of the above
 ============== ====================================== ===========================================
 

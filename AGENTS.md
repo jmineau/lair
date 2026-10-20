@@ -171,10 +171,15 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
   quantified with its own `units` attribute. `tests/inventories` checks every
   loader (`INVENTORY_CASES`) on tiny synthetic archives shaped like the real
   files; add new loaders there.
-- **ESMF:** areas and totals (`gridcell_area`, `absolute_emissions`,
-  `integrate()`) need xesmf, and xesmf needs conda-forge's `esmf=*=nompi*`
-  (pip installs xesmf without ESMF; the MPICH build can kill the process,
-  pytest included, when MPI fails to start).
+- **ESMF:** regridding (`geo.regrid`, `geo.resample` and the grids'
+  `regrid`/`resample`) needs xesmf, and xesmf needs conda-forge's
+  `esmf=*=nompi*` (pip installs xesmf without ESMF; the MPICH build can kill
+  the process, pytest included, when MPI fails to start).
+- **Areas:** `gridcell_area` on a lat-lon grid is the exact WGS84 ellipsoid
+  area in closed form (the authalic-latitude `q`), with no ESMF, so
+  `absolute_emissions` and `integrate()` need none either. A sphere (`R=`) is
+  0.1-0.9% off depending on latitude; `tests/geo` checks against pyproj's
+  geodesic areas and the ellipsoid's total.
 - **Opening many files:** call the module's `_open_mfdataset` (`inventories`,
   `noaa`), not `xr.open_mfdataset`: it names today's `compat`, `data_vars`,
   `coords` and `join`, which xarray is changing. In `noaa` it runs through
