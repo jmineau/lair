@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=466818b3"></script>
+    <script src="../_static/documentation_options.js?v=488f44f2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo.dms2dd" href="lair.geo.dms2dd.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev44+gefb3c368d" />
+  <meta name="docsearch:version" content="2026.12.9.dev45+g0a325218c" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -813,7 +813,9 @@ latitude. It is not the radius of a sphere with the ellipsoid’s areas:
 <dd class="field-odd"><p><strong>lat</strong> (<em>array-like</em>) – latitudes in degrees</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>array-like</em> – vector of radius in kilometers</p>
+<dd class="field-even"><p><em>array-like</em> – vector of radius in kilometers. For a <code class="docutils literal notranslate"><span class="pre">DataArray</span></code> it is named
+<code class="docutils literal notranslate"><span class="pre">earth_radius</span></code> and its only attributes are its own, <code class="docutils literal notranslate"><span class="pre">long_name</span></code>
+and <code class="docutils literal notranslate"><span class="pre">units</span></code> (<code class="docutils literal notranslate"><span class="pre">km</span></code>), not the latitude’s.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><em>ArrayLike</em></p>
@@ -824,6 +826,17 @@ latitude. It is not the radius of a sphere with the ellipsoid’s areas:
 <li><p>Originally copied from <a class="reference external" href="https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7">https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7</a></p></li>
 <li><p>WGS84: <a class="reference external" href="https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf">https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf</a></p></li>
 </ul>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">geo</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lat</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">],</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;degrees_north&quot;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">radius</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">earth_radius</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">radius</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">array([6378.137, 6356.752])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">radius</span><span class="o">.</span><span class="n">attrs</span>
+<span class="go">{&#39;long_name&#39;: &#39;Earth radius&#39;, &#39;units&#39;: &#39;km&#39;}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

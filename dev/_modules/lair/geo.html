@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=466818b3"></script>
+    <script src="../../_static/documentation_options.js?v=488f44f2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9.dev44+gefb3c368d" />
+  <meta name="docsearch:version" content="2026.12.9.dev45+g0a325218c" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1786,12 +1786,25 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    array-like</span>
-<span class="sd">        vector of radius in kilometers</span>
+<span class="sd">        vector of radius in kilometers. For a ``DataArray`` it is named</span>
+<span class="sd">        ``earth_radius`` and its only attributes are its own, ``long_name``</span>
+<span class="sd">        and ``units`` (``km``), not the latitude&#39;s.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">     - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7</span>
 <span class="sd">     - WGS84: https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import xarray as xr</span>
+<span class="sd">    &gt;&gt;&gt; from lair import geo</span>
+<span class="sd">    &gt;&gt;&gt; lat = xr.DataArray([0.0, 90.0], dims=&quot;lat&quot;, attrs={&quot;units&quot;: &quot;degrees_north&quot;})</span>
+<span class="sd">    &gt;&gt;&gt; radius = geo.earth_radius(lat)</span>
+<span class="sd">    &gt;&gt;&gt; radius.values.round(3)</span>
+<span class="sd">    array([6378.137, 6356.752])</span>
+<span class="sd">    &gt;&gt;&gt; radius.attrs</span>
+<span class="sd">    {&#39;long_name&#39;: &#39;Earth radius&#39;, &#39;units&#39;: &#39;km&#39;}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># define oblate spheroid from WGS84</span>
     <span class="n">a</span> <span class="o">=</span> <span class="mi">6378137</span>
@@ -1808,6 +1821,11 @@
     <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">e2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat_gc</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.5</span>
 
     <span class="n">r</span> <span class="o">/=</span> <span class="mi">1000</span>  <span class="c1"># convert to km</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">DataArray</span><span class="p">):</span>
+        <span class="c1"># The ufuncs above kept the latitude&#39;s attributes (units: degrees_north,</span>
+        <span class="c1"># axis: &#39;Y&#39;, ...) and name: label the radius as what it is (issue #139).</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Earth radius&quot;</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;km&quot;</span><span class="p">}</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;earth_radius&quot;</span>
     <span class="k">return</span> <span class="n">r</span></div>
 
 
