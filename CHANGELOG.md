@@ -8,6 +8,16 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Changed
+
+- `geo.add_extent_map` is renamed `geo.add_locator_map` (breaking; there is no
+  alias for the old name). A locator map is the cartographers' name for a small
+  map that shows where the main map is. Its arguments `extent_map_rect`,
+  `extent_map_extent` and `extent_map_crs` become `locator_rect`,
+  `locator_extent` and `locator_crs`; `main_extent`, `main_extent_crs`, `color`,
+  `linewidth` and `zorder` are unchanged, so a call that passes the arguments by
+  position only needs the new function name.
+
 ## [2026.12.9] - 2026-10-20
 
 ### Added

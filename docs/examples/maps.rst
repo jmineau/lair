@@ -2,9 +2,9 @@ Draw a map of an inventory
 ==========================
 
 This example draws a map of EDGAR's methane emissions over Utah in 2022, adds
-state lines and tick labels, outlines the grid cells, and puts a small map of
-where it is in a corner. It ends with a field that is not an inventory. Three
-rules come out of it:
+state lines and tick labels, outlines the grid cells, and puts a locator map, a
+small map of where it is, in a corner. It ends with a field that is not an
+inventory. Three rules come out of it:
 
 * **Inventory.plot averages every time step, and reads all of them.** For
   EDGAR v8's 53 years that takes about a minute. Pass ``time=`` to draw one (see
@@ -183,11 +183,12 @@ west, around a point in the Salt Lake Valley:
       ...: footprint.sizes
    Out[7]: Frozen({'lon': 70, 'lat': 60})
 
-:func:`~lair.geo.add_extent_map` adds a small map of where the main map is, in
-the corner of the figure. It takes the main map's extent and projection, the
-inset's position in the figure as ``(left, bottom, width, height)``, fractions
-of the figure's size, its own extent and projection, and the color and width of
-the outline it draws around the main extent:
+:func:`~lair.geo.add_locator_map` adds a locator map, a small map of where the
+main map is, in the corner of the figure. It takes the main map's extent and
+projection, the position of the locator map in the figure as
+``(left, bottom, width, height)``, fractions of the figure's size, its own
+extent and projection, and the color and width of the outline it draws around
+the main extent:
 
 .. code-block:: ipython
 
@@ -196,13 +197,13 @@ the outline it draws around the main extent:
       ...: ax.set_title("A made-up footprint")
       ...: main_extent = [-112.2, -111.5, 40.4, 41.0]
       ...: geo.add_latlon_ticks(ax, main_extent)
-      ...: geo.add_extent_map(
+      ...: geo.add_locator_map(
       ...:     fig,
       ...:     main_extent=main_extent,
       ...:     main_extent_crs=ccrs.PlateCarree(),
-      ...:     extent_map_rect=(0.14, 0.58, 0.24, 0.26),
-      ...:     extent_map_extent=[-117, -106, 35, 43],
-      ...:     extent_map_crs=ccrs.PlateCarree(),
+      ...:     locator_rect=(0.14, 0.58, 0.24, 0.26),
+      ...:     locator_extent=[-117, -106, 35, 43],
+      ...:     locator_crs=ccrs.PlateCarree(),
       ...:     color="red",
       ...:     linewidth=1.5,
       ...: )

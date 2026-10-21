@@ -234,7 +234,7 @@ goes on the page that holds its kind:
 | A time without a zone is UTC; time zones; seasons | `examples/clock` | a clause and a link |
 | Units; the `mass_flux` context | `examples/units` | link |
 | Plain SI in and out of `meteorology` | quickstart, "A first calculation" | link |
-| Inventory totals; conservative against bilinear regridding. Drawing a map: the time step, state lines, ticks, grid, inset | `examples/inventory`; for the map, `examples/maps` | link |
+| Inventory totals; conservative against bilinear regridding. Drawing a map: the time step, state lines, ticks, grid, locator map | `examples/inventory`; for the map, `examples/maps` | link |
 | `get_soundings` heights and downloads | `examples/soundings` | link |
 | CarbonTracker sampling and background | `examples/carbontracker` | link |
 | Background methods, side by side, and which one to use | `examples/background` | link |

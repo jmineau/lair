@@ -899,18 +899,18 @@ class TestPlotting:
         assert -115 < x0 <= -113 and -110 <= x1 < -108
         assert 39 < y0 <= 41 and 43 <= y1 < 45
 
-    def test_add_extent_map_outlines_box(self):
+    def test_add_locator_map_outlines_box(self):
         import cartopy.crs as ccrs
         import matplotlib.pyplot as plt
 
         fig = plt.figure()
-        ax = geo.add_extent_map(
+        ax = geo.add_locator_map(
             fig,
             main_extent=[-113, -110, 39, 42],
             main_extent_crs=ccrs.PlateCarree(),
-            extent_map_rect=(0.0, 0.0, 0.3, 0.3),
-            extent_map_extent=[-125, -100, 30, 50],
-            extent_map_crs=ccrs.PlateCarree(),
+            locator_rect=(0.0, 0.0, 0.3, 0.3),
+            locator_extent=[-125, -100, 30, 50],
+            locator_crs=ccrs.PlateCarree(),
             color="red",
             linewidth=2,
         )
