@@ -1,5 +1,11 @@
 """
-Functions for calculating the valley heat deficit (VHD) and determining persistent cold air pool (PCAP) events.
+Valley heat deficit and persistent cold air pools.
+
+:func:`valleyheatdeficit` integrates a sounding's potential-temperature deficit
+from the valley floor to a height (Whiteman et al., 2014), and
+:func:`determine_pcap_events` finds the persistent cold air pool (PCAP) events,
+the periods when the deficit stays above a threshold. :func:`build_pcap_mask`
+and :func:`filter_pcap_events` mark or drop the times inside them.
 """
 
 import numpy as np
@@ -138,7 +144,7 @@ def determine_pcap_events(
     ...     ["2024-01-01 12:00", "2024-01-02 00:00", "2024-01-03 00:00"]
     ... )
     >>> vhd = pd.Series([5.0, 6.0, 5.5], index=times)
-    >>> determine_pcap_events(vhd, threshold=4.04)
+    >>> determine_pcap_events(vhd, threshold=4.04)  # doctest: +NORMALIZE_WHITESPACE
                            start                 end
     event_id
     0        2024-01-01 12:00:00 2024-01-03 11:59:59

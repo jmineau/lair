@@ -1,5 +1,12 @@
 """
-Utility classes & functions for working with time and dates.
+Times, time zones and time ranges.
+
+:func:`convert_timezones` moves times between zones (a time without a zone
+needs ``fromtz``), and :func:`UTC2MTN` and its siblings are its common cases.
+:class:`TimeRange` is a start and an end parsed from ISO strings; the
+remaining functions turn times into decimal years (:func:`dt2decimalDate`),
+intervals, time-difference matrices, and diurnal and seasonal aggregates.
+:doc:`/examples/clock` shows the time-zone rules and the afternoon mean.
 """
 
 import datetime as dt
@@ -16,7 +23,15 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-AFTERNOON = [12, 13, 14, 15, 16]  # HH Local Standard Time
+#: The afternoon hours, 12 to 16 local standard time.
+#:
+#: :func:`lair.background.get_well_mixed` keeps these hours by default.
+AFTERNOON = [12, 13, 14, 15, 16]
+
+#: The meteorological season of each month (1 to 12), as ``'DJF'``, ``'MAM'``,
+#: ``'JJA'`` or ``'SON'``.
+#:
+#: :func:`seasonal` labels its groups with these.
 SEASONS = {
     1: "DJF",
     2: "DJF",
@@ -725,8 +740,17 @@ def convert_timezones(
         raise ValueError("Invalid driver")
 
 
+#: :func:`convert_timezones` with ``fromtz="UTC"``; give ``totz``.
 UTC2 = partial(convert_timezones, fromtz="UTC")
+
+#: :func:`convert_timezones` from UTC to ``"MST"``, standard time all year.
 UTC2MST = partial(UTC2, totz="MST")
+
+#: :func:`convert_timezones` from UTC to ``"America/Denver"``, with daylight saving.
 UTC2MTN = partial(UTC2, totz="America/Denver")
+
+#: :func:`convert_timezones` from ``"MST"`` to UTC.
 MST2UTC = partial(convert_timezones, fromtz="MST", totz="UTC")
+
+#: :func:`convert_timezones` from ``"America/Denver"`` to UTC.
 MTN2UTC = partial(convert_timezones, fromtz="America/Denver", totz="UTC")

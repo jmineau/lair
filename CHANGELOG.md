@@ -8,6 +8,22 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Added
+
+- The API reference has a page for the package itself, with `lair.units`, the
+  `mass_flux` context and `setup_ccg_filter`, and pages for `clock`'s
+  `AFTERNOON`, `SEASONS` and time-zone shortcuts (`UTC2MTN` and the others).
+- Each module's page opens with what the module holds and which example shows it.
+- Every parameter of `transects`' functions, `meteorology.ideal_gas_law`,
+  `meteorology.hypsometric`, `synoptic.hourly_mean`, `plotter.NCL_cmap`,
+  `Pollutant`, `Cacher`, `ZarrId` and `Winds` is described on its page; See Also
+  links and runnable examples join `meteorology`, `air` and `transects`.
+
+### Fixed
+
+- The docstring examples of `geo.cosine_weights`, `pcaps.determine_pcap_events`
+  and the `pollutants` module run as written.
+
 ## [2026.12.9] - 2026-10-20
 
 ### Added

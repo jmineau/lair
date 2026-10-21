@@ -5,6 +5,15 @@ API Reference
 ``from lair.meteorology import poisson``. Some modules need an optional
 dependency group (see :ref:`optional-dependencies`).
 
+The package
+-----------
+
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   lair
+
 Atmosphere & Meteorology
 ------------------------
 
