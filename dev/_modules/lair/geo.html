@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=d8fa1d50"></script>
+    <script src="../../_static/documentation_options.js?v=8ddf9f83"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev2+g6888c460a" />
+  <meta name="docsearch:version" content="2026.12.10.dev3+g324fc26a4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1108,6 +1108,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resample the data to a new resolution.</span>
 
+<span class="sd">        A resolution that does not divide the grid&#39;s width leaves a strip at the</span>
+<span class="sd">        far edge; :func:`lair.geo.resample` says what happens to it.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        resolution : float | tuple[x_res, y_res]</span>
@@ -1491,6 +1494,19 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">vmin</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_end_of_last_cell</span><span class="p">(</span><span class="n">vmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">vmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    End of the last cell of size ``d`` that starts below ``vmax``.</span>
+
+<span class="sd">    Cells start at ``vmin``. When ``d`` does not divide ``vmax - vmin`` the last</span>
+<span class="sd">    cell reaches past ``vmax``, so the cells cover everything up to ``vmax``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vmin</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">vmax</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="c1"># A strip under a millionth of a cell is float noise in the bounds, not a cell</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">vmax</span> <span class="o">-</span> <span class="n">vmin</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">vmin</span> <span class="o">+</span> <span class="n">n</span> <span class="o">*</span> <span class="n">d</span>
+
+
 <div class="viewcode-block" id="regrid">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.regrid.html#lair.geo.regrid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">regrid</span><span class="p">(</span>
@@ -1568,6 +1584,21 @@
 
 <span class="sd">    Returns new data; the input is not modified.</span>
 
+<span class="sd">    The new grid starts at the source&#39;s outer edge. When the resolution does not</span>
+<span class="sd">    divide the source&#39;s width (0.3 degrees over 4.0 degrees of longitude), the</span>
+<span class="sd">    last cell is partial, and what becomes of it depends on the method:</span>
+
+<span class="sd">    - ``&quot;conservative&quot;`` keeps it whole, so the new grid covers the whole source</span>
+<span class="sd">      and its last cell reaches past the source&#39;s edge. That cell holds the flux of</span>
+<span class="sd">      the part inside the source averaged over the whole cell, the part outside</span>
+<span class="sd">      counting as zero, so flux times area still adds up to the source&#39;s total.</span>
+<span class="sd">    - Every other method (``&quot;bilinear&quot;``, the default, and ``&quot;conservative_normed&quot;``</span>
+<span class="sd">      included) keeps it only when its center is inside the source, which takes</span>
+<span class="sd">      more than half of it, and otherwise drops the strip. A cell centered outside</span>
+<span class="sd">      the source&#39;s outermost cell centers gets zero from bilinear interpolation,</span>
+<span class="sd">      not data, and ``&quot;conservative_normed&quot;`` would give it the flux of the part</span>
+<span class="sd">      inside but count its whole area.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : xr.DataArray | xr.Dataset</span>
@@ -1589,7 +1620,9 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
         <span class="n">resolution</span> <span class="o">=</span> <span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span>
 
-    <span class="c1"># Calculate the new grid</span>
+    <span class="c1"># Calculate the new grid. A conservative regrid must cover the whole source or</span>
+    <span class="c1"># the strip left over by a resolution that does not divide it is lost</span>
+    <span class="n">cover</span> <span class="o">=</span> <span class="n">regrid_method</span> <span class="o">==</span> <span class="s2">&quot;conservative&quot;</span>
     <span class="n">bounds</span> <span class="o">=</span> <span class="n">_as_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span>
     <span class="n">xmin</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">lon_bounds</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
     <span class="n">xmax</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">lon_bounds</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
@@ -1602,10 +1635,10 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">out_grid</span> <span class="o">=</span> <span class="n">generate_regular_grid</span><span class="p">(</span>
             <span class="n">xmin</span><span class="o">=</span><span class="n">xmin</span><span class="p">,</span>
-            <span class="n">xmax</span><span class="o">=</span><span class="n">xmax</span><span class="p">,</span>
+            <span class="n">xmax</span><span class="o">=</span><span class="n">_end_of_last_cell</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span> <span class="k">if</span> <span class="n">cover</span> <span class="k">else</span> <span class="n">xmax</span><span class="p">,</span>
             <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
             <span class="n">ymin</span><span class="o">=</span><span class="n">ymin</span><span class="p">,</span>
-            <span class="n">ymax</span><span class="o">=</span><span class="n">ymax</span><span class="p">,</span>
+            <span class="n">ymax</span><span class="o">=</span><span class="n">_end_of_last_cell</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span> <span class="k">if</span> <span class="n">cover</span> <span class="k">else</span> <span class="n">ymax</span><span class="p">,</span>
             <span class="n">dy</span><span class="o">=</span><span class="n">dy</span><span class="p">,</span>
             <span class="n">x_label</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span>
             <span class="n">y_label</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span>

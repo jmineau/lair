@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=d8fa1d50"></script>
+    <script src="../_static/documentation_options.js?v=8ddf9f83"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo.regrid" href="lair.geo.regrid.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev2+g6888c460a" />
+  <meta name="docsearch:version" content="2026.12.10.dev3+g324fc26a4" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -805,6 +805,21 @@
 <span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regrid_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.resample" title="Link to this definition">#</a></dt>
 <dd><p>Resample the data to a new resolution.</p>
 <p>Returns new data; the input is not modified.</p>
+<p>The new grid starts at the source’s outer edge. When the resolution does not
+divide the source’s width (0.3 degrees over 4.0 degrees of longitude), the
+last cell is partial, and what becomes of it depends on the method:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;conservative&quot;</span></code> keeps it whole, so the new grid covers the whole source
+and its last cell reaches past the source’s edge. That cell holds the flux of
+the part inside the source averaged over the whole cell, the part outside
+counting as zero, so flux times area still adds up to the source’s total.</p></li>
+<li><p>Every other method (<code class="docutils literal notranslate"><span class="pre">&quot;bilinear&quot;</span></code>, the default, and <code class="docutils literal notranslate"><span class="pre">&quot;conservative_normed&quot;</span></code>
+included) keeps it only when its center is inside the source, which takes
+more than half of it, and otherwise drops the strip. A cell centered outside
+the source’s outermost cell centers gets zero from bilinear interpolation,
+not data, and <code class="docutils literal notranslate"><span class="pre">&quot;conservative_normed&quot;</span></code> would give it the flux of the part
+inside but count its whole area.</p></li>
+</ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

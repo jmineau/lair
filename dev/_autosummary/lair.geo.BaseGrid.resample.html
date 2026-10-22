@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=d8fa1d50"></script>
+    <script src="../_static/documentation_options.js?v=8ddf9f83"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo.BaseGrid.reproject" href="lair.geo.BaseGrid.reproject.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev2+g6888c460a" />
+  <meta name="docsearch:version" content="2026.12.10.dev3+g324fc26a4" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -807,6 +807,8 @@
 <dt class="sig sig-object py" id="lair.geo.BaseGrid.resample">
 <span class="sig-prename descclassname"><span class="pre">BaseGrid.</span></span><span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resolution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regrid_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#BaseGrid.resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.BaseGrid.resample" title="Link to this definition">#</a></dt>
 <dd><p>Resample the data to a new resolution.</p>
+<p>A resolution that does not divide the grid’s width leaves a strip at the
+far edge; <a class="reference internal" href="lair.geo.resample.html#lair.geo.resample" title="lair.geo.resample"><code class="xref py py-func docutils literal notranslate"><span class="pre">lair.geo.resample()</span></code></a> says what happens to it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
