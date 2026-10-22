@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lair.geo.add_extent_map &#8212; lair dev</title>
+    <title>lair.geo.add_locator_map &#8212; lair dev</title>
   
   
   
@@ -39,12 +39,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=baf303e4"></script>
+    <script src="../_static/documentation_options.js?v=6f2f521a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/lair.geo.add_extent_map';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/lair.geo.add_locator_map';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="lair.geo.add_lat_ticks" href="lair.geo.add_lat_ticks.html" />
-    <link rel="prev" title="lair.geo" href="lair.geo.html" />
+    <link rel="next" title="lair.geo.add_lon_ticks" href="lair.geo.add_lon_ticks.html" />
+    <link rel="prev" title="lair.geo.add_latlon_ticks" href="lair.geo.add_latlon_ticks.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev7+g0678434d7" />
+  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -591,9 +591,9 @@
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.geo.add_extent_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
+<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.geo.add_locator_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lon_ticks.html">lair.geo.add_lon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bbox2extent.html">lair.geo.bbox2extent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bearing.html">lair.geo.bearing</a></li>
@@ -781,7 +781,7 @@
     
     <li class="breadcrumb-item"><a href="lair.geo.html" class="nav-link">lair.geo</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.geo.add_extent_map</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.geo.add_locator_map</span></li>
   </ul>
 </nav>
 </div>
@@ -798,33 +798,33 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="lair-geo-add-extent-map">
-<h1>lair.geo.add_extent_map<a class="headerlink" href="#lair-geo-add-extent-map" title="Link to this heading">#</a></h1>
+  <section id="lair-geo-add-locator-map">
+<h1>lair.geo.add_locator_map<a class="headerlink" href="#lair-geo-add-locator-map" title="Link to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="lair.geo.add_extent_map">
-<span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">add_extent_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent_map_rect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent_map_extent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent_map_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#add_extent_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.add_extent_map" title="Link to this definition">#</a></dt>
-<dd><p>Add a small extent map to the figure that shows where the main map is.</p>
-<p>The extent map is a new axes with land, ocean and state boundaries, and
+<dt class="sig sig-object py" id="lair.geo.add_locator_map">
+<span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">add_locator_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locator_rect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locator_extent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locator_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#add_locator_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.add_locator_map" title="Link to this definition">#</a></dt>
+<dd><p>Add a small locator map to the figure that shows where the main map is.</p>
+<p>The locator map is a new axes with land, ocean and state boundaries, and
 the extent of the main map drawn on it as an outline (no fill).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.11.2)"><em>matplotlib.figure.Figure</em></a>) – Figure to add the extent map to</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.11.2)"><em>matplotlib.figure.Figure</em></a>) – Figure to add the locator map to</p></li>
 <li><p><strong>main_extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>]</em>) – Extent of the main map, <code class="docutils literal notranslate"><span class="pre">[minx,</span> <span class="pre">maxx,</span> <span class="pre">miny,</span> <span class="pre">maxy]</span></code>, in
 <code class="docutils literal notranslate"><span class="pre">main_extent_crs</span></code></p></li>
 <li><p><strong>main_extent_crs</strong> (<em>ccrs.CRS</em>) – CRS of the main extent</p></li>
-<li><p><strong>extent_map_rect</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><em>left</em><em>, </em><em>bottom</em><em>, </em><em>width</em><em>, </em><em>height</em><em>]</em>) – Position of the extent map, in figure fractions (0 to 1) as for
+<li><p><strong>locator_rect</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><em>left</em><em>, </em><em>bottom</em><em>, </em><em>width</em><em>, </em><em>height</em><em>]</em>) – Position of the locator map, in figure fractions (0 to 1) as for
 <code class="docutils literal notranslate"><span class="pre">Figure.add_axes</span></code></p></li>
-<li><p><strong>extent_map_extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>]</em>) – Extent of the extent map, <code class="docutils literal notranslate"><span class="pre">[west,</span> <span class="pre">east,</span> <span class="pre">south,</span> <span class="pre">north]</span></code> in degrees
+<li><p><strong>locator_extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>]</em>) – Extent of the locator map, <code class="docutils literal notranslate"><span class="pre">[west,</span> <span class="pre">east,</span> <span class="pre">south,</span> <span class="pre">north]</span></code> in degrees
 of longitude and latitude</p></li>
-<li><p><strong>extent_map_crs</strong> (<em>ccrs.CRS</em>) – Projection of the extent map</p></li>
-<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Color of the main-extent outline drawn on the extent map</p></li>
+<li><p><strong>locator_crs</strong> (<em>ccrs.CRS</em>) – Projection of the locator map</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Color of the main-extent outline drawn on the locator map</p></li>
 <li><p><strong>linewidth</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Line width of the main-extent outline</p></li>
-<li><p><strong>zorder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Zorder of the extent map, by default None</p></li>
+<li><p><strong>zorder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Zorder of the locator map, by default None</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>plt.Axes</em> – Axes object of the extent map</p>
+<dd class="field-even"><p><em>plt.Axes</em> – Axes object of the locator map</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>Axes</em></a></p>
@@ -845,20 +845,20 @@ of longitude and latitude</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="lair.geo.html"
+       href="lair.geo.add_latlon_ticks.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">lair.geo</p>
+        <p class="prev-next-title">lair.geo.add_latlon_ticks</p>
       </div>
     </a>
     <a class="right-next"
-       href="lair.geo.add_lat_ticks.html"
+       href="lair.geo.add_lon_ticks.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">lair.geo.add_lat_ticks</p>
+        <p class="prev-next-title">lair.geo.add_lon_ticks</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -881,14 +881,14 @@ of longitude and latitude</p></li>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lair.geo.add_extent_map"><code class="docutils literal notranslate"><span class="pre">add_extent_map()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lair.geo.add_locator_map"><code class="docutils literal notranslate"><span class="pre">add_locator_map()</span></code></a></li>
 </ul>
   </nav></div>
 
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../_sources/_autosummary/lair.geo.add_extent_map.rst.txt">
+    <a href="../_sources/_autosummary/lair.geo.add_locator_map.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

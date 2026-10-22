@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=baf303e4"></script>
+    <script src="../_static/documentation_options.js?v=6f2f521a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="lair.geo.add_extent_map" href="lair.geo.add_extent_map.html" />
+    <link rel="next" title="lair.geo.add_lat_ticks" href="lair.geo.add_lat_ticks.html" />
     <link rel="prev" title="lair.transects.transit_times" href="lair.transects.transit_times.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev7+g0678434d7" />
+  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -591,9 +591,9 @@
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a aria-current="page" class="current reference internal" href="#">lair.geo</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.geo.add_extent_map.html">lair.geo.add_extent_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.add_locator_map.html">lair.geo.add_locator_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lon_ticks.html">lair.geo.add_lon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bbox2extent.html">lair.geo.bbox2extent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bearing.html">lair.geo.bearing</a></li>
@@ -801,14 +801,14 @@
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.geo.add_extent_map.html#lair.geo.add_extent_map" title="lair.geo.add_extent_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_extent_map</span></code></a></p></td>
-<td><p>Add a small extent map to the figure that shows where the main map is.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.geo.add_lat_ticks.html#lair.geo.add_lat_ticks" title="lair.geo.add_lat_ticks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_lat_ticks</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.geo.add_lat_ticks.html#lair.geo.add_lat_ticks" title="lair.geo.add_lat_ticks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_lat_ticks</span></code></a></p></td>
 <td><p>Add latitude ticks to the map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.geo.add_latlon_ticks.html#lair.geo.add_latlon_ticks" title="lair.geo.add_latlon_ticks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_latlon_ticks</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.geo.add_latlon_ticks.html#lair.geo.add_latlon_ticks" title="lair.geo.add_latlon_ticks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_latlon_ticks</span></code></a></p></td>
 <td><p>Add latitude and longitude ticks to the map.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.geo.add_locator_map.html#lair.geo.add_locator_map" title="lair.geo.add_locator_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_locator_map</span></code></a></p></td>
+<td><p>Add a small locator map to the figure that shows where the main map is.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="lair.geo.add_lon_ticks.html#lair.geo.add_lon_ticks" title="lair.geo.add_lon_ticks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_lon_ticks</span></code></a></p></td>
 <td><p>Add longitude ticks to the map.</p></td>
@@ -904,11 +904,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="lair.geo.add_extent_map.html"
+       href="lair.geo.add_lat_ticks.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">lair.geo.add_extent_map</p>
+        <p class="prev-next-title">lair.geo.add_lat_ticks</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
