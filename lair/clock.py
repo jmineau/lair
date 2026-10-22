@@ -401,25 +401,6 @@ def regular_times_to_intervals(
     return intervals
 
 
-def periodindex_to_binedges(periodindex: pd.PeriodIndex) -> list[pd.Timestamp]:
-    """
-    Convert a PeriodIndex to a list of bin edges.
-
-    Parameters
-    ----------
-    periodindex : pd.PeriodIndex
-        The PeriodIndex to convert.
-
-    Returns
-    -------
-    list[pd.Timestamp]
-        The bin edges.
-    """
-    start_times = [p.start_time for p in periodindex]
-    end_times = [p.end_time for p in periodindex]
-    return start_times + [end_times[-1]]
-
-
 def time_difference_matrix(times, absolute: bool = True) -> np.ndarray:
     """
     Calculate the time differences between each pair of times.
