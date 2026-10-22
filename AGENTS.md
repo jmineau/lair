@@ -167,7 +167,10 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
 - **Inventories:** every loader labels a time step by the *start* of its
   period, from CF `time_bnds` when the file has them (`_label_period_starts`).
   NaN "no emission" cells become 0 before any conservative regrid, or every
-  coarse cell touching one turns NaN. Without `src_units`, each variable is
+  coarse cell touching one turns NaN. A conservative `geo.resample` covers the
+  whole source: a resolution that does not divide the width adds a last cell
+  that reaches past the edge, filled with only what was inside. Without
+  `src_units`, each variable is
   quantified with its own `units` attribute. `tests/inventories` checks every
   loader (`INVENTORY_CASES`) on tiny synthetic archives shaped like the real
   files; add new loaders there.

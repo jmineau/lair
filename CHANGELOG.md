@@ -8,6 +8,21 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Fixed
+
+- `geo.resample` with `regrid_method="conservative"`, and with it
+  `Inventory.resample`, no longer drops the last partial cell (#145). When the
+  new resolution did not divide the source's width (0.3 degrees over 4.0 degrees
+  of longitude), the last cell was kept only when more than half of it was inside
+  the source. Otherwise the new grid stopped short of the source's far edge and
+  left out what was in the strip, so a conservative resample of a 0.1 degree
+  inventory kept 97.6% of the total. The new grid now covers the whole source: it
+  has one more row or column in that case, and the last one reaches past the
+  source's edge. It holds the flux of the part inside the source averaged over the whole
+  cell, so flux times area adds up to the source's total. A resolution that
+  divides the width gives the grid it always did, and so does every other method,
+  `conservative_normed` included (the default, bilinear, keeps the cells whose
+  center is inside the source).
 ### Changed
 
 - The `ImportError` for a missing optional package names the `lair` extra that
