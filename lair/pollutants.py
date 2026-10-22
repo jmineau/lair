@@ -10,8 +10,8 @@ Examples
 --------
 >>> from lair.pollutants import get_pollutant
 >>> ch4 = get_pollutant("ch4")
->>> ch4.label()
-'$\mathrm{CH_4}$ [ppm]'
+>>> print(ch4.label())
+$\mathrm{CH_4}$ [ppm]
 >>> ax.set_ylabel(get_pollutant("PM25").label())  # doctest: +SKIP
 """
 
@@ -31,7 +31,9 @@ class Pollutant:
     r"""
     Metadata for one pollutant.
 
-    Attributes
+    Each field is also an attribute of the same name.
+
+    Parameters
     ----------
     name : str
         Canonical short name, e.g. ``'CH4'``, ``'NOx'``, ``'PM2.5'``.

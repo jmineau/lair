@@ -1,5 +1,11 @@
 """
-Config module for lair package
+Where lair finds data and keeps its cache.
+
+lair has no built-in data paths. A reader takes its folder as an argument and
+otherwise reads a ``LAIR_*`` environment variable through
+:func:`get_data_dir`; :func:`get_cache_dir` gives the cache folder. Both read
+the environment when called, not at import. :ref:`data-locations` lists the
+variables.
 """
 
 import os

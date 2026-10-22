@@ -15,7 +15,7 @@ computes potential temperature on regular heights. Two rules come out of it:
 
    This page does not run when the docs build. It needs the ``requests`` extra
    (see :ref:`installation`) and downloads from the University of Wyoming. The
-   output below was recorded from one run of this code on 2026-10-12.
+   output below was recorded from one run of this code on 2026-10-19.
 
 .. _soundings-data:
 
@@ -164,21 +164,27 @@ lowest 210 m: a surface inversion.
 When get_soundings downloads
 ----------------------------
 
-``get_soundings`` can also download. If the station's folder (``sounding_dir``,
-or ``$LAIR_SOUNDING_DIR/<station>``) does not exist or holds no files, it
-downloads every sounding from ``start`` to ``end`` into it (only those in
-``months``, if you give ``months``), then reads them. Without ``start`` and
-``end`` it raises a ``ValueError``. So point it at a folder you can write to.
-
-If the folder holds any file, it reads what is there and downloads nothing. A
-period the folder does not cover raises a ``ValueError``:
+``get_soundings`` reads the folder and downloads nothing, unless you pass
+``download=True``. Without it, a period the folder does not cover raises a
+``ValueError`` that names the folder and says how to download:
 
 .. code-block:: ipython
 
    In [6]: get_soundings("SLC", start="2024-02-01", end="2024-02-02", sounding_dir="soundings/SLC")
-   ValueError: No soundings found in soundings/SLC for the requested period.
+   ValueError: No soundings found in soundings/SLC for the requested period. Pass download=True (with start and end) to download them.
 
-To add that period, run ``download_soundings`` for it first.
+With ``download=True`` it first downloads every sounding from ``start`` to
+``end`` that the folder does not have (only those in ``months``, if you give
+``months``), then reads them. It is ``download_soundings`` followed by the read,
+so ``start`` and ``end`` are required and the folder must be one you can write
+to. A file already there is not downloaded again, but a sounding that Wyoming
+does not have is asked for again on every call, so give the period you need.
+
+.. code-block:: ipython
+
+   In [7]: ds = get_soundings("SLC", start="2024-02-01", end="2024-02-02", sounding_dir="soundings/SLC", download=True)
+      ...: sorted(os.listdir("soundings/SLC"))
+   Out[7]: ['SLC_2024011500.csv', 'SLC_2024011512.csv', 'SLC_2024020100.csv', 'SLC_2024020112.csv', 'SLC_2024020200.csv']
 
 Next
 ----

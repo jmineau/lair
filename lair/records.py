@@ -1,5 +1,9 @@
 """
-Utilities for working with files and directories.
+Files, downloads and caching.
+
+Download by FTP (:func:`ftp_download`) or with ``wget``, unzip, list the files
+in a folder that match a pattern, read a KML file, and cache a function's
+results in a pickle file (:class:`Cacher`).
 """
 
 import fnmatch
@@ -326,35 +330,26 @@ class Cacher:
     """
     A class that caches function results to a file for future use.
 
-    Attributes
+    Each parameter is also an attribute of the same name.
+
+    Parameters
     ----------
     func : function
         The function to be cached.
     cache_file : str
-        The name of the file to cache results to.
-    reload : bool
+        The name of the file to cache results to; it must end in ``.pkl``.
+    reload : bool, optional
         Whether to re-run the function instead of returning cached results.
+        Each set of arguments is re-run once per Cacher; the fresh result
+        replaces the old one in the index and every other cached entry is
+        kept. (The old result stays in ``cache_file`` but is no longer
+        referenced.) Defaults to False.
     """
 
     import pickle as pkl
 
     def __init__(self, func: Callable, cache_file: str, reload=False):
-        """
-        Initialize a Cacher object.
-
-        Parameters
-        ----------
-        func : function
-            The function to be cached.
-        cache_file : str
-            The name of the file to cache results to.
-        reload : bool, optional
-            Whether to re-run the function instead of returning cached results.
-            Each set of arguments is re-run once per Cacher; the fresh result
-            replaces the old one in the index and every other cached entry is
-            kept. (The old result stays in ``cache_file`` but is no longer
-            referenced.) Defaults to False.
-        """
+        """Initialize a Cacher; the class docstring describes the parameters."""
         if not cache_file.endswith(".pkl"):
             raise ValueError(f"cache_file must end in .pkl: {cache_file!r}")
 

@@ -1,5 +1,13 @@
 """
-Calculate background concentrations.
+Background concentrations of a trace gas from its own time series.
+
+:func:`get_well_mixed` keeps the afternoon hours, when the boundary layer is
+deep; :func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a
+low quantile of a moving window; :func:`thoning` fits NOAA's curve (Thoning et
+al., 1989) through the data. CarbonTracker's background is in
+:mod:`lair.noaa`. :doc:`/examples/background` shows the methods side by side
+and when to use which. The module needs NOAA's CCG filter, which the first
+``import lair`` downloads (see :ref:`first-import-download`), and ``scipy``.
 """
 
 import datetime as dt
