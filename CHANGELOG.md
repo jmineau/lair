@@ -10,6 +10,17 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Added
 
+- The inventory example sets `total_emissions` (a flux in each cell),
+  `absolute_emissions` (the mass in each cell, by sector) and `integrate()` (the
+  total over the region) side by side, with their units, a check of one cell by
+  hand, each sector's total, and why to convert the total rather than the flux.
+  The three docstrings say the same and link to each other.
+- `inventories.convert_units` also converts a plain array or dataset, one with a
+  `units` attribute and no pint units, and returns it plain: the values and the
+  `units` attribute are converted and nothing else changes. Before, it raised
+  `PintExceptionGroup: Cannot convert variables` for anything that was not
+  already pint-quantified. A variable without a `units` attribute raises a
+  `ValueError` that names it. Pint-quantified data converts as before.
 - The API reference has a page for the package itself, with `lair.units`, the
   `mass_flux` context and `setup_ccg_filter`, and pages for `clock`'s
   `AFTERNOON`, `SEASONS` and time-zone shortcuts (`UTC2MTN` and the others).
@@ -44,7 +55,7 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `locator_extent` and `locator_crs`; `main_extent`, `main_extent_crs`, `color`,
   `linewidth` and `zorder` are unchanged, so a call that passes the arguments by
   position only needs the new function name.
-  
+
 ### Fixed
 
 - `geo.resample` with `regrid_method="conservative"`, and with it
@@ -75,19 +86,8 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   - `Inventory.integrate()` no longer labels the regional total with
   `absolute_emissions`' `standard_name`, `annual_emissions_per_gridcell` (#135).
   Its attributes are now `long_name` and `units`, as for `total_emissions`.
-  - The docstring examples of `geo.cosine_weights`, `pcaps.determine_pcap_events`
+- The docstring examples of `geo.cosine_weights`, `pcaps.determine_pcap_events`
   and the `pollutants` module run as written.
-  - The inventory example sets `total_emissions` (a flux in each cell),
-    `absolute_emissions` (the mass in each cell, by sector) and `integrate()` (the
-    total over the region) side by side, with their units, a check of one cell by
-    hand, each sector's total, and why to convert the total rather than the flux.
-    The three docstrings say the same and link to each other.
-  - `inventories.convert_units` also converts a plain array or dataset, one with a
-    `units` attribute and no pint units, and returns it plain: the values and the
-    `units` attribute are converted and nothing else changes. Before, it raised
-    `PintExceptionGroup: Cannot convert variables` for anything that was not
-    already pint-quantified. A variable without a `units` attribute raises a
-    `ValueError` that names it. Pint-quantified data converts as before.
 
 ### Removed
 
