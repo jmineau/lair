@@ -35,46 +35,53 @@ def get_well_mixed(
     data: pd.Series | pd.DataFrame,
     hours: list[int] = AFTERNOON,
     *,
-    tz: str,
+    tz: str | None = None,
 ) -> pd.Series | pd.DataFrame:
     """
     Average the data over the well-mixed hours of each day.
 
-    The hours are read in the time zone ``tz``, which is always required: an
-    index in UTC (all UATAQ data) would otherwise give the hours in UTC, which in
-    the Americas are the morning, under the night-time inversion. A naive index
-    is UTC, as everywhere in lair.
+    The hours are read on a local clock, so what the call needs depends on the
+    index. An index in a local time zone needs nothing more. An index in UTC (a
+    naive index counts as UTC, as everywhere in lair) needs ``tz``, the local
+    zone, and raises a ``ValueError`` without it: its own 12 to 16 would be 5 to
+    9 in the morning in Utah, under the night-time inversion.
 
     Parameters
     ----------
     data : pd.Series | pd.DataFrame
-        Time series data to subset. Must have a datetime index.
+        Time series data. Must have a datetime index.
     hours : list[int], optional
-        Hours of the day to keep, in ``tz``. Default is
-        ``lair.clock.AFTERNOON``, 12 to 16 local standard time.
-    tz : str
-        The time zone ``hours`` are in, such as ``'MST'``. Keyword only. The
-        index is converted to it first (a naive index from UTC), and each day
-        runs from midnight in it; an index already in ``tz`` is unchanged. Give
-        a standard-time zone (``'MST'``, not ``'America/Denver'``) for hours in
-        local standard time, and ``'UTC'`` for UTC hours.
+        Hours of the day to keep, on the clock of the zone the hours are read
+        in. Default is ``lair.clock.AFTERNOON``, 12 to 16 local standard time.
+    tz : str, optional
+        The zone to read ``hours`` in, such as ``'MST'``. Required when the
+        index is in UTC or has no zone: give the local zone, or ``'UTC'`` to
+        use the UTC hours. Optional when the index is in a local zone, which is
+        then converted to ``tz`` first. Keyword only.
 
     Returns
     -------
     pd.Series | pd.DataFrame
         Daily means over the well-mixed hours (non-numeric columns are dropped),
-        each labeled at midnight in ``tz``.
+        each day labeled at midnight in the zone the hours were read in.
+
+    Raises
+    ------
+    ValueError
+        If the index is in UTC or has no zone and ``tz`` is not given.
 
     Notes
     -----
-    An index that holds local times without a time zone is read as UTC, so
-    ``tz='MST'`` would shift it by 7 hours: localize it first
-    (``data.tz_localize('MST')``).
+    ``'MST'`` is standard time all year, which is what ``AFTERNOON`` means;
+    ``'America/Denver'`` follows daylight saving, so in summer its 12 to 16 is
+    11 to 15 standard time.
+
+    An index of local times without a zone is read as UTC, so ``tz`` would shift
+    it: localize it first (``data.tz_localize('MST')``).
 
     Examples
     --------
-    Hourly data stamped in UTC, averaged over the afternoon in Mountain
-    Standard Time:
+    Hourly data in UTC, which is how UATAQ data come: give the local zone.
 
     >>> import pandas as pd
     >>> from lair.background import get_well_mixed
@@ -84,11 +91,26 @@ def get_well_mixed(
     2024-06-01 00:00:00-07:00    14.0
     2024-06-02 00:00:00-07:00    14.0
     Freq: D, dtype: float64
+
+    Data already in a local zone need no ``tz``:
+
+    >>> get_well_mixed(local_hour.tz_convert("MST"))
+    2024-06-01 00:00:00-07:00    14.0
+    2024-06-02 00:00:00-07:00    14.0
+    Freq: D, dtype: float64
     """
     index = pd.DatetimeIndex(data.index)
-    if index.tz is None:
-        index = index.tz_localize("UTC")
-    index = index.tz_convert(tz)
+    if tz is not None:
+        if index.tz is None:
+            index = index.tz_localize("UTC")
+        index = index.tz_convert(tz)
+    elif index.tz is None or index.tz.utcoffset(None) == dt.timedelta(0):
+        raise ValueError(
+            "The index is in UTC (a naive index is read as UTC), so its hours "
+            "are not local hours. Pass tz, the local time zone, such as "
+            "tz='MST' for the afternoon in local standard time, or tz='UTC' to "
+            "use the UTC hours."
+        )
     return (
         data.set_axis(index)[index.hour.isin(hours)]
         .resample("1D")

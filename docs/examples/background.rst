@@ -14,10 +14,11 @@ against the background the data were made from. Three rules come out of it:
 * **A rolling window must be longer than the longest stretch without clean
   air.** Over a pollution episode of several days, the low quantile of a day is
   the episode, not the background.
-* :func:`~lair.background.get_well_mixed` **reads the hours in the zone you
-  give it.** ``tz`` is always required, also for data already in local time, so
-  that UTC data cannot be averaged over the morning without saying so (see the
-  :doc:`clock page <clock>`).
+* :func:`~lair.background.get_well_mixed` **reads the hours in the index's own
+  zone.** Data already in local time need nothing more; data in UTC (or with no
+  zone, which lair reads as UTC) need ``tz``, the local zone, and raise a
+  ``ValueError`` without it, so that they cannot be averaged over the morning
+  by accident (see the :doc:`clock page <clock>`).
 
 .. note::
 
@@ -51,9 +52,9 @@ The methods
      - one-second data from a moving platform, whose background changes within
        the hour
    * - :func:`~lair.background.get_well_mixed`
-     - a ``Series`` or ``DataFrame`` with a time index; ``tz``, the zone the
-       hours are in; and the hours to keep (12 to 16 by default,
-       ``lair.clock.AFTERNOON``)
+     - a ``Series`` or ``DataFrame`` with a time index; ``tz``, the local zone,
+       if the index is in UTC or has no zone; and the hours to keep (12 to 16
+       by default, ``lair.clock.AFTERNOON``)
      - one mean per day over those hours
      - the afternoon, when the boundary layer is deep and a site sees regional
        air
@@ -150,9 +151,9 @@ given. Given every hour, it follows the mean of the data, enhancements
 included. Given afternoon means, it follows the afternoon, when the city's
 methane is mixed through a deep boundary layer.
 :func:`~lair.background.get_well_mixed` takes those means. The data are in
-UTC, so ``tz`` names the zone the hours are in: ``"MST"``, which is standard
-time all year, where ``"America/Denver"`` would move the hours an hour earlier in
-summer:
+UTC, so ``tz`` names the local zone to read the hours in: ``"MST"``, which is
+standard time all year, where ``"America/Denver"`` would move the hours an hour
+earlier in summer:
 
 .. code-block:: ipython
 
@@ -166,10 +167,11 @@ summer:
    2022-01-03 00:00:00-07:00    1.974
    Freq: D, Name: ch4, dtype: float64
 
-Each day is labeled at its local midnight. There is no default for ``tz``,
-because a series in UTC would give 12:00 to 16:59 UTC, which is 5 to 9 in the
-morning in Utah, under the night-time inversion. ``smooth_time`` evaluates the
-curve at the hourly times, to put it beside the others:
+Each day is labeled at its local midnight. Without ``tz`` this call raises a
+``ValueError``, because a series in UTC would give 12:00 to 16:59 UTC, which is
+5 to 9 in the morning in Utah, under the night-time inversion; a series already
+in ``"MST"`` would need no ``tz``. ``smooth_time`` evaluates the curve at the
+hourly times, to put it beside the others:
 
 .. code-block:: ipython
 
