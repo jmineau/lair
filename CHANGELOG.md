@@ -19,10 +19,84 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `Pollutant`, `Cacher`, `ZarrId` and `Winds` is described on its page; See Also
   links and runnable examples join `meteorology`, `air` and `transects`.
 
+### Changed
+
+- `CarbonTrackerCH4.molefractions` and `CarbonTrackerCO2.molefractions` raise a
+  `ValueError` when two files cover one day, naming the day and both files. They
+  read every file of the folder, and two files for a day (the same day from two
+  releases, such as `CTCH4_2024.molefrac_...` beside `CTCH4_2025.molefrac_...`)
+  made them compare and keep every value of the two, so the cache grew to the
+  size of the data and the open could run out of memory. The day is the date the
+  file name ends with, so no file is opened to find it. A folder where an older
+  release's files sit beside the current release's raises until those files are
+  moved out; two releases that cover different days read as before. `sample`
+  and `background` still take the last file of a day by name, and do not stop.
+  - The `ImportError` for a missing optional package names the `lair` extra that
+  provides it and the command that installs the extra, for example `pip install
+  "lair[geo] @ git+https://github.com/jmineau/lair.git"` (`uv pip install` in a
+  uv environment), and links to the installation page. It used to say only that
+  the dependency was not found. The command installs from GitHub because the
+  `lair` on PyPI is an unrelated project.
+  - `geo.add_extent_map` is renamed `geo.add_locator_map` (breaking; there is no
+  alias for the old name). A locator map is the cartographers' name for a small
+  map that shows where the main map is. Its arguments `extent_map_rect`,
+  `extent_map_extent` and `extent_map_crs` become `locator_rect`,
+  `locator_extent` and `locator_crs`; `main_extent`, `main_extent_crs`, `color`,
+  `linewidth` and `zorder` are unchanged, so a call that passes the arguments by
+  position only needs the new function name.
+  
 ### Fixed
 
-- The docstring examples of `geo.cosine_weights`, `pcaps.determine_pcap_events`
+- `geo.resample` with `regrid_method="conservative"`, and with it
+  `Inventory.resample`, no longer drops the last partial cell (#145). When the
+  new resolution did not divide the source's width (0.3 degrees over 4.0 degrees
+  of longitude), the last cell was kept only when more than half of it was inside
+  the source. Otherwise the new grid stopped short of the source's far edge and
+  left out what was in the strip, so a conservative resample of a 0.1 degree
+  inventory kept 97.6% of the total. The new grid now covers the whole source: it
+  has one more row or column in that case, and the last one reaches past the
+  source's edge. It holds the flux of the part inside the source averaged over the whole
+  cell, so flux times area adds up to the source's total. A resolution that
+  divides the width gives the grid it always did, and so does every other method,
+  `conservative_normed` included (the default, bilinear, keeps the cells whose
+  center is inside the source).
+  - `soundings.Sounding.interpolate` starts its heights at the station's own
+  ground by default (`start=None`): its `elevation`, or the height of its first
+  level (Wyoming lists them from the ground up) when the file has no
+  `elevation` (#117). It started at 1289 m, the ground at Salt Lake City, for
+  every station, so a station lower down lost its lowest levels and one higher
+  up got empty levels below the ground. `get_soundings` gives every sounding the heights of the lowest ground
+  among them, so the profiles still share one evenly spaced set of heights.
+  Salt Lake City's soundings get the same heights as before (1289 to 4999 m);
+  a `start` you pass is used as before.
+  - `Inventory.integrate()` no longer labels the regional total with
+  `absolute_emissions`' `standard_name`, `annual_emissions_per_gridcell` (#135).
+  Its attributes are now `long_name` and `units`, as for `total_emissions`.
+  - `Inventory.integrate()` no longer labels the regional total with
+  `absolute_emissions`' `standard_name`, `annual_emissions_per_gridcell` (#135).
+  Its attributes are now `long_name` and `units`, as for `total_emissions`.
+  - The docstring examples of `geo.cosine_weights`, `pcaps.determine_pcap_events`
   and the `pollutants` module run as written.
+  - The inventory example sets `total_emissions` (a flux in each cell),
+    `absolute_emissions` (the mass in each cell, by sector) and `integrate()` (the
+    total over the region) side by side, with their units, a check of one cell by
+    hand, each sector's total, and why to convert the total rather than the flux.
+    The three docstrings say the same and link to each other.
+  - `inventories.convert_units` also converts a plain array or dataset, one with a
+    `units` attribute and no pint units, and returns it plain: the values and the
+    `units` attribute are converted and nothing else changes. Before, it raised
+    `PintExceptionGroup: Cannot convert variables` for anything that was not
+    already pint-quantified. A variable without a `units` attribute raises a
+    `ValueError` that names it. Pint-quantified data converts as before.
+
+### Removed
+
+- `clock.periodindex_to_binedges` (#115). Nothing used it, and its edges were
+  wrong: the last edge was the last period's end time (one instant before the
+  next period starts), and a period missing from the index was not an edge, so
+  a time in it was counted in the period before. To put times in periods, use
+  pandas: `times.to_period("M")`. For bin edges of consecutive periods,
+  `periods.start_time.append(pd.DatetimeIndex([(periods[-1] + 1).start_time]))`.
 
 ## [2026.12.9] - 2026-10-20
 

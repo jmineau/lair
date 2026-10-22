@@ -167,7 +167,10 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
 - **Inventories:** every loader labels a time step by the *start* of its
   period, from CF `time_bnds` when the file has them (`_label_period_starts`).
   NaN "no emission" cells become 0 before any conservative regrid, or every
-  coarse cell touching one turns NaN. Without `src_units`, each variable is
+  coarse cell touching one turns NaN. A conservative `geo.resample` covers the
+  whole source: a resolution that does not divide the width adds a last cell
+  that reaches past the edge, filled with only what was inside. Without
+  `src_units`, each variable is
   quantified with its own `units` attribute. `tests/inventories` checks every
   loader (`INVENTORY_CASES`) on tiny synthetic archives shaped like the real
   files; add new loaders there.
@@ -200,6 +203,11 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
   diurnal cycle; test a change against the daily curve.
 - **The `requests` extra floors `s3fs`, not boto3** (reason in
   `pyproject.toml`).
+- **An optional package** is imported with `import_optional_dependency("pkg")`
+  and listed in `_optional._EXTRA_OF` under its extra, which the missing-package
+  `ImportError` names with the install command (from GitHub: the `lair` on PyPI
+  is unrelated). `tests/optional` checks the table against `pyproject.toml` and
+  every call in `lair/`.
 
 ## Docs
 
@@ -234,7 +242,7 @@ goes on the page that holds its kind:
 | A time without a zone is UTC; time zones; seasons | `examples/clock` | a clause and a link |
 | Units; the `mass_flux` context | `examples/units` | link |
 | Plain SI in and out of `meteorology` | quickstart, "A first calculation" | link |
-| Inventory totals; conservative against bilinear regridding. Drawing a map: the time step, state lines, ticks, grid, inset | `examples/inventory`; for the map, `examples/maps` | link |
+| Inventory totals; conservative against bilinear regridding. Drawing a map: the time step, state lines, ticks, grid, locator map | `examples/inventory`; for the map, `examples/maps` | link |
 | `get_soundings` heights and downloads | `examples/soundings` | link |
 | CarbonTracker sampling and background | `examples/carbontracker` | link |
 | Background methods, side by side, and which one to use | `examples/background` | link |
@@ -255,10 +263,8 @@ markers and the fakes: `tests/README.md`.
 - Conventional Commits with the module as scope (`fix(soundings): ...`), `!`
   for a breaking change. User-visible changes go under `## [Unreleased]` in
   `CHANGELOG.md`; `just changelog` drafts entries.
-- The version comes from git tags (setuptools-scm). Releases are CalVer tags
-  `vYYYY.MM.PATCH`, MM = 05, 08 or 12, made by `just release`; the Publish
-  workflow creates the GitHub Release and Zenodo archives it (CONTRIBUTING.md).
-  **Do not cut a release, tag, or push to `main` unless the maintainer asks.**
+- The version comes from git tags (setuptools-scm). The maintainer cuts the
+  releases (CONTRIBUTING.md).
 
 ## Template
 

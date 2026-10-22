@@ -79,9 +79,98 @@ class TestConvertUnits:
             0.0160425, abs=1e-6
         )
 
+    def test_pint_units_in_pint_units_out(self):
+        da = xr.DataArray(np.ones((2, 2)), dims=["y", "x"]).pint.quantify(
+            "mole/meter**2/second"
+        )
+        out = inventories.convert_units(da, "CH4", "kg/meter**2/second")
+        assert out.pint.units is not None
+        assert out.attrs["units"] == "kg/meter**2/second"
+
     def test_rejects_non_xarray(self):
         with pytest.raises(TypeError):
             inventories.convert_units([1, 2, 3], "CH4", "kg/m2/s")
+
+
+class TestConvertUnitsPlain:
+    """A plain array has a ``units`` attribute and no pint units (plan 001, step 10)."""
+
+    # 1 nmol m-2 s-1 of CH4 in kg km-2 d-1: 1e-9 mol * 16.0425 g/mol * 1e-3 kg/g
+    # * 1e6 m2/km2 * 86400 s/d
+    PER_NMOL = 1e-9 * 16.0425e-3 * 1e6 * 86400
+
+    @pytest.fixture
+    def flux(self):
+        return xr.DataArray(
+            [[10.0, 20.0], [30.0, 40.0]],
+            dims=("lat", "lon"),
+            coords={
+                "lat": ("lat", [40.0, 41.0], {"units": "degrees_north"}),
+                "lon": ("lon", [-112.0, -111.0], {"units": "degrees_east"}),
+            },
+            name="flux",
+            attrs={"units": "nmol m-2 s-1", "long_name": "methane flux"},
+        )
+
+    def test_array_in_array_out(self, flux):
+        out = inventories.convert_units(flux, "CH4", "kg km-2 d-1")
+        np.testing.assert_allclose(out.values, flux.values * self.PER_NMOL, rtol=1e-5)
+        # Plain out, and only the units attribute and the values changed
+        assert out.pint.units is None
+        assert out.name == "flux"
+        assert out.attrs == {"units": "kg km-2 d-1", "long_name": "methane flux"}
+        xr.testing.assert_identical(out.lat, flux.lat)
+        xr.testing.assert_identical(out.lon, flux.lon)
+
+    def test_input_is_not_changed(self, flux):
+        before = flux.copy(deep=True)
+        inventories.convert_units(flux, "CH4", "kg km-2 d-1")
+        xr.testing.assert_identical(flux, before)
+
+    def test_same_as_a_pint_array(self, flux):
+        plain = inventories.convert_units(flux, "CH4", "kg km-2 d-1")
+        quantified = inventories.convert_units(
+            flux.pint.quantify(), "CH4", "kg km-2 d-1"
+        )
+        np.testing.assert_allclose(plain.values, quantified.pint.dequantify().values)
+
+    def test_there_and_back(self, flux):
+        kg = inventories.convert_units(flux, "CH4", "kg km-2 d-1")
+        back = inventories.convert_units(kg, "CH4", "nmol m-2 s-1")
+        np.testing.assert_allclose(back.values, flux.values)
+        assert back.attrs["units"] == "nmol m-2 s-1"
+
+    def test_dask_stays_lazy(self, flux):
+        out = inventories.convert_units(flux.chunk(), "CH4", "kg km-2 d-1")
+        assert out.chunks is not None
+        np.testing.assert_allclose(
+            out.compute().values, flux.values * self.PER_NMOL, rtol=1e-5
+        )
+
+    def test_dataset_converts_every_variable(self, flux):
+        ds = xr.Dataset({"a": flux, "b": 2 * flux}, attrs={"title": "fluxes"})
+        ds["b"].attrs = flux.attrs.copy()
+        out = inventories.convert_units(ds, "CH4", "kg km-2 d-1")
+        for var, scale in [("a", 1), ("b", 2)]:
+            np.testing.assert_allclose(
+                out[var].values, scale * flux.values * self.PER_NMOL, rtol=1e-5
+            )
+            assert out[var].pint.units is None
+            assert out[var].attrs["units"] == "kg km-2 d-1"
+        assert out.attrs == {"title": "fluxes"}
+        assert ds["a"].attrs["units"] == "nmol m-2 s-1"
+
+    def test_array_without_units_raises(self, flux):
+        flux.attrs.pop("units")
+        with pytest.raises(ValueError, match=r"no units attribute on \['flux'\]"):
+            inventories.convert_units(flux, "CH4", "kg km-2 d-1")
+        with pytest.raises(ValueError, match=r"no units attribute on \['data'\]"):
+            inventories.convert_units(flux.rename(None), "CH4", "kg km-2 d-1")
+
+    def test_dataset_variable_without_units_raises(self, flux):
+        ds = xr.Dataset({"a": flux, "b": xr.zeros_like(flux).drop_attrs()})
+        with pytest.raises(ValueError, match=r"no units attribute on \['b'\]"):
+            inventories.convert_units(ds, "CH4", "kg km-2 d-1")
 
 
 @pytest.fixture
@@ -338,8 +427,8 @@ class TestAttributes:
 
     def test_integrate(self, described):
         total = described.integrate()
-        assert total.attrs["long_name"] == "Total Emissions"
-        assert total.attrs["units"] == "kg"
+        # Not absolute_emissions' "annual_emissions_per_gridcell": cells are summed
+        assert total.attrs == {"long_name": "Total Emissions", "units": "kg"}
         assert total.dims == ("time",)
 
     def test_convert_units(self, described):
@@ -356,6 +445,16 @@ class TestAttributes:
         coarse = described.resample(1.0)
         assert coarse.data.sizes["lat"] == 2
         _assert_described(coarse.data, "kg/m**2/s")
+
+    def test_resample_keeps_total_when_resolution_does_not_divide(self, described):
+        # 2 degrees of latitude and longitude in 0.9 degree cells: the third cell
+        # reaches past the edge (it is a fifth inside), and its emissions count
+        pytest.importorskip("xesmf")
+        coarse = described.resample(0.9)
+        assert coarse.data.sizes["lat"] == 3
+        before = described.integrate().values
+        after = coarse.integrate().values
+        np.testing.assert_allclose(after, before, rtol=1e-3)
 
     def test_regrid(self, described):
         pytest.importorskip("xesmf")

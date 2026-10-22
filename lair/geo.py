@@ -382,79 +382,68 @@ def add_latlon_ticks(
     return None
 
 
-def add_extent_map(
+def add_locator_map(
     fig: plt.Figure,
     main_extent: list[float],
     main_extent_crs: ccrs.CRS,
-    extent_map_rect: tuple[float, float, float, float],
-    extent_map_extent: list[float],
-    extent_map_crs: ccrs.CRS,
+    locator_rect: tuple[float, float, float, float],
+    locator_extent: list[float],
+    locator_crs: ccrs.CRS,
     color: str,
     linewidth: int,
     zorder: int | None = None,
 ) -> plt.Axes:
     """
-    Add a small extent map to the figure that shows where the main map is.
+    Add a small locator map to the figure that shows where the main map is.
 
-    The extent map is a new axes with land, ocean and state boundaries, and
+    The locator map is a new axes with land, ocean and state boundaries, and
     the extent of the main map drawn on it as an outline (no fill).
 
     Parameters
     ----------
     fig : matplotlib.figure.Figure
-        Figure to add the extent map to
+        Figure to add the locator map to
     main_extent : list[float]
         Extent of the main map, ``[minx, maxx, miny, maxy]``, in
         ``main_extent_crs``
     main_extent_crs : ccrs.CRS
         CRS of the main extent
-    extent_map_rect : tuple[left, bottom, width, height]
-        Position of the extent map, in figure fractions (0 to 1) as for
+    locator_rect : tuple[left, bottom, width, height]
+        Position of the locator map, in figure fractions (0 to 1) as for
         ``Figure.add_axes``
-    extent_map_extent : list[float]
-        Extent of the extent map, ``[west, east, south, north]`` in degrees
+    locator_extent : list[float]
+        Extent of the locator map, ``[west, east, south, north]`` in degrees
         of longitude and latitude
-    extent_map_crs : ccrs.CRS
-        Projection of the extent map
+    locator_crs : ccrs.CRS
+        Projection of the locator map
     color : str
-        Color of the main-extent outline drawn on the extent map
+        Color of the main-extent outline drawn on the locator map
     linewidth : int
         Line width of the main-extent outline
     zorder : int, optional
-        Zorder of the extent map, by default None
+        Zorder of the locator map, by default None
 
     Returns
     -------
     plt.Axes
-        Axes object of the extent map
+        Axes object of the locator map
     """
     import cartopy.feature as cfeature
     from shapely.geometry import box
 
-    extent_map_ax: GeoAxes = fig.add_axes(
-        extent_map_rect, projection=extent_map_crs, zorder=zorder
+    locator_ax: GeoAxes = fig.add_axes(
+        locator_rect, projection=locator_crs, zorder=zorder
     )
-    extent_map_ax.set_extent(extent_map_extent)
+    locator_ax.set_extent(locator_extent)
 
-    extent_map_ax.add_feature(cfeature.LAND)
-    extent_map_ax.add_feature(cfeature.OCEAN)
-    extent_map_ax.add_feature(cfeature.STATES)
-
-    # # plot the extent of the main map on the extent map
-    # x_coords = main_extent[0:2] + [main_extent[1],
-    #                                main_extent[0],
-    #                                main_extent[0]]
-    # y_coords = main_extent[2:4] + [main_extent[2],
-    #                                main_extent[2],
-    #                                main_extent[3]]
-    # extent_map_ax.plot(x_coords, y_coords,
-    #                    transform=main_extent_crs,
-    #                    color=color, linewidth=linewidth)
+    locator_ax.add_feature(cfeature.LAND)
+    locator_ax.add_feature(cfeature.OCEAN)
+    locator_ax.add_feature(cfeature.STATES)
 
     main_poly = box(*extent2bbox(main_extent))
 
     # Outline only: `color=` would also fill the box
-    extent_map_ax.add_geometries(
+    locator_ax.add_geometries(
         [main_poly],
         crs=main_extent_crs,
         facecolor="none",
@@ -462,7 +451,7 @@ def add_extent_map(
         linewidth=linewidth,
     )
 
-    return extent_map_ax
+    return locator_ax
 
 
 # ----- XARRAY UTILITIES ----- #
@@ -634,6 +623,9 @@ class BaseGrid:
     ) -> Self:
         """
         Resample the data to a new resolution.
+
+        A resolution that does not divide the grid's width leaves a strip at the
+        far edge; :func:`lair.geo.resample` says what happens to it.
 
         Parameters
         ----------
@@ -1001,6 +993,19 @@ def _cell_centers(vmin: float, vmax: float, d: float) -> np.ndarray:
     return np.round(vmin + d * (np.arange(n) + 0.5), 10)
 
 
+def _end_of_last_cell(vmin: float, vmax: float, d: float) -> float:
+    """
+    End of the last cell of size ``d`` that starts below ``vmax``.
+
+    Cells start at ``vmin``. When ``d`` does not divide ``vmax - vmin`` the last
+    cell reaches past ``vmax``, so the cells cover everything up to ``vmax``.
+    """
+    vmin, vmax, d = float(vmin), float(vmax), float(d)
+    # A strip under a millionth of a cell is float noise in the bounds, not a cell
+    n = int(np.ceil((vmax - vmin) / d - 1e-6))
+    return vmin + n * d
+
+
 def regrid(
     data: _XarrayT,
     out_grid: DataArray | Dataset,
@@ -1073,6 +1078,21 @@ def resample(
 
     Returns new data; the input is not modified.
 
+    The new grid starts at the source's outer edge. When the resolution does not
+    divide the source's width (0.3 degrees over 4.0 degrees of longitude), the
+    last cell is partial, and what becomes of it depends on the method:
+
+    - ``"conservative"`` keeps it whole, so the new grid covers the whole source
+      and its last cell reaches past the source's edge. That cell holds the flux of
+      the part inside the source averaged over the whole cell, the part outside
+      counting as zero, so flux times area still adds up to the source's total.
+    - Every other method (``"bilinear"``, the default, and ``"conservative_normed"``
+      included) keeps it only when its center is inside the source, which takes
+      more than half of it, and otherwise drops the strip. A cell centered outside
+      the source's outermost cell centers gets zero from bilinear interpolation,
+      not data, and ``"conservative_normed"`` would give it the flux of the part
+      inside but count its whole area.
+
     Parameters
     ----------
     data : xr.DataArray | xr.Dataset
@@ -1094,7 +1114,9 @@ def resample(
     if isinstance(resolution, (int, float)):
         resolution = (resolution, resolution)
 
-    # Calculate the new grid
+    # Calculate the new grid. A conservative regrid must cover the whole source or
+    # the strip left over by a resolution that does not divide it is lost
+    cover = regrid_method == "conservative"
     bounds = _as_dataset(data).cf.add_bounds(["lat", "lon"])
     xmin = bounds.lon_bounds.min()
     xmax = bounds.lon_bounds.max()
@@ -1107,10 +1129,10 @@ def resample(
     else:
         out_grid = generate_regular_grid(
             xmin=xmin,
-            xmax=xmax,
+            xmax=_end_of_last_cell(xmin, xmax, dx) if cover else xmax,
             dx=dx,
             ymin=ymin,
-            ymax=ymax,
+            ymax=_end_of_last_cell(ymin, ymax, dy) if cover else ymax,
             dy=dy,
             x_label="lon",
             y_label="lat",

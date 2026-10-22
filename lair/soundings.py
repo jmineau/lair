@@ -60,7 +60,7 @@ class Sounding:
 
     Methods
     -------
-    interpolate(start=1289, stop=5000, interval=10)
+    interpolate(start=None, stop=5000, interval=10)
         Interpolate sounding data to regular height intervals.
     """
 
@@ -116,26 +116,51 @@ class Sounding:
                 setattr(self, attr, self.data[attr].iloc[0])
                 self.data.drop(columns=attr, inplace=True)
 
-    def interpolate(self, start=1289, stop=5000, interval=10):
+    def _surface_height(self) -> float:
+        """Station elevation [m], or the first level's height when the file has none."""
+        elevation = getattr(self, "elevation", None)
+        if elevation is not None and not pd.isna(elevation):
+            return float(elevation)
+        # Wyoming lists the levels from the ground up. The first, not the
+        # lowest: a level can carry a wrong height (one SLC file has 15 m)
+        return float(self.data["height"].dropna().iloc[0])
+
+    def interpolate(self, start=None, stop=5000, interval=10):
         """
         Interpolate sounding data to regular height levels.
 
         Parameters
         ----------
-        start : int, optional
-            The lowest height, in meters. Default is 1289.
-        stop : int, optional
+        start : float, optional
+            The lowest height, in meters above sea level. Default is the
+            ground at the station: its ``elevation``, or, in a file without
+            one (soundings downloaded from Wyoming today), the height of the
+            first level, which Wyoming lists from the ground up.
+        stop : float, optional
             The height to stop at, in meters. Like the end of a ``range``, it
             is not itself a level. Default is 5000.
-        interval : int, optional
+        interval : float, optional
             The spacing between levels, in meters. Default is 10.
 
         Returns
         -------
         xr.Dataset
             The interpolated sounding data.
+
+        Examples
+        --------
+        Levels every 10 m from the station's ground up to 4999 m above sea
+        level (Salt Lake City's ground is 1289 m)::
+
+            ds = Sounding("SLC_2024011512.csv").interpolate()
+            ds.height.values[:3]  # array([1289., 1299., 1309.])
         """
-        height = pd.Index(range(start, stop, interval), dtype=float, name="height")
+        if start is None:
+            start = self._surface_height()
+        n = int(np.ceil((stop - start) / interval))
+        height = pd.Index(
+            start + interval * np.arange(max(n, 0)), dtype=float, name="height"
+        )
         # A stable sort keeps repeated levels in file order, so "last" below
         # means the row that comes later in the file
         raw = (
@@ -171,7 +196,9 @@ class Sounding:
         }
         ds.attrs.update(attrs)
         ds.attrs["interpolation_interval"] = interval
-        ds.attrs["notes"] = f"Interpolated to {start}-{stop}m at {interval}m intervals."
+        ds.attrs["notes"] = (
+            f"Interpolated to {start:g}-{stop:g}m at {interval:g}m intervals."
+        )
 
         return ds
 
@@ -336,7 +363,10 @@ def get_soundings(
         Only use (and download) soundings from these months.
     driver : {'xarray', 'pandas'}, optional
         Return interpolated profiles as an xarray Dataset (default), or the
-        merged raw soundings as a pandas DataFrame.
+        merged raw soundings as a pandas DataFrame. The profiles share one set
+        of heights, every 10 m from the station's ground (its ``elevation``,
+        the lowest among the files if they differ; see
+        :meth:`Sounding.interpolate`) up to 5000 m, not included.
 
     Returns
     -------
@@ -390,8 +420,11 @@ def get_soundings(
         )
 
     if driver in ["xarray", "nc"]:
+        # One set of heights for every sounding, from the lowest surface, so
+        # the profiles line up and stay evenly spaced
+        lowest = min(sounding._surface_height() for sounding in soundings)
         data = xr.concat(
-            [sounding.interpolate() for sounding in soundings], dim="time"
+            [sounding.interpolate(start=lowest) for sounding in soundings], dim="time"
         ).sortby("time")
     elif driver in ["pandas", "csv"]:
         data = merge(soundings)

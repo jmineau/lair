@@ -17,7 +17,7 @@ import functools
 import os
 import re
 from abc import ABCMeta
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, Literal, ParamSpec, Self, TypeVar
 
@@ -109,39 +109,106 @@ def molecular_weight(pollutant: str) -> pint.Quantity:
 
 def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
     """
-    Convert the units of a pint quantified data array or dataset.
+    Convert the units of a data array or dataset.
+
+    The data either has pint units (``.pint.quantify()``, what an
+    :class:`Inventory` holds) or is plain, with a ``units`` attribute. It comes
+    back the same way: pint units in, pint units out; plain in, plain out, with
+    the ``units`` attribute and the values converted and everything else (name,
+    coordinates and their attributes, other attributes) as it was. A conversion
+    between an amount (mol) and a mass (kg) uses the molecular weight of
+    ``pollutant``, through the ``mass_flux`` pint context.
 
     Parameters
     ----------
     data : xr.DataArray | xr.Dataset
-        The data to convert. Must have pint units.
+        The data to convert. A dataset converts every variable, so each needs
+        units.
     pollutant : str
-        The pollutant.
+        The pollutant, as a chemical formula (see :func:`molecular_weight`).
     dst_units : Any
         The destination units.
 
     Returns
     -------
     xr.DataArray | xr.Dataset
-        The data with converted units.
+        The data with converted units. ``data`` itself is not changed.
+
+    Raises
+    ------
+    TypeError
+        If ``data`` is not an xarray DataArray or Dataset.
+    ValueError
+        If plain data has no ``units`` attribute.
+
+    See Also
+    --------
+    Inventory.convert_units : The same for an inventory's data.
+    molecular_weight : The molecular weight the conversion uses.
+
+    Examples
+    --------
+    A grid of methane fluxes read from a file, in nmol m-2 s-1, to kg km-2 d-1:
+
+    >>> import xarray as xr
+    >>> from lair.inventories import convert_units
+    >>> flux = xr.DataArray(
+    ...     [[10.0, 20.0], [30.0, 40.0]],
+    ...     dims=("y", "x"),
+    ...     attrs={"units": "nmol m-2 s-1"},
+    ... )
+    >>> kg = convert_units(flux, "CH4", "kg km-2 d-1")
+    >>> kg.attrs["units"]
+    'kg km-2 d-1'
+    >>> round(float(kg[0, 0]), 2)
+    13.86
     """
+    if not isinstance(data, xr.Dataset | xr.DataArray):
+        raise TypeError("data must be an xarray Dataset or DataArray")
+
     data = data.copy()
+    arrays = [data] if isinstance(data, xr.DataArray) else list(data.data_vars.values())
+    plain = all(array.pint.units is None for array in arrays)
+    if plain:
+        _quantify_from_attrs(arrays)
 
     # Calculate molecular weight of pollutant
     mw = molecular_weight(pollutant)
 
     # Use custom pint context to convert mass <--> substance
     with units.context("mass_flux", mw=mw):
-        if isinstance(data, xr.Dataset):
-            data = data.pint.to(dst_units)
-            for var in data.data_vars:
-                data[var].attrs["units"] = dst_units
-        elif isinstance(data, xr.DataArray):
-            data = data.pint.to(dst_units)
-            data.attrs["units"] = dst_units
-        else:
-            raise TypeError("data must be an xarray Dataset or DataArray")
+        data = data.pint.to(dst_units)
+    if plain:
+        data = data.pint.dequantify()
+
+    if isinstance(data, xr.Dataset):
+        for var in data.data_vars:
+            data[var].attrs["units"] = dst_units
+    else:
+        data.attrs["units"] = dst_units
     return data
+
+
+def _quantify_from_attrs(arrays: Sequence[DataArray]) -> None:
+    """
+    Give each array the pint units of its ``units`` attribute, in place.
+
+    Only the values are wrapped. ``.pint.quantify()`` also reads the units of
+    the coordinates (``degrees_north``) and drops that attribute from them, which
+    a caller who passed plain data does not expect to lose.
+    """
+    missing = [
+        "data" if array.name is None else array.name
+        for array in arrays
+        if "units" not in array.attrs
+    ]
+    if missing:
+        raise ValueError(
+            "Data without pint units needs a 'units' attribute "
+            f"(no units attribute on {missing})"
+        )
+    for array in arrays:
+        array.data = units.Quantity(array.data, array.attrs.pop("units"))
 
 
 def _open_mfdataset(
@@ -423,10 +490,22 @@ class Inventory(BaseGrid):
     @_keep_attrs
     def absolute_emissions(self) -> Dataset:
         """
-        Calculate the absolute emissions (total per gridcell for time step by variable).
+        The mass emitted in each grid cell in each time step, sector by sector.
 
-        Fluxes are multiplied by the gridcell area and by the length of each
-        time step:
+        Each sector's flux is multiplied by the area of its grid cell and by the
+        length of the time step. The area and time units cancel, so the values
+        are in the inventory's own mass (or amount) unit: ``kg`` for a flux in
+        ``kg/m**2/s``, ``Mg`` for one in ``Mg/km**2/yr``. With annual data, each
+        value is the mass the cell emitted in that year; with monthly data, in
+        that month.
+
+        Use it for the mass in one cell, or a sector's total over a region
+        (``absolute_emissions.sum(["lat", "lon"])``). For the total of every
+        sector over the region, use :meth:`Inventory.integrate`, which is that sum
+        added over the sectors. :ref:`The inventory example <inventory-totals>`
+        shows the three sums side by side.
+
+        The length of a time step:
 
         - When the flux is a rate per time step (``a-1`` with annual data,
           ``month-1`` with monthly, ``d-1`` with daily, ``hr-1`` with hourly
@@ -438,10 +517,21 @@ class Inventory(BaseGrid):
           month. This matches EDGAR, whose leap-year files state
           ``interval: 1 year, 366 days``.
 
+        So convert the result, not the flux. Converting ``kg/m**2/s`` to
+        ``Gg/km**2/yr`` first goes through pint's year of 365.25 days, and each
+        value is then taken as one step: a leap year comes out 0.2% low, any
+        other year 0.07% high.
+
         Returns
         -------
-        xr.DataArray
-            The absolute emissions.
+        xr.Dataset
+            One variable per sector, on the inventory's grid and time steps, each
+            with its mass unit in its ``units`` attribute.
+
+        See Also
+        --------
+        Inventory.integrate : The total over the grid, every sector added.
+        Inventory.total_emissions : The flux in each cell, every sector added.
         """
         # Extract current unit information
         _, area_unit, time_unit = self.get_units(pint=False)
@@ -499,7 +589,13 @@ class Inventory(BaseGrid):
     @property
     def total_emissions(self) -> DataArray:
         """
-        Calculate the total emissions by summation over all variables.
+        The flux in each grid cell, summed over the sectors.
+
+        This is not a total over a region. It is still a flux per area and time,
+        in the inventory's units (``kg/m**2/s`` for EDGAR), one value per cell
+        and time step. Use it for a map or for the flux at a place. Adding it up
+        over the cells gives no mass, since the cells differ in area: the mass
+        emitted over the region is :meth:`Inventory.integrate`.
 
         Every sector in the product is summed, so what the total covers depends on the
         product (see the inventory's docstring). To leave sectors out, use
@@ -508,7 +604,13 @@ class Inventory(BaseGrid):
         Returns
         -------
         xr.DataArray
-            The total emissions.
+            The summed flux, on the inventory's grid and time steps, with its
+            flux unit in its ``units`` attribute.
+
+        See Also
+        --------
+        Inventory.integrate : The total over the grid, as a mass per time step.
+        Inventory.absolute_emissions : The mass in each cell, by sector.
         """
         return sum_sectors(self.data)
 
@@ -591,15 +693,37 @@ class Inventory(BaseGrid):
     @_keep_attrs
     def integrate(self) -> DataArray:
         """
-        Integrate the data over the spatial dimensions: total emissions per time step.
+        Return the total mass emitted over the whole grid in each time step.
+
+        This is the regional total: :attr:`Inventory.absolute_emissions` (each
+        cell's flux times its area and the length of the time step) summed over
+        the cells and over the sectors, so ``clip()`` the inventory to the region
+        first. The result is in the inventory's own mass (or amount) unit,
+        ``kg`` for a flux in ``kg/m**2/s``, and each value is the mass emitted
+        in one time step: kilograms per year with annual data, per month with
+        monthly data.
+
+        Unlike :attr:`Inventory.total_emissions`, which sums only the sectors
+        and is still a flux per area, this is a mass. :ref:`The inventory example
+        <inventory-totals>` shows both, with a check by hand.
 
         Returns
         -------
         xr.DataArray
-            The integrated data.
+            The total, along ``time`` only, with the mass unit in its ``units``
+            attribute. It is lazy for an inventory read from files:
+            ``compute()`` reads them.
+
+        See Also
+        --------
+        Inventory.absolute_emissions : The mass in each cell, by sector.
+        Inventory.total_emissions : The flux in each cell, every sector added.
         """
         x_dim, y_dim = self.data.rio.x_dim, self.data.rio.y_dim
-        return sum_sectors(self.absolute_emissions.sum([x_dim, y_dim]))
+        cells = self.absolute_emissions.sum([x_dim, y_dim])
+        # Summed over the cells, the per-gridcell names no longer describe it
+        cells.attrs = {}
+        return sum_sectors(cells)
 
     # Emission inventories only allow mass-conserving (conservative) regridding
     # pyrefly: ignore[bad-override]
@@ -651,6 +775,11 @@ class Inventory(BaseGrid):
     ) -> Self:
         """
         Resample the data to a new resolution.
+
+        The new grid covers the whole inventory. When the resolution does not
+        divide its width, the last row or column reaches past the edge and holds
+        only what was inside, so the total is kept (see :func:`lair.geo.resample`).
+        This holds for ``"conservative"``, the default.
 
         Parameters
         ----------
