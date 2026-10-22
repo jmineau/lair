@@ -8,6 +8,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Changed
+
+- The `ImportError` for a missing optional package names the `lair` extra that
+  provides it and the command that installs the extra, for example `pip install
+  "lair[geo] @ git+https://github.com/jmineau/lair.git"` (`uv pip install` in a
+  uv environment), and links to the installation page. It used to say only that
+  the dependency was not found. The command installs from GitHub because the
+  `lair` on PyPI is an unrelated project.
 ### Removed
 
 - `clock.periodindex_to_binedges` (#115). Nothing used it, and its edges were
