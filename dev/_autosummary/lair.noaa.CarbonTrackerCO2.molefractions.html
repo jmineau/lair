@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=8ddf9f83"></script>
+    <script src="../_static/documentation_options.js?v=35b4e661"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTrackerCO2" href="lair.noaa.CarbonTrackerCO2.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev3+g324fc26a4" />
+  <meta name="docsearch:version" content="2026.12.10.dev4+g3e1989f00" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -807,6 +807,17 @@
 <dt class="sig sig-object py" id="lair.noaa.CarbonTrackerCO2.molefractions">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">CarbonTrackerCO2.</span></span><span class="sig-name descname"><span class="pre">molefractions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.9.0)"><span class="pre">Dataset</span></a></span><a class="reference internal" href="../_modules/lair/noaa.html#CarbonTrackerCO2.molefractions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.noaa.CarbonTrackerCO2.molefractions" title="Link to this definition">#</a></dt>
 <dd><p>Molefractions Dataset on <code class="docutils literal notranslate"><span class="pre">self.grid</span></code> (lazy). Cached property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If the folder has no file on <code class="docutils literal notranslate"><span class="pre">self.grid</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If two files on <code class="docutils literal notranslate"><span class="pre">self.grid</span></code> cover one day, such as the same day
+    from two releases (their names end with the same
+    <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD.nc</span></code>). The message names the day and both files. The
+    files are not opened, and nothing is cached.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

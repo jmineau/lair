@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=8ddf9f83"></script>
+    <script src="_static/documentation_options.js?v=35b4e661"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev3+g324fc26a4" />
+  <meta name="docsearch:version" content="2026.12.10.dev4+g3e1989f00" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -576,18 +576,10 @@ hidden index file beside it:</p>
 imported, so <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> works with a read-only home directory. If the folder
 cannot be made, the error names it and <code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code>: set the variable to a
 folder you can write to, or pass <code class="docutils literal notranslate"><span class="pre">cache=False</span></code>, which saves nothing.</p>
-<p>How large the file gets depends on the folder it describes:</p>
-<ul class="simple">
-<li><p><strong>One file for each day:</strong> the file holds how to open the files, not their
-values: 8 to 15 KB for each daily file, so 3.2 MB for the 366 days of a year,
-whose files add up to 13 GB.</p></li>
-<li><p><strong>Two files for the same day</strong> (for example the same day from two releases,
-<code class="docutils literal notranslate"><span class="pre">CTCH4_2024.molefrac_...</span></code> and <code class="docutils literal notranslate"><span class="pre">CTCH4_2025.molefrac_...</span></code>): <code class="docutils literal notranslate"><span class="pre">molefractions</span></code>
-has to compare them, so it reads every value, and the cache holds them. The file
-is then about 1.1 times the size of the files (243 MB for six files of 36 MB), and
-opening takes memory for all the values, more than a job has when the folder
-holds thousands of files. Keep one file for each day.</p></li>
-</ul>
+<p>The file holds how to open the files, not their values: 8 to 15 KB for each daily
+file, so 3.2 MB for the 366 days of a year, whose files add up to 13 GB. That
+needs one file for each day: <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> raises an error, and caches
+nothing, when two files cover one day (see <a class="reference internal" href="examples/carbontracker.html#carbontracker-data"><span class="std std-ref">The data</span></a>).</p>
 <p>The file is for one list of files. When the folder gains or loses a file, the next
 <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> adds an entry for the new list, as large as the first, to the
 same file, and the old entry stays. To start again, delete the version’s folder in
