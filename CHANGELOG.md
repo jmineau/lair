@@ -20,6 +20,37 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   release's files sit beside the current release's raises until those files are
   moved out; two releases that cover different days read as before. `sample`
   and `background` still take the last file of a day by name, and do not stop.
+### Fixed
+
+- `geo.resample` with `regrid_method="conservative"`, and with it
+  `Inventory.resample`, no longer drops the last partial cell (#145). When the
+  new resolution did not divide the source's width (0.3 degrees over 4.0 degrees
+  of longitude), the last cell was kept only when more than half of it was inside
+  the source. Otherwise the new grid stopped short of the source's far edge and
+  left out what was in the strip, so a conservative resample of a 0.1 degree
+  inventory kept 97.6% of the total. The new grid now covers the whole source: it
+  has one more row or column in that case, and the last one reaches past the
+  source's edge. It holds the flux of the part inside the source averaged over the whole
+  cell, so flux times area adds up to the source's total. A resolution that
+  divides the width gives the grid it always did, and so does every other method,
+  `conservative_normed` included (the default, bilinear, keeps the cells whose
+  center is inside the source).
+### Changed
+
+- The `ImportError` for a missing optional package names the `lair` extra that
+  provides it and the command that installs the extra, for example `pip install
+  "lair[geo] @ git+https://github.com/jmineau/lair.git"` (`uv pip install` in a
+  uv environment), and links to the installation page. It used to say only that
+  the dependency was not found. The command installs from GitHub because the
+  `lair` on PyPI is an unrelated project.
+### Removed
+
+- `clock.periodindex_to_binedges` (#115). Nothing used it, and its edges were
+  wrong: the last edge was the last period's end time (one instant before the
+  next period starts), and a period missing from the index was not an edge, so
+  a time in it was counted in the period before. To put times in periods, use
+  pandas: `times.to_period("M")`. For bin edges of consecutive periods,
+  `periods.start_time.append(pd.DatetimeIndex([(periods[-1] + 1).start_time]))`.
 
 ## [2026.12.9] - 2026-10-20
 
