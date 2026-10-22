@@ -31,7 +31,7 @@ import xarray as xr
 
 from lair import constants
 
-#: Inputs/outputs: scalars, numpy arrays or xarray DataArrays in SI units
+#: Scalars, numpy arrays or xarray DataArrays in SI units, as inputs and results
 Numeric = Any
 
 # Physical constants as plain SI floats
@@ -101,33 +101,68 @@ def ideal_gas_law(
     R: Numeric = None,
 ) -> Numeric:
     """
-    Ideal gas law equation solver.
+    Solve the ideal gas law for one variable.
 
-    Solver attempts to solve for the specified variable using the following
-    forms of the ideal gas law:
+    The solver uses one of these forms of the law, where R* is the universal
+    gas constant and kb Boltzmann's constant::
 
-    pV = nR*T
-    pV = mRT
-    pV = NkbT
-    p = ρRT
-    pα = RT
+        pV = nR * T
+        pV = mRT
+        pV = NkbT
+        p = ρRT
+        pα = RT
 
-    Input variables must be able to solve for the desired variable using the
-    above equations without intermediate steps. Inputs and the result are in
-    SI (pint Quantities are converted to SI first; see the module docstring).
+    Give the inputs one form needs to solve for the variable directly, with no
+    intermediate step. Inputs and the result are in SI (pint Quantities are
+    converted to SI first; see the module docstring).
 
-    p : pressure (Pa)
-    V : volume (m^3)
-    T : temperature (K)
-    m : mass (kg)
-    n : moles (mol)
-    N : number of molecules (#)
-    ρ : density (kg/m^3)
-    α : specific volume (m^3/kg)
-    R : specific gas constant (J/kg/K)
+    Parameters
+    ----------
+    solve_for : str
+        The variable to solve for: ``'p'`` (or ``'pressure'``, ``'pres'``),
+        ``'V'`` (``'volume'``, ``'vol'``), ``'T'`` (``'temperature'``,
+        ``'temp'``), ``'rho'`` (``'density'``), ``'m'`` (``'mass'``), ``'n'``
+        (``'moles'``) or ``'N'`` (``'number'``).
+    p : Numeric, optional
+        Pressure (Pa).
+    V : Numeric, optional
+        Volume (m^3).
+    T : Numeric, optional
+        Temperature (K).
+    m : Numeric, optional
+        Mass (kg).
+    n : Numeric, optional
+        Amount of substance (mol).
+    N : Numeric, optional
+        Number of molecules.
+    rho : Numeric, optional
+        Density (kg/m^3).
+    alpha : Numeric, optional
+        Specific volume (m^3/kg).
+    R : Numeric, optional
+        Specific gas constant (J/kg/K): 287.05 for dry air.
 
-    Can be used to solve for pressure, volume, temperature, density, mass,
-    moles, or number of molecules.
+    Returns
+    -------
+    Numeric
+        The variable asked for, in SI.
+
+    Raises
+    ------
+    ValueError
+        If ``solve_for`` is not one of the names above.
+
+    See Also
+    --------
+    hypsometric : Thickness of a layer between two pressures.
+
+    Examples
+    --------
+    The density of dry air at sea level in the standard atmosphere:
+
+    >>> from lair.meteorology import ideal_gas_law
+    >>> round(float(ideal_gas_law("rho", p=101325.0, T=288.15, R=287.05)), 3)
+    1.225
     """
     # Compare against None (not truthiness) so array inputs and zero values
     # (e.g. n=0) work
@@ -186,22 +221,53 @@ def hypsometric(
     deltaz: Numeric = None,
 ) -> Numeric:
     """
-    Hyposometric equation solver.
+    Solve the hypsometric equation for one variable.
 
-    Z2 - Z1 = Rd * Tv * ln(p1/p2) / g
+    The equation is ``Z2 - Z1 = Rd * Tv * ln(p1 / p2) / g``. Give all but one
+    of its variables (``deltaz`` stands for ``Z2 - Z1``) and the missing one is
+    returned: the thickness when neither height nor ``deltaz`` is given. Inputs
+    and the result are in SI (pint Quantities are converted to SI first; see
+    the module docstring).
 
-    Input variables must be able to solve for the desired variable using the
-    above equation without intermediate steps. Inputs and the result are in
-    SI (pint Quantities are converted to SI first; see the module docstring).
+    Parameters
+    ----------
+    Tv : Numeric, optional
+        Mean virtual temperature of the layer (K).
+    p1 : Numeric, optional
+        Pressure at the bottom of the layer (Pa).
+    p2 : Numeric, optional
+        Pressure at the top of the layer (Pa).
+    Z1 : Numeric, optional
+        Geopotential height of the bottom of the layer (m).
+    Z2 : Numeric, optional
+        Geopotential height of the top of the layer (m).
+    deltaz : Numeric, optional
+        Thickness of the layer (m).
 
-    Tv : mean virtual temperature of layer (K)
-    p1 : pressure at bottom of layer (Pa)
-    p2 : pressure at top of layer (Pa)
-    Z1 : geopotential height at bottom of layer (m)
-    Z2 : geopotential height at top of layer (m)
-    deltaz : thickness of layer (m)
+    Returns
+    -------
+    Numeric
+        The missing variable, in SI.
 
-    Can be used to solve for any of the variables in the equation or deltaz.
+    Raises
+    ------
+    ValueError
+        If the inputs do not determine one variable.
+
+    See Also
+    --------
+    virt_T : The virtual temperature ``Tv``.
+
+    Examples
+    --------
+    The thickness of the 1000 to 850 hPa layer at a mean virtual temperature
+    of 280 K, and the pressure 1300 m above the 1000 hPa level:
+
+    >>> from lair.meteorology import hypsometric
+    >>> round(float(hypsometric(Tv=280.0, p1=100000.0, p2=85000.0)), 1)
+    1331.5
+    >>> round(float(hypsometric(Tv=280.0, p1=100000.0, deltaz=1300.0)))
+    85328
     """
     # Compare against None (not truthiness) so a surface height of 0 m and
     # array inputs work
@@ -242,6 +308,16 @@ def virt_T(T: Numeric, q: Numeric) -> Numeric:
     -------
     float
         Virtual temperature in Kelvin.
+
+    See Also
+    --------
+    hypsometric : Uses the mean virtual temperature of a layer.
+
+    Examples
+    --------
+    >>> from lair.meteorology import virt_T
+    >>> round(float(virt_T(293.15, 0.01)), 2)
+    294.94
     """
     return T * (1 + 0.61 * q)
 
@@ -249,7 +325,7 @@ def virt_T(T: Numeric, q: Numeric) -> Numeric:
 @_si_inputs
 def poisson(T: Numeric, p: Numeric, p0: Numeric = 1e5) -> Numeric:
     """
-    Calculate the potential temperature. (Poission's equation)
+    Calculate the potential temperature (Poisson's equation).
 
     Parameters
     ----------
@@ -264,6 +340,22 @@ def poisson(T: Numeric, p: Numeric, p0: Numeric = 1e5) -> Numeric:
     -------
     float
         Potential temperature in Kelvin.
+
+    See Also
+    --------
+    inv_poisson : The temperature from the potential temperature.
+
+    Examples
+    --------
+    Air at 0 degrees Celsius and 850 hPa, in SI or as pint quantities (the
+    result is in kelvin either way):
+
+    >>> from lair import units
+    >>> from lair.meteorology import poisson
+    >>> round(float(poisson(T=273.15, p=85000.0)), 2)
+    286.13
+    >>> round(float(poisson(T=0 * units.degC, p=850 * units.hPa)), 2)
+    286.13
     """
     return T * (p0 / p) ** (Rd / cp)
 
@@ -271,7 +363,9 @@ def poisson(T: Numeric, p: Numeric, p0: Numeric = 1e5) -> Numeric:
 @_si_inputs
 def inv_poisson(p: Numeric, theta: Numeric, p0: Numeric = 1e5) -> Numeric:
     """
-    Calculate the temperature from potential temperature. (Inverse Poission's equation)
+    Calculate the temperature from the potential temperature.
+
+    This is Poisson's equation solved for the temperature.
 
     Parameters
     ----------
@@ -286,6 +380,16 @@ def inv_poisson(p: Numeric, theta: Numeric, p0: Numeric = 1e5) -> Numeric:
     -------
     float
         Temperature in Kelvin.
+
+    See Also
+    --------
+    poisson : The potential temperature from the temperature.
+
+    Examples
+    --------
+    >>> from lair.meteorology import inv_poisson
+    >>> round(float(inv_poisson(p=85000.0, theta=286.67)), 2)
+    273.67
     """
     return theta * (p / p0) ** (Rd / cp)
 
@@ -304,6 +408,18 @@ def sat_vapor_pres(T: Numeric) -> Numeric:
     -------
     float
         Saturation vapor pressure in Pascals.
+
+    See Also
+    --------
+    T_from_e : Its inverse, the temperature at a vapor pressure.
+    sat_vapor_pres_ice : The same over ice.
+    mixing_ratio : The mixing ratio at a vapor pressure.
+
+    Examples
+    --------
+    >>> from lair.meteorology import sat_vapor_pres
+    >>> round(float(sat_vapor_pres(293.15)), 1)
+    2363.3
     """
     return 2.53e11 * np.exp(-5420 / T)
 
@@ -322,6 +438,10 @@ def sat_vapor_pres_ice(T: Numeric) -> Numeric:
     -------
     float
         Saturation vapor pressure over ice in Pascals.
+
+    See Also
+    --------
+    sat_vapor_pres : The same over liquid water.
     """
     # Petty: e_si = 3.41e12 Pa exp(-6130 K / T); ~611 Pa at the triple point
     return 3.41e12 * np.exp(-6130 / T)
@@ -346,6 +466,18 @@ def mixing_ratio(e: Numeric, p: Numeric) -> Numeric:
     -------
     float
         Mixing ratio in kg/kg.
+
+    See Also
+    --------
+    sat_vapor_pres : The vapor pressure at saturation.
+
+    Examples
+    --------
+    The saturation mixing ratio at 20 degrees Celsius and sea-level pressure:
+
+    >>> from lair.meteorology import mixing_ratio, sat_vapor_pres
+    >>> round(float(mixing_ratio(sat_vapor_pres(293.15), 101325.0)), 5)
+    0.01485
     """
     return epsilon * e / (p - e)
 
@@ -364,5 +496,9 @@ def T_from_e(e: Numeric) -> Numeric:  # Pa
     -------
     float
         Temperature in Kelvin.
+
+    See Also
+    --------
+    sat_vapor_pres : Its inverse.
     """
     return -5420 / np.log(e / 2.53e11)  # K

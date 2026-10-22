@@ -1,5 +1,14 @@
 """
-Geo-spatial utilities.
+Grids, maps and distances.
+
+:class:`BaseGrid` and the functions it wraps work on gridded xarray data:
+clip to a region (:func:`clip`), grid-cell areas on the WGS84 ellipsoid
+(:func:`gridcell_area`), and regridding with xESMF (:func:`regrid`,
+:func:`resample`; :doc:`/examples/inventory` says which method a flux needs).
+:func:`plot_grid` and the tick and inset-map helpers draw maps with cartopy
+(:doc:`/examples/maps`), and :func:`haversine` and :func:`bearing` measure on
+the sphere. Importing the module needs the ``geo`` extra, and regridding needs
+ESMF as well (see :ref:`optional-dependencies`).
 """
 
 from __future__ import (
@@ -1266,9 +1275,16 @@ def cosine_weights(lats: np.ndarray) -> np.ndarray:
 
     Examples
     --------
-    >>> ds: xr.Dataset
-    >>> weights = cosine_weights(ds.lat)
-    >>> ds_weighted = ds.weighted(weights)
+    The mean of a field weighted by the area of each latitude band:
+
+    >>> import xarray as xr
+    >>> from lair.geo import cosine_weights
+    >>> field = xr.DataArray([1.0, 3.0], coords={"lat": [0.0, 60.0]}, dims="lat")
+    >>> weights = cosine_weights(field.lat)
+    >>> weights.values.round(3)
+    array([1. , 0.5])
+    >>> round(float(field.weighted(weights).mean()), 3)
+    1.667
     """
     return np.cos(np.deg2rad(lats))
 

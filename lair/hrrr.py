@@ -1,7 +1,15 @@
 """
 HRRR winds at a point.
 
-Documentation: https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.html
+:class:`Winds` downloads the 10 m winds of the HRRR analyses at the grid point
+nearest a latitude and longitude, from the University of Utah's HRRR-Zarr
+archive on Amazon S3, and rotates them to earth-relative u and v. The other
+functions are the steps it takes: build the S3 keys of a model run
+(:class:`ZarrId`), find the grid point, read and decompress its chunk.
+:doc:`/examples/hrrr_winds` shows it at one point.
+
+The archive's documentation:
+https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.html
 """
 
 import dataclasses
@@ -41,7 +49,9 @@ class ZarrId:
     """
     Class to store information about a HRRR zarr file.
 
-    Attributes
+    Each parameter is also an attribute of the same name.
+
+    Parameters
     ----------
     run_hour : dt.datetime
         run hour of the model. A naive time is taken as UTC; a tz-aware time
@@ -120,7 +130,12 @@ class Winds:
     """
     Class to download HRRR winds at a point.
 
-    Attributes
+    Making one downloads the winds: the 10 m u and v analyses of each hour,
+    at the HRRR grid point nearest to ``lat`` and ``lon``, from the public
+    HRRR-Zarr archive on Amazon S3. :doc:`/examples/hrrr_winds` shows it.
+    Each parameter is also an attribute of the same name.
+
+    Parameters
     ----------
     lat : float
         latitude of point
@@ -130,6 +145,9 @@ class Winds:
         Hours of the analyses to download. A naive time is taken as UTC. A
         tz-aware time is converted to UTC to choose the analysis, so 05:00 in
         ``America/Denver`` in January reads the 12 UTC analysis.
+
+    Attributes
+    ----------
     nearest_point : xr.Dataset
         nearest point to lat, lon
     chunk_id : numpy.ndarray

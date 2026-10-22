@@ -191,6 +191,17 @@ def hourly_mean(
     ``n_obs`` counts the wind observations in the hour. Hours with no data are
     dropped. Works per station when a ``stid`` column is present.
 
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Observations as :func:`timeseries` returns them, with a ``Time``
+        column.
+    speed : str, optional
+        Column of wind speed. Default ``"wind_speed_set_1"``.
+    direction : str, optional
+        Column of wind direction (degrees, blowing from). Default
+        ``"wind_direction_set_1"``.
+
     Returns
     -------
     pd.DataFrame

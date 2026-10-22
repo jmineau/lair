@@ -1,5 +1,12 @@
 """
-Miscellaneous functions for atmospheric data.
+Winds and polar binning.
+
+:func:`wind_components` and :func:`wind_direction` convert between a wind's
+speed and direction (the direction it blows from, in degrees clockwise from
+north) and its u and v components; :func:`rotate_winds` turns HRRR's
+grid-relative components to earth-relative ones. :func:`bin_polar` and its
+helpers bin data by wind direction into the 16 compass sectors of
+:data:`WIND_SECTORS`, for the polar plots of :mod:`lair.plotter`.
 """
 
 from typing import Any
@@ -152,6 +159,20 @@ def wind_components(speed, wind_direction) -> tuple[Any, Any]:
     -------
     tuple[float, float]
         u and v components of the wind.
+
+    See Also
+    --------
+    wind_direction : The direction from the components.
+
+    Examples
+    --------
+    A west wind (blowing from 270 degrees) at 10 m/s blows toward the east,
+    so u is positive:
+
+    >>> from lair.air import wind_components
+    >>> u, v = wind_components(10.0, 270.0)
+    >>> round(float(u), 6), round(float(v), 6)
+    (10.0, 0.0)
     """
     u = -speed * np.sin(np.deg2rad(wind_direction))
     v = -speed * np.cos(np.deg2rad(wind_direction))
@@ -177,6 +198,18 @@ def wind_direction(u, v):
         vector has no direction, and arctan2(0, 0) = 0 would report 270 (west).
         This matters for vector-mean winds, where a dead-calm period averages
         to exactly zero.
+
+    See Also
+    --------
+    wind_components : The components from a speed and a direction.
+
+    Examples
+    --------
+    >>> from lair.air import wind_direction
+    >>> float(wind_direction(10.0, 0.0))  # blowing toward the east
+    270.0
+    >>> float(wind_direction(0.0, 0.0))  # calm
+    nan
     """
     direction = (270 - np.rad2deg(np.arctan2(v, u))) % 360
     calm = (np.asarray(u) == 0) & (np.asarray(v) == 0)
@@ -205,6 +238,10 @@ def rotate_winds(u, v, lon) -> tuple[Any, Any]:
     -------
     tuple[np.array, np.array]
         u and v components of wind in earth coordinates
+
+    See Also
+    --------
+    lair.hrrr.winds_frame : HRRR winds at a point, rotated with this.
     """
     # Parameters
     rotcon_p = 0.622515

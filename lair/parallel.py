@@ -1,5 +1,9 @@
 """
-Parallelization utilities.
+Run a function over many inputs in worker processes.
+
+:func:`parallelize` wraps a function so that it maps over an iterable with a
+``multiprocessing`` pool. It counts only the CPUs this process may use (a
+Slurm job's, not the whole node's).
 """
 
 import logging

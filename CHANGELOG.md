@@ -21,6 +21,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `PintExceptionGroup: Cannot convert variables` for anything that was not
   already pint-quantified. A variable without a `units` attribute raises a
   `ValueError` that names it. Pint-quantified data converts as before.
+- The API reference has a page for the package itself, with `lair.units`, the
+  `mass_flux` context and `setup_ccg_filter`, and pages for `clock`'s
+  `AFTERNOON`, `SEASONS` and time-zone shortcuts (`UTC2MTN` and the others).
+- Each module's page opens with what the module holds and which example shows it.
+- Every parameter of `transects`' functions, `meteorology.ideal_gas_law`,
+  `meteorology.hypsometric`, `synoptic.hourly_mean`, `plotter.NCL_cmap`,
+  `Pollutant`, `Cacher`, `ZarrId` and `Winds` is described on its page; See Also
+  links and runnable examples join `meteorology`, `air` and `transects`.
 
 ### Changed
 
@@ -47,7 +55,7 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `locator_extent` and `locator_crs`; `main_extent`, `main_extent_crs`, `color`,
   `linewidth` and `zorder` are unchanged, so a call that passes the arguments by
   position only needs the new function name.
-  
+
 ### Fixed
 
 - `geo.resample` with `regrid_method="conservative"`, and with it
@@ -78,6 +86,8 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   - `Inventory.integrate()` no longer labels the regional total with
   `absolute_emissions`' `standard_name`, `annual_emissions_per_gridcell` (#135).
   Its attributes are now `long_name` and `units`, as for `total_emissions`.
+- The docstring examples of `geo.cosine_weights`, `pcaps.determine_pcap_events`
+  and the `pollutants` module run as written.
 
 ### Removed
 
