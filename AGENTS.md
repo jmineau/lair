@@ -2,7 +2,8 @@
 
 Orientation for contributors and coding agents working on lair. Contribution
 mechanics (setup, checks, the pixi environment, writing docs examples,
-releasing) are in [CONTRIBUTING.md](CONTRIBUTING.md); the test layout is in
+releasing), the tour of the modules, and where each fact goes in the docs are
+in [CONTRIBUTING.md](CONTRIBUTING.md); the test layout is in
 [tests/README.md](tests/README.md).
 
 > **Keep this file current.** If you change the module layout, the build/test
@@ -27,27 +28,10 @@ project). Docs: <https://jmineau.github.io/lair/>.
 
 ## Layout
 
-Flat (`lair/`, not `src/lair/`), one module per topic, no subpackages:
-
-```
-__init__.py      pint setup and the CCG filter download (see "Import side effects")
-_ccg_filter.py   NOAA's CCG filter, downloaded on first import; gitignored, never commit
-_optional.py     import_optional_dependency()
-config.py        get_data_dir(), get_cache_dir(); no file-system work
-constants.py     physical constants (pint has no constants support; issue linked inside)
-hrrr.py          HRRR winds at a point, from the HRRR-Zarr archive on AWS
-inventories.py   Inventory and its loaders: EDGAR, EPA, GFEI, Vulcan, WetCHARTs
-meteorology.py   ideal gas law, hypsometric, poisson, vapor pressure, ... (plain SI)
-noaa.py          CarbonTracker and NOAA GML readers
-records.py       file utilities (ftp_download, unzip, read_kml, Cacher)
-soundings.py     upper-air soundings from the Wyoming archive (siphon)
-synoptic.py      Synoptic Data API (MesoWest's successor); token= or $SYNOPTIC_TOKEN
-transects.py     mobile transect matrices: metrics and the builder
-```
-
-and `air`, `background`, `clock`, `dev`, `geo`, `parallel`, `pcaps`,
-`plotter`, `pollutants` and `utils`, each named for what it holds. Instrument
-and archive specifics stay out: pollutant column naming is in
+Flat (`lair/`, not `src/lair/`), one module per topic, no subpackages; the
+tour of the modules is in CONTRIBUTING.md, "Code layout". `_ccg_filter.py` is
+NOAA's CCG filter, downloaded on first import; it is gitignored, never commit
+it. Instrument and archive specifics stay out: pollutant column naming is in
 `uataq.pollutants`, and readers of one site's archive or one platform (such as
 TRAX transects) belong in the downstream packages. `lair` re-exports only
 `units` (pint-xarray's registry), `config`, `ftp_download`, `unzip`,
@@ -61,22 +45,18 @@ module (`from lair.meteorology import poisson`).
 1. Imports `cf_xarray.units` **before** `pint_xarray`. The order is
    load-bearing.
 2. Adds the pint context `mass_flux` (`[substance]/[area]/[time]` <->
-   `[mass]/[area]/[time]` through a molecular weight `mw`, a quantity in g/mol;
-   without one the conversion raises a `TypeError` that names `mw`). The
-   registry is process-global, so importing lair changes pint for other code too.
+   `[mass]/[area]/[time]` through a molecular weight `mw`, a quantity in g/mol).
+   The registry is process-global, so importing lair changes pint for other
+   code too.
 3. Sets pint's default sort to `sort_by_dimensionality` (`kg/km**2/d`). Not
    cosmetic: `Inventory.get_units` splits a flux unit on `/` and reads
-   quantity, area and time in that order. pint >= 0.26 exports the function;
-   0.24 and 0.25 (the newest on Python 3.11) have it only privately, so lair
-   tries both, and pyrefly flags whichever the installed pint lacks (each line
-   carries its suppression). If neither exists, `import lair` raises
-   `ImportError` on purpose. `pint>=0.24.4`: 0.24.0 to 0.24.3 do not import
-   with flexparser 0.4. `tests/test_pkg.py` checks both.
+   quantity, area and time in that order. If pint lacks the function, `import
+   lair` raises `ImportError` on purpose. Which pint versions have it, and why
+   the floor is `pint>=0.24.4`, are in the comments in `lair/__init__.py` and
+   `pyproject.toml`; `tests/test_pkg.py` checks both imports.
 4. Calls `setup_ccg_filter()`. If `lair/_ccg_filter.py` is absent, it
-   downloads `ccg_filter.zip` from `ftp.gml.noaa.gov` into a temporary
-   `lair/.ccg_filter-*` folder, takes only `ccg_filter.py`, and moves it into
-   place with an atomic `os.replace`, so concurrent first imports are safe and
-   a failure leaves no partial file. At import a failure (or a read-only lair
+   downloads NOAA's `ccg_filter.zip` and installs the file atomically (the
+   docstring has the steps). At import a failure (or a read-only lair
    folder) only logs a WARNING; `lair.background` then raises an `ImportError`
    saying to run `lair.setup_ccg_filter()`, which raises when called.
 
@@ -84,16 +64,12 @@ Consequences:
 
 - **`LAIR_SKIP_CCG_DOWNLOAD`** skips the download; any non-empty value skips,
   `0` included. `tests/conftest.py` and the Tests, Code Quality and
-  Documentation workflows set it. The Tests workflow's `pixi` job clears it
-  for one step to download the filter (cached by month), so `tests/background`
-  runs there; it is the only CI job that reaches NOAA.
-- **`lair.background` imports `_ccg_filter` at the top**, so even
-  `rolling_baseline` (pandas only) needs the downloaded file and scipy.
+  Documentation workflows set it (CONTRIBUTING.md, "Setup", names the one CI
+  job that clears it).
 - **The cache folder is made on first use, never at import.**
   `config.get_cache_dir()` reads `LAIR_CACHE_DIR` at each call (no
   module-level constant). `lair.noaa._cache_file` makes the folder when it
-  first writes, and raises an `OSError` naming the folder and the variable
-  when it cannot; a new cache user calls it. `tests/config` and `tests/noaa`
+  first writes; a new cache user calls it. `tests/config` and `tests/noaa`
   check a read-only home.
 - **No global xarray options.** Code that needs attributes kept scopes it
   (`@_keep_attrs` in `inventories`, or `with xr.set_options(keep_attrs=True):`).
@@ -111,13 +87,11 @@ the docs and runs every example (warnings are errors), `just docs-serve`
 previews them, and `just pre-commit` runs every hook.
 
 Tests of modules behind a missing extra `importorskip` and skip. The pixi
-environment has every extra, including xesmf on conda-forge's no-MPI ESMF
-(64-bit Linux): `pixi install`, then `pixi run pytest ...` or
-`pixi run pyrefly check` (the recipes use uv). After editing dependencies, run
-`uv lock` **and** `pixi lock` and commit both. They are solved separately, so
-a failure in one environment only is usually a version difference.
-Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
-`merge=binary`: after a conflict, rerun `pixi lock`.
+environment has every extra (CONTRIBUTING.md, "Setup"): `pixi run pytest ...`
+or `pixi run pyrefly check` (the recipes use uv). After editing dependencies,
+run `uv lock` **and** `pixi lock` and commit both. A failure in one
+environment only is usually a version difference. CI fails on a stale
+`pixi.lock`, which is `merge=binary`: after a conflict, rerun `pixi lock`.
 
 ## Conventions
 
@@ -130,10 +104,8 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
 - **Typing:** pyrefly reports 0 errors (CI and a pre-commit hook), checked as
   Python 3.11 in the lean environment; `lair/py.typed` ships. Where a
   library's stubs are wrong (pandas overloads, pint callbacks), suppress inline
-  with a reason, not in config and not with a blanket `Any`. The config
-  disables only `bad-override-mutable-attribute` and types the optional extras
-  as `Any`, so both environments agree. `meteorology` uses a documented
-  `Numeric = Any`; `geo` and `inventories` use the bound TypeVar `_XarrayT`.
+  with a reason, not in config and not with a blanket `Any` (`[tool.pyrefly]`
+  in `pyproject.toml` says what the config does).
 - **Docstrings:** each public attribute and property gets its own API page, so
   give each one a docstring (one without shows an empty row), with its See
   Also and Examples.
@@ -152,63 +124,44 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
   boundary, as `pcaps.valleyheatdeficit` does.
 - **pandas 3 only** (`pandas>=3.0`): no branches, `try/except` or tests for
   pandas 2. `'1h'` (`'1H'` raises), `'D'`, `sep=r'\s+'`, no chained assignment.
-- **Time:** a naive time is UTC. `convert_timezones` raises when a naive time
-  has no `fromtz`, and, like `tz_localize`, on an ambiguous or nonexistent DST
-  time unless `ambiguous=`/`nonexistent=` is given. A time formatted into a
-  request, an S3 key or a file name is converted to UTC first, since
-  `strftime` writes a tz-aware time in its own zone (`soundings._naive_utc`,
-  `hrrr.create_s3_group_url`).
+- **Time:** a naive time is UTC (`examples/clock` has the rest). A time
+  formatted into a request, an S3 key or a file name is converted to UTC first,
+  since `strftime` writes a tz-aware time in its own zone
+  (`soundings._naive_utc`, `hrrr.create_s3_group_url`).
 - **Attribution:** code adapted from Brian Blaylock's Carpenter Workshop
   (credited in the README and docs), NOAA GML's CCG filter, and StackOverflow
   (linked in docstrings) keeps its credit when refactored.
+- **Tooling** comes from [jmineau/python-template](https://github.com/jmineau/python-template)
+  via copier (`.copier-answers.yml`, never edited by hand); tooling changes
+  meant for every package belong there.
 
 ## Module gotchas
 
 - **Inventories:** every loader labels a time step by the *start* of its
   period, from CF `time_bnds` when the file has them (`_label_period_starts`).
   NaN "no emission" cells become 0 before any conservative regrid, or every
-  coarse cell touching one turns NaN. A conservative `geo.resample` covers the
-  whole source: a resolution that does not divide the width adds a last cell
-  that reaches past the edge, filled with only what was inside. Without
-  `src_units`, each variable is quantified with its own `units` attribute; the
-  totals (`sum_sectors`, `integrate()`) and `get_units` raise when the variables
-  differ in units. `tests/inventories` checks every
+  coarse cell touching one turns NaN. Without `src_units`, each variable is
+  quantified with its own `units` attribute. `tests/inventories` checks every
   loader (`INVENTORY_CASES`) on tiny synthetic archives shaped like the real
   files; add new loaders there.
 - **ESMF:** regridding (`geo.regrid`, `geo.resample` and the grids'
   `regrid`/`resample`) needs xesmf, and xesmf needs conda-forge's
   `esmf=*=nompi*` (pip installs xesmf without ESMF; the MPICH build can kill
   the process, pytest included, when MPI fails to start).
-- **Areas:** `gridcell_area` on a lat-lon grid is the exact WGS84 ellipsoid
-  area in closed form (the authalic-latitude `q`), with no ESMF, so
-  `absolute_emissions` and `integrate()` need none either. A sphere (`R=`) is
-  0.1-0.9% off depending on latitude; `tests/geo` checks against pyproj's
-  geodesic areas and the ellipsoid's total.
-- **CarbonTracker times:** each mole fraction step is a 3-hour mean labeled by
-  its center, taken from the file's `time_components` in every release
-  (`CarbonTracker._preprocess_molefractions`): CT-CH4-2025's own `time` and
-  `time_bounds` are 1.5 h late. Check a new release's `time` against its
-  `time_components` before trusting either.
 - **Opening many files:** call the module's `_open_mfdataset` (`inventories`,
   `noaa`), not `xr.open_mfdataset`: it names today's `compat`, `data_vars`,
   `coords` and `join`, which xarray is changing. In `noaa` it runs through
   `records.Cacher`, keyed on the pickled call arguments, so changing what is
   passed orphans every existing cache. Never open NetCDF files on threads
-  (dask's default for `parallel=True`): netCDF-C and HDF5 are not thread-safe
-  and xarray reads metadata outside its lock, so the process crashes. `noaa`'s
-  `parallel=True` uses worker processes, which need a `__main__` guard in scripts.
-- **`thoning_filter`'s `sampleinterval`** is in days: the step of the even grid
-  NOAA's filter interpolates onto before its FFT. lair passes the median step
-  only when NOAA's own estimate would divide by zero. A grid coarser than the
-  data samples it rather than averaging, which biases hourly data with a
-  diurnal cycle; test a change against the daily curve.
-- **The `requests` extra floors `s3fs`, not boto3** (reason in
-  `pyproject.toml`).
+  (dask's default for `parallel=True`): the process crashes. `noaa`'s
+  `parallel=True` uses worker processes, which need a `__main__` guard in
+  scripts (the docstring says why).
+- **CarbonTracker times** and **`thoning_filter`'s `sampleinterval`:**
+  CONTRIBUTING.md, "Notes on the code".
 - **An optional package** is imported with `import_optional_dependency("pkg")`
   and listed in `_optional._EXTRA_OF` under its extra, which the missing-package
-  `ImportError` names with the install command (from GitHub: the `lair` on PyPI
-  is unrelated). `tests/optional` checks the table against `pyproject.toml` and
-  every call in `lair/`.
+  `ImportError` names with the install command; `tests/optional` checks the
+  table (the comment in `_optional.py` says how).
 
 ## Docs
 
@@ -220,44 +173,22 @@ Dependabot updates `uv.lock` only; CI fails on a stale `pixi.lock`, which is
   gets its own page (`docs/_templates/autosummary/`; `docs/_ext/api_pages.py`
   drops a class docstring's `Methods` section and the `Attributes` entries
   that have a row).
-- Examples (`.. plot::` in docstrings, `.. ipython:: python` in pages) run
-  when the docs build and can use only the core dependencies; a page that
-  needs more shows recorded output. CONTRIBUTING.md, "Docs examples", has how.
-
-## Docs pages
-
-Each page answers one question, the pages are listed in the order a new reader
-asks them, and each fact is written on one page: the others link to it
-(`:ref:`, `:doc:`) and do not restate it. A docs PR adds an example (one job,
-titled as the job, opening with the rules that come out of it) or text in a
-docstring, which shows on the API pages; it adds no "guide" page. A new example
-goes in `docs/examples/index.rst` only (a toctree entry and a line describing
-it); the quickstart links to the Examples page, not to each example. A new fact
-goes on the page that holds its kind:
-
-| Fact | Its page | The others |
-|---|---|---|
-| Install routes, extras, the first-import download, CHPC | front page, "Installation" | link by `installation` or `optional-dependencies`; the README keeps a short copy, as GitHub's front page |
-| `LAIR_*` variables, what needs which data, the pollutant spelling, the cache | `data`, "Data locations" | link by `data-locations` |
-| A dataset's folder layout and where to get it | its example, "The data"; no example: its class docstring | "Data locations" links to it |
-| A time without a zone is UTC; time zones; seasons | `examples/clock` | a clause and a link |
-| Units; the `mass_flux` context | `examples/units` | link |
-| Plain SI in and out of `meteorology` | quickstart, "A first calculation" | link |
-| Inventory totals; conservative against bilinear regridding. Drawing a map: the time step, state lines, ticks, grid, locator map | `examples/inventory`; for the map, `examples/maps` | link |
-| `get_soundings` heights and downloads | `examples/soundings` | link |
-| CarbonTracker sampling and background | `examples/carbontracker` | link |
-| Background methods, side by side, and which one to use | `examples/background` | link |
-| Function and class details | the API pages, from docstrings | `:func:` and `:class:` links, not `autofunction` |
+- Each page answers one question, the pages are listed in the order a new reader
+  asks them, and each fact is written on one page: the others link to it
+  (`:ref:`, `:doc:`) and do not restate it. A docs PR adds an example (one job,
+  titled as the job, opening with the rules that come out of it) or text in a
+  docstring, which shows on the API pages; it adds no "guide" page. Where a new
+  example and a new fact go, with the table: CONTRIBUTING.md, "Where a fact goes
+  in the docs".
 
 ## Tests
 
 One directory per module (`lair.clock` -> `tests/clock/`), with no imports
-between them, so a module can leave lair with two `git mv`s. Network code is
-tested against fakes, never live. Warnings are errors: assert an expected one
-with `pytest.warns`, and ignore one from another library by message in
-`[tool.pytest]` `filterwarnings`, with a comment naming the library and
-version. Tests run in parallel, so they must not share state. Details, the
-markers and the fakes: `tests/README.md`.
+between them. Network code is tested against fakes, never live. Warnings are
+errors: assert an expected one with `pytest.warns`, and ignore one from another
+library by message in `[tool.pytest]` `filterwarnings`, with a comment naming
+the library and version. Tests run in parallel, so they must not share state.
+Details, the markers and the fakes: `tests/README.md`.
 
 ## Commits, changelog, releases
 
@@ -266,9 +197,3 @@ markers and the fakes: `tests/README.md`.
   `CHANGELOG.md`; `just changelog` drafts entries.
 - The version comes from git tags (setuptools-scm). The maintainer cuts the
   releases (CONTRIBUTING.md).
-
-## Template
-
-Tooling comes from [jmineau/python-template](https://github.com/jmineau/python-template)
-via copier (`.copier-answers.yml`, never edited by hand); `copier update` pulls
-in template changes. Tooling changes meant for every package belong there.
