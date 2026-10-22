@@ -38,6 +38,14 @@ them in the folders of NOAA's FTP server:
        CT2019B/
          molefractions/co2_total/CT2019B.molefrac_nam1x1_2015-06-01.nc
 
+The folder of a version needs one file for each day. If two files cover one day,
+for example the same day from two releases (``CTCH4_2024.molefrac_...`` and
+``CTCH4_2025.molefrac_...``), the ``molefractions`` attribute raises a
+``ValueError`` that names the day and both files: it reads every file of
+the folder, and would read the day twice. Move one release's files out of the
+folder. ``sample`` and ``background`` take the file that comes last in name
+order for a day, and so do not stop.
+
 Download
 --------
 

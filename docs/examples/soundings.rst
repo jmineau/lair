@@ -7,9 +7,9 @@ computes potential temperature on regular heights. Two rules come out of it:
 * **lair reads soundings from a folder you keep**, one file per launch.
   :func:`~lair.soundings.download_soundings` fills it, and
   :func:`~lair.soundings.get_soundings` reads it.
-* **get_soundings puts every sounding on the same heights**: 1289 to 4999 m
-  above sea level, every 10 m. 1289 m is the ground at Salt Lake City, so for
-  another station, interpolate each sounding yourself (below).
+* **get_soundings puts every sounding on the same heights**: every 10 m from
+  the ground at the station (1289 m above sea level at Salt Lake City) up to
+  4999 m.
 
 .. note::
 
@@ -126,13 +126,15 @@ left NaN, not extrapolated. Wind direction and speed are rebuilt from the
 interpolated ``u_wind`` and ``v_wind``, since a direction cannot be averaged
 (350 and 10 degrees would give 180).
 
-The heights are fixed: ``get_soundings`` calls
-:meth:`Sounding.interpolate() <lair.soundings.Sounding.interpolate>` with its
-defaults (``start=1289, stop=5000, interval=10``), so for a station below
-1289 m the levels under 1289 m are dropped. For another station, interpolate
-each sounding yourself, for example ``snd.interpolate(start=0, interval=50)``
-(levels below the ground come out NaN), or pass ``driver="pandas"`` to ``get_soundings`` to get the raw levels of every
-sounding in one ``DataFrame``.
+The heights start at the ground: :meth:`Sounding.interpolate()
+<lair.soundings.Sounding.interpolate>` starts at the station's ``elevation``
+by default, or, in a file without one (a sounding downloaded today), at its
+first level, the ground, and ``get_soundings`` gives every sounding
+the heights of the lowest ground among them, so that they line up. For other
+heights, interpolate each sounding yourself, for example
+``snd.interpolate(start=0, interval=50)`` (levels below the ground come out
+NaN), or pass ``driver="pandas"`` to ``get_soundings`` to get the raw levels of
+every sounding in one ``DataFrame``.
 
 Potential temperature
 ---------------------

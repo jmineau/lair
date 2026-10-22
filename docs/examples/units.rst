@@ -96,8 +96,13 @@ writes the new unit back into the attribute:
        grid_kg = grid.pint.quantify().pint.to("kg km-2 d-1")
    grid_kg.pint.dequantify()
 
-An :class:`~lair.inventories.Inventory` does this with the molecular weight of
-its own pollutant: :meth:`~lair.inventories.Inventory.convert_units`.
+:func:`lair.inventories.convert_units` does the same for any array or dataset
+with a ``units`` attribute, given the pollutant instead of ``mw``:
+``convert_units(grid, "CH4", "kg km-2 d-1")`` returns a plain array with the new
+values and ``units`` attribute. It needs the ``geo`` and ``science`` extras (see
+:ref:`optional-dependencies`). An :class:`~lair.inventories.Inventory` has the
+same conversion for its data, with its own pollutant:
+:meth:`~lair.inventories.Inventory.convert_units`.
 
 The molecular weight
 --------------------

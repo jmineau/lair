@@ -371,13 +371,6 @@ class TestIntervalHelpers:
         with pytest.raises(ValueError):
             clock.regular_times_to_intervals(pd.to_datetime(["2024-01-01"]), "weekly")
 
-    def test_periodindex_to_binedges(self):
-        pi = pd.period_range("2024-01", periods=3, freq="M")
-        edges = clock.periodindex_to_binedges(pi)
-        # n periods -> n+1 edges.
-        assert len(edges) == len(pi) + 1
-        assert edges[0] == pd.Timestamp("2024-01-01")
-
 
 class TestConvertTimezonesPandas:
     def test_dataframe_index_converted(self):

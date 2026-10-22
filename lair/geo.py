@@ -615,6 +615,9 @@ class BaseGrid:
         """
         Resample the data to a new resolution.
 
+        A resolution that does not divide the grid's width leaves a strip at the
+        far edge; :func:`lair.geo.resample` says what happens to it.
+
         Parameters
         ----------
         resolution : float | tuple[x_res, y_res]
@@ -981,6 +984,19 @@ def _cell_centers(vmin: float, vmax: float, d: float) -> np.ndarray:
     return np.round(vmin + d * (np.arange(n) + 0.5), 10)
 
 
+def _end_of_last_cell(vmin: float, vmax: float, d: float) -> float:
+    """
+    End of the last cell of size ``d`` that starts below ``vmax``.
+
+    Cells start at ``vmin``. When ``d`` does not divide ``vmax - vmin`` the last
+    cell reaches past ``vmax``, so the cells cover everything up to ``vmax``.
+    """
+    vmin, vmax, d = float(vmin), float(vmax), float(d)
+    # A strip under a millionth of a cell is float noise in the bounds, not a cell
+    n = int(np.ceil((vmax - vmin) / d - 1e-6))
+    return vmin + n * d
+
+
 def regrid(
     data: _XarrayT,
     out_grid: DataArray | Dataset,
@@ -1053,6 +1069,21 @@ def resample(
 
     Returns new data; the input is not modified.
 
+    The new grid starts at the source's outer edge. When the resolution does not
+    divide the source's width (0.3 degrees over 4.0 degrees of longitude), the
+    last cell is partial, and what becomes of it depends on the method:
+
+    - ``"conservative"`` keeps it whole, so the new grid covers the whole source
+      and its last cell reaches past the source's edge. That cell holds the flux of
+      the part inside the source averaged over the whole cell, the part outside
+      counting as zero, so flux times area still adds up to the source's total.
+    - Every other method (``"bilinear"``, the default, and ``"conservative_normed"``
+      included) keeps it only when its center is inside the source, which takes
+      more than half of it, and otherwise drops the strip. A cell centered outside
+      the source's outermost cell centers gets zero from bilinear interpolation,
+      not data, and ``"conservative_normed"`` would give it the flux of the part
+      inside but count its whole area.
+
     Parameters
     ----------
     data : xr.DataArray | xr.Dataset
@@ -1074,7 +1105,9 @@ def resample(
     if isinstance(resolution, (int, float)):
         resolution = (resolution, resolution)
 
-    # Calculate the new grid
+    # Calculate the new grid. A conservative regrid must cover the whole source or
+    # the strip left over by a resolution that does not divide it is lost
+    cover = regrid_method == "conservative"
     bounds = _as_dataset(data).cf.add_bounds(["lat", "lon"])
     xmin = bounds.lon_bounds.min()
     xmax = bounds.lon_bounds.max()
@@ -1087,10 +1120,10 @@ def resample(
     else:
         out_grid = generate_regular_grid(
             xmin=xmin,
-            xmax=xmax,
+            xmax=_end_of_last_cell(xmin, xmax, dx) if cover else xmax,
             dx=dx,
             ymin=ymin,
-            ymax=ymax,
+            ymax=_end_of_last_cell(ymin, ymax, dy) if cover else ymax,
             dy=dy,
             x_label="lon",
             y_label="lat",
