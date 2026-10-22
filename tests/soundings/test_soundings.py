@@ -308,8 +308,8 @@ class TestGetSoundings:
             pd.Timestamp("2024-01-02 00:00"),
         ]
 
-    def test_missing_dir_without_dates_raises(self, tmp_path):
-        with pytest.raises(ValueError, match="start and end"):
+    def test_missing_dir_raises(self, tmp_path):
+        with pytest.raises(ValueError, match="No soundings found"):
             soundings.get_soundings("SLC", sounding_dir=str(tmp_path / "missing"))
 
     def test_default_dir_is_env_root_plus_station(self, tmp_path, monkeypatch):
@@ -578,6 +578,14 @@ class TestDownloadSoundingsErrors:
 
 
 class TestGetSoundingsDownloads:
+    """``get_soundings`` downloads only with ``download=True``."""
+
+    @pytest.fixture
+    def wyoming(self, monkeypatch):
+        fake = _FakeWyoming()
+        monkeypatch.setattr(soundings, "WyomingUpperAir", fake)
+        return fake
+
     def test_empty_dir_downloads_then_reads(self, tmp_path, monkeypatch):
         fake = _FakeWyoming()
         monkeypatch.setattr(soundings, "WyomingUpperAir", fake)
@@ -587,6 +595,7 @@ class TestGetSoundingsDownloads:
             start="2024-01-01 00:00",
             end="2024-01-01 12:00",
             sounding_dir=str(station_dir),
+            download=True,
         )
         assert len(fake.requests) == 2
         assert list(pd.DatetimeIndex(ds.time.values)) == [
@@ -598,6 +607,102 @@ class TestGetSoundingsDownloads:
         assert T.loc[1289.0] == pytest.approx(2.0)
         assert T.loc[3049.0] == pytest.approx(-12.0 + 1 / 1570 * 12.5, abs=1e-6)
         assert np.isnan(T.loc[3059.0])  # above the top level
+
+    @pytest.mark.parametrize("make_dir", [False, True], ids=["missing", "empty"])
+    def test_default_downloads_nothing(self, tmp_path, wyoming, make_dir):
+        # The folder is missing or empty: the old default downloaded
+        station_dir = tmp_path / "SLC"
+        if make_dir:
+            station_dir.mkdir()
+        with pytest.raises(ValueError, match="No soundings found") as info:
+            soundings.get_soundings(
+                "SLC",
+                start="2024-01-01 00:00",
+                end="2024-01-01 12:00",
+                sounding_dir=str(station_dir),
+            )
+        assert wyoming.requests == []
+        assert station_dir.exists() is make_dir  # reading creates no folder
+        # The error names the folder and how to download
+        assert str(station_dir) in str(info.value)
+        assert "download=True" in str(info.value)
+
+    def test_default_downloads_nothing_for_a_period_the_dir_lacks(
+        self, tmp_path, wyoming
+    ):
+        _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01 00:00"))
+        with pytest.raises(ValueError, match="download=True"):
+            soundings.get_soundings(
+                "SLC",
+                start="2024-02-01",
+                end="2024-02-02",
+                sounding_dir=str(tmp_path),
+            )
+        assert wyoming.requests == []
+        assert [p.name for p in tmp_path.iterdir()] == ["SLC_2024010100.csv"]
+
+    def test_default_reads_what_is_there_without_downloading(self, tmp_path, wyoming):
+        # A gap inside the period is not filled
+        _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01 00:00"))
+        ds = soundings.get_soundings(
+            "SLC", start="2024-01-01", end="2024-01-02", sounding_dir=str(tmp_path)
+        )
+        assert ds.sizes["time"] == 1
+        assert wyoming.requests == []
+
+    def test_download_fills_the_missing_soundings(self, tmp_path, wyoming):
+        # The folder holds one of the three soundings in the period
+        _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01 12:00"))
+        ds = soundings.get_soundings(
+            "SLC",
+            start="2024-01-01 00:00",
+            end="2024-01-02 00:00",
+            sounding_dir=str(tmp_path),
+            download=True,
+        )
+        assert [t for t, _ in wyoming.requests] == [
+            pd.Timestamp("2024-01-01 00:00"),
+            pd.Timestamp("2024-01-02 00:00"),
+        ]
+        assert ds.sizes["time"] == 3
+
+    def test_download_respects_months(self, tmp_path, wyoming):
+        ds = soundings.get_soundings(
+            "SLC",
+            start="2024-01-31 12:00",
+            end="2024-02-01 00:00",
+            sounding_dir=str(tmp_path),
+            months=[2],
+            download=True,
+        )
+        assert [t for t, _ in wyoming.requests] == [pd.Timestamp("2024-02-01 00:00")]
+        assert ds.sizes["time"] == 1
+
+    @pytest.mark.parametrize(
+        "dates", [{}, {"start": "2024-01-01"}, {"end": "2024-01-02"}]
+    )
+    def test_download_needs_start_and_end(self, tmp_path, wyoming, dates):
+        _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01 00:00"))
+        with pytest.raises(ValueError, match="start and end"):
+            soundings.get_soundings(
+                "SLC", sounding_dir=str(tmp_path), download=True, **dates
+            )
+        assert wyoming.requests == []
+
+    def test_nothing_from_wyoming_raises_without_the_hint(self, tmp_path, monkeypatch):
+        # Wyoming has no sounding for the period: asking again would not help
+        error = ValueError("No data available for 2024-01-01 00Z")
+        fake = _FakeWyoming({pd.Timestamp("2024-01-01 00:00"): [error]})
+        monkeypatch.setattr(soundings, "WyomingUpperAir", fake)
+        with pytest.raises(ValueError, match="No soundings found") as info:
+            soundings.get_soundings(
+                "SLC",
+                start="2024-01-01 00:00",
+                end="2024-01-01 00:00",
+                sounding_dir=str(tmp_path),
+                download=True,
+            )
+        assert "download=True" not in str(info.value)
 
 
 class TestGetSoundingsPandas:
