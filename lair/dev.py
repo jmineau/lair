@@ -1,5 +1,7 @@
 """
 Tools for code development.
+
+:func:`public_attrs` lists an object's public names.
 """
 
 

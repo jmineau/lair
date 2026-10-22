@@ -1,10 +1,8 @@
 """
-Mathematical, physical & scienfitic constants.
+Physical constants, as pint quantities of :data:`lair.units`.
 
-All in scientific units.
-
-Pint is still figuring out how to properly deal with constants: https://github.com/hgrecco/pint/issues/1078
-Until then, I will keep them here.
+``lair.meteorology`` uses them as plain SI numbers. pint has no constants of its
+own yet (https://github.com/hgrecco/pint/issues/1078), so lair keeps them here.
 """
 
 from lair import units
@@ -27,4 +25,4 @@ R_earth = 6371 * units("km")  #: Radius of the Earth [km]
 epsilon = Rd / Rv  #: Ratio of gas constants [#]
 c = 299792458 * units("m / s")  #: Speed of light [m/sec]
 sigma = 5.67e-8 * units("W / m**2 / K**4")  #: Stefan-Boltzmann constant [W/m^2/K^4]
-Rstar = kb * Na  #: Universial gas constant [J/K/mol]
+Rstar = kb * Na  #: Universal gas constant [J/K/mol]

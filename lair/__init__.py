@@ -1,4 +1,18 @@
-"""lair: tools for land-air interactions research."""
+"""
+lair: tools for land-air interactions research.
+
+lair is a toolkit, one module per topic: import the module you need, as in
+``from lair.meteorology import poisson`` (the API reference lists them). The
+package itself holds what the modules share: the unit registry
+:data:`units` with its :data:`mass_flux` context, and
+:func:`setup_ccg_filter`, which ``import lair`` calls. It also re-exports
+:mod:`lair.config`, :func:`~lair.records.ftp_download` and
+:func:`~lair.records.unzip`, and ``__version__``.
+
+Importing lair changes pint for the whole process: it adds the
+:data:`mass_flux` context to the registry and makes pint write a unit's parts
+in the order of their dimensions (``kg/km**2/d``).
+"""
 
 import logging
 import os
@@ -8,7 +22,6 @@ from importlib.metadata import version as _version
 import cf_xarray.units  # must be imported before pint_xarray
 import pint
 import pint_xarray
-from pint_xarray import unit_registry as units
 
 # sort_by_dimensionality prints a unit's parts in dimension order (kg/km**2/d,
 # where pint's default gives kg/d/km**2). pint >= 0.26 exports it; pint 0.24 and
@@ -29,6 +42,14 @@ except ImportError:
 from . import config
 from .records import ftp_download, unzip
 
+#: The pint unit registry lair uses, which is pint-xarray's, so a quantified
+#: xarray object and a plain quantity share it. It has the :data:`mass_flux`
+#: context.
+#: :doc:`/examples/units` converts a methane flux with it.
+#:
+#: :meta hide-value:
+units = pint_xarray.unit_registry
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -48,7 +69,16 @@ def _molar_mass(mw):
     return mw
 
 
-# Custom pint context to convert fluxes from mass <--> substance
+#: The pint context that converts a flux between moles and mass, given ``mw``.
+#:
+#: It converts ``[substance]/[area]/[time]`` to ``[mass]/[area]/[time]`` and
+#: back, multiplying or dividing by ``mw``, the molar mass as a quantity in
+#: g/mol: ``units.context("mass_flux", mw=16.04 * units("g/mol"))``. Without
+#: ``mw``, or with a plain number, the conversion raises a ``TypeError`` that
+#: names ``mw``. Importing lair adds it to :data:`units`; :doc:`/examples/units`
+#: shows it on a methane flux.
+#:
+#: :meta hide-value:
 mass_flux = pint.Context("mass_flux")
 mass_flux.add_transformation(
     "[substance] / [area] / [time]",

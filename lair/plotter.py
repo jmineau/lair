@@ -1,5 +1,10 @@
 """
-Utility functions for plotting data.
+Plotting helpers.
+
+Diurnal and seasonal cycles (:func:`diurnalPlot`, :func:`seasonalPlot`, with
+:data:`SEASON_COLORS`), polar plots of a value by wind direction and speed
+(:func:`polarPlot`, :func:`polarFreq`, :func:`windvectorPlot`), and colormaps
+and tick formats. Maps are in :mod:`lair.geo`.
 """
 
 from typing import Any, cast
@@ -111,6 +116,8 @@ def NCL_cmap(table_name: str) -> mcolors.LinearSegmentedColormap:
     Parameters
     ----------
     table_name : str
+        Name of the table on NCL's color table page, e.g. ``"WhiteBlueGreenYellowRed"``.
+        The table is downloaded from NCL's site.
 
     Returns
     -------

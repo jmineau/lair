@@ -1,5 +1,12 @@
 """
-Upper air sounding data.
+Upper-air soundings from the University of Wyoming's archive.
+
+:class:`Sounding` reads one sounding file and interpolates it to regular
+heights; :func:`get_soundings` reads a station's soundings for a period, all
+on the same heights, and :func:`download_soundings` fetches them from Wyoming.
+The folder is an argument or ``$LAIR_SOUNDING_DIR/<station>``.
+:doc:`/examples/soundings` reads two soundings and computes their potential
+temperature. The module needs the ``requests`` extra.
 """
 
 import datetime as dt
