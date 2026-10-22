@@ -8,6 +8,14 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Added
+
+- The inventory example sets `total_emissions` (a flux in each cell),
+  `absolute_emissions` (the mass in each cell, by sector) and `integrate()` (the
+  total over the region) side by side, with their units, a check of one cell by
+  hand, each sector's total, and why to convert the total rather than the flux.
+  The three docstrings say the same and link to each other.
+
 ### Changed
 
 - `CarbonTrackerCH4.molefractions` and `CarbonTrackerCO2.molefractions` raise a
@@ -20,6 +28,12 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   release's files sit beside the current release's raises until those files are
   moved out; two releases that cover different days read as before. `sample`
   and `background` still take the last file of a day by name, and do not stop.
+  - The `ImportError` for a missing optional package names the `lair` extra that
+  provides it and the command that installs the extra, for example `pip install
+  "lair[geo] @ git+https://github.com/jmineau/lair.git"` (`uv pip install` in a
+  uv environment), and links to the installation page. It used to say only that
+  the dependency was not found. The command installs from GitHub because the
+  `lair` on PyPI is an unrelated project.
   
 ### Fixed
 
@@ -45,15 +59,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   among them, so the profiles still share one evenly spaced set of heights.
   Salt Lake City's soundings get the same heights as before (1289 to 4999 m);
   a `start` you pass is used as before.
-  
-### Changed
+  - `Inventory.integrate()` no longer labels the regional total with
+  `absolute_emissions`' `standard_name`, `annual_emissions_per_gridcell` (#135).
+  Its attributes are now `long_name` and `units`, as for `total_emissions`.
 
-- The `ImportError` for a missing optional package names the `lair` extra that
-  provides it and the command that installs the extra, for example `pip install
-  "lair[geo] @ git+https://github.com/jmineau/lair.git"` (`uv pip install` in a
-  uv environment), and links to the installation page. It used to say only that
-  the dependency was not found. The command installs from GitHub because the
-  `lair` on PyPI is an unrelated project.
 ### Removed
 
 - `clock.periodindex_to_binedges` (#115). Nothing used it, and its edges were
