@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=5ebd689f"></script>
+    <script src="../_static/documentation_options.js?v=cc82705a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Draw a map of an inventory" href="maps.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
+  <meta name="docsearch:version" content="2026.12.10.dev10+g812502d89" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -478,7 +478,7 @@ the ground at the station (1289 m above sea level at Salt Lake City) up to
 <p class="admonition-title">Note</p>
 <p>This page does not run when the docs build. It needs the <code class="docutils literal notranslate"><span class="pre">requests</span></code> extra
 (see <a class="reference internal" href="../index.html#installation"><span class="std std-ref">Installation</span></a>) and downloads from the University of Wyoming. The
-output below was recorded from one run of this code on 2026-10-12.</p>
+output below was recorded from one run of this code on 2026-10-19.</p>
 </div>
 <section id="the-data">
 <span id="soundings-data"></span><h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
@@ -605,18 +605,24 @@ lowest 210 m: a surface inversion.</p>
 </section>
 <section id="when-get-soundings-downloads">
 <span id="soundings-download"></span><h2>When get_soundings downloads<a class="headerlink" href="#when-get-soundings-downloads" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> can also download. If the station’s folder (<code class="docutils literal notranslate"><span class="pre">sounding_dir</span></code>,
-or <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR/&lt;station&gt;</span></code>) does not exist or holds no files, it
-downloads every sounding from <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code> into it (only those in
-<code class="docutils literal notranslate"><span class="pre">months</span></code>, if you give <code class="docutils literal notranslate"><span class="pre">months</span></code>), then reads them. Without <code class="docutils literal notranslate"><span class="pre">start</span></code> and
-<code class="docutils literal notranslate"><span class="pre">end</span></code> it raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. So point it at a folder you can write to.</p>
-<p>If the folder holds any file, it reads what is there and downloads nothing. A
-period the folder does not cover raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> reads the folder and downloads nothing, unless you pass
+<code class="docutils literal notranslate"><span class="pre">download=True</span></code>. Without it, a period the folder does not cover raises a
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code> that names the folder and says how to download:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">get_soundings</span><span class="p">(</span><span class="s2">&quot;SLC&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2024-02-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2024-02-02&quot;</span><span class="p">,</span> <span class="n">sounding_dir</span><span class="o">=</span><span class="s2">&quot;soundings/SLC&quot;</span><span class="p">)</span>
-<span class="go">ValueError: No soundings found in soundings/SLC for the requested period.</span>
+<span class="go">ValueError: No soundings found in soundings/SLC for the requested period. Pass download=True (with start and end) to download them.</span>
 </pre></div>
 </div>
-<p>To add that period, run <code class="docutils literal notranslate"><span class="pre">download_soundings</span></code> for it first.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">download=True</span></code> it first downloads every sounding from <code class="docutils literal notranslate"><span class="pre">start</span></code> to
+<code class="docutils literal notranslate"><span class="pre">end</span></code> that the folder does not have (only those in <code class="docutils literal notranslate"><span class="pre">months</span></code>, if you give
+<code class="docutils literal notranslate"><span class="pre">months</span></code>), then reads them. It is <code class="docutils literal notranslate"><span class="pre">download_soundings</span></code> followed by the read,
+so <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> are required and the folder must be one you can write
+to. A file already there is not downloaded again, but a sounding that Wyoming
+does not have is asked for again on every call, so give the period you need.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="n">ds</span> <span class="o">=</span> <span class="n">get_soundings</span><span class="p">(</span><span class="s2">&quot;SLC&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2024-02-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2024-02-02&quot;</span><span class="p">,</span> <span class="n">sounding_dir</span><span class="o">=</span><span class="s2">&quot;soundings/SLC&quot;</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;soundings/SLC&quot;</span><span class="p">))</span>
+<span class="gh">Out[7]: </span><span class="go">[&#39;SLC_2024011500.csv&#39;, &#39;SLC_2024011512.csv&#39;, &#39;SLC_2024020100.csv&#39;, &#39;SLC_2024020112.csv&#39;, &#39;SLC_2024020200.csv&#39;]</span>
+</pre></div>
+</div>
 </section>
 <section id="next">
 <h2>Next<a class="headerlink" href="#next" title="Link to this heading">#</a></h2>

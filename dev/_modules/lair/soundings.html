@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=5ebd689f"></script>
+    <script src="../../_static/documentation_options.js?v=cc82705a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
+  <meta name="docsearch:version" content="2026.12.10.dev10+g812502d89" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -798,9 +798,13 @@
     <span class="n">sounding_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">months</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;xarray&quot;</span><span class="p">,</span>
+    <span class="n">download</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get upper air soundings from the Wyoming archive.</span>
+
+<span class="sd">    Reads the soundings that are in the station&#39;s folder. It downloads only when</span>
+<span class="sd">    asked (``download=True``).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -816,18 +820,37 @@
 <span class="sd">        The directory containing the station&#39;s sounding files. Defaults to</span>
 <span class="sd">        ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
 <span class="sd">    months : list[int], optional</span>
-<span class="sd">        Only use (and download) soundings from these months.</span>
+<span class="sd">        Only use soundings from these months (with ``download``, only download</span>
+<span class="sd">        those).</span>
 <span class="sd">    driver : {&#39;xarray&#39;, &#39;pandas&#39;}, optional</span>
 <span class="sd">        Return interpolated profiles as an xarray Dataset (default), or the</span>
 <span class="sd">        merged raw soundings as a pandas DataFrame. The profiles share one set</span>
 <span class="sd">        of heights, every 10 m from the station&#39;s ground (its ``elevation``,</span>
 <span class="sd">        the lowest among the files if they differ; see</span>
 <span class="sd">        :meth:`Sounding.interpolate`) up to 5000 m, not included.</span>
+<span class="sd">    download : bool, optional</span>
+<span class="sd">        Download the soundings from ``start`` to ``end`` that the folder does</span>
+<span class="sd">        not have from the Wyoming archive, into the folder, before reading</span>
+<span class="sd">        (needs the network and a folder you can write to). The default, False,</span>
+<span class="sd">        reads what is on disk and downloads nothing. A file already in the</span>
+<span class="sd">        folder is not downloaded again; a sounding Wyoming does not have is</span>
+<span class="sd">        asked for on every call.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    xr.Dataset | pd.DataFrame</span>
 <span class="sd">        The sounding data.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If no sounding is found for the period (the message says to pass</span>
+<span class="sd">        ``download=True`` when it is False); if ``download`` is True without</span>
+<span class="sd">        ``start`` and ``end``; or for an invalid ``driver``.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    download_soundings : Download soundings without reading them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># File times are naive UTC, so compare against naive UTC bounds</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span> <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
@@ -836,16 +859,12 @@
     <span class="k">if</span> <span class="n">sounding_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">sounding_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_data_dir</span><span class="p">(</span><span class="n">SOUNDING_DIR_ENV</span><span class="p">),</span> <span class="n">station</span><span class="p">)</span>
 
-    <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">sounding_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">sounding_dir</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No soundings found. Downloading...&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;start and end must be specified if no soundings are found.&quot;</span>
-            <span class="p">)</span>
+    <span class="k">if</span> <span class="n">download</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;start and end must be specified to download soundings.&quot;</span><span class="p">)</span>
         <span class="n">download_soundings</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">sounding_dir</span><span class="p">,</span> <span class="n">months</span><span class="p">)</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">sounding_dir</span><span class="p">)</span>
+
+    <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">sounding_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">sounding_dir</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
 
     <span class="n">soundings</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
@@ -871,9 +890,10 @@
             <span class="k">continue</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">soundings</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;No soundings found in </span><span class="si">{</span><span class="n">sounding_dir</span><span class="si">}</span><span class="s2"> for the requested period.&quot;</span>
-        <span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;No soundings found in </span><span class="si">{</span><span class="n">sounding_dir</span><span class="si">}</span><span class="s2"> for the requested period.&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">download</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="s2">&quot; Pass download=True (with start and end) to download them.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">driver</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;xarray&quot;</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">]:</span>
         <span class="c1"># One set of heights for every sounding, from the lowest surface, so</span>

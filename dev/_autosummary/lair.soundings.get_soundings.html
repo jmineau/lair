@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=5ebd689f"></script>
+    <script src="../_static/documentation_options.js?v=cc82705a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.soundings.download_soundings" href="lair.soundings.download_soundings.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
+  <meta name="docsearch:version" content="2026.12.10.dev10+g812502d89" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -817,8 +817,10 @@
 <h1>lair.soundings.get_soundings<a class="headerlink" href="#lair-soundings-get-soundings" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.soundings.get_soundings">
-<span class="sig-prename descclassname"><span class="pre">lair.soundings.</span></span><span class="sig-name descname"><span class="pre">get_soundings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SLC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sounding_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">months</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xarray'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/soundings.html#get_soundings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.soundings.get_soundings" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lair.soundings.</span></span><span class="sig-name descname"><span class="pre">get_soundings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SLC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sounding_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">months</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xarray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/soundings.html#get_soundings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.soundings.get_soundings" title="Link to this definition">#</a></dt>
 <dd><p>Get upper air soundings from the Wyoming archive.</p>
+<p>Reads the soundings that are in the station’s folder. It downloads only when
+asked (<code class="docutils literal notranslate"><span class="pre">download=True</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -829,18 +831,37 @@ tz-aware times are converted.</p></li>
 <li><p><strong>end</strong> (<em>datetime</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The end date and time (inclusive).</p></li>
 <li><p><strong>sounding_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The directory containing the station’s sounding files. Defaults to
 <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR/&lt;station&gt;</span></code>.</p></li>
-<li><p><strong>months</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Only use (and download) soundings from these months.</p></li>
+<li><p><strong>months</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Only use soundings from these months (with <code class="docutils literal notranslate"><span class="pre">download</span></code>, only download
+those).</p></li>
 <li><p><strong>driver</strong> (<em>{'xarray'</em><em>, </em><em>'pandas'}</em><em>, </em><em>optional</em>) – Return interpolated profiles as an xarray Dataset (default), or the
 merged raw soundings as a pandas DataFrame. The profiles share one set
 of heights, every 10 m from the station’s ground (its <code class="docutils literal notranslate"><span class="pre">elevation</span></code>,
 the lowest among the files if they differ; see
 <a class="reference internal" href="lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate" title="lair.soundings.Sounding.interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Sounding.interpolate()</span></code></a>) up to 5000 m, not included.</p></li>
+<li><p><strong>download</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Download the soundings from <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code> that the folder does
+not have from the Wyoming archive, into the folder, before reading
+(needs the network and a folder you can write to). The default, False,
+reads what is on disk and downloads nothing. A file already in the
+folder is not downloaded again; a sounding Wyoming does not have is
+asked for on every call.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><em>xr.Dataset | pd.DataFrame</em> – The sounding data.</p>
 </dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If no sounding is found for the period (the message says to pass
+    <code class="docutils literal notranslate"><span class="pre">download=True</span></code> when it is False); if <code class="docutils literal notranslate"><span class="pre">download</span></code> is True without
+    <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code>; or for an invalid <code class="docutils literal notranslate"><span class="pre">driver</span></code>.</p>
+</dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.soundings.download_soundings.html#lair.soundings.download_soundings" title="lair.soundings.download_soundings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_soundings</span></code></a></dt><dd><p>Download soundings without reading them.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 </section>
