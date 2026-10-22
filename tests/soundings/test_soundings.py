@@ -11,6 +11,7 @@ siphon's WyomingUpperAir replaced by a fake; live fetches are not exercised.
 import datetime as dt
 import importlib
 import sys
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -382,9 +383,38 @@ class TestDownloadSoundings:
         ]
 
 
+def _with_units(df, units):
+    """Set ``df.units`` the way siphon does (a plain attribute, not a column)."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore", "Pandas doesn't allow columns to be created", UserWarning
+        )
+        df.units = units
+    return df
+
+
+#: What siphon 0.9 reports for the columns (the winds in knots)
+SIPHON_UNITS = {
+    "pressure": "hPa",
+    "height": "meter",
+    "temperature": "degC",
+    "dewpoint": "degC",
+    "direction": "degrees",
+    "speed": "knot",
+    "u_wind": "knot",
+    "v_wind": "knot",
+    "station": None,
+    "time": None,
+    "latitude": "degrees",
+    "longitude": "degrees",
+    "elevation": "meter",
+    "pw": "millimeter",
+}
+
+
 def _wyoming_frame(date, station="SLC"):
     """A frame shaped like siphon's ``WyomingUpperAir.request_data`` output."""
-    return pd.DataFrame(
+    df = pd.DataFrame(
         {
             "pressure": [870.0, 850.0, 700.0],
             "height": [1289.0, 1480.0, 3050.0],
@@ -403,6 +433,24 @@ def _wyoming_frame(date, station="SLC"):
             "pw": 9.5,
         }
     )
+    return _with_units(df, dict(SIPHON_UNITS))
+
+
+def _current_frame(date, station="SLC", wind_unit="m/s"):
+    """
+    A frame shaped like siphon 0.11's output for Wyoming's current service.
+
+    The winds are in ``wind_unit`` (siphon 0.11 says m/s), there is no
+    ``elevation``, ``pw`` or ``station_number``, and the service's new columns
+    ``relative_humidity`` and ``mixing_ratio`` are there.
+    """
+    df = _wyoming_frame(date, station).drop(
+        columns=["elevation", "pw", "station_number"]
+    )
+    df["relative_humidity"] = [70.0, 75.0, 40.0]
+    df["mixing_ratio"] = [3.0, 3.2, 1.0]
+    winds = dict.fromkeys(["speed", "u_wind", "v_wind"], wind_unit)
+    return _with_units(df, {**SIPHON_UNITS, **winds})
 
 
 class _FakeWyoming:
@@ -412,13 +460,15 @@ class _FakeWyoming:
     ``requests`` holds each (time, station); ``formatted`` the time as siphon
     writes it into the request URL, which the server reads as UTC.
     ``errors`` maps a request time to a list of exceptions raised by successive
-    requests for it, before the data is returned.
+    requests for it, before the data is returned. ``frame`` builds the response
+    from the time and the station.
     """
 
-    def __init__(self, errors=None):
+    def __init__(self, errors=None, frame=None):
         self.requests = []
         self.formatted = []
         self.errors = errors or {}
+        self.frame = frame or _wyoming_frame
 
     def request_data(self, time, site_id):
         self.requests.append((pd.Timestamp(time), site_id))
@@ -426,7 +476,7 @@ class _FakeWyoming:
         pending = self.errors.get(pd.Timestamp(time))
         if pending:
             raise pending.pop(0)
-        return _wyoming_frame(time, site_id)
+        return self.frame(time, site_id)
 
 
 class TestDownloadSounding:
@@ -511,6 +561,167 @@ class TestDownloadSounding:
         )
         assert len(wyoming.requests) == 1
         assert sorted(p.name for p in tmp_path.iterdir()) == ["SLC_2024011512.csv"]
+
+
+#: Knots in one unit of speed: a knot is 1852 m per hour
+KNOTS_PER = {
+    "knot": 1.0,
+    "m/s": 3600 / 1852,
+    "meter/second": 3600 / 1852,
+    "km/h": 1000 / 1852,
+    "mph": 1609.344 / 1852,
+}
+
+
+class TestDownloadSoundingUnits:
+    """A downloaded file is in knots, with an elevation, whatever siphon sent (#98)."""
+
+    WINDS = ["speed", "u_wind", "v_wind"]
+
+    @pytest.fixture
+    def download(self, tmp_path, monkeypatch):
+        """Download one sounding from a fake siphon that answers with ``frame``."""
+
+        def download(frame):
+            fake = _FakeWyoming(frame=frame)
+            monkeypatch.setattr(soundings, "WyomingUpperAir", fake)
+            date = dt.datetime(2024, 1, 15, 12)
+            return soundings.download_sounding("SLC", date, str(tmp_path))
+
+        return download
+
+    @pytest.mark.parametrize("unit", list(KNOTS_PER))
+    def test_winds_are_converted_to_knots(self, download, unit):
+        date = pd.Timestamp("2024-01-15 12:00")
+        sent = _current_frame(date, wind_unit=unit)
+        path = download(lambda *_: sent)
+
+        saved = pd.read_csv(path)
+        for column in self.WINDS:
+            np.testing.assert_allclose(
+                saved[column], sent[column] * KNOTS_PER[unit], rtol=1e-12
+            )
+        # Only the winds change: direction is an angle, the rest keep their units
+        for column in ["pressure", "height", "temperature", "dewpoint", "direction"]:
+            np.testing.assert_array_equal(saved[column], sent[column])
+
+    def test_knots_stay_as_they_are(self, download):
+        # A siphon that reports knots (0.9 did) has its values saved untouched
+        date = pd.Timestamp("2024-01-15 12:00")
+        sent = _wyoming_frame(date)
+        path = download(lambda *_: sent)
+        saved = pd.read_csv(path)
+        for column in self.WINDS:
+            assert saved[column].tolist() == sent[column].tolist()
+
+    def test_sounding_reads_the_winds_in_knots(self, download):
+        # 10 m/s from the south is 19.4 knots in Sounding.data and in the
+        # interpolated profile, the unit Sounding.units names
+        def frame(date, station):
+            df = _current_frame(date, station)
+            df["speed"], df["u_wind"], df["v_wind"] = 10.0, 0.0, 10.0
+            return df
+
+        snd = soundings.Sounding(download(frame))
+        assert snd.units["speed"] == "knot"
+        assert snd.data["speed"].tolist() == pytest.approx([19.438444924] * 3)
+        ds = snd.interpolate(start=1289, stop=1400, interval=10)
+        assert ds.speed.isel(time=0, height=0).item() == pytest.approx(19.438444924)
+        assert ds.v_wind.isel(time=0, height=0).item() == pytest.approx(19.438444924)
+
+    def test_the_original_frame_is_not_changed(self, download):
+        date = pd.Timestamp("2024-01-15 12:00")
+        sent = _current_frame(date)
+        before = sent.copy()
+        download(lambda *_: sent)
+        pd.testing.assert_frame_equal(sent, before)
+        assert "elevation" not in sent.columns
+
+    @pytest.mark.parametrize(
+        "unit", ["wibble", "degC", "hPa", "m/", "dimensionless", "", None]
+    )
+    def test_an_unknown_unit_raises_and_saves_nothing(self, tmp_path, download, unit):
+        date = pd.Timestamp("2024-01-15 12:00")
+        sent = _current_frame(date, wind_unit=unit)
+        with pytest.raises(ValueError, match="'speed'"):
+            download(lambda *_: sent)
+        assert list(tmp_path.iterdir()) == []
+
+    def test_the_error_names_the_column_and_the_unit(self, download):
+        date = pd.Timestamp("2024-01-15 12:00")
+        sent = _current_frame(date)
+        sent.units["v_wind"] = "wibble"  # speed and u_wind are fine
+        with pytest.raises(ValueError, match="'v_wind' column in 'wibble'"):
+            download(lambda *_: sent)
+
+    def test_missing_units_raise(self, tmp_path, download):
+        # A siphon that sets no units at all, and one that lacks the u_wind unit
+        date = pd.Timestamp("2024-01-15 12:00")
+        bare = _current_frame(date)
+        del bare.units
+        with pytest.raises(ValueError, match="no unit.*'speed'"):
+            download(lambda *_: bare)
+
+        partial = _current_frame(date)
+        del partial.units["u_wind"]
+        with pytest.raises(ValueError, match="no unit.*'u_wind'"):
+            download(lambda *_: partial)
+        assert list(tmp_path.iterdir()) == []
+
+    def test_download_soundings_does_not_swallow_an_unknown_unit(
+        self, tmp_path, monkeypatch
+    ):
+        fake = _FakeWyoming(frame=lambda t, s: _current_frame(t, s, wind_unit="wibble"))
+        monkeypatch.setattr(soundings, "WyomingUpperAir", fake)
+        with pytest.raises(ValueError, match="'wibble'"):
+            soundings.download_soundings(
+                "SLC", "2024-01-15 00:00", "2024-01-15 12:00", str(tmp_path)
+            )
+
+    def test_elevation_is_the_first_level_when_siphon_sends_none(self, download):
+        date = pd.Timestamp("2024-01-15 12:00")
+        snd = soundings.Sounding(download(lambda t, s: _current_frame(t, s)))
+        assert snd.elevation == 1289.0
+        assert not hasattr(snd, "pw")
+        assert not hasattr(snd, "station_number")
+        # The new columns and the interpolated profile's attributes
+        assert {"relative_humidity", "mixing_ratio"} <= set(snd.data.columns)
+        assert snd.interpolate().attrs["elevation"] == 1289.0
+        assert snd.time == date.to_pydatetime()
+
+    def test_elevation_is_the_first_level_not_the_lowest(self, download):
+        def frame(date, station):
+            df = _current_frame(date, station)
+            df["height"] = [300.0, 15.0, 1000.0]  # a wrong height after the ground
+            return df
+
+        assert soundings.Sounding(download(frame)).elevation == 300.0
+
+    def test_elevation_siphon_sends_is_kept(self, download):
+        def frame(date, station):
+            df = _current_frame(date, station)
+            df["elevation"] = 1300.0  # not the height of the first level, 1289
+            return df
+
+        assert soundings.Sounding(download(frame)).elevation == 1300.0
+
+    def test_get_soundings_reads_a_downloaded_sounding(self, tmp_path, monkeypatch):
+        # What valleyheatdeficit needs: the elevation in the profile's attributes,
+        # and winds that are knots like the soundings saved before
+        fake = _FakeWyoming(frame=lambda t, s: _current_frame(t, s))
+        monkeypatch.setattr(soundings, "WyomingUpperAir", fake)
+        ds = soundings.get_soundings(
+            "SLC",
+            start="2024-01-15 12:00",
+            end="2024-01-15 12:00",
+            sounding_dir=str(tmp_path),
+            download=True,
+        )
+        assert ds.attrs["elevation"] == 1289.0
+        raw_speed = _current_frame(pd.Timestamp("2024-01-15 12:00")).speed
+        assert ds.speed.isel(time=0, height=0).item() == pytest.approx(
+            raw_speed.iloc[0] * 3600 / 1852
+        )
 
 
 class TestDownloadSoundingsErrors:

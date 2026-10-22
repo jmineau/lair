@@ -106,6 +106,19 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   unit. lair's own loaders put every sector in one unit, so they are unchanged.
 - The docstring examples of `geo.cosine_weights`, `pcaps.determine_pcap_events`
   and the `pollutants` module run as written.
+- `soundings.download_sounding`, and so `download_soundings` and
+  `get_soundings(download=True)`, saves every sounding in the units
+  `Sounding.units` names (#98). Wyoming's service now sends the winds in m/s, and
+  a file saved with them was labeled knots, so a folder held both units and
+  `get_soundings` interpolated them together. `speed`, `u_wind` and `v_wind` are
+  converted to knots from the unit siphon reports for each, and a unit that is
+  missing, or is not a speed unit pint knows, raises a `ValueError` that names
+  the column and the unit. The station's `elevation`, which Wyoming no longer
+  sends, is saved as the height of the first level (the ground), so
+  `pcaps.valleyheatdeficit` works on a sounding downloaded now, as it does on
+  an older one. A file already saved is not changed: one saved with siphon 0.11
+  before this fix has its winds in m/s, and is converted by deleting it and
+  downloading it again.
 
 ### Removed
 

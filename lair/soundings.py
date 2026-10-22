@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from lair import units
 from lair._optional import import_optional_dependency
 from lair.air import wind_direction
 from lair.config import get_data_dir
@@ -57,6 +58,7 @@ class Sounding:
         meters; ``temperature`` and ``dewpoint`` in degrees Celsius
         (``degC``); ``direction``, ``latitude`` and ``longitude`` in degrees;
         ``speed``, ``u_wind`` and ``v_wind`` in knots; ``pw`` in millimeters.
+        :func:`download_sounding` saves every file in these units.
 
     Methods
     -------
@@ -121,9 +123,7 @@ class Sounding:
         elevation = getattr(self, "elevation", None)
         if elevation is not None and not pd.isna(elevation):
             return float(elevation)
-        # Wyoming lists the levels from the ground up. The first, not the
-        # lowest: a level can carry a wrong height (one SLC file has 15 m)
-        return float(self.data["height"].dropna().iloc[0])
+        return _first_level_height(self.data)
 
     def interpolate(self, start=None, stop=5000, interval=10):
         """
@@ -232,6 +232,57 @@ def merge(soundings: list) -> pd.DataFrame:
     return pd.concat(dfs)
 
 
+def _first_level_height(data: pd.DataFrame) -> float:
+    """
+    Height [m] of the first level of a sounding that has one.
+
+    Wyoming lists the levels from the ground up, so this is the ground at the
+    station. The first level, not the lowest: a level can carry a wrong height
+    (one SLC file has 15 m).
+    """
+    return float(data["height"].dropna().iloc[0])
+
+
+#: The columns of a saved sounding that are speeds, saved in knots
+_WIND_COLUMNS = ("speed", "u_wind", "v_wind")
+
+
+def _winds_to_knots(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Convert the wind columns of a siphon response to knots.
+
+    siphon reports the unit of each column in ``df.units``. It sets them by its
+    own version, not from the response: 0.9 and 0.10 say knots (and send
+    ``elevation``), 0.11, for Wyoming's current service, says m/s. A wind
+    column whose unit is missing, or is not a speed pint knows, raises a
+    ``ValueError`` that names the column and the unit.
+    """
+    reported = getattr(df, "units", None) or {}
+    df = df.copy()
+    for column in _WIND_COLUMNS:
+        if column not in df.columns:
+            continue
+        unit = reported.get(column)
+        if not isinstance(unit, str) or not unit.strip():
+            raise ValueError(
+                f"siphon reports no unit for the sounding's {column!r} column "
+                f"(units: {unit!r}); it cannot be converted to knots."
+            )
+        try:
+            factor = float(units.Quantity(1, unit).to("knot").magnitude)
+        except Exception as e:
+            # Not one error type: pint raises UndefinedUnitError for a name it
+            # lacks, DimensionalityError for a unit that is not a speed, and
+            # AssertionError, ValueError or TypeError for a malformed string
+            raise ValueError(
+                f"siphon reports the sounding's {column!r} column in {unit!r}, "
+                "which is not a speed unit that pint knows; it cannot be "
+                "converted to knots."
+            ) from e
+        df[column] = df[column] * factor
+    return df
+
+
 def _naive_utc(t) -> pd.Timestamp:
     """Timestamp in naive UTC (the sounding file times); naive input is taken as UTC."""
     t = pd.Timestamp(t)
@@ -258,6 +309,23 @@ def download_sounding(station, date, dst=None) -> str:
     -------
     str
         The path to the downloaded sounding data.
+
+    Raises
+    ------
+    ValueError
+        If the unit siphon reports for ``speed``, ``u_wind`` or ``v_wind`` is
+        missing or is not a speed unit that pint knows. No file is written.
+
+    Notes
+    -----
+    Every file is saved in the units of ``Sounding.units``, whatever
+    Wyoming sent. Wyoming sends the winds in m/s today and sent knots before,
+    so ``speed``, ``u_wind`` and ``v_wind`` are converted to knots from the
+    unit siphon reports for each. Wyoming no longer sends the station's
+    ``elevation``, so it is saved as the height of the first level, the ground.
+    ``pw`` and ``station_number`` are saved only if Wyoming sends them, which
+    it no longer does. A file that is already in ``dst`` is not downloaded
+    again or changed.
     """
     date = _naive_utc(date)
     if dst is None:
@@ -267,7 +335,9 @@ def download_sounding(station, date, dst=None) -> str:
     path = os.path.join(dst, f"{station}_{date:%Y%m%d%H}.csv")
     if not os.path.exists(path):
         logger.info("Downloading %s on %s...", station, f"{date:%Y-%m-%d %H:%M}")
-        df = WyomingUpperAir.request_data(date, station)
+        df = _winds_to_knots(WyomingUpperAir.request_data(date, station))
+        if "elevation" not in df.columns:
+            df["elevation"] = _first_level_height(df)
         df.to_csv(path, index=False)
     else:
         logger.debug("%s on %s already exists.", station, f"{date:%Y-%m-%d %H:%M}")
@@ -278,6 +348,9 @@ def download_sounding(station, date, dst=None) -> str:
 def download_soundings(station, start, end, dst=None, months=None):
     """
     Download upper air soundings from the Wyoming archive.
+
+    Each one is saved as :func:`download_sounding` saves it, in the units of
+    ``Sounding.units``.
 
     Parameters
     ----------
