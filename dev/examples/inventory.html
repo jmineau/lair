@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=cc82705a"></script>
+    <script src="../_static/documentation_options.js?v=98def5ca"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Convert a methane flux from moles to mass" href="units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev10+g812502d89" />
+  <meta name="docsearch:version" content="2026.12.10.dev11+g8129b1840" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -651,6 +651,11 @@ together, they are <code class="docutils literal notranslate"><span class="pre">
 </div>
 <p>To leave a sector out of a total, pass it to
 <a class="reference internal" href="../_autosummary/lair.inventories.sum_sectors.html#lair.inventories.sum_sectors" title="lair.inventories.sum_sectors"><code class="xref py py-func docutils literal notranslate"><span class="pre">sum_sectors()</span></code></a> as <code class="docutils literal notranslate"><span class="pre">exclude=</span></code>.</p>
+<p>A total adds the sectors as numbers, so they must be in the same unit. EDGAR’s
+are. An inventory built from sectors in different units (a dataset whose
+variables carry their own <code class="docutils literal notranslate"><span class="pre">units</span></code>) raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> from
+<code class="docutils literal notranslate"><span class="pre">total_emissions</span></code> and <code class="docutils literal notranslate"><span class="pre">integrate()</span></code> that names each sector’s units; convert
+them first with <code class="docutils literal notranslate"><span class="pre">convert_units</span></code>.</p>
 </section>
 <section id="other-units">
 <h3>Other units<a class="headerlink" href="#other-units" title="Link to this heading">#</a></h3>

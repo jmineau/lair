@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=cc82705a"></script>
+    <script src="../../_static/documentation_options.js?v=98def5ca"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev10+g812502d89" />
+  <meta name="docsearch:version" content="2026.12.10.dev11+g8129b1840" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -453,7 +453,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">Self</span><span class="p">,</span> <span class="n">TypeVar</span>
 
@@ -693,6 +693,30 @@
     <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">quantify</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_require_same_units</span><span class="p">(</span><span class="n">unit_of</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Raise a ``ValueError`` unless every sector is in the same units.</span>
+
+<span class="sd">    ``unit_of`` maps each sector to its units: a string (the ``units`` attribute,</span>
+<span class="sd">    or ``None`` when it has none) or a pint unit. Two spellings of one unit</span>
+<span class="sd">    (``kg/m2/s``, ``kg m-2 s-1``) are the same.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">unit_of</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">u</span> <span class="o">==</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">u</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">values</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">({</span><span class="n">units</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">values</span><span class="p">})</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">listed</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sector</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">u</span><span class="si">:</span><span class="s2">~C</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">pint</span><span class="o">.</span><span class="n">Unit</span><span class="p">)</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sector</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">sector</span><span class="p">,</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">unit_of</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;The sectors are in different units (</span><span class="si">{</span><span class="n">listed</span><span class="si">}</span><span class="s2">). Convert them to one unit &quot;</span>
+        <span class="s2">&quot;first: Inventory.convert_units, or standardize_units=True when building &quot;</span>
+        <span class="s2">&quot;the inventory.&quot;</span>
+    <span class="p">)</span>
+
+
 <div class="viewcode-block" id="sum_sectors">
 <a class="viewcode-back" href="../../_autosummary/lair.inventories.sum_sectors.html#lair.inventories.sum_sectors">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sum_sectors</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">exclude</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span><span class="p">:</span>
@@ -706,19 +730,22 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : xr.Dataset</span>
-<span class="sd">        The inventory data with emissions from multiple sectors as different variables.</span>
+<span class="sd">        The inventory data with emissions from multiple sectors as different</span>
+<span class="sd">        variables, each with a ``units`` attribute, all in the same units.</span>
 <span class="sd">    exclude : list of str, optional</span>
 <span class="sd">        Sectors to leave out of the sum, e.g. ``[&quot;Forest_Fires&quot;]``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    xr.DataArray</span>
-<span class="sd">        The sum of emissions from the sectors.</span>
+<span class="sd">        The sum of emissions from the sectors, in their units.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If ``exclude`` names a sector that is not in ``data``.</span>
+<span class="sd">        If ``exclude`` names a sector that is not in ``data``, or if the sectors</span>
+<span class="sd">        that are summed are in different units (the numbers cannot be added as</span>
+<span class="sd">        they are; convert them to one unit first).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">exclude</span><span class="p">:</span>
         <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">exclude</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
@@ -728,6 +755,9 @@
                 <span class="sa">f</span><span class="s2">&quot;Sectors: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="n">exclude</span><span class="p">)</span>
+    <span class="n">_require_same_units</span><span class="p">(</span>
+        <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">):</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;units&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">}</span>
+    <span class="p">)</span>
     <span class="n">total</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_array</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;sector&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;emissions&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="s2">&quot;sector&quot;</span><span class="p">)</span>
     <span class="n">total</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;long_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Total Emissions&quot;</span>
     <span class="n">total</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
@@ -797,7 +827,11 @@
 <span class="sd">        src_units : str, optional</span>
 <span class="sd">            The source units of the data, by default None. If given, every variable</span>
 <span class="sd">            is taken to be in these units. If None, each variable&#39;s own ``units``</span>
-<span class="sd">            attribute is used (and every variable must have one).</span>
+<span class="sd">            attribute is used (and every variable must have one). Variables in</span>
+<span class="sd">            different units are kept as they are, but the totals</span>
+<span class="sd">            (:attr:`total_emissions`, :meth:`integrate`) raise a ``ValueError``</span>
+<span class="sd">            until they are converted to one unit: ``standardize_units=True``, or</span>
+<span class="sd">            :meth:`convert_units`.</span>
 <span class="sd">        time_step : str, optional</span>
 <span class="sd">            The time step of the data, by default &#39;annual&#39;.</span>
 <span class="sd">        crs : str, optional</span>
@@ -928,8 +962,17 @@
 <span class="sd">        -------</span>
 <span class="sd">        tuple[Any, Any, Any]</span>
 <span class="sd">            The quantity, area, and time units.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the sectors are in different units, which have no single quantity,</span>
+<span class="sd">            area and time unit.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># All variables should be in the same units</span>
+        <span class="c1"># The area and time units of the first variable are used for all of them</span>
+        <span class="n">_require_same_units</span><span class="p">(</span>
+            <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">units</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">}</span>
+        <span class="p">)</span>
         <span class="n">var</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">data_units</span> <span class="o">=</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">units</span><span class="si">:</span><span class="s2"> ~C</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># compact symbols like &quot;kg/km**2/day&quot;</span>

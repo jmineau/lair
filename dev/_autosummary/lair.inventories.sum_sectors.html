@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=cc82705a"></script>
+    <script src="../_static/documentation_options.js?v=98def5ca"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.molecular_weight" href="lair.inventories.molecular_weight.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev10+g812502d89" />
+  <meta name="docsearch:version" content="2026.12.10.dev11+g8129b1840" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -825,15 +825,18 @@ supplemental <code class="docutils literal notranslate"><span class="pre">PostMe
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>xr.Dataset</em>) – The inventory data with emissions from multiple sectors as different variables.</p></li>
+<li><p><strong>data</strong> (<em>xr.Dataset</em>) – The inventory data with emissions from multiple sectors as different
+variables, each with a <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute, all in the same units.</p></li>
 <li><p><strong>exclude</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Sectors to leave out of the sum, e.g. <code class="docutils literal notranslate"><span class="pre">[&quot;Forest_Fires&quot;]</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>xr.DataArray</em> – The sum of emissions from the sectors.</p>
+<dd class="field-even"><p><em>xr.DataArray</em> – The sum of emissions from the sectors, in their units.</p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">exclude</span></code> names a sector that is not in <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">exclude</span></code> names a sector that is not in <code class="docutils literal notranslate"><span class="pre">data</span></code>, or if the sectors
+    that are summed are in different units (the numbers cannot be added as
+    they are; convert them to one unit first).</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.9.0)"><em>DataArray</em></a></p>
