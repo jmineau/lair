@@ -18,7 +18,6 @@
    decimalDate2dt
    diurnal
    dt2decimalDate
-   periodindex_to_binedges
    regular_times_to_intervals
    seasonal
    time_decay_matrix
