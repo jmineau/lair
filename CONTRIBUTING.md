@@ -27,9 +27,17 @@ install). It is locked in `pixi.lock`, for 64-bit Linux:
 ```bash
 pixi install     # builds .pixi/envs/default
 pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow"
+pixi run pyrefly check   # the type check, in the same environment
 ```
 
-CI runs the tests in both environments.
+CI runs the tests in both environments. The first `import lair` in an
+environment downloads NOAA's CCG filter (the
+[installation page](https://jmineau.github.io/lair/#installation) says why),
+and `LAIR_SKIP_CCG_DOWNLOAD` (any non-empty value, `0` included) skips that.
+`tests/conftest.py` and the Tests, Code Quality and Documentation workflows set
+it. The Tests workflow's `pixi` job clears it for one step to download the
+filter (cached by month), so `tests/background` runs there; it is the only CI
+job that reaches NOAA.
 
 ## Checks
 
@@ -39,10 +47,10 @@ shows them all).
 
 | Recipe | What it does |
 |---|---|
-| `just quality-check` | `lint`, `type-check`, `docstr` and `test`: what CI checks |
+| `just quality-check` | `lint`, `type-check` (pyrefly), `docstr` (docstring coverage of at least 88%) and `test`: what CI checks |
 | `just test` | pytest in parallel, skipping tests marked `network` or `slow` (extra args go to pytest; plain `uv run pytest` runs serially, for debugging) |
 | `just format` | fix lint and format the code with ruff |
-| `just build-docs` | build the HTML docs into `docs/_build/` |
+| `just build-docs` | build the HTML docs into `docs/_build/`, running every example (warnings are errors) |
 | `just docs-serve` | preview the docs at <http://127.0.0.1:8000>, rebuilt on every save (on a remote machine, forward the port, e.g. VS Code's Ports panel) |
 | `just changelog` | draft CHANGELOG entries from the commits since the last release |
 | `just pre-commit` | run every hook on every file |
@@ -50,6 +58,9 @@ shows them all).
 After changing dependencies in `pyproject.toml`, run `just lock` (the
 `uv-lock` hook also does this on commit) and `pixi lock`, and commit `uv.lock`
 and `pixi.lock` with the change. CI fails on a `pixi.lock` that is out of date.
+The two are solved separately, so a test that fails in one environment only is
+usually a version difference. `pixi.lock` is `merge=binary` (`.gitattributes`):
+after a merge or rebase conflict in it, rerun `pixi lock`.
 
 ## Making a change
 
@@ -62,6 +73,46 @@ and `pixi.lock` with the change. CI fails on a `pixi.lock` that is out of date.
    `feat(inventories): sum_sectors(exclude=)` or `fix(soundings): ...`
    (`just changelog` sorts the entries by type).
 5. Open a pull request. Link the issue it addresses ("Fixes #12").
+
+## Code layout
+
+The package is flat (`lair/`, not `src/lair/`): one module per topic, no
+subpackages, and one test directory per module (`tests/README.md`).
+
+```
+__init__.py      pint setup and the CCG filter download (AGENTS.md, "Import side effects")
+_ccg_filter.py   NOAA's CCG filter, downloaded on first import; gitignored, never commit
+_optional.py     import_optional_dependency()
+config.py        get_data_dir(), get_cache_dir(); no file-system work
+constants.py     physical constants (pint has no constants support; issue linked inside)
+hrrr.py          HRRR winds at a point, from the HRRR-Zarr archive on AWS
+inventories.py   Inventory and its loaders: EDGAR, EPA, GFEI, Vulcan, WetCHARTs
+meteorology.py   ideal gas law, hypsometric, poisson, vapor pressure, ... (plain SI)
+noaa.py          CarbonTracker and NOAA GML readers
+records.py       file utilities (ftp_download, unzip, read_kml, Cacher)
+soundings.py     upper-air soundings from the Wyoming archive (siphon)
+synoptic.py      Synoptic Data API (MesoWest's successor); token= or $SYNOPTIC_TOKEN
+transects.py     mobile transect matrices: metrics and the builder
+```
+
+and `air`, `background`, `clock`, `dev`, `geo`, `parallel`, `pcaps`,
+`plotter`, `pollutants` and `utils`, each named for what it holds.
+
+## Notes on the code
+
+Two traps that a change to these modules can fall into. The docstrings of the
+functions named here hold the details.
+
+- **CarbonTracker times:** each mole fraction step is a 3-hour mean labeled by
+  its center, taken from the file's `time_components` in every release
+  (`CarbonTracker._preprocess_molefractions`): CT-CH4-2025's own `time` and
+  `time_bounds` are 1.5 h late. Check a new release's `time` against its
+  `time_components` before trusting either.
+- **`thoning_filter`'s `sampleinterval`** is in days: the step of the even grid
+  NOAA's filter interpolates onto before its FFT. lair passes the median step
+  only when NOAA's own estimate would divide by zero. A grid coarser than the
+  data samples it rather than averaging, which biases hourly data with a
+  diurnal cycle; test a change against the daily curve.
 
 ## Docs examples
 
@@ -103,6 +154,28 @@ When the code such a page calls changes, run the page's code again and paste
 the new output. Run it in an empty folder: the blocks use relative paths, so
 no machine's paths reach the page.
 
+## Where a fact goes in the docs
+
+Each fact is written on one page, and the others link to it rather than
+restate it (AGENTS.md, "Docs"). A new example goes in `docs/examples/index.rst`
+only (a toctree entry and a line describing it); the quickstart links to the
+Examples page, not to each example. A new fact goes on the page that holds its
+kind:
+
+| Fact | Its page | The others |
+|---|---|---|
+| Install routes, extras, the first-import download, CHPC | front page, "Installation" | link by `installation` or `optional-dependencies`; the README keeps a short copy, as GitHub's front page |
+| `LAIR_*` variables, what needs which data, the pollutant spelling, the cache | `data`, "Data locations" | link by `data-locations` |
+| A dataset's folder layout and where to get it | its example, "The data"; no example: its class docstring | "Data locations" links to it |
+| A time without a zone is UTC; time zones; seasons | `examples/clock` | a clause and a link |
+| Units; the `mass_flux` context | `examples/units` | link |
+| Plain SI in and out of `meteorology` | quickstart, "A first calculation" | link |
+| Inventory totals; conservative against bilinear regridding. Drawing a map: the time step, state lines, ticks, grid, locator map | `examples/inventory`; for the map, `examples/maps` | link |
+| `get_soundings` heights and downloads | `examples/soundings` | link |
+| CarbonTracker sampling and background | `examples/carbontracker` | link |
+| Background methods, side by side, and which one to use | `examples/background` | link |
+| Function and class details | the API pages, from docstrings | `:func:` and `:class:` links, not `autofunction` |
+
 ## Releasing
 
 The version comes from git tags, through setuptools-scm, so there is no
@@ -138,6 +211,6 @@ can hold different versions of a package.
 
 The tooling (CI workflows, pre-commit, justfile, packaging configuration) comes
 from [jmineau/python-template](https://github.com/jmineau/python-template).
-`.copier-answers.yml` records the template version; `copier update` pulls in
-later template changes. Improvements that would help every package are best
-made in the template.
+`.copier-answers.yml` records the template version and is never edited by hand;
+`copier update` pulls in later template changes. Improvements that would help
+every package are best made in the template.
