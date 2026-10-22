@@ -155,6 +155,9 @@ Extra          Packages                               Used by
 ``regridding`` installs the ``xesmf`` package, which works only with ESMF in the
 same environment: see "conda" above.
 
+A function whose package is missing raises an ``ImportError`` that names the
+extra and the command that installs it.
+
 Check the install
 ^^^^^^^^^^^^^^^^^
 

@@ -3,6 +3,7 @@ NOAA greenhouse gas data.
 """
 
 import datetime as dt
+import re
 from abc import ABCMeta
 from collections.abc import Sequence
 from concurrent.futures.process import BrokenProcessPool
@@ -80,6 +81,46 @@ def _open_mfdataset(files, preprocess=None, parallel: bool = False) -> xr.Datase
             "imports the script again), or pass parallel_parse=False to open "
             "the files one at a time."
         ) from e
+
+
+#: The day a CarbonTracker file covers: the date its name ends with
+_DAY_IN_NAME = re.compile(r"(\d{4}-\d{2}-\d{2})\.nc$")
+
+
+def _check_one_file_per_day(files: Sequence[str]) -> None:
+    """
+    Raise if two of the daily molefraction ``files`` cover the same day.
+
+    The day is the date a file name ends with (``..._2015-01-01.nc``), so no
+    file is opened. A name that does not end with a date is not checked.
+
+    Raises
+    ------
+    ValueError
+        Names the first day with more than one file, two of its files, and how
+        many days have more than one.
+    """
+    by_day: dict[str, list[str]] = {}
+    for file in sorted(files):
+        match = _DAY_IN_NAME.search(Path(file).name)
+        if match:
+            by_day.setdefault(match.group(1), []).append(file)
+    repeated = sorted(day for day, names in by_day.items() if len(names) > 1)
+    if not repeated:
+        return
+    day = repeated[0]
+    first, second = by_day[day][:2]
+    message = (
+        f"Two molefraction files cover {day}: {first} and {second}. Reading "
+        "both would read every value twice. Keep one file for each day in the "
+        "folder, for example by moving the files of an older release out of it."
+    )
+    if len(repeated) > 1:
+        message += (
+            f" {len(repeated)} days in all have more than one file, from "
+            f"{day} to {repeated[-1]}."
+        )
+    raise ValueError(message)
 
 
 def _cache_file(*parts: str) -> Path:
@@ -476,10 +517,21 @@ class CarbonTrackerCH4(CarbonTracker):
 
     @cached_property
     def molefractions(self) -> xr.Dataset:
-        """Molefractions Dataset. Cached property."""
+        """
+        Molefractions Dataset of every file of the version. Cached property.
+
+        Raises
+        ------
+        ValueError
+            If two files cover one day, such as the same day from two
+            releases (their names end with the same ``YYYY-MM-DD.nc``). The
+            message names the day and both files. The files are not opened,
+            and nothing is cached.
+        """
         path = self.directory / "molefractions"
 
         files = list_files(str(path), "*nc", full_names=True, recursive=True)
+        _check_one_file_per_day(files)
 
         if self.cache:
             cache_file = _cache_file(
@@ -575,7 +627,19 @@ class CarbonTrackerCO2(CarbonTracker):
 
     @cached_property
     def molefractions(self) -> xr.Dataset:
-        """Molefractions Dataset on ``self.grid`` (lazy). Cached property."""
+        """
+        Molefractions Dataset on ``self.grid`` (lazy). Cached property.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the folder has no file on ``self.grid``.
+        ValueError
+            If two files on ``self.grid`` cover one day, such as the same day
+            from two releases (their names end with the same
+            ``YYYY-MM-DD.nc``). The message names the day and both files. The
+            files are not opened, and nothing is cached.
+        """
         files = sorted(
             str(f) for f in self.molefractions_dir.glob(f"*molefrac_{self.grid}_*.nc")
         )
@@ -583,6 +647,7 @@ class CarbonTrackerCO2(CarbonTracker):
             raise FileNotFoundError(
                 f"No {self.grid} molefraction files in {self.molefractions_dir}"
             )
+        _check_one_file_per_day(files)
 
         if self.cache:
             cache_file = _cache_file(

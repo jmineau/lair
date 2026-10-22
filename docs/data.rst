@@ -130,17 +130,10 @@ imported, so ``import lair`` works with a read-only home directory. If the folde
 cannot be made, the error names it and ``LAIR_CACHE_DIR``: set the variable to a
 folder you can write to, or pass ``cache=False``, which saves nothing.
 
-How large the file gets depends on the folder it describes:
-
-* **One file for each day:** the file holds how to open the files, not their
-  values: 8 to 15 KB for each daily file, so 3.2 MB for the 366 days of a year,
-  whose files add up to 13 GB.
-* **Two files for the same day** (for example the same day from two releases,
-  ``CTCH4_2024.molefrac_...`` and ``CTCH4_2025.molefrac_...``): ``molefractions``
-  has to compare them, so it reads every value, and the cache holds them. The file
-  is then about 1.1 times the size of the files (243 MB for six files of 36 MB), and
-  opening takes memory for all the values, more than a job has when the folder
-  holds thousands of files. Keep one file for each day.
+The file holds how to open the files, not their values: 8 to 15 KB for each daily
+file, so 3.2 MB for the 366 days of a year, whose files add up to 13 GB. That
+needs one file for each day: ``molefractions`` raises an error, and caches
+nothing, when two files cover one day (see :ref:`carbontracker-data`).
 
 The file is for one list of files. When the folder gains or loses a file, the next
 ``molefractions`` adds an entry for the new list, as large as the first, to the
