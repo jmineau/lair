@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0054c42a"></script>
+    <script src="../_static/documentation_options.js?v=baf303e4"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.DST_UNITS" href="lair.inventories.DST_UNITS.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev6+g7e6064cca" />
+  <meta name="docsearch:version" content="2026.12.10.dev7+g0678434d7" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -803,22 +803,61 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.inventories.convert_units">
 <span class="sig-prename descclassname"><span class="pre">lair.inventories.</span></span><span class="sig-name descname"><span class="pre">convert_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pollutant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_units</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/inventories.html#convert_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.inventories.convert_units" title="Link to this definition">#</a></dt>
-<dd><p>Convert the units of a pint quantified data array or dataset.</p>
+<dd><p>Convert the units of a data array or dataset.</p>
+<p>The data either has pint units (<code class="docutils literal notranslate"><span class="pre">.pint.quantify()</span></code>, what an
+<a class="reference internal" href="lair.inventories.Inventory.html#lair.inventories.Inventory" title="lair.inventories.Inventory"><code class="xref py py-class docutils literal notranslate"><span class="pre">Inventory</span></code></a> holds) or is plain, with a <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute. It comes
+back the same way: pint units in, pint units out; plain in, plain out, with
+the <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute and the values converted and everything else (name,
+coordinates and their attributes, other attributes) as it was. A conversion
+between an amount (mol) and a mass (kg) uses the molecular weight of
+<code class="docutils literal notranslate"><span class="pre">pollutant</span></code>, through the <code class="docutils literal notranslate"><span class="pre">mass_flux</span></code> pint context.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>xr.DataArray</em><em> | </em><em>xr.Dataset</em>) – The data to convert. Must have pint units.</p></li>
-<li><p><strong>pollutant</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The pollutant.</p></li>
+<li><p><strong>data</strong> (<em>xr.DataArray</em><em> | </em><em>xr.Dataset</em>) – The data to convert. A dataset converts every variable, so each needs
+units.</p></li>
+<li><p><strong>pollutant</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The pollutant, as a chemical formula (see <a class="reference internal" href="lair.inventories.molecular_weight.html#lair.inventories.molecular_weight" title="lair.inventories.molecular_weight"><code class="xref py py-func docutils literal notranslate"><span class="pre">molecular_weight()</span></code></a>).</p></li>
 <li><p><strong>dst_units</strong> (<em>Any</em>) – The destination units.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>xr.DataArray | xr.Dataset</em> – The data with converted units.</p>
+<dd class="field-even"><p><em>xr.DataArray | xr.Dataset</em> – The data with converted units. <code class="docutils literal notranslate"><span class="pre">data</span></code> itself is not changed.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>_XarrayT</em></p>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.15)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code> is not an xarray DataArray or Dataset.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If plain data has no <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>_XarrayT</em></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Inventory.convert_units</span></code></a></dt><dd><p>The same for an inventory’s data.</p>
+</dd>
+<dt><a class="reference internal" href="lair.inventories.molecular_weight.html#lair.inventories.molecular_weight" title="lair.inventories.molecular_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">molecular_weight</span></code></a></dt><dd><p>The molecular weight the conversion uses.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>A grid of methane fluxes read from a file, in nmol m-2 s-1, to kg km-2 d-1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_units</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flux</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">30.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">]],</span>
+<span class="gp">... </span>    <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;nmol m-2 s-1&quot;</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kg</span> <span class="o">=</span> <span class="n">convert_units</span><span class="p">(</span><span class="n">flux</span><span class="p">,</span> <span class="s2">&quot;CH4&quot;</span><span class="p">,</span> <span class="s2">&quot;kg km-2 d-1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kg</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+<span class="go">&#39;kg km-2 d-1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">kg</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">13.86</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

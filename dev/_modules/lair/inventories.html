@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=0054c42a"></script>
+    <script src="../../_static/documentation_options.js?v=baf303e4"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev6+g7e6064cca" />
+  <meta name="docsearch:version" content="2026.12.10.dev7+g0678434d7" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -450,7 +450,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">Self</span><span class="p">,</span> <span class="n">TypeVar</span>
 
@@ -547,40 +547,107 @@
 <a class="viewcode-back" href="../../_autosummary/lair.inventories.convert_units.html#lair.inventories.convert_units">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_units</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">_XarrayT</span><span class="p">,</span> <span class="n">pollutant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dst_units</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_XarrayT</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert the units of a pint quantified data array or dataset.</span>
+<span class="sd">    Convert the units of a data array or dataset.</span>
+
+<span class="sd">    The data either has pint units (``.pint.quantify()``, what an</span>
+<span class="sd">    :class:`Inventory` holds) or is plain, with a ``units`` attribute. It comes</span>
+<span class="sd">    back the same way: pint units in, pint units out; plain in, plain out, with</span>
+<span class="sd">    the ``units`` attribute and the values converted and everything else (name,</span>
+<span class="sd">    coordinates and their attributes, other attributes) as it was. A conversion</span>
+<span class="sd">    between an amount (mol) and a mass (kg) uses the molecular weight of</span>
+<span class="sd">    ``pollutant``, through the ``mass_flux`` pint context.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : xr.DataArray | xr.Dataset</span>
-<span class="sd">        The data to convert. Must have pint units.</span>
+<span class="sd">        The data to convert. A dataset converts every variable, so each needs</span>
+<span class="sd">        units.</span>
 <span class="sd">    pollutant : str</span>
-<span class="sd">        The pollutant.</span>
+<span class="sd">        The pollutant, as a chemical formula (see :func:`molecular_weight`).</span>
 <span class="sd">    dst_units : Any</span>
 <span class="sd">        The destination units.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    xr.DataArray | xr.Dataset</span>
-<span class="sd">        The data with converted units.</span>
+<span class="sd">        The data with converted units. ``data`` itself is not changed.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If ``data`` is not an xarray DataArray or Dataset.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If plain data has no ``units`` attribute.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    Inventory.convert_units : The same for an inventory&#39;s data.</span>
+<span class="sd">    molecular_weight : The molecular weight the conversion uses.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    A grid of methane fluxes read from a file, in nmol m-2 s-1, to kg km-2 d-1:</span>
+
+<span class="sd">    &gt;&gt;&gt; import xarray as xr</span>
+<span class="sd">    &gt;&gt;&gt; from lair.inventories import convert_units</span>
+<span class="sd">    &gt;&gt;&gt; flux = xr.DataArray(</span>
+<span class="sd">    ...     [[10.0, 20.0], [30.0, 40.0]],</span>
+<span class="sd">    ...     dims=(&quot;y&quot;, &quot;x&quot;),</span>
+<span class="sd">    ...     attrs={&quot;units&quot;: &quot;nmol m-2 s-1&quot;},</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; kg = convert_units(flux, &quot;CH4&quot;, &quot;kg km-2 d-1&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; kg.attrs[&quot;units&quot;]</span>
+<span class="sd">    &#39;kg km-2 d-1&#39;</span>
+<span class="sd">    &gt;&gt;&gt; round(float(kg[0, 0]), 2)</span>
+<span class="sd">    13.86</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;data must be an xarray Dataset or DataArray&quot;</span><span class="p">)</span>
+
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">plain</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plain</span><span class="p">:</span>
+        <span class="n">_quantify_from_attrs</span><span class="p">(</span><span class="n">arrays</span><span class="p">)</span>
 
     <span class="c1"># Calculate molecular weight of pollutant</span>
     <span class="n">mw</span> <span class="o">=</span> <span class="n">molecular_weight</span><span class="p">(</span><span class="n">pollutant</span><span class="p">)</span>
 
     <span class="c1"># Use custom pint context to convert mass &lt;--&gt; substance</span>
     <span class="k">with</span> <span class="n">units</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="s2">&quot;mass_flux&quot;</span><span class="p">,</span> <span class="n">mw</span><span class="o">=</span><span class="n">mw</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dst_units</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
-                <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dst_units</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dst_units</span><span class="p">)</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dst_units</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;data must be an xarray Dataset or DataArray&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dst_units</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plain</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">dequantify</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dst_units</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dst_units</span>
     <span class="k">return</span> <span class="n">data</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_quantify_from_attrs</span><span class="p">(</span><span class="n">arrays</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DataArray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Give each array the pint units of its ``units`` attribute, in place.</span>
+
+<span class="sd">    Only the values are wrapped. ``.pint.quantify()`` also reads the units of</span>
+<span class="sd">    the coordinates (``degrees_north``) and drops that attribute from them, which</span>
+<span class="sd">    a caller who passed plain data does not expect to lose.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;data&quot;</span> <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">array</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays</span>
+        <span class="k">if</span> <span class="s2">&quot;units&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">array</span><span class="o">.</span><span class="n">attrs</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Data without pint units needs a &#39;units&#39; attribute &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(no units attribute on </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">:</span>
+        <span class="n">array</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;units&quot;</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_open_mfdataset</span><span class="p">(</span>
