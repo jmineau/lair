@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=35b4e661"></script>
+    <script src="../_static/documentation_options.js?v=f9b84219"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.soundings.download_soundings" href="lair.soundings.download_soundings.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev4+g3e1989f00" />
+  <meta name="docsearch:version" content="2026.12.10.dev5+g4501981f6" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -816,7 +816,10 @@ tz-aware times are converted.</p></li>
 <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR/&lt;station&gt;</span></code>.</p></li>
 <li><p><strong>months</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Only use (and download) soundings from these months.</p></li>
 <li><p><strong>driver</strong> (<em>{'xarray'</em><em>, </em><em>'pandas'}</em><em>, </em><em>optional</em>) – Return interpolated profiles as an xarray Dataset (default), or the
-merged raw soundings as a pandas DataFrame.</p></li>
+merged raw soundings as a pandas DataFrame. The profiles share one set
+of heights, every 10 m from the station’s ground (its <code class="docutils literal notranslate"><span class="pre">elevation</span></code>,
+the lowest among the files if they differ; see
+<a class="reference internal" href="lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate" title="lair.soundings.Sounding.interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Sounding.interpolate()</span></code></a>) up to 5000 m, not included.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

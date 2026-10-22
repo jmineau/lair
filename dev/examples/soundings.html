@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=35b4e661"></script>
+    <script src="../_static/documentation_options.js?v=f9b84219"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Draw a map of an inventory" href="maps.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev4+g3e1989f00" />
+  <meta name="docsearch:version" content="2026.12.10.dev5+g4501981f6" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -470,9 +470,9 @@ computes potential temperature on regular heights. Two rules come out of it:</p>
 <li><p><strong>lair reads soundings from a folder you keep</strong>, one file per launch.
 <a class="reference internal" href="../_autosummary/lair.soundings.download_soundings.html#lair.soundings.download_soundings" title="lair.soundings.download_soundings"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_soundings()</span></code></a> fills it, and
 <a class="reference internal" href="../_autosummary/lair.soundings.get_soundings.html#lair.soundings.get_soundings" title="lair.soundings.get_soundings"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_soundings()</span></code></a> reads it.</p></li>
-<li><p><strong>get_soundings puts every sounding on the same heights</strong>: 1289 to 4999 m
-above sea level, every 10 m. 1289 m is the ground at Salt Lake City, so for
-another station, interpolate each sounding yourself (below).</p></li>
+<li><p><strong>get_soundings puts every sounding on the same heights</strong>: every 10 m from
+the ground at the station (1289 m above sea level at Salt Lake City) up to
+4999 m.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -574,13 +574,14 @@ reported, to 1289, 1299, …, 4999 m. A height above the top of a sounding is
 left NaN, not extrapolated. Wind direction and speed are rebuilt from the
 interpolated <code class="docutils literal notranslate"><span class="pre">u_wind</span></code> and <code class="docutils literal notranslate"><span class="pre">v_wind</span></code>, since a direction cannot be averaged
 (350 and 10 degrees would give 180).</p>
-<p>The heights are fixed: <code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> calls
-<a class="reference internal" href="../_autosummary/lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate" title="lair.soundings.Sounding.interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Sounding.interpolate()</span></code></a> with its
-defaults (<code class="docutils literal notranslate"><span class="pre">start=1289,</span> <span class="pre">stop=5000,</span> <span class="pre">interval=10</span></code>), so for a station below
-1289 m the levels under 1289 m are dropped. For another station, interpolate
-each sounding yourself, for example <code class="docutils literal notranslate"><span class="pre">snd.interpolate(start=0,</span> <span class="pre">interval=50)</span></code>
-(levels below the ground come out NaN), or pass <code class="docutils literal notranslate"><span class="pre">driver=&quot;pandas&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> to get the raw levels of every
-sounding in one <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>.</p>
+<p>The heights start at the ground: <a class="reference internal" href="../_autosummary/lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate" title="lair.soundings.Sounding.interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Sounding.interpolate()</span></code></a> starts at the station’s <code class="docutils literal notranslate"><span class="pre">elevation</span></code>
+by default, or, in a file without one (a sounding downloaded today), at its
+first level, the ground, and <code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> gives every sounding
+the heights of the lowest ground among them, so that they line up. For other
+heights, interpolate each sounding yourself, for example
+<code class="docutils literal notranslate"><span class="pre">snd.interpolate(start=0,</span> <span class="pre">interval=50)</span></code> (levels below the ground come out
+NaN), or pass <code class="docutils literal notranslate"><span class="pre">driver=&quot;pandas&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> to get the raw levels of
+every sounding in one <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>.</p>
 </section>
 <section id="potential-temperature">
 <h2>Potential temperature<a class="headerlink" href="#potential-temperature" title="Link to this heading">#</a></h2>
