@@ -373,79 +373,68 @@ def add_latlon_ticks(
     return None
 
 
-def add_extent_map(
+def add_locator_map(
     fig: plt.Figure,
     main_extent: list[float],
     main_extent_crs: ccrs.CRS,
-    extent_map_rect: tuple[float, float, float, float],
-    extent_map_extent: list[float],
-    extent_map_crs: ccrs.CRS,
+    locator_rect: tuple[float, float, float, float],
+    locator_extent: list[float],
+    locator_crs: ccrs.CRS,
     color: str,
     linewidth: int,
     zorder: int | None = None,
 ) -> plt.Axes:
     """
-    Add a small extent map to the figure that shows where the main map is.
+    Add a small locator map to the figure that shows where the main map is.
 
-    The extent map is a new axes with land, ocean and state boundaries, and
+    The locator map is a new axes with land, ocean and state boundaries, and
     the extent of the main map drawn on it as an outline (no fill).
 
     Parameters
     ----------
     fig : matplotlib.figure.Figure
-        Figure to add the extent map to
+        Figure to add the locator map to
     main_extent : list[float]
         Extent of the main map, ``[minx, maxx, miny, maxy]``, in
         ``main_extent_crs``
     main_extent_crs : ccrs.CRS
         CRS of the main extent
-    extent_map_rect : tuple[left, bottom, width, height]
-        Position of the extent map, in figure fractions (0 to 1) as for
+    locator_rect : tuple[left, bottom, width, height]
+        Position of the locator map, in figure fractions (0 to 1) as for
         ``Figure.add_axes``
-    extent_map_extent : list[float]
-        Extent of the extent map, ``[west, east, south, north]`` in degrees
+    locator_extent : list[float]
+        Extent of the locator map, ``[west, east, south, north]`` in degrees
         of longitude and latitude
-    extent_map_crs : ccrs.CRS
-        Projection of the extent map
+    locator_crs : ccrs.CRS
+        Projection of the locator map
     color : str
-        Color of the main-extent outline drawn on the extent map
+        Color of the main-extent outline drawn on the locator map
     linewidth : int
         Line width of the main-extent outline
     zorder : int, optional
-        Zorder of the extent map, by default None
+        Zorder of the locator map, by default None
 
     Returns
     -------
     plt.Axes
-        Axes object of the extent map
+        Axes object of the locator map
     """
     import cartopy.feature as cfeature
     from shapely.geometry import box
 
-    extent_map_ax: GeoAxes = fig.add_axes(
-        extent_map_rect, projection=extent_map_crs, zorder=zorder
+    locator_ax: GeoAxes = fig.add_axes(
+        locator_rect, projection=locator_crs, zorder=zorder
     )
-    extent_map_ax.set_extent(extent_map_extent)
+    locator_ax.set_extent(locator_extent)
 
-    extent_map_ax.add_feature(cfeature.LAND)
-    extent_map_ax.add_feature(cfeature.OCEAN)
-    extent_map_ax.add_feature(cfeature.STATES)
-
-    # # plot the extent of the main map on the extent map
-    # x_coords = main_extent[0:2] + [main_extent[1],
-    #                                main_extent[0],
-    #                                main_extent[0]]
-    # y_coords = main_extent[2:4] + [main_extent[2],
-    #                                main_extent[2],
-    #                                main_extent[3]]
-    # extent_map_ax.plot(x_coords, y_coords,
-    #                    transform=main_extent_crs,
-    #                    color=color, linewidth=linewidth)
+    locator_ax.add_feature(cfeature.LAND)
+    locator_ax.add_feature(cfeature.OCEAN)
+    locator_ax.add_feature(cfeature.STATES)
 
     main_poly = box(*extent2bbox(main_extent))
 
     # Outline only: `color=` would also fill the box
-    extent_map_ax.add_geometries(
+    locator_ax.add_geometries(
         [main_poly],
         crs=main_extent_crs,
         facecolor="none",
@@ -453,7 +442,7 @@ def add_extent_map(
         linewidth=linewidth,
     )
 
-    return extent_map_ax
+    return locator_ax
 
 
 # ----- XARRAY UTILITIES ----- #
