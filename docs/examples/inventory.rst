@@ -51,7 +51,10 @@ Load
 
 :class:`~lair.inventories.EDGARv8` opens every year of every sector. Each sector
 is a variable, and each time step is labeled by the start of its year (January
-1). Opening is lazy: lair reads the values only when a result needs them.
+1). Opening is lazy: lair reads the values only when a result needs them. Opening
+all 53 years takes 20 to 50 seconds: when a calculation needs only some, pass
+them, as in ``EDGARv8("CH4", start=2015, end=2022)``, and lair opens only the
+files of those years (both included). This page reads every year.
 
 .. code-block:: ipython
 
