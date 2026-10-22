@@ -446,6 +446,16 @@ class TestAttributes:
         assert coarse.data.sizes["lat"] == 2
         _assert_described(coarse.data, "kg/m**2/s")
 
+    def test_resample_keeps_total_when_resolution_does_not_divide(self, described):
+        # 2 degrees of latitude and longitude in 0.9 degree cells: the third cell
+        # reaches past the edge (it is a fifth inside), and its emissions count
+        pytest.importorskip("xesmf")
+        coarse = described.resample(0.9)
+        assert coarse.data.sizes["lat"] == 3
+        before = described.integrate().values
+        after = coarse.integrate().values
+        np.testing.assert_allclose(after, before, rtol=1e-3)
+
     def test_regrid(self, described):
         pytest.importorskip("xesmf")
         out_grid = xr.Dataset(

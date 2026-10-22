@@ -776,6 +776,11 @@ class Inventory(BaseGrid):
         """
         Resample the data to a new resolution.
 
+        The new grid covers the whole inventory. When the resolution does not
+        divide its width, the last row or column reaches past the edge and holds
+        only what was inside, so the total is kept (see :func:`lair.geo.resample`).
+        This holds for ``"conservative"``, the default.
+
         Parameters
         ----------
         resolution : float | tuple[x_res, y_res]
