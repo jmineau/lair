@@ -897,7 +897,7 @@ class TestEPAv2:
         assert m == pytest.approx(a, rel=1e-6)
 
 
-def _edgar_v8_file(path, long_name, year, monthly):
+def _edgar_v8_file(path, long_name, year, monthly, value=1.0):
     import pandas as pd
 
     lat, lon = np.array([40.05, 40.15]), np.array([-111.95, -111.85])
@@ -910,10 +910,10 @@ def _edgar_v8_file(path, long_name, year, monthly):
         )
         days = (mid - pd.Timestamp(f"{year}-01-01")).days.to_numpy(dtype="float32")
         time = ("time", days, {"units": f"days since {year}-01-01 00:00:00"})
-        fluxes = (("time", "lat", "lon"), np.ones((12, 2, 2)), attrs)
+        fluxes = (("time", "lat", "lon"), value * np.ones((12, 2, 2)), attrs)
         coords = {"time": time, "lat": lat, "lon": lon}
     else:
-        fluxes = (("lat", "lon"), np.ones((2, 2)), attrs)
+        fluxes = (("lat", "lon"), value * np.ones((2, 2)), attrs)
         coords = {"lat": lat, "lon": lon}
     path.parent.mkdir(parents=True, exist_ok=True)
     xr.Dataset({"fluxes": fluxes}, coords=coords).to_netcdf(path)
@@ -973,6 +973,178 @@ class TestEDGARv7:
         self._write(tmp_path, "CH4", "TNR_Aviation_SPS")
         e = inventories.EDGARv7("CH4", inventory_dir=tmp_path)
         assert set(e.data.data_vars) == {"Aviation_supersonic"}
+
+
+# --- The years to read -------------------------------------------------------
+
+
+def _edgar_years_archive(root, years, unreadable=()):
+    """
+    EDGAR v7, v8 annual and v8 monthly CH4 files for each of ``years``.
+
+    Every flux in a year's files is that year minus 2000, so a year is told
+    from another by its values. A file of each year in ``unreadable`` is not
+    NetCDF: reading one raises, so a test that does not read it never opened it.
+    """
+    for year in [*years, *unreadable]:
+        files = [
+            (root / "EDGAR/v7/CH4" / code / f"v7.0_FT2021_CH4_{year}_{code}.0.1x0.1.nc")
+            for code in ("ENF", "AGS")
+        ] + [
+            (root / base / code / f"v8.0_FT2022_GHG_CH4_{year}_{code}_flx.nc")
+            for base, codes in [
+                ("EDGAR/v8/CH4", ("ENF", "AGS")),
+                ("EDGAR/v8/monthly/CH4", ("AGRICULTURE", "WASTE")),
+            ]
+            for code in codes
+        ]
+        for f in files:
+            f.parent.mkdir(parents=True, exist_ok=True)
+            if year in unreadable:
+                f.write_bytes(b"not a NetCDF file")
+            elif "/v7/" in str(f):
+                xr.Dataset(
+                    {
+                        "emi_ch4": (
+                            ("lat", "lon"),
+                            (year - 2000) * np.ones((2, 2)),
+                            {"units": "kg m-2 s-1"},
+                        )
+                    },
+                    coords={"lat": [40.05, 40.15], "lon": [-111.95, -111.85]},
+                ).to_netcdf(f)
+            else:
+                _edgar_v8_file(
+                    f, f.parent.name, year, "monthly" in str(f), value=year - 2000
+                )
+    return root
+
+
+#: name -> constructor taking the archive and the keywords start and end
+EDGAR_YEARS_CASES = {
+    "EDGARv7": lambda d, **years: inventories.EDGARv7("CH4", inventory_dir=d, **years),
+    "EDGARv8 annual": lambda d, **years: inventories.EDGARv8(
+        "CH4", inventory_dir=d, **years
+    ),
+    "EDGARv8 monthly": lambda d, **years: inventories.EDGARv8(
+        "CH4", time_step="monthly", inventory_dir=d, **years
+    ),
+}
+
+
+@pytest.mark.parametrize("case", list(EDGAR_YEARS_CASES))
+class TestEDGARYears:
+    def test_default_reads_every_year(self, tmp_path, case):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        inv = EDGAR_YEARS_CASES[case](tmp_path)
+        assert sorted(set(inv.data.indexes["time"].year)) == [2018, 2019, 2020]
+
+    def test_opens_only_the_years_asked(self, tmp_path, case):
+        # The unreadable files are the years before and after: reading either
+        # raises, so these files were not opened
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020], unreadable=[2017, 2021])
+        inv = EDGAR_YEARS_CASES[case](tmp_path, start=2018, end=2020)
+        assert sorted(set(inv.data.indexes["time"].year)) == [2018, 2019, 2020]
+        with pytest.raises(OSError):
+            EDGAR_YEARS_CASES[case](tmp_path)
+
+    def test_one_year(self, tmp_path, case):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020], unreadable=[2017, 2021])
+        inv = EDGAR_YEARS_CASES[case](tmp_path, start=2019, end=2019)
+        assert set(inv.data.indexes["time"].year) == {2019}
+        # each sector holds that year's value only
+        for sector in inv.data.data_vars:
+            assert set(inv.data[sector].pint.dequantify().values.ravel()) == {19.0}
+
+    def test_same_data_as_the_years_of_a_full_read(self, tmp_path, case):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        full = EDGAR_YEARS_CASES[case](tmp_path)
+        some = EDGAR_YEARS_CASES[case](tmp_path, start=2019, end=2020)
+        want = full.data.sel(time=slice("2019-01-01", "2020-12-31"))
+        assert set(some.data.data_vars) == set(want.data_vars)
+        assert some.data.indexes["time"].equals(want.indexes["time"])
+        for sector in want.data_vars:
+            np.testing.assert_array_equal(
+                some.data[sector].pint.dequantify().values,
+                want[sector].pint.dequantify().values,
+            )
+
+    def test_open_ended(self, tmp_path, case):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        since = EDGAR_YEARS_CASES[case](tmp_path, start=2019)
+        until = EDGAR_YEARS_CASES[case](tmp_path, end=2019)
+        assert sorted(set(since.data.indexes["time"].year)) == [2019, 2020]
+        assert sorted(set(until.data.indexes["time"].year)) == [2018, 2019]
+
+    def test_a_year_without_files_is_logged(self, tmp_path, case, caplog):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        with caplog.at_level("WARNING", logger="lair.inventories"):
+            inv = EDGAR_YEARS_CASES[case](tmp_path, start=2019, end=2022)
+        assert sorted(set(inv.data.indexes["time"].year)) == [2019, 2020]
+        assert "no files for 2021 to 2022" in caplog.text
+
+    def test_no_warning_when_every_year_has_files(self, tmp_path, case, caplog):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        with caplog.at_level("WARNING", logger="lair.inventories"):
+            EDGAR_YEARS_CASES[case](tmp_path, start=2018, end=2019)
+            EDGAR_YEARS_CASES[case](tmp_path)
+        assert caplog.text == ""
+
+    def test_a_gap_between_years_is_logged(self, tmp_path, case, caplog):
+        _edgar_years_archive(tmp_path, [2017, 2020])
+        with caplog.at_level("WARNING", logger="lair.inventories"):
+            EDGAR_YEARS_CASES[case](tmp_path, start=2017, end=2020)
+        assert "no files for 2018 to 2019" in caplog.text
+
+    def test_no_file_for_the_years_raises(self, tmp_path, case):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        with pytest.raises(FileNotFoundError, match=r"start=2021.*years with files"):
+            EDGAR_YEARS_CASES[case](tmp_path, start=2021, end=2025)
+        with pytest.raises(FileNotFoundError, match="end=2010"):
+            EDGAR_YEARS_CASES[case](tmp_path, end=2010)
+
+    def test_start_after_end_raises(self, tmp_path, case):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        with pytest.raises(FileNotFoundError, match="start=2020, end=2018"):
+            EDGAR_YEARS_CASES[case](tmp_path, start=2020, end=2018)
+
+    @pytest.mark.parametrize("year", ["2019", 2019.0, "2019-01-01"])
+    def test_a_year_is_an_integer(self, tmp_path, case, year):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        with pytest.raises(TypeError, match="start is a year"):
+            EDGAR_YEARS_CASES[case](tmp_path, start=year)
+        with pytest.raises(TypeError, match="end is a year"):
+            EDGAR_YEARS_CASES[case](tmp_path, end=year)
+
+    def test_numpy_integers_are_years(self, tmp_path, case):
+        _edgar_years_archive(tmp_path, [2018, 2019, 2020])
+        inv = EDGAR_YEARS_CASES[case](
+            tmp_path, start=np.int64(2019), end=np.int32(2019)
+        )
+        assert set(inv.data.indexes["time"].year) == {2019}
+
+
+class TestEDGARYearHelpers:
+    def test_year_is_not_the_release_tag(self):
+        for name, year in [
+            ("v8.0_FT2022_GHG_CH4_1970_AGS_flx.nc", "1970"),
+            ("v8.0_FT2022_GHG_CH4_2000_PRO_COAL_flx.nc", "2000"),
+            ("v7.0_FT2021_CH4_2021_TNR_Aviation_CDS.0.1x0.1.nc", "2021"),
+        ]:
+            assert inventories._EDGAR_YEAR.search(name).group(1) == year
+
+    @pytest.mark.parametrize(
+        "years, text",
+        [
+            ([2020], "2020"),
+            ([2020, 2021], "2020 to 2021"),
+            ([1970, 1971, 1972, 2020], "1970 to 1972, 2020"),
+            ([2001, 2003, 2004, 2008], "2001, 2003 to 2004, 2008"),
+            ([], ""),
+        ],
+    )
+    def test_year_spans(self, years, text):
+        assert inventories._year_spans(years) == text
 
 
 class TestEDGARSectorNames:

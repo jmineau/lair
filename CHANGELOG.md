@@ -29,6 +29,16 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `meteorology.hypsometric`, `synoptic.hourly_mean`, `plotter.NCL_cmap`,
   `Pollutant`, `Cacher`, `ZarrId` and `Winds` is described on its page; See Also
   links and runnable examples join `meteorology`, `air` and `transects`.
+- `EDGARv7` and `EDGARv8` take `start` and `end`, the first and last year to
+  read (both included; the names `get_soundings` uses for a time range; #158). lair
+  chooses the files of those years by the year in their names and opens only
+  them, so a few years of EDGAR v8 methane open in seconds instead of minutes:
+  the annual files of 2015 to 2022 open in about 3 s and total over the Salt Lake
+  Valley in 10 s, against 20 to 50 s and 30 to 60 s when every year is opened
+  first. A year in the range that has no files is logged as a warning and is
+  not in the data; no file at all for the years asked raises `FileNotFoundError`,
+  and a `start` or `end` that is not an integer raises `TypeError`. Without them
+  every year is read, as before. A monthly year has all its twelve months.
 
 ### Changed
 
@@ -66,6 +76,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   adds a missing period to a folder that has files, which used to raise. If your
   code relied on the automatic download, pass `download=True`. The soundings
   example's "When get_soundings downloads" shows both.
+- The inventories open their NetCDF files with xarray's `netcdf4` engine named,
+  where xarray asked each backend about each file. The data is the same (checked
+  on the real EDGAR, EPA, GFEI, Vulcan and WetCHARTs files); opening EDGAR v8's
+  1,247 annual files takes a few seconds less.
 
 ### Fixed
 
