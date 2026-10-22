@@ -23,6 +23,22 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   divides the width gives the grid it always did, and so does every other method,
   `conservative_normed` included (the default, bilinear, keeps the cells whose
   center is inside the source).
+### Changed
+
+- The `ImportError` for a missing optional package names the `lair` extra that
+  provides it and the command that installs the extra, for example `pip install
+  "lair[geo] @ git+https://github.com/jmineau/lair.git"` (`uv pip install` in a
+  uv environment), and links to the installation page. It used to say only that
+  the dependency was not found. The command installs from GitHub because the
+  `lair` on PyPI is an unrelated project.
+### Removed
+
+- `clock.periodindex_to_binedges` (#115). Nothing used it, and its edges were
+  wrong: the last edge was the last period's end time (one instant before the
+  next period starts), and a period missing from the index was not an edge, so
+  a time in it was counted in the period before. To put times in periods, use
+  pandas: `times.to_period("M")`. For bin edges of consecutive periods,
+  `periods.start_time.append(pd.DatetimeIndex([(periods[-1] + 1).start_time]))`.
 
 ## [2026.12.9] - 2026-10-20
 
