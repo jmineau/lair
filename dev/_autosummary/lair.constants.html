@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.config.get_data_dir" href="lair.config.get_data_dir.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -394,6 +394,14 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="lair.html">lair</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.units.html">lair.units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.mass_flux.html">lair.mass_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.setup_ccg_filter.html">lair.setup_ccg_filter</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.air.html">lair.air</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.bin_polar.html">lair.air.bin_polar</a></li>
@@ -656,6 +664,13 @@
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.clock.html">lair.clock</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
@@ -797,10 +812,9 @@
                   
   <section id="module-lair.constants">
 <span id="lair-constants"></span><h1>lair.constants<a class="headerlink" href="#module-lair.constants" title="Link to this heading">#</a></h1>
-<p>Mathematical, physical &amp; scienfitic constants.</p>
-<p>All in scientific units.</p>
-<p>Pint is still figuring out how to properly deal with constants: <a class="github reference external" href="https://github.com/hgrecco/pint/issues/1078">hgrecco/pint#1078</a>
-Until then, I will keep them here.</p>
+<p>Physical constants, as pint quantities of <a class="reference internal" href="lair.units.html#lair.units" title="lair.units"><code class="xref py py-data docutils literal notranslate"><span class="pre">lair.units</span></code></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">lair.meteorology</span></code> uses them as plain SI numbers. pint has no constants of its
+own yet (<a class="github reference external" href="https://github.com/hgrecco/pint/issues/1078">hgrecco/pint#1078</a>), so lair keeps them here.</p>
 <p class="rubric">Attributes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
@@ -859,7 +873,7 @@ Until then, I will keep them here.</p>
 <td><p>Stefan-Boltzmann constant [W/m^2/K^4]</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="lair.constants.Rstar.html#lair.constants.Rstar" title="lair.constants.Rstar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Rstar</span></code></a></p></td>
-<td><p>Universial gas constant [J/K/mol]</p></td>
+<td><p>Universal gas constant [J/K/mol]</p></td>
 </tr>
 </tbody>
 </table>

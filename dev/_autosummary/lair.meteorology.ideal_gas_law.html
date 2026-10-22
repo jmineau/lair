@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.meteorology.hypsometric" href="lair.meteorology.hypsometric.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -393,7 +393,15 @@
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="lair.html">lair</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.units.html">lair.units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.mass_flux.html">lair.mass_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.setup_ccg_filter.html">lair.setup_ccg_filter</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.air.html">lair.air</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.bin_polar.html">lair.air.bin_polar</a></li>
@@ -656,6 +664,13 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.clock.html">lair.clock</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
@@ -803,47 +818,61 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.meteorology.ideal_gas_law">
 <span class="sig-prename descclassname"><span class="pre">lair.meteorology.</span></span><span class="sig-name descname"><span class="pre">ideal_gas_law</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solve_for</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/meteorology.html#ideal_gas_law"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.meteorology.ideal_gas_law" title="Link to this definition">#</a></dt>
-<dd><p>Ideal gas law equation solver.</p>
-<p>Solver attempts to solve for the specified variable using the following
-forms of the ideal gas law:</p>
-<p>pV = nR*T
-pV = mRT
-pV = NkbT
-p = ρRT
-pα = RT</p>
-<p>Input variables must be able to solve for the desired variable using the
-above equations without intermediate steps. Inputs and the result are in
-SI (pint Quantities are converted to SI first; see the module docstring).</p>
-<p>p : pressure (Pa)
-V : volume (m^3)
-T : temperature (K)
-m : mass (kg)
-n : moles (mol)
-N : number of molecules (#)
-ρ : density (kg/m^3)
-α : specific volume (m^3/kg)
-R : specific gas constant (J/kg/K)</p>
-<p>Can be used to solve for pressure, volume, temperature, density, mass,
-moles, or number of molecules.</p>
+<dd><p>Solve the ideal gas law for one variable.</p>
+<p>The solver uses one of these forms of the law, where R* is the universal
+gas constant and kb Boltzmann’s constant:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pV</span> <span class="o">=</span> <span class="n">nR</span> <span class="o">*</span> <span class="n">T</span>
+<span class="n">pV</span> <span class="o">=</span> <span class="n">mRT</span>
+<span class="n">pV</span> <span class="o">=</span> <span class="n">NkbT</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">ρRT</span>
+<span class="n">pα</span> <span class="o">=</span> <span class="n">RT</span>
+</pre></div>
+</div>
+<p>Give the inputs one form needs to solve for the variable directly, with no
+intermediate step. Inputs and the result are in SI (pint Quantities are
+converted to SI first; see the module docstring).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>solve_for</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
-<li><p><strong>V</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
-<li><p><strong>T</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
-<li><p><strong>m</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
-<li><p><strong>N</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
-<li><p><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
-<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
-<li><p><strong>R</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a>)</p></li>
+<li><p><strong>solve_for</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The variable to solve for: <code class="docutils literal notranslate"><span class="pre">'p'</span></code> (or <code class="docutils literal notranslate"><span class="pre">'pressure'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pres'</span></code>),
+<code class="docutils literal notranslate"><span class="pre">'V'</span></code> (<code class="docutils literal notranslate"><span class="pre">'volume'</span></code>, <code class="docutils literal notranslate"><span class="pre">'vol'</span></code>), <code class="docutils literal notranslate"><span class="pre">'T'</span></code> (<code class="docutils literal notranslate"><span class="pre">'temperature'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'temp'</span></code>), <code class="docutils literal notranslate"><span class="pre">'rho'</span></code> (<code class="docutils literal notranslate"><span class="pre">'density'</span></code>), <code class="docutils literal notranslate"><span class="pre">'m'</span></code> (<code class="docutils literal notranslate"><span class="pre">'mass'</span></code>), <code class="docutils literal notranslate"><span class="pre">'n'</span></code>
+(<code class="docutils literal notranslate"><span class="pre">'moles'</span></code>) or <code class="docutils literal notranslate"><span class="pre">'N'</span></code> (<code class="docutils literal notranslate"><span class="pre">'number'</span></code>).</p></li>
+<li><p><strong>p</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Pressure (Pa).</p></li>
+<li><p><strong>V</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Volume (m^3).</p></li>
+<li><p><strong>T</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Temperature (K).</p></li>
+<li><p><strong>m</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Mass (kg).</p></li>
+<li><p><strong>n</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Amount of substance (mol).</p></li>
+<li><p><strong>N</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Number of molecules.</p></li>
+<li><p><strong>rho</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Density (kg/m^3).</p></li>
+<li><p><strong>alpha</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Specific volume (m^3/kg).</p></li>
+<li><p><strong>R</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Specific gas constant (J/kg/K): 287.05 for dry air.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Numeric</em> – The variable asked for, in SI.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">solve_for</span></code> is not one of the names above.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><em>Any</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.meteorology.hypsometric.html#lair.meteorology.hypsometric" title="lair.meteorology.hypsometric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hypsometric</span></code></a></dt><dd><p>Thickness of a layer between two pressures.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>The density of dry air at sea level in the standard atmosphere:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.meteorology</span><span class="w"> </span><span class="kn">import</span> <span class="n">ideal_gas_law</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ideal_gas_law</span><span class="p">(</span><span class="s2">&quot;rho&quot;</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">101325.0</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mf">288.15</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="mf">287.05</span><span class="p">)),</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">1.225</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

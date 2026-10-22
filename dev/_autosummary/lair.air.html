@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,10 +56,10 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="lair.air.WIND_SECTORS" href="lair.air.WIND_SECTORS.html" />
-    <link rel="prev" title="API Reference" href="../api.html" />
+    <link rel="prev" title="lair.setup_ccg_filter" href="lair.setup_ccg_filter.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -393,7 +393,15 @@
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="lair.html">lair</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.units.html">lair.units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.mass_flux.html">lair.mass_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.setup_ccg_filter.html">lair.setup_ccg_filter</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a aria-current="page" class="current reference internal" href="#">lair.air</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.bin_polar.html">lair.air.bin_polar</a></li>
@@ -656,6 +664,13 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.clock.html">lair.clock</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
@@ -797,7 +812,13 @@
                   
   <section id="module-lair.air">
 <span id="lair-air"></span><h1>lair.air<a class="headerlink" href="#module-lair.air" title="Link to this heading">#</a></h1>
-<p>Miscellaneous functions for atmospheric data.</p>
+<p>Winds and polar binning.</p>
+<p><a class="reference internal" href="lair.air.wind_components.html#lair.air.wind_components" title="lair.air.wind_components"><code class="xref py py-func docutils literal notranslate"><span class="pre">wind_components()</span></code></a> and <a class="reference internal" href="lair.air.wind_direction.html#lair.air.wind_direction" title="lair.air.wind_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">wind_direction()</span></code></a> convert between a wind’s
+speed and direction (the direction it blows from, in degrees clockwise from
+north) and its u and v components; <a class="reference internal" href="lair.air.rotate_winds.html#lair.air.rotate_winds" title="lair.air.rotate_winds"><code class="xref py py-func docutils literal notranslate"><span class="pre">rotate_winds()</span></code></a> turns HRRR’s
+grid-relative components to earth-relative ones. <a class="reference internal" href="lair.air.bin_polar.html#lair.air.bin_polar" title="lair.air.bin_polar"><code class="xref py py-func docutils literal notranslate"><span class="pre">bin_polar()</span></code></a> and its
+helpers bin data by wind direction into the 16 compass sectors of
+<a class="reference internal" href="lair.air.WIND_SECTORS.html#lair.air.WIND_SECTORS" title="lair.air.WIND_SECTORS"><code class="xref py py-data docutils literal notranslate"><span class="pre">WIND_SECTORS</span></code></a>, for the polar plots of <a class="reference internal" href="lair.plotter.html#module-lair.plotter" title="lair.plotter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.plotter</span></code></a>.</p>
 <p class="rubric">Attributes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
@@ -844,12 +865,12 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../api.html"
+       href="lair.setup_ccg_filter.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">lair.setup_ccg_filter</p>
       </div>
     </a>
     <a class="right-next"

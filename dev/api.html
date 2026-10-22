@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="_static/documentation_options.js?v=5ebd689f"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="lair.air" href="_autosummary/lair.air.html" />
+    <link rel="next" title="lair" href="_autosummary/lair.html" />
     <link rel="prev" title="Estimate a background" href="examples/background.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -394,6 +394,14 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="_autosummary/lair.html">lair</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.units.html">lair.units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.mass_flux.html">lair.mass_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.setup_ccg_filter.html">lair.setup_ccg_filter</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="_autosummary/lair.air.html">lair.air</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.air.bin_polar.html">lair.air.bin_polar</a></li>
@@ -656,6 +664,13 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="_autosummary/lair.clock.html">lair.clock</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.UTC2.html">lair.clock.UTC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="_autosummary/lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
@@ -797,24 +812,35 @@
 <p><code class="docutils literal notranslate"><span class="pre">lair</span></code> is a flat collection of modules; import the one you need, e.g.
 <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">lair.meteorology</span> <span class="pre">import</span> <span class="pre">poisson</span></code>. Some modules need an optional
 dependency group (see <a class="reference internal" href="index.html#optional-dependencies"><span class="std std-ref">Optional dependencies</span></a>).</p>
+<section id="the-package">
+<h2>The package<a class="headerlink" href="#the-package" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.html#module-lair" title="lair"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair</span></code></a></p></td>
+<td><p>lair: tools for land-air interactions research.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="atmosphere-meteorology">
 <h2>Atmosphere &amp; Meteorology<a class="headerlink" href="#atmosphere-meteorology" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.air.html#module-lair.air" title="lair.air"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.air</span></code></a></p></td>
-<td><p>Miscellaneous functions for atmospheric data.</p></td>
+<td><p>Winds and polar binning.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="_autosummary/lair.background.html#module-lair.background" title="lair.background"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.background</span></code></a></p></td>
-<td><p>Calculate background concentrations.</p></td>
+<td><p>Background concentrations of a trace gas from its own time series.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.meteorology.html#module-lair.meteorology" title="lair.meteorology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.meteorology</span></code></a></p></td>
 <td><p>Meteorological calculations.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="_autosummary/lair.pcaps.html#module-lair.pcaps" title="lair.pcaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.pcaps</span></code></a></p></td>
-<td><p>Functions for calculating the valley heat deficit (VHD) and determining persistent cold air pool (PCAP) events.</p></td>
+<td><p>Valley heat deficit and persistent cold air pools.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.soundings.html#module-lair.soundings" title="lair.soundings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.soundings</span></code></a></p></td>
-<td><p>Upper air sounding data.</p></td>
+<td><p>Upper-air soundings from the University of Wyoming's archive.</p></td>
 </tr>
 </tbody>
 </table>
@@ -859,10 +885,10 @@ dependency group (see <a class="reference internal" href="index.html#optional-de
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.geo.html#module-lair.geo" title="lair.geo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.geo</span></code></a></p></td>
-<td><p>Geo-spatial utilities.</p></td>
+<td><p>Grids, maps and distances.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="_autosummary/lair.plotter.html#module-lair.plotter" title="lair.plotter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.plotter</span></code></a></p></td>
-<td><p>Utility functions for plotting data.</p></td>
+<td><p>Plotting helpers.</p></td>
 </tr>
 </tbody>
 </table>
@@ -873,22 +899,22 @@ dependency group (see <a class="reference internal" href="index.html#optional-de
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.clock.html#module-lair.clock" title="lair.clock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.clock</span></code></a></p></td>
-<td><p>Utility classes &amp; functions for working with time and dates.</p></td>
+<td><p>Times, time zones and time ranges.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="_autosummary/lair.config.html#module-lair.config" title="lair.config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.config</span></code></a></p></td>
-<td><p>Config module for lair package</p></td>
+<td><p>Where lair finds data and keeps its cache.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.constants.html#module-lair.constants" title="lair.constants"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.constants</span></code></a></p></td>
-<td><p>Mathematical, physical &amp; scienfitic constants.</p></td>
+<td><p>Physical constants, as pint quantities of <a class="reference internal" href="_autosummary/lair.units.html#lair.units" title="lair.units"><code class="xref py py-data docutils literal notranslate"><span class="pre">lair.units</span></code></a>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="_autosummary/lair.dev.html#module-lair.dev" title="lair.dev"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.dev</span></code></a></p></td>
 <td><p>Tools for code development.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.parallel.html#module-lair.parallel" title="lair.parallel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.parallel</span></code></a></p></td>
-<td><p>Parallelization utilities.</p></td>
+<td><p>Run a function over many inputs in worker processes.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="_autosummary/lair.records.html#module-lair.records" title="lair.records"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.records</span></code></a></p></td>
-<td><p>Utilities for working with files and directories.</p></td>
+<td><p>Files, downloads and caching.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/lair.utils.html#module-lair.utils" title="lair.utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.utils</span></code></a></p></td>
 <td><p>Small helpers used across lair.</p></td>
@@ -919,11 +945,11 @@ dependency group (see <a class="reference internal" href="index.html#optional-de
       </div>
     </a>
     <a class="right-next"
-       href="_autosummary/lair.air.html"
+       href="_autosummary/lair.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">lair.air</p>
+        <p class="prev-next-title">lair</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -946,6 +972,7 @@ dependency group (see <a class="reference internal" href="index.html#optional-de
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-package">The package</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atmosphere-meteorology">Atmosphere &amp; Meteorology</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-sources">Data Sources</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#measurements">Measurements</a></li>

@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.geo</span></li>
   </ul>
 </nav>
@@ -432,7 +435,16 @@
                   
   <h1>Source code for lair.geo</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Geo-spatial utilities.</span>
+<span class="sd">Grids, maps and distances.</span>
+
+<span class="sd">:class:`BaseGrid` and the functions it wraps work on gridded xarray data:</span>
+<span class="sd">clip to a region (:func:`clip`), grid-cell areas on the WGS84 ellipsoid</span>
+<span class="sd">(:func:`gridcell_area`), and regridding with xESMF (:func:`regrid`,</span>
+<span class="sd">:func:`resample`; :doc:`/examples/inventory` says which method a flux needs).</span>
+<span class="sd">:func:`plot_grid` and the tick and inset-map helpers draw maps with cartopy</span>
+<span class="sd">(:doc:`/examples/maps`), and :func:`haversine` and :func:`bearing` measure on</span>
+<span class="sd">the sphere. Importing the module needs the ``geo`` extra, and regridding needs</span>
+<span class="sd">ESMF as well (see :ref:`optional-dependencies`).</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -1782,9 +1794,16 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; ds: xr.Dataset</span>
-<span class="sd">    &gt;&gt;&gt; weights = cosine_weights(ds.lat)</span>
-<span class="sd">    &gt;&gt;&gt; ds_weighted = ds.weighted(weights)</span>
+<span class="sd">    The mean of a field weighted by the area of each latitude band:</span>
+
+<span class="sd">    &gt;&gt;&gt; import xarray as xr</span>
+<span class="sd">    &gt;&gt;&gt; from lair.geo import cosine_weights</span>
+<span class="sd">    &gt;&gt;&gt; field = xr.DataArray([1.0, 3.0], coords={&quot;lat&quot;: [0.0, 60.0]}, dims=&quot;lat&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; weights = cosine_weights(field.lat)</span>
+<span class="sd">    &gt;&gt;&gt; weights.values.round(3)</span>
+<span class="sd">    array([1. , 0.5])</span>
+<span class="sd">    &gt;&gt;&gt; round(float(field.weighted(weights).mean()), 3)</span>
+<span class="sd">    1.667</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lats</span><span class="p">))</span></div>
 

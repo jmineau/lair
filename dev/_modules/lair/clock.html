@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.clock</span></li>
   </ul>
 </nav>
@@ -432,7 +435,14 @@
                   
   <h1>Source code for lair.clock</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Utility classes &amp; functions for working with time and dates.</span>
+<span class="sd">Times, time zones and time ranges.</span>
+
+<span class="sd">:func:`convert_timezones` moves times between zones (a time without a zone</span>
+<span class="sd">needs ``fromtz``), and :func:`UTC2MTN` and its siblings are its common cases.</span>
+<span class="sd">:class:`TimeRange` is a start and an end parsed from ISO strings; the</span>
+<span class="sd">remaining functions turn times into decimal years (:func:`dt2decimalDate`),</span>
+<span class="sd">intervals, time-difference matrices, and diurnal and seasonal aggregates.</span>
+<span class="sd">:doc:`/examples/clock` shows the time-zone rules and the afternoon mean.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
@@ -449,7 +459,15 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">AFTERNOON</span> <span class="o">=</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>  <span class="c1"># HH Local Standard Time</span>
+<span class="c1">#: The afternoon hours, 12 to 16 local standard time.</span>
+<span class="c1">#:</span>
+<span class="c1">#: :func:`lair.background.get_well_mixed` keeps these hours by default.</span>
+<span class="n">AFTERNOON</span> <span class="o">=</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
+
+<span class="c1">#: The meteorological season of each month (1 to 12), as ``&#39;DJF&#39;``, ``&#39;MAM&#39;``,</span>
+<span class="c1">#: ``&#39;JJA&#39;`` or ``&#39;SON&#39;``.</span>
+<span class="c1">#:</span>
+<span class="c1">#: :func:`seasonal` labels its groups with these.</span>
 <span class="n">SEASONS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
     <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
@@ -1184,10 +1202,19 @@
 
 
 
+<span class="c1">#: :func:`convert_timezones` with ``fromtz=&quot;UTC&quot;``; give ``totz``.</span>
 <span class="n">UTC2</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+
+<span class="c1">#: :func:`convert_timezones` from UTC to ``&quot;MST&quot;``, standard time all year.</span>
 <span class="n">UTC2MST</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">UTC2</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;MST&quot;</span><span class="p">)</span>
+
+<span class="c1">#: :func:`convert_timezones` from UTC to ``&quot;America/Denver&quot;``, with daylight saving.</span>
 <span class="n">UTC2MTN</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">UTC2</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;America/Denver&quot;</span><span class="p">)</span>
+
+<span class="c1">#: :func:`convert_timezones` from ``&quot;MST&quot;`` to UTC.</span>
 <span class="n">MST2UTC</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;MST&quot;</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+
+<span class="c1">#: :func:`convert_timezones` from ``&quot;America/Denver&quot;`` to UTC.</span>
 <span class="n">MTN2UTC</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
 </pre></div>
 

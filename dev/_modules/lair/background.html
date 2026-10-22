@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.background</span></li>
   </ul>
 </nav>
@@ -432,7 +435,15 @@
                   
   <h1>Source code for lair.background</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Calculate background concentrations.</span>
+<span class="sd">Background concentrations of a trace gas from its own time series.</span>
+
+<span class="sd">:func:`get_well_mixed` keeps the afternoon hours, when the boundary layer is</span>
+<span class="sd">deep; :func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a</span>
+<span class="sd">low quantile of a moving window; :func:`thoning` fits NOAA&#39;s curve (Thoning et</span>
+<span class="sd">al., 1989) through the data. CarbonTracker&#39;s background is in</span>
+<span class="sd">:mod:`lair.noaa`. :doc:`/examples/background` shows the methods side by side</span>
+<span class="sd">and when to use which. The module needs NOAA&#39;s CCG filter, which the first</span>
+<span class="sd">``import lair`` downloads (see :ref:`first-import-download`), and ``scipy``.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>

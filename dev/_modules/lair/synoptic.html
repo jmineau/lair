@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.synoptic</span></li>
   </ul>
 </nav>
@@ -634,6 +637,17 @@
 <span class="sd">    the mean vector (NaN for a dead-calm hour); ``speed`` stays the scalar mean.</span>
 <span class="sd">    ``n_obs`` counts the wind observations in the hour. Hours with no data are</span>
 <span class="sd">    dropped. Works per station when a ``stid`` column is present.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Observations as :func:`timeseries` returns them, with a ``Time``</span>
+<span class="sd">        column.</span>
+<span class="sd">    speed : str, optional</span>
+<span class="sd">        Column of wind speed. Default ``&quot;wind_speed_set_1&quot;``.</span>
+<span class="sd">    direction : str, optional</span>
+<span class="sd">        Column of wind direction (degrees, blowing from). Default</span>
+<span class="sd">        ``&quot;wind_direction_set_1&quot;``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>

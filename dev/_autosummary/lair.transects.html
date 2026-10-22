@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.pollutants.Pollutant.label" href="lair.pollutants.Pollutant.label.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -394,6 +394,14 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="lair.html">lair</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.units.html">lair.units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.mass_flux.html">lair.mass_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.setup_ccg_filter.html">lair.setup_ccg_filter</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.air.html">lair.air</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.bin_polar.html">lair.air.bin_polar</a></li>
@@ -656,6 +664,13 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.clock.html">lair.clock</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
@@ -833,7 +848,7 @@ taken as UTC). The builder skips samples without a time (NaN / NaT).</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="lair.transects.along_route_distance.html#lair.transects.along_route_distance" title="lair.transects.along_route_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">along_route_distance</span></code></a></p></td>
-<td><p>Cumulative geodesic distance [km] along the ordered route points (WGS84).</p></td>
+<td><p>Cumulative geodesic distance along the ordered route points.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="lair.transects.detection_frequency.html#lair.transects.detection_frequency" title="lair.transects.detection_frequency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">detection_frequency</span></code></a></p></td>
 <td><p>Fraction of transits (with data at the point) whose enhancement exceeds <code class="docutils literal notranslate"><span class="pre">threshold</span></code>.</p></td>
@@ -860,7 +875,7 @@ taken as UTC). The builder skips samples without a time (NaN / NaT).</p>
 <td><p>Per-transit robust z-score of the enhancement.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="lair.transects.snap_to_route.html#lair.transects.snap_to_route" title="lair.transects.snap_to_route"><code class="xref py py-obj docutils literal notranslate"><span class="pre">snap_to_route</span></code></a></p></td>
-<td><p>Nearest route point of each sample: <code class="docutils literal notranslate"><span class="pre">(index,</span> <span class="pre">distance)</span></code>, index -1 beyond <code class="docutils literal notranslate"><span class="pre">max_dist</span></code>.</p></td>
+<td><p>Find the nearest route point of each sample, within <code class="docutils literal notranslate"><span class="pre">max_dist</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="lair.transects.split_transits.html#lair.transects.split_transits" title="lair.transects.split_transits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_transits</span></code></a></p></td>
 <td><p>Cut a platform's along-route coordinate into one-way transits.</p></td>

@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=6f2f521a"></script>
+    <script src="../../_static/documentation_options.js?v=5ebd689f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev8+gfbfef194c" />
+  <meta name="docsearch:version" content="2026.12.10.dev9+ge4a336db3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.soundings</span></li>
   </ul>
 </nav>
@@ -432,7 +435,14 @@
                   
   <h1>Source code for lair.soundings</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Upper air sounding data.</span>
+<span class="sd">Upper-air soundings from the University of Wyoming&#39;s archive.</span>
+
+<span class="sd">:class:`Sounding` reads one sounding file and interpolates it to regular</span>
+<span class="sd">heights; :func:`get_soundings` reads a station&#39;s soundings for a period, all</span>
+<span class="sd">on the same heights, and :func:`download_soundings` fetches them from Wyoming.</span>
+<span class="sd">The folder is an argument or ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
+<span class="sd">:doc:`/examples/soundings` reads two soundings and computes their potential</span>
+<span class="sd">temperature. The module needs the ``requests`` extra.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
