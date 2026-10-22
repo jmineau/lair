@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=f9b84219"></script>
+    <script src="../../_static/documentation_options.js?v=0054c42a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev5+g4501981f6" />
+  <meta name="docsearch:version" content="2026.12.10.dev6+g7e6064cca" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -876,10 +876,22 @@
     <span class="nd">@_keep_attrs</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">absolute_emissions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate the absolute emissions (total per gridcell for time step by variable).</span>
+<span class="sd">        The mass emitted in each grid cell in each time step, sector by sector.</span>
 
-<span class="sd">        Fluxes are multiplied by the gridcell area and by the length of each</span>
-<span class="sd">        time step:</span>
+<span class="sd">        Each sector&#39;s flux is multiplied by the area of its grid cell and by the</span>
+<span class="sd">        length of the time step. The area and time units cancel, so the values</span>
+<span class="sd">        are in the inventory&#39;s own mass (or amount) unit: ``kg`` for a flux in</span>
+<span class="sd">        ``kg/m**2/s``, ``Mg`` for one in ``Mg/km**2/yr``. With annual data, each</span>
+<span class="sd">        value is the mass the cell emitted in that year; with monthly data, in</span>
+<span class="sd">        that month.</span>
+
+<span class="sd">        Use it for the mass in one cell, or a sector&#39;s total over a region</span>
+<span class="sd">        (``absolute_emissions.sum([&quot;lat&quot;, &quot;lon&quot;])``). For the total of every</span>
+<span class="sd">        sector over the region, use :meth:`Inventory.integrate`, which is that sum</span>
+<span class="sd">        added over the sectors. :ref:`The inventory example &lt;inventory-totals&gt;`</span>
+<span class="sd">        shows the three sums side by side.</span>
+
+<span class="sd">        The length of a time step:</span>
 
 <span class="sd">        - When the flux is a rate per time step (``a-1`` with annual data,</span>
 <span class="sd">          ``month-1`` with monthly, ``d-1`` with daily, ``hr-1`` with hourly</span>
@@ -891,10 +903,21 @@
 <span class="sd">          month. This matches EDGAR, whose leap-year files state</span>
 <span class="sd">          ``interval: 1 year, 366 days``.</span>
 
+<span class="sd">        So convert the result, not the flux. Converting ``kg/m**2/s`` to</span>
+<span class="sd">        ``Gg/km**2/yr`` first goes through pint&#39;s year of 365.25 days, and each</span>
+<span class="sd">        value is then taken as one step: a leap year comes out 0.2% low, any</span>
+<span class="sd">        other year 0.07% high.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        xr.DataArray</span>
-<span class="sd">            The absolute emissions.</span>
+<span class="sd">        xr.Dataset</span>
+<span class="sd">            One variable per sector, on the inventory&#39;s grid and time steps, each</span>
+<span class="sd">            with its mass unit in its ``units`` attribute.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        Inventory.integrate : The total over the grid, every sector added.</span>
+<span class="sd">        Inventory.total_emissions : The flux in each cell, every sector added.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Extract current unit information</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">area_unit</span><span class="p">,</span> <span class="n">time_unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_units</span><span class="p">(</span><span class="n">pint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -952,7 +975,13 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">total_emissions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate the total emissions by summation over all variables.</span>
+<span class="sd">        The flux in each grid cell, summed over the sectors.</span>
+
+<span class="sd">        This is not a total over a region. It is still a flux per area and time,</span>
+<span class="sd">        in the inventory&#39;s units (``kg/m**2/s`` for EDGAR), one value per cell</span>
+<span class="sd">        and time step. Use it for a map or for the flux at a place. Adding it up</span>
+<span class="sd">        over the cells gives no mass, since the cells differ in area: the mass</span>
+<span class="sd">        emitted over the region is :meth:`Inventory.integrate`.</span>
 
 <span class="sd">        Every sector in the product is summed, so what the total covers depends on the</span>
 <span class="sd">        product (see the inventory&#39;s docstring). To leave sectors out, use</span>
@@ -961,7 +990,13 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        xr.DataArray</span>
-<span class="sd">            The total emissions.</span>
+<span class="sd">            The summed flux, on the inventory&#39;s grid and time steps, with its</span>
+<span class="sd">            flux unit in its ``units`` attribute.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        Inventory.integrate : The total over the grid, as a mass per time step.</span>
+<span class="sd">        Inventory.absolute_emissions : The mass in each cell, by sector.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">sum_sectors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
@@ -1052,15 +1087,37 @@
     <span class="nd">@_keep_attrs</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Integrate the data over the spatial dimensions: total emissions per time step.</span>
+<span class="sd">        Return the total mass emitted over the whole grid in each time step.</span>
+
+<span class="sd">        This is the regional total: :attr:`Inventory.absolute_emissions` (each</span>
+<span class="sd">        cell&#39;s flux times its area and the length of the time step) summed over</span>
+<span class="sd">        the cells and over the sectors, so ``clip()`` the inventory to the region</span>
+<span class="sd">        first. The result is in the inventory&#39;s own mass (or amount) unit,</span>
+<span class="sd">        ``kg`` for a flux in ``kg/m**2/s``, and each value is the mass emitted</span>
+<span class="sd">        in one time step: kilograms per year with annual data, per month with</span>
+<span class="sd">        monthly data.</span>
+
+<span class="sd">        Unlike :attr:`Inventory.total_emissions`, which sums only the sectors</span>
+<span class="sd">        and is still a flux per area, this is a mass. :ref:`The inventory example</span>
+<span class="sd">        &lt;inventory-totals&gt;` shows both, with a check by hand.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        xr.DataArray</span>
-<span class="sd">            The integrated data.</span>
+<span class="sd">            The total, along ``time`` only, with the mass unit in its ``units``</span>
+<span class="sd">            attribute. It is lazy for an inventory read from files:</span>
+<span class="sd">            ``compute()`` reads them.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        Inventory.absolute_emissions : The mass in each cell, by sector.</span>
+<span class="sd">        Inventory.total_emissions : The flux in each cell, every sector added.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x_dim</span><span class="p">,</span> <span class="n">y_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">x_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">y_dim</span>
-        <span class="k">return</span> <span class="n">sum_sectors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">x_dim</span><span class="p">,</span> <span class="n">y_dim</span><span class="p">]))</span></div>
+        <span class="n">cells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">x_dim</span><span class="p">,</span> <span class="n">y_dim</span><span class="p">])</span>
+        <span class="c1"># Summed over the cells, the per-gridcell names no longer describe it</span>
+        <span class="n">cells</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="n">sum_sectors</span><span class="p">(</span><span class="n">cells</span><span class="p">)</span></div>
 
 
     <span class="c1"># Emission inventories only allow mass-conserving (conservative) regridding</span>
