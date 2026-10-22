@@ -261,6 +261,11 @@ Now compare the 2022 total before and after:
 
 The total changed by 0.0005% (5 parts per million): the mass is kept.
 
+A resolution that does not divide the box still keeps the total. The new grid
+covers the whole box: ``resample(0.25)`` gives 3 by 3 cells, 0.75 degrees wide,
+and the last row and column reach past the box's edge. They hold only the
+emissions that were inside it, so the total is still kept.
+
 Why not ``lair.geo.resample``?
 ------------------------------
 
