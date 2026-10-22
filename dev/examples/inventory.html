@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=60cd2676"></script>
+    <script src="../_static/documentation_options.js?v=d4ca3bd2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Convert a methane flux from moles to mass" href="units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev12+g894b77b12" />
+  <meta name="docsearch:version" content="2026.12.10.dev15+g024d12718" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -508,7 +508,10 @@ every CH4 sector, and unzip each sector into a folder of its own:</p>
 <h2>Load<a class="headerlink" href="#load" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.inventories.EDGARv8.html#lair.inventories.EDGARv8" title="lair.inventories.EDGARv8"><code class="xref py py-class docutils literal notranslate"><span class="pre">EDGARv8</span></code></a> opens every year of every sector. Each sector
 is a variable, and each time step is labeled by the start of its year (January
-1). Opening is lazy: lair reads the values only when a result needs them.</p>
+1). Opening is lazy: lair reads the values only when a result needs them. Opening
+all 53 years takes 20 to 50 seconds: when a calculation needs only some, pass
+them, as in <code class="docutils literal notranslate"><span class="pre">EDGARv8(&quot;CH4&quot;,</span> <span class="pre">start=2015,</span> <span class="pre">end=2022)</span></code>, and lair opens only the
+files of those years (both included). This page reads every year.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">EDGARv8</span>
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv8</span><span class="p">(</span><span class="s2">&quot;CH4&quot;</span><span class="p">)</span>

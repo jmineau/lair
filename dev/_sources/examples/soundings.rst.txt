@@ -15,7 +15,7 @@ computes potential temperature on regular heights. Two rules come out of it:
 
    This page does not run when the docs build. It needs the ``requests`` extra
    (see :ref:`installation`) and downloads from the University of Wyoming. The
-   output below was recorded from one run of this code on 2026-10-19.
+   output below was recorded from one run of this code on 2026-10-22.
 
 .. _soundings-data:
 
@@ -82,14 +82,33 @@ level the balloon reported, from the ground up:
    3     845.6  1524.0          0.6      -5.0
    4     834.0  1634.0         -0.1      -7.1
 
-Pressure is in hPa, height in meters above sea level, and temperature and
-dewpoint in degrees Celsius. The ``units`` attribute of
-:class:`~lair.soundings.Sounding` lists the unit of each column, but it is wrong
-for the winds of a sounding downloaded today: ``speed``, ``u_wind`` and
-``v_wind`` are in m/s, not the knots it says
-(`#98 <https://github.com/jmineau/lair/issues/98>`_). The columns are whatever
-Wyoming sends, so a file downloaded today also has ``relative_humidity`` and
-``mixing_ratio``, and no ``pw`` (precipitable water) or station ``elevation``.
+Pressure is in hPa, height in meters above sea level, temperature and dewpoint
+in degrees Celsius, and the winds (``speed``, ``u_wind`` and ``v_wind``) in
+knots. The ``units`` attribute of :class:`~lair.soundings.Sounding` lists the
+unit of each column, and every file ``download_soundings`` saves is in those
+units: Wyoming sends the winds in m/s today and sent knots before, and lair
+converts them to knots as it saves, so a folder never mixes the two:
+
+.. code-block:: ipython
+
+   In [4]: snd.data[["height", "speed"]].head(3)
+   Out[4]:
+      height      speed
+   0  1289.0   1.943844
+   1  1436.0  11.079914
+   2  1482.0  13.995680
+
+The station's ``elevation``, which Wyoming no longer sends, is saved as the
+height of the first level, the ground:
+
+.. code-block:: ipython
+
+   In [5]: print(snd.units["speed"], snd.elevation)
+   knot 1289.0
+
+The columns are otherwise whatever Wyoming sends, so a file downloaded today
+also has ``relative_humidity`` and ``mixing_ratio``, and no ``pw``
+(precipitable water).
 
 Read many soundings
 -------------------
@@ -100,11 +119,11 @@ Read many soundings
 
 .. code-block:: ipython
 
-   In [4]: from lair.soundings import get_soundings
+   In [6]: from lair.soundings import get_soundings
       ...:
       ...: ds = get_soundings("SLC", start="2024-01-15", end="2024-01-16", sounding_dir="soundings/SLC")
       ...: ds[["pressure", "temperature"]]
-   Out[4]:
+   Out[6]:
    <xarray.Dataset> Size: 15kB
    Dimensions:      (time: 2, height: 372)
    Coordinates:
@@ -117,6 +136,7 @@ Read many soundings
        station:                 SLC
        latitude:                40.77
        longitude:               -111.95
+       elevation:               1289.0
        interpolation_interval:  10
        notes:                   Interpolated to 1289-5000m at 10m intervals.
 
@@ -128,12 +148,11 @@ interpolated ``u_wind`` and ``v_wind``, since a direction cannot be averaged
 
 The heights start at the ground: :meth:`Sounding.interpolate()
 <lair.soundings.Sounding.interpolate>` starts at the station's ``elevation``
-by default, or, in a file without one (a sounding downloaded today), at its
-first level, the ground, and ``get_soundings`` gives every sounding
-the heights of the lowest ground among them, so that they line up. For other
-heights, interpolate each sounding yourself, for example
-``snd.interpolate(start=0, interval=50)`` (levels below the ground come out
-NaN), or pass ``driver="pandas"`` to ``get_soundings`` to get the raw levels of
+by default, or, in a file that has none, at its first level, the ground, and
+``get_soundings`` gives every sounding the heights of the lowest ground among
+them, so that they line up. For other heights, interpolate each sounding
+yourself, for example ``snd.interpolate(start=0, interval=50)`` (levels below
+the ground come out NaN), or pass ``driver="pandas"`` to ``get_soundings`` to get the raw levels of
 every sounding in one ``DataFrame``.
 
 Potential temperature
@@ -145,11 +164,11 @@ way in:
 
 .. code-block:: ipython
 
-   In [5]: from lair.meteorology import poisson
+   In [7]: from lair.meteorology import poisson
       ...:
       ...: theta = poisson(ds.temperature + 273.15, ds.pressure * 100)  # degC to K, hPa to Pa
       ...: theta.sel(height=[1289, 1499, 1999, 2999]).to_pandas().round(1)
-   Out[5]:
+   Out[7]:
    height               1289.0  1499.0  1999.0  2999.0
    time
    2024-01-15 00:00:00   285.7   286.2   289.2   293.1
@@ -170,7 +189,7 @@ When get_soundings downloads
 
 .. code-block:: ipython
 
-   In [6]: get_soundings("SLC", start="2024-02-01", end="2024-02-02", sounding_dir="soundings/SLC")
+   In [8]: get_soundings("SLC", start="2024-02-01", end="2024-02-02", sounding_dir="soundings/SLC")
    ValueError: No soundings found in soundings/SLC for the requested period. Pass download=True (with start and end) to download them.
 
 With ``download=True`` it first downloads every sounding from ``start`` to
@@ -182,15 +201,13 @@ does not have is asked for again on every call, so give the period you need.
 
 .. code-block:: ipython
 
-   In [7]: ds = get_soundings("SLC", start="2024-02-01", end="2024-02-02", sounding_dir="soundings/SLC", download=True)
+   In [9]: ds = get_soundings("SLC", start="2024-02-01", end="2024-02-02", sounding_dir="soundings/SLC", download=True)
       ...: sorted(os.listdir("soundings/SLC"))
-   Out[7]: ['SLC_2024011500.csv', 'SLC_2024011512.csv', 'SLC_2024020100.csv', 'SLC_2024020112.csv', 'SLC_2024020200.csv']
+   Out[9]: ['SLC_2024011500.csv', 'SLC_2024011512.csv', 'SLC_2024020100.csv', 'SLC_2024020112.csv', 'SLC_2024020200.csv']
 
 Next
 ----
 
 :mod:`lair.soundings` lists the rest. ``Sounding.plot()`` is not written yet:
 it raises ``NotImplementedError``. :mod:`lair.pcaps` computes the valley heat
-deficit from the output of ``get_soundings``; it needs the station's
-``elevation``, which a sounding downloaded today lacks
-(`#98 <https://github.com/jmineau/lair/issues/98>`__).
+deficit from the output of ``get_soundings``.

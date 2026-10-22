@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=60cd2676"></script>
+    <script src="../../_static/documentation_options.js?v=d4ca3bd2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev12+g894b77b12" />
+  <meta name="docsearch:version" content="2026.12.10.dev15+g024d12718" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -450,6 +450,8 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
@@ -474,6 +476,8 @@
 <span class="n">shapely</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;shapely&quot;</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">molmass</span><span class="w"> </span><span class="kn">import</span> <span class="n">Formula</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">shapely</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>  <span class="c1"># noqa: E402</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="c1">#: Environment variable holding the inventory archive root</span>
 <span class="c1">#: (with EDGAR/, EPA/, GFEI/, vulcan/ and WetCHARTs/ subdirectories)</span>
@@ -663,10 +667,15 @@
 <span class="sd">    since 2025.08), and it warns that the new ones change what Vulcan and</span>
 <span class="sd">    WetCHARTs load and raise on EDGAR v8&#39;s annual files. Naming today&#39;s values</span>
 <span class="sd">    keeps the result the same on any xarray, and keeps the warning quiet.</span>
+
+<span class="sd">    The files are NetCDF, so ``engine=&quot;netcdf4&quot;`` is named too: xarray does not</span>
+<span class="sd">    then ask each backend whether it can open each file. That saves a few seconds</span>
+<span class="sd">    when opening the 1,247 files of EDGAR v8&#39;s annual methane.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span>
         <span class="n">files</span><span class="p">,</span>
         <span class="n">preprocess</span><span class="o">=</span><span class="n">preprocess</span><span class="p">,</span>
+        <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;netcdf4&quot;</span><span class="p">,</span>
         <span class="n">compat</span><span class="o">=</span><span class="s2">&quot;no_conflicts&quot;</span><span class="p">,</span>
         <span class="n">data_vars</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
         <span class="n">coords</span><span class="o">=</span><span class="s2">&quot;different&quot;</span><span class="p">,</span>
@@ -1484,6 +1493,27 @@
 
 
 
+<span class="c1">#: The year an EDGAR file covers: four digits between underscores in its name</span>
+<span class="c1">#: (``v8.0_FT2022_GHG_CH4_2020_AGS_flx.nc``). The release tag (``FT2022``) has</span>
+<span class="c1">#: letters before its digits, so it does not match.</span>
+<span class="n">_EDGAR_YEAR</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;_(\d</span><span class="si">{4}</span><span class="s2">)_&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_year_spans</span><span class="p">(</span><span class="n">years</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write sorted ``years`` as spans: ``[1970, 1971, 1972, 2020]`` is ``&#39;1970 to 1972, 2020&#39;``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">spans</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Years in a row share the difference between their value and their position</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+        <span class="nb">enumerate</span><span class="p">(</span><span class="n">years</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">pair</span><span class="p">:</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="n">run</span> <span class="o">=</span> <span class="p">[</span><span class="n">year</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
+        <span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">run</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">run</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">spans</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">first</span><span class="p">)</span> <span class="k">if</span> <span class="n">first</span> <span class="o">==</span> <span class="n">last</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">first</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">last</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">spans</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="EDGAR">
 <a class="viewcode-back" href="../../_autosummary/lair.inventories.EDGAR.html#lair.inventories.EDGAR">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EDGAR</span><span class="p">(</span><span class="n">Inventory</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -1506,9 +1536,25 @@
 <span class="sd">    also EDGAR&#39;s: v7 files state ``cell_method = &quot;time: mean (interval: 1 year,</span>
 <span class="sd">    366 days)&quot;`` in leap years (365 otherwise) and v8&#39;s ``global_total``</span>
 <span class="sd">    attributes match a 366-day integration (CH4 2020: 375.98 Mt).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Every file holds one year (a monthly file: the twelve months of one year), and</span>
+<span class="sd">    the year is in the file&#39;s name. ``start`` and ``end``, the first and last year</span>
+<span class="sd">    to read (both included), make lair choose the files of those years by name and</span>
+<span class="sd">    open only them. The data then holds whole years, a monthly year with all its</span>
+<span class="sd">    twelve months. A year in the range that has no files is logged as a warning</span>
+<span class="sd">    and is not in the data; if no file is for the years asked, the class raises</span>
+<span class="sd">    ``FileNotFoundError``, naming the years the archive has. With neither, every</span>
+<span class="sd">    year is read.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">src_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;kg m-2 s-1&quot;</span>
+
+    <span class="c1">#: The first and last year to read, set by the subclasses: None reads from</span>
+    <span class="c1">#: the first year, or to the last, that the archive has</span>
+    <span class="n">_start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">sectors</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;AGS&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1663,18 +1709,69 @@
         <span class="p">},</span>
     <span class="p">}</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_years</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Called by the subclasses before Inventory.__init__ reads the files</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">year</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">year</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is a year, an integer such as 2015, not </span><span class="si">{</span><span class="n">year</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="o">=</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span>
+
 <div class="viewcode-block" id="EDGAR.get_files">
 <a class="viewcode-back" href="../../_autosummary/lair.inventories.EDGAR.get_files.html#lair.inventories.EDGAR.get_files">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Recursively get the inventory files for each sector.</span>
 
+<span class="sd">        If the inventory was made with ``start`` or ``end``, only the files of</span>
+<span class="sd">        those years are returned, chosen by the year in each file&#39;s name: no</span>
+<span class="sd">        file is opened.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        list[Path]</span>
 <span class="sd">            The inventory files.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            If there are files, but none for the years asked.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_root</span><span class="p">()</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">&quot;*.nc&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;TOTALS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="p">]</span></div>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_root</span><span class="p">()</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">&quot;*.nc&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;TOTALS&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">files</span>  <span class="c1"># nothing to choose from (Inventory.__init__ raises) or all</span>
+
+        <span class="n">year_of</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">f</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="p">(</span><span class="n">m</span> <span class="o">:=</span> <span class="n">_EDGAR_YEAR</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="n">chosen</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">f</span>
+            <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">year_of</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">year</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">chosen</span><span class="p">:</span>
+            <span class="n">has</span> <span class="o">=</span> <span class="n">_year_spans</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">year_of</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span> <span class="ow">or</span> <span class="s2">&quot;none&quot;</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> files for start=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="si">}</span><span class="s2">, end=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_end</span><span class="si">}</span><span class="s2"> under &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2"> (years with files: </span><span class="si">{</span><span class="n">has</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">{</span><span class="n">year_of</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">chosen</span><span class="p">}</span>
+        <span class="n">wanted</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="n">found</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">found</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">year</span> <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">wanted</span> <span class="k">if</span> <span class="n">year</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">found</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has no files for </span><span class="si">%s</span><span class="s2"> under </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">name</span><span class="p">,</span>
+                <span class="n">_year_spans</span><span class="p">(</span><span class="n">missing</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">chosen</span></div>
 
 
 <div class="viewcode-block" id="EDGAR.get_sector_name">
@@ -1718,6 +1815,26 @@
 <span class="sd">    comprising IEA-EDGAR CO2, EDGAR CH4, EDGAR N2O, EDGAR F-GASES version 7.0,</span>
 <span class="sd">    (2022) European Commission, JRC (Datasets).</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pollutant : str</span>
+<span class="sd">        The pollutant, as the name of its folder (``&#39;CH4&#39;``).</span>
+<span class="sd">    inventory_dir : str, optional</span>
+<span class="sd">        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.</span>
+<span class="sd">    start : int, optional</span>
+<span class="sd">        The first year to read, by default the first year the archive has.</span>
+<span class="sd">    end : int, optional</span>
+<span class="sd">        The last year to read (included), by default the last year the archive</span>
+<span class="sd">        has. Only the files of the years from ``start`` to ``end`` are opened,</span>
+<span class="sd">        as :class:`EDGAR` says.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If there are no files for the years from ``start`` to ``end``.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If ``start`` or ``end`` is not an integer year.</span>
+
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The folder is the pollutant&#39;s name as typed (``&#39;CH4&#39;``), below the</span>
@@ -1733,17 +1850,15 @@
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v7&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pollutant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">inventory_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize the EDGAR inventory.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        pollutant : str</span>
-<span class="sd">            The pollutant.</span>
-<span class="sd">        inventory_dir : str, optional</span>
-<span class="sd">            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pollutant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">inventory_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the EDGAR inventory; the class docstring describes the parameters.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_years</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">edgar_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">get_data_dir</span><span class="p">(</span><span class="n">INVENTORY_DIR_ENV</span><span class="p">,</span> <span class="n">inventory_dir</span><span class="p">),</span> <span class="s2">&quot;EDGAR&quot;</span>
         <span class="p">)</span>
@@ -1806,6 +1921,28 @@
 <span class="sd">    fails to read; EDGAR&#39;s ``TOTALS`` follow ``PRO_FFF``, so the sum of the</span>
 <span class="sd">    sectors is 0.15 Mt below them (see GitHub issue #37).</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pollutant : str</span>
+<span class="sd">        The pollutant, as the name of its folder (``&#39;CH4&#39;``).</span>
+<span class="sd">    time_step : Literal[&#39;annual&#39;, &#39;monthly&#39;], optional</span>
+<span class="sd">        The time step of the data, by default &#39;annual&#39;.</span>
+<span class="sd">    inventory_dir : str, optional</span>
+<span class="sd">        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.</span>
+<span class="sd">    start : int, optional</span>
+<span class="sd">        The first year to read, by default the first year the archive has.</span>
+<span class="sd">    end : int, optional</span>
+<span class="sd">        The last year to read (included), by default the last year the archive</span>
+<span class="sd">        has. Only the files of the years from ``start`` to ``end`` are opened,</span>
+<span class="sd">        as :class:`EDGAR` says.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If there are no files for the years from ``start`` to ``end``.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If ``start`` or ``end`` is not an integer year.</span>
+
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The annual files are in ``EDGAR/v8/CH4/``, as :ref:`the inventory example</span>
@@ -1820,6 +1957,12 @@
 <span class="sd">          AGRICULTURE/v8.0_FT2022_GHG_CH4_2001_AGRICULTURE_flx.nc</span>
 <span class="sd">          ...</span>
 <span class="sd">          WASTE/v8.0_FT2022_GHG_CH4_2022_WASTE_flx.nc</span>
+
+<span class="sd">    Without arguments every year is read: the 53 years of annual CH4 are about</span>
+<span class="sd">    1,300 files, and opening them takes 20 to 50 seconds. ``start`` and ``end``</span>
+<span class="sd">    open only the files of those years (both included)::</span>
+
+<span class="sd">        inv = EDGARv8(&quot;CH4&quot;, start=2015, end=2022)  # 8 steps, opened in 3 s</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v8&quot;</span>
@@ -1829,19 +1972,11 @@
         <span class="n">pollutant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">time_step</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;annual&quot;</span><span class="p">,</span> <span class="s2">&quot;monthly&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;annual&quot;</span><span class="p">,</span>
         <span class="n">inventory_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize the EDGAR inventory.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        pollutant : str</span>
-<span class="sd">            The pollutant.</span>
-<span class="sd">        time_step : Literal[&#39;annual&#39;, &#39;monthly&#39;], optional</span>
-<span class="sd">            The time step of the data, by default &#39;annual&#39;.</span>
-<span class="sd">        inventory_dir : str, optional</span>
-<span class="sd">            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the EDGAR inventory; the class docstring describes the parameters.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_years</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">edgar_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">get_data_dir</span><span class="p">(</span><span class="n">INVENTORY_DIR_ENV</span><span class="p">,</span> <span class="n">inventory_dir</span><span class="p">),</span> <span class="s2">&quot;EDGAR&quot;</span>
         <span class="p">)</span>

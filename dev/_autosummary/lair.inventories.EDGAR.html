@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=60cd2676"></script>
+    <script src="../_static/documentation_options.js?v=d4ca3bd2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.sum_sectors" href="lair.inventories.sum_sectors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev12+g894b77b12" />
+  <meta name="docsearch:version" content="2026.12.10.dev15+g024d12718" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -833,6 +833,15 @@ year length. lair uses the true calendar (366 days in leap years), which is
 also EDGAR’s: v7 files state <code class="docutils literal notranslate"><span class="pre">cell_method</span> <span class="pre">=</span> <span class="pre">&quot;time:</span> <span class="pre">mean</span> <span class="pre">(interval:</span> <span class="pre">1</span> <span class="pre">year,</span>
 <span class="pre">366</span> <span class="pre">days)&quot;</span></code> in leap years (365 otherwise) and v8’s <code class="docutils literal notranslate"><span class="pre">global_total</span></code>
 attributes match a 366-day integration (CH4 2020: 375.98 Mt).</p>
+<p class="rubric">Notes</p>
+<p>Every file holds one year (a monthly file: the twelve months of one year), and
+the year is in the file’s name. <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code>, the first and last year
+to read (both included), make lair choose the files of those years by name and
+open only them. The data then holds whole years, a monthly year with all its
+twelve months. A year in the range that has no files is logged as a warning
+and is not in the data; if no file is for the years asked, the class raises
+<code class="docutils literal notranslate"><span class="pre">FileNotFoundError</span></code>, naming the years the archive has. With neither, every
+year is read.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
