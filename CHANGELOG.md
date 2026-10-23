@@ -80,6 +80,12 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   where xarray asked each backend about each file. The data is the same (checked
   on the real EDGAR, EPA, GFEI, Vulcan and WetCHARTs files); opening EDGAR v8's
   1,247 annual files takes a few seconds less.
+- `background.phase_shift_corrected_baseline` returns the baseline at the times
+  of its input (#116). It used to return it on the one-second grid it works on,
+  so data at a slower rate got back a longer series on other times (60 samples
+  ten seconds apart gave 591 values), and `data - baseline` came back on that
+  grid, NaN wherever the data had no sample. One-second data get the same
+  values at their times as before.
 
 ### Fixed
 
