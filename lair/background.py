@@ -1,13 +1,14 @@
 """
 Background concentrations of a trace gas from its own time series.
 
-:func:`get_well_mixed` keeps the afternoon hours, when the boundary layer is
-deep; :func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a
-low quantile of a moving window; :func:`thoning` fits NOAA's curve (Thoning et
-al., 1989) through the data. CarbonTracker's background is in
-:mod:`lair.noaa`. :doc:`/examples/background` shows the methods side by side
-and when to use which. The module needs NOAA's CCG filter, which the first
-``import lair`` downloads (see :ref:`first-import-download`), and ``scipy``.
+:func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a low
+quantile of a moving window; :func:`thoning` fits NOAA's curve (Thoning et al.,
+1989) through the data, which suits afternoon means (the afternoon is when the
+boundary layer is deep; :data:`lair.clock.AFTERNOON` lists its hours).
+CarbonTracker's background is in :mod:`lair.noaa`.
+:doc:`/examples/background` shows the methods side by side and when to use
+which. The module needs NOAA's CCG filter, which the first ``import lair``
+downloads (see :ref:`first-import-download`), and ``scipy``.
 """
 
 import datetime as dt
@@ -26,34 +27,9 @@ except ModuleNotFoundError as e:
         "lair.background needs NOAA's CCG filter, which isn't installed. Run "
         "lair.setup_ccg_filter() (needs outbound FTP to ftp.gml.noaa.gov)."
     ) from e
-from lair.clock import AFTERNOON, dt2decimalDate
+from lair.clock import dt2decimalDate
 
 logger = logging.getLogger(__name__)
-
-
-def get_well_mixed(
-    data: pd.Series | pd.DataFrame, hours: list[int] = AFTERNOON
-) -> pd.Series | pd.DataFrame:
-    """
-    Subset the data to the well-mixed hours of the day.
-
-    Parameters
-    ----------
-    data : pd.Series | pd.DataFrame
-        Time series data to subset. Must have a datetime index.
-    hours : list[int], optional
-        Hours of the day to subset. Default is LST afternoon hours.
-
-    Returns
-    -------
-    pd.Series | pd.DataFrame
-        Daily means over the well-mixed hours (non-numeric columns are dropped).
-    """
-    return (
-        data[pd.DatetimeIndex(data.index).hour.isin(hours)]
-        .resample("1D")
-        .mean(numeric_only=True)
-    )
 
 
 def rolling_baseline(
