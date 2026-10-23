@@ -14,11 +14,9 @@ against the background the data were made from. Three rules come out of it:
 * **A rolling window must be longer than the longest stretch without clean
   air.** Over a pollution episode of several days, the low quantile of a day is
   the episode, not the background.
-* :func:`~lair.background.get_well_mixed` **reads the hours in the index's own
-  zone.** Data already in local time need nothing more; data in UTC (or with no
-  zone, which lair reads as UTC) need ``tz``, the local zone, and raise a
-  ``ValueError`` without it, so that they cannot be averaged over the morning
-  by accident (see the :doc:`clock page <clock>`).
+* **Select the afternoon in local time.** The hours of a UTC series are not the
+  hours of the day at the site: put the data in local time first (see the
+  :doc:`clock page <clock>`).
 
 .. note::
 
@@ -26,7 +24,7 @@ against the background the data were made from. Three rules come out of it:
    CCG filter, which lair downloads the first time it is imported (see
    :ref:`first-import-download`), and ``scipy``, from the ``science`` extra
    (see :ref:`optional-dependencies`). The output below was recorded from one
-   run of this code on 2026-10-14.
+   run of this code on 2026-10-23.
 
 The methods
 -----------
@@ -51,13 +49,6 @@ The methods
      - a low quantile from windows ahead of and behind each time, smoothed
      - one-second data from a moving platform, whose background changes within
        the hour
-   * - :func:`~lair.background.get_well_mixed`
-     - a ``Series`` or ``DataFrame`` with a time index; ``tz``, the local zone,
-       if the index is in UTC or has no zone; and the hours to keep (12 to 16
-       by default, ``lair.clock.AFTERNOON``)
-     - one mean per day over those hours
-     - the afternoon, when the boundary layer is deep and a site sees regional
-       air
    * - :func:`~lair.background.thoning`
      - a ``Series`` with a time index (NaN values are dropped), and the times
        to evaluate at, ``smooth_time``
@@ -150,16 +141,16 @@ Afternoon means and a smooth curve
 given. Given every hour, it follows the mean of the data, enhancements
 included. Given afternoon means, it follows the afternoon, when the city's
 methane is mixed through a deep boundary layer.
-:func:`~lair.background.get_well_mixed` takes those means. The data are in
-UTC, so ``tz`` names the local zone to read the hours in: ``"MST"``, which is
-standard time all year, where ``"America/Denver"`` would move the hours an hour
-earlier in summer:
+The data are in UTC, so put them in local time first, as the :doc:`clock page
+<clock>` does, then keep the afternoon hours and average each day:
 
 .. code-block:: ipython
 
-   In [3]: from lair.background import get_well_mixed, thoning
+   In [3]: from lair.background import thoning
+      ...: from lair.clock import AFTERNOON, UTC2MST
       ...:
-      ...: afternoon = get_well_mixed(ch4, tz="MST")
+      ...: local = UTC2MST(ch4.to_frame(), driver="pandas")["ch4"]
+      ...: afternoon = local[local.index.hour.isin(AFTERNOON)].resample("D").mean()
       ...: afternoon.head(3).round(3)
    Out[3]:
    2022-01-01 00:00:00-07:00    1.965
@@ -167,11 +158,10 @@ earlier in summer:
    2022-01-03 00:00:00-07:00    1.974
    Freq: D, Name: ch4, dtype: float64
 
-Each day is labeled at its local midnight. Without ``tz`` this call raises a
-``ValueError``, because a series in UTC would give 12:00 to 16:59 UTC, which is
-5 to 9 in the morning in Utah, under the night-time inversion; a series already
-in ``"MST"`` would need no ``tz``. ``smooth_time`` evaluates the curve at the
-hourly times, to put it beside the others:
+Each day is labeled at its local midnight. On the UTC series the same lines
+would average 12:00 to 16:59 UTC, which is 5 to 9 in the morning in Utah, under
+the night-time inversion. ``smooth_time`` evaluates the curve at the hourly
+times, to put it beside the others:
 
 .. code-block:: ipython
 

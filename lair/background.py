@@ -1,13 +1,14 @@
 """
 Background concentrations of a trace gas from its own time series.
 
-:func:`get_well_mixed` keeps the afternoon hours, when the boundary layer is
-deep; :func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a
-low quantile of a moving window; :func:`thoning` fits NOAA's curve (Thoning et
-al., 1989) through the data. CarbonTracker's background is in
-:mod:`lair.noaa`. :doc:`/examples/background` shows the methods side by side
-and when to use which. The module needs NOAA's CCG filter, which the first
-``import lair`` downloads (see :ref:`first-import-download`), and ``scipy``.
+:func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a low
+quantile of a moving window; :func:`thoning` fits NOAA's curve (Thoning et al.,
+1989) through the data, which suits afternoon means (the afternoon is when the
+boundary layer is deep; :data:`lair.clock.AFTERNOON` lists its hours).
+CarbonTracker's background is in :mod:`lair.noaa`.
+:doc:`/examples/background` shows the methods side by side and when to use
+which. The module needs NOAA's CCG filter, which the first ``import lair``
+downloads (see :ref:`first-import-download`), and ``scipy``.
 """
 
 import datetime as dt
@@ -26,96 +27,9 @@ except ModuleNotFoundError as e:
         "lair.background needs NOAA's CCG filter, which isn't installed. Run "
         "lair.setup_ccg_filter() (needs outbound FTP to ftp.gml.noaa.gov)."
     ) from e
-from lair.clock import AFTERNOON, dt2decimalDate
+from lair.clock import dt2decimalDate
 
 logger = logging.getLogger(__name__)
-
-
-def get_well_mixed(
-    data: pd.Series | pd.DataFrame,
-    hours: list[int] = AFTERNOON,
-    *,
-    tz: str | None = None,
-) -> pd.Series | pd.DataFrame:
-    """
-    Average the data over the well-mixed hours of each day.
-
-    The hours are read on a local clock, so what the call needs depends on the
-    index. An index in a local time zone needs nothing more. An index in UTC (a
-    naive index counts as UTC, as everywhere in lair) needs ``tz``, the local
-    zone, and raises a ``ValueError`` without it: its own 12 to 16 would be 5 to
-    9 in the morning in Utah, under the night-time inversion.
-
-    Parameters
-    ----------
-    data : pd.Series | pd.DataFrame
-        Time series data. Must have a datetime index.
-    hours : list[int], optional
-        Hours of the day to keep, on the clock of the zone the hours are read
-        in. Default is ``lair.clock.AFTERNOON``, 12 to 16 local standard time.
-    tz : str, optional
-        The zone to read ``hours`` in, such as ``'MST'``. Required when the
-        index is in UTC or has no zone: give the local zone, or ``'UTC'`` to
-        use the UTC hours. Optional when the index is in a local zone, which is
-        then converted to ``tz`` first. Keyword only.
-
-    Returns
-    -------
-    pd.Series | pd.DataFrame
-        Daily means over the well-mixed hours (non-numeric columns are dropped),
-        each day labeled at midnight in the zone the hours were read in.
-
-    Raises
-    ------
-    ValueError
-        If the index is in UTC or has no zone and ``tz`` is not given.
-
-    Notes
-    -----
-    ``'MST'`` is standard time all year, which is what ``AFTERNOON`` means;
-    ``'America/Denver'`` follows daylight saving, so in summer its 12 to 16 is
-    11 to 15 standard time.
-
-    An index of local times without a zone is read as UTC, so ``tz`` would shift
-    it: localize it first (``data.tz_localize('MST')``).
-
-    Examples
-    --------
-    Hourly data in UTC, which is how UATAQ data come: give the local zone.
-
-    >>> import pandas as pd
-    >>> from lair.background import get_well_mixed
-    >>> times = pd.date_range("2024-06-01", periods=48, freq="h", tz="UTC")
-    >>> local_hour = pd.Series(times.tz_convert("MST").hour, index=times)
-    >>> get_well_mixed(local_hour, tz="MST")
-    2024-06-01 00:00:00-07:00    14.0
-    2024-06-02 00:00:00-07:00    14.0
-    Freq: D, dtype: float64
-
-    Data already in a local zone need no ``tz``:
-
-    >>> get_well_mixed(local_hour.tz_convert("MST"))
-    2024-06-01 00:00:00-07:00    14.0
-    2024-06-02 00:00:00-07:00    14.0
-    Freq: D, dtype: float64
-    """
-    index = pd.DatetimeIndex(data.index)
-    if tz is not None:
-        if index.tz is None:
-            index = index.tz_localize("UTC")
-        index = index.tz_convert(tz)
-    elif index.tz is None or index.tz.utcoffset(None) == dt.timedelta(0):
-        raise ValueError(
-            "The index is in UTC (a naive index is read as UTC), so its hours "
-            "are not local hours. Pass tz, the local time zone, such as "
-            "tz='MST' for the afternoon in local standard time, or tz='UTC' to "
-            "use the UTC hours."
-        )
-    return (
-        data.set_axis(index)[index.hour.isin(hours)]
-        .resample("1D")
-        .mean(numeric_only=True)
-    )
 
 
 def rolling_baseline(

@@ -7,8 +7,6 @@ LAIR_SKIP_CCG_DOWNLOAD is set) and the `science` extra (scipy). When either is
 missing, this module is skipped.
 """
 
-import datetime as dt
-
 import pytest
 
 background = pytest.importorskip(
@@ -21,126 +19,6 @@ background = pytest.importorskip(
 def test_importable():
     """lair.background imports when the CCG filter and scipy are available."""
     assert background is not None
-
-
-def test_get_well_mixed_subsets_afternoon(sample_timeseries):
-    """get_well_mixed keeps only the well-mixed afternoon hours and resamples daily."""
-    result = background.get_well_mixed(sample_timeseries, tz="UTC")
-    # One input day -> one daily row.
-    assert len(result) == 1
-
-
-def test_get_well_mixed_multiple_days():
-    import pandas as pd
-
-    idx = pd.to_datetime(["2024-01-01 13:00", "2024-01-01 14:00", "2024-01-02 13:00"])
-    df = pd.DataFrame({"co2": [1.0, 2.0, 3.0]}, index=idx)
-    assert len(background.get_well_mixed(df, tz="UTC")) == 2
-
-
-def test_get_well_mixed_ignores_text_columns():
-    import pandas as pd
-
-    idx = pd.to_datetime(["2024-01-01 13:00", "2024-01-01 14:00"])
-    df = pd.DataFrame({"co2": [1.0, 3.0], "site": ["WBB", "WBB"]}, index=idx)
-    out = background.get_well_mixed(df, tz="UTC")
-    assert list(out.columns) == ["co2"]
-    assert out["co2"].iloc[0] == 2.0
-
-
-class TestWellMixedTimeZone:
-    """get_well_mixed reads the hours in the index's zone, or in ``tz`` (#113)."""
-
-    @staticmethod
-    def local_hour(tz="UTC"):
-        """Two days of hourly data whose value is the hour in MST."""
-        import pandas as pd
-
-        utc = pd.date_range("2024-06-01", "2024-06-02 23:00", freq="h", tz="UTC")
-        return pd.Series(
-            utc.tz_convert("MST").hour.astype(float), index=utc
-        ).tz_convert(tz)
-
-    def test_local_index_needs_no_tz(self):
-        out = background.get_well_mixed(self.local_hour("MST"))
-        # mean of 12 to 16 MST, each day labeled at MST midnight
-        assert out.tolist() == [14.0, 14.0]
-        assert str(out.index.tz) == "MST"
-        assert out.index[0].hour == 0
-
-    def test_local_index_reads_its_own_clock(self):
-        # 12 to 16 MDT in June is 11 to 15 MST
-        out = background.get_well_mixed(self.local_hour("America/Denver"))
-        assert out.tolist() == [13.0, 13.0]
-        assert str(out.index.tz) == "America/Denver"
-
-    def test_local_index_with_another_tz_is_converted_first(self):
-        eastern = self.local_hour("America/New_York")
-        # on its own clock (EDT) the afternoon is 9 to 13 MST
-        assert background.get_well_mixed(eastern).tolist() == [11.0, 11.0]
-        out = background.get_well_mixed(eastern, tz="MST")
-        assert out.tolist() == [14.0, 14.0]
-        assert str(out.index.tz) == "MST"
-        assert out.equals(background.get_well_mixed(self.local_hour(), tz="MST"))
-
-    @pytest.mark.parametrize(
-        "zone", ["UTC", "Etc/UTC", dt.UTC], ids=["UTC", "Etc/UTC", "datetime.UTC"]
-    )
-    def test_utc_index_without_tz_raises(self, zone):
-        with pytest.raises(ValueError, match="index is in UTC") as err:
-            background.get_well_mixed(self.local_hour(zone))
-        # the message names the fix: the local zone, or UTC on purpose
-        assert "tz='MST'" in str(err.value)
-        assert "tz='UTC'" in str(err.value)
-
-    def test_naive_index_without_tz_raises(self):
-        naive = self.local_hour().tz_localize(None)
-        with pytest.raises(ValueError, match="naive index is read as UTC"):
-            background.get_well_mixed(naive)
-
-    def test_utc_index_with_tz_gives_the_local_afternoon(self):
-        # the #113 case: UTC data, the local afternoon wanted
-        out = background.get_well_mixed(self.local_hour(), tz="MST")
-        assert out.tolist() == [14.0, 14.0]
-        assert str(out.index.tz) == "MST"
-        assert out.index[0].hour == 0
-
-    def test_naive_index_with_tz_is_read_as_utc(self):
-        naive = self.local_hour().tz_localize(None)
-        out = background.get_well_mixed(naive, tz="MST")
-        assert out.tolist() == [14.0, 14.0]
-        assert str(out.index.tz) == "MST"
-
-    def test_tz_utc_keeps_the_utc_hours(self):
-        # 12 to 16 UTC is 5 to 9 MST
-        for data in (self.local_hour(), self.local_hour().tz_localize(None)):
-            out = background.get_well_mixed(data, tz="UTC")
-            assert out.tolist() == [7.0, 7.0]
-            assert str(out.index.tz) == "UTC"
-
-    def test_tz_is_keyword_only(self):
-        with pytest.raises(TypeError):
-            background.get_well_mixed(self.local_hour(), [12, 13], "MST")
-
-    def test_naive_local_times_are_shifted_unless_localized_first(self):
-        # the documented hazard: naive local times are read as UTC
-        local_naive = self.local_hour("MST").tz_localize(None)
-        shifted = background.get_well_mixed(local_naive, tz="MST")
-        assert shifted.tolist() != [14.0, 14.0]
-        localized = background.get_well_mixed(local_naive.tz_localize("MST"))
-        assert localized.tolist() == [14.0, 14.0]
-
-    def test_zone_with_daylight_saving(self):
-        # 12 to 16 MDT in June is 11 to 15 MST
-        out = background.get_well_mixed(self.local_hour(), tz="America/Denver")
-        assert out.tolist() == [13.0, 13.0]
-        assert str(out.index.tz) == "America/Denver"
-
-    def test_dataframe_keeps_numeric_columns(self):
-        frame = self.local_hour("MST").to_frame("co2").assign(site="WBB")
-        out = background.get_well_mixed(frame)
-        assert list(out.columns) == ["co2"]
-        assert out["co2"].tolist() == [14.0, 14.0]
 
 
 class TestRollingBaseline:

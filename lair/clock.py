@@ -23,9 +23,11 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-#: The afternoon hours, 12 to 16 local standard time.
+#: The afternoon hours, 12 to 16 local standard time, when the boundary layer is
+#: deep and a site sees regional air.
 #:
-#: :func:`lair.background.get_well_mixed` keeps these hours by default.
+#: Put the data in local time first, then ``index.hour.isin(AFTERNOON)`` selects
+#: them (the :doc:`clock example </examples/clock>` shows it).
 AFTERNOON = [12, 13, 14, 15, 16]
 
 #: The meteorological season of each month (1 to 12), as ``'DJF'``, ``'MAM'``,

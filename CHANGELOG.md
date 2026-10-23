@@ -80,18 +80,6 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   where xarray asked each backend about each file. The data is the same (checked
   on the real EDGAR, EPA, GFEI, Vulcan and WetCHARTs files); opening EDGAR v8's
   1,247 annual files takes a few seconds less.
-- `background.get_well_mixed` raises a `ValueError` for an index in UTC or
-  without a zone when `tz` is not given (#113; breaking for those calls). It
-  used to cut the index as it stood, so data in UTC (all UATAQ data) was
-  averaged over 12 to 16 UTC, which in Utah is 5 to 9 in the morning, with
-  nothing to say so. Now the hours are read in the index's own zone: an index in
-  a local zone (`America/Denver`, `MST`) gives what it gave before, and a UTC or
-  naive index (naive is UTC, as everywhere in lair) needs the new keyword `tz`,
-  the local zone: `tz="MST"` for the afternoon in local standard time,
-  `tz="UTC"` for the UTC hours. `tz` also converts an index in another zone
-  first. Each day is labeled at midnight in the zone used, so the result for a
-  naive index has a zone. For an index of local times with no zone, localize
-  it first (`data.tz_localize("MST")`), since `tz="MST"` would read it as UTC.
 
 ### Fixed
 
@@ -148,6 +136,18 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Removed
 
+- `background.get_well_mixed` (#113). It was two lines of pandas, and the part it
+  could not do for you, the time zone, is the part that went wrong: it kept the
+  rows whose index hour was 12 to 16 as the index stood, so data in UTC (all
+  UATAQ data) was averaged over 12 to 16 UTC, which in Utah is 5 to 9 in the
+  morning, with nothing to say so. Nothing in lair, slv, fips or uataq called
+  it. Put the data in local time, then select the hours with pandas, as the
+  clock example shows: `local = data.tz_convert("MST")` (an index with no zone
+  is UTC: `data.tz_localize("UTC").tz_convert("MST")`), then
+  `local[local.index.hour.isin(AFTERNOON)].resample("D").mean()`, with
+  `AFTERNOON` from `lair.clock`. `"MST"` is standard time all year;
+  `"America/Denver"` follows daylight saving, which moves the hours an hour
+  earlier in summer. Each day is labeled at midnight in that zone.
 - `clock.periodindex_to_binedges` (#115). Nothing used it, and its edges were
   wrong: the last edge was the last period's end time (one instant before the
   next period starts), and a period missing from the index was not an edge, so
