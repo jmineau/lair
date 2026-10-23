@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=d4ca3bd2"></script>
+    <script src="../_static/documentation_options.js?v=661e2221"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="lair.background.get_well_mixed" href="lair.background.get_well_mixed.html" />
+    <link rel="next" title="lair.background.phase_shift_corrected_baseline" href="lair.background.phase_shift_corrected_baseline.html" />
     <link rel="prev" title="lair.air.wind_direction" href="lair.air.wind_direction.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev15+g024d12718" />
+  <meta name="docsearch:version" content="2026.12.10.dev16+gf0d0bb48f" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -413,7 +413,6 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a aria-current="page" class="current reference internal" href="#">lair.background</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.background.get_well_mixed.html">lair.background.get_well_mixed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.phase_shift_corrected_baseline.html">lair.background.phase_shift_corrected_baseline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.rolling_baseline.html">lair.background.rolling_baseline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.thoning.html">lair.background.thoning</a></li>
@@ -813,29 +812,27 @@
   <section id="module-lair.background">
 <span id="lair-background"></span><h1>lair.background<a class="headerlink" href="#module-lair.background" title="Link to this heading">#</a></h1>
 <p>Background concentrations of a trace gas from its own time series.</p>
-<p><a class="reference internal" href="lair.background.get_well_mixed.html#lair.background.get_well_mixed" title="lair.background.get_well_mixed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_well_mixed()</span></code></a> keeps the afternoon hours, when the boundary layer is
-deep; <a class="reference internal" href="lair.background.rolling_baseline.html#lair.background.rolling_baseline" title="lair.background.rolling_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling_baseline()</span></code></a> and <a class="reference internal" href="lair.background.phase_shift_corrected_baseline.html#lair.background.phase_shift_corrected_baseline" title="lair.background.phase_shift_corrected_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">phase_shift_corrected_baseline()</span></code></a> take a
-low quantile of a moving window; <a class="reference internal" href="lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning()</span></code></a> fits NOAA’s curve (Thoning et
-al., 1989) through the data. CarbonTracker’s background is in
-<a class="reference internal" href="lair.noaa.html#module-lair.noaa" title="lair.noaa"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.noaa</span></code></a>. <a class="reference internal" href="../examples/background.html"><span class="doc">Estimate a background</span></a> shows the methods side by side
-and when to use which. The module needs NOAA’s CCG filter, which the first
-<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> downloads (see <a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a>), and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>.</p>
+<p><a class="reference internal" href="lair.background.rolling_baseline.html#lair.background.rolling_baseline" title="lair.background.rolling_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling_baseline()</span></code></a> and <a class="reference internal" href="lair.background.phase_shift_corrected_baseline.html#lair.background.phase_shift_corrected_baseline" title="lair.background.phase_shift_corrected_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">phase_shift_corrected_baseline()</span></code></a> take a low
+quantile of a moving window; <a class="reference internal" href="lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning()</span></code></a> fits NOAA’s curve (Thoning et al.,
+1989) through the data, which suits afternoon means (the afternoon is when the
+boundary layer is deep; <a class="reference internal" href="lair.clock.AFTERNOON.html#lair.clock.AFTERNOON" title="lair.clock.AFTERNOON"><code class="xref py py-data docutils literal notranslate"><span class="pre">lair.clock.AFTERNOON</span></code></a> lists its hours).
+CarbonTracker’s background is in <a class="reference internal" href="lair.noaa.html#module-lair.noaa" title="lair.noaa"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.noaa</span></code></a>.
+<a class="reference internal" href="../examples/background.html"><span class="doc">Estimate a background</span></a> shows the methods side by side and when to use
+which. The module needs NOAA’s CCG filter, which the first <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code>
+downloads (see <a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a>), and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>.</p>
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.background.get_well_mixed.html#lair.background.get_well_mixed" title="lair.background.get_well_mixed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_well_mixed</span></code></a></p></td>
-<td><p>Subset the data to the well-mixed hours of the day.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.background.phase_shift_corrected_baseline.html#lair.background.phase_shift_corrected_baseline" title="lair.background.phase_shift_corrected_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phase_shift_corrected_baseline</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.background.phase_shift_corrected_baseline.html#lair.background.phase_shift_corrected_baseline" title="lair.background.phase_shift_corrected_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phase_shift_corrected_baseline</span></code></a></p></td>
 <td><p>Derive a baseline concentration from a low quantile, minimizing phase shift.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.background.rolling_baseline.html#lair.background.rolling_baseline" title="lair.background.rolling_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rolling_baseline</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.background.rolling_baseline.html#lair.background.rolling_baseline" title="lair.background.rolling_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rolling_baseline</span></code></a></p></td>
 <td><p>Calculate the baseline concentration as a rolling quantile.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thoning</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thoning</span></code></a></p></td>
 <td><p>Thoning curve fitting.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.background.thoning_filter.html#lair.background.thoning_filter" title="lair.background.thoning_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thoning_filter</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.background.thoning_filter.html#lair.background.thoning_filter" title="lair.background.thoning_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thoning_filter</span></code></a></p></td>
 <td><p>Create a Thoning filter object from a time series of data.</p></td>
 </tr>
 </tbody>
@@ -863,11 +860,11 @@ and when to use which. The module needs NOAA’s CCG filter, which the first
       </div>
     </a>
     <a class="right-next"
-       href="lair.background.get_well_mixed.html"
+       href="lair.background.phase_shift_corrected_baseline.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">lair.background.get_well_mixed</p>
+        <p class="prev-next-title">lair.background.phase_shift_corrected_baseline</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

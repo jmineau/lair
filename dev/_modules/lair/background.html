@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=d4ca3bd2"></script>
+    <script src="../../_static/documentation_options.js?v=661e2221"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev15+g024d12718" />
+  <meta name="docsearch:version" content="2026.12.10.dev16+gf0d0bb48f" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -437,13 +437,14 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Background concentrations of a trace gas from its own time series.</span>
 
-<span class="sd">:func:`get_well_mixed` keeps the afternoon hours, when the boundary layer is</span>
-<span class="sd">deep; :func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a</span>
-<span class="sd">low quantile of a moving window; :func:`thoning` fits NOAA&#39;s curve (Thoning et</span>
-<span class="sd">al., 1989) through the data. CarbonTracker&#39;s background is in</span>
-<span class="sd">:mod:`lair.noaa`. :doc:`/examples/background` shows the methods side by side</span>
-<span class="sd">and when to use which. The module needs NOAA&#39;s CCG filter, which the first</span>
-<span class="sd">``import lair`` downloads (see :ref:`first-import-download`), and ``scipy``.</span>
+<span class="sd">:func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a low</span>
+<span class="sd">quantile of a moving window; :func:`thoning` fits NOAA&#39;s curve (Thoning et al.,</span>
+<span class="sd">1989) through the data, which suits afternoon means (the afternoon is when the</span>
+<span class="sd">boundary layer is deep; :data:`lair.clock.AFTERNOON` lists its hours).</span>
+<span class="sd">CarbonTracker&#39;s background is in :mod:`lair.noaa`.</span>
+<span class="sd">:doc:`/examples/background` shows the methods side by side and when to use</span>
+<span class="sd">which. The module needs NOAA&#39;s CCG filter, which the first ``import lair``</span>
+<span class="sd">downloads (see :ref:`first-import-download`), and ``scipy``.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
@@ -462,37 +463,9 @@
         <span class="s2">&quot;lair.background needs NOAA&#39;s CCG filter, which isn&#39;t installed. Run &quot;</span>
         <span class="s2">&quot;lair.setup_ccg_filter() (needs outbound FTP to ftp.gml.noaa.gov).&quot;</span>
     <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFTERNOON</span><span class="p">,</span> <span class="n">dt2decimalDate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">dt2decimalDate</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="get_well_mixed">
-<a class="viewcode-back" href="../../_autosummary/lair.background.get_well_mixed.html#lair.background.get_well_mixed">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_well_mixed</span><span class="p">(</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">hours</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">AFTERNOON</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Subset the data to the well-mixed hours of the day.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data : pd.Series | pd.DataFrame</span>
-<span class="sd">        Time series data to subset. Must have a datetime index.</span>
-<span class="sd">    hours : list[int], optional</span>
-<span class="sd">        Hours of the day to subset. Default is LST afternoon hours.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    pd.Series | pd.DataFrame</span>
-<span class="sd">        Daily means over the well-mixed hours (non-numeric columns are dropped).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">data</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">hour</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">hours</span><span class="p">)]</span>
-        <span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;1D&quot;</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="p">)</span></div>
-
 
 
 <div class="viewcode-block" id="rolling_baseline">
