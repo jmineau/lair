@@ -46,7 +46,8 @@ The methods
    * - :func:`~lair.background.phase_shift_corrected_baseline`
      - a ``Series`` of one-second data; the window ``n`` in seconds (3600) and
        ``q`` (0.01); each calendar day of the index is done on its own
-     - a low quantile from windows ahead of and behind each time, smoothed
+     - a low quantile from windows ahead of and behind each time, smoothed, at
+       the times of the data
      - one-second data from a moving platform, whose background changes within
        the hour
    * - :func:`~lair.background.thoning`
