@@ -907,7 +907,8 @@ def convert_timezones(
     ----------
     x : list[dt.datetime] | pd.DataFrame | pd.Series
         The times to convert. With ``driver='pandas'``, the index of a
-        DataFrame or the values of a Series.
+        DataFrame or the values of a Series. Without it, a list: put a single
+        time in one (a bare datetime raises ``TypeError``).
     totz : str
         The timezone to convert the times to.
     fromtz : str, optional
@@ -954,6 +955,12 @@ def convert_timezones(
     ...     [dt.datetime(2024, 1, 15, 18)], "America/Denver", fromtz="UTC"
     ... )
     [datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))]
+
+    The shortcuts take the same list; in July, 18:00 UTC is 12:00 daylight time:
+
+    >>> from lair.clock import UTC2MTN
+    >>> UTC2MTN([dt.datetime(2024, 7, 15, 18)])
+    [datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))]
 
     The index of a DataFrame, kept naive in local time with ``localize=True``:
 
