@@ -13,8 +13,8 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 - The inventory example sets `total_emissions` (a flux in each cell),
   `absolute_emissions` (the mass in each cell, by sector) and `integrate()` (the
   total over the region) side by side, with their units, a check of one cell by
-  hand, each sector's total, and why to convert the total rather than the flux.
-  The three docstrings say the same and link to each other.
+  hand, each sector's total, and that converting the flux to another unit first
+  gives the same total. The three docstrings say the same and link to each other.
 - `inventories.convert_units` also converts a plain array or dataset, one with a
   `units` attribute and no pint units, and returns it plain: the values and the
   `units` attribute are converted and nothing else changes. Before, it raised
@@ -117,6 +117,15 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 - `Inventory.integrate()` no longer labels the regional total with
   `absolute_emissions`' `standard_name`, `annual_emissions_per_gridcell` (#135).
   Its attributes are now `long_name` and `units`, as for `total_emissions`.
+- `Inventory.convert_units` gives a flux per time step (per year on annual data,
+  per month on monthly data) the calendar length of each step: 366 days in a
+  leap year, the days of each month. It used pint's year of 365.25 days, so
+  converting EDGAR's `kg/m**2/s` to `Gg/km**2/yr` before `integrate()` made the
+  2020 total 0.2% low and the 2022 total 0.07% high, and a flux per year (GFEI,
+  Vulcan) converted to a flux per second was off the other way. The totals are
+  now the same in any unit. `standardize_units=True` converts the same way. The
+  plain-array `convert_units` has no time steps and keeps pint's year, as its
+  docstring now says.
 - `sum_sectors`, and so `Inventory.total_emissions` and `integrate()`, raise a
   `ValueError` when the sectors are in different units (#146). They added the
   numbers as they were and labeled the sum with the first sector's units: a

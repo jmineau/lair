@@ -10,8 +10,9 @@ come out of it:
   total over the region: it sums the sectors in each grid cell, and is still a
   flux per area and time. ``absolute_emissions`` is the mass in each cell,
   sector by sector (see `Three sums`_).
-* **Convert the total, not the flux.** ``integrate()`` gives the inventory's own
-  mass unit (here kg); divide or convert the result (see `Other units`_).
+* **The unit does not matter.** ``integrate()`` gives the inventory's own mass
+  unit (here kg). Divide the result, or convert the flux first with
+  ``convert_units``: the total is the same (see `Other units`_).
 * **To change the grid of an inventory, use its own** ``regrid`` **or**
   ``resample``. They are conservative by default, so the total stays the same.
 
@@ -20,7 +21,7 @@ come out of it:
    This page does not run when the docs build. It needs ESMF, which the conda
    route of :ref:`installation` installs, and EDGAR's files, which are too large
    for the docs build. The output below was recorded from one run of this code,
-   with ESMF, on 2026-10-19.
+   with ESMF, on 2026-10-26.
 
 .. _inventory-data:
 
@@ -153,9 +154,9 @@ does the work. That took a minute or two here.
    In [6]: total.sel(time=slice("2020", "2022")).to_series() / 1e6  # kg to kt
    Out[6]:
    time
-   2020-01-01    22.089165
-   2021-01-01    22.363681
-   2022-01-01    22.588048
+   2020-01-01    22.129474
+   2021-01-01    22.404489
+   2022-01-01    22.629266
    Freq: YS-JAN, Name: emissions, dtype: float64
 
 So EDGAR puts 22.6 kt (thousand tonnes) of methane in this box in 2022.
@@ -182,8 +183,8 @@ km2) times the seconds in the year:
       ...:
       ...: print(f"by hand:            {flux * area * seconds:,.0f} kg")
       ...: print(f"absolute_emissions: {float(sum_sectors(mass)):,.0f} kg")
-   by hand:            8,566,596 kg
-   absolute_emissions: 8,566,596 kg
+   by hand:            8,582,388 kg
+   absolute_emissions: 8,582,388 kg
 
 EDGAR leaves a sector's cell empty (NaN) where that sector emits nothing.
 :func:`~lair.inventories.sum_sectors`, which ``total_emissions`` and
@@ -199,12 +200,12 @@ together, they are ``integrate()``'s total:
       ...: kt = by_sector.to_pandas() / 1e6  # kg to kt
       ...: print(kt.sort_values(ascending=False).head().round(3).to_string())
       ...: print(f"all sectors: {kt.sum():.3f} kt")
-   Solid_waste_landfills       12.407
-   Waste_water_handling         5.195
-   Energy_for_buildings         1.601
-   Fuel_exploitation_GAS        1.269
-   Solid_waste_incineration     0.649
-   all sectors: 22.588 kt
+   Solid_waste_landfills       12.429
+   Waste_water_handling         5.204
+   Energy_for_buildings         1.604
+   Fuel_exploitation_GAS        1.271
+   Solid_waste_incineration     0.650
+   all sectors: 22.629 kt
 
 To leave a sector out of a total, pass it to
 :func:`~lair.inventories.sum_sectors` as ``exclude=``.
@@ -220,24 +221,25 @@ Other units
 
 ``integrate()`` keeps the inventory's mass unit, so divide the result: kg /
 1e6 is kt (thousand tonnes), as above, which is also Gg. Converting the flux
-first gives a slightly different number. A flux per year (``Gg/km**2/yr``)
-goes through pint's year of 365.25 days, and ``integrate()`` then takes each
-value as one year's worth, whatever the year's length (the details are under
-:attr:`~lair.inventories.Inventory.absolute_emissions`):
+first gives the same total. An inventory's ``convert_units`` gives a flux per
+year (``Gg/km**2/yr``) the length of each year, 366 days in 2020 and 365 in
+2022, and ``integrate()`` takes each value as that year's worth (the details
+are under :meth:`~lair.inventories.Inventory.convert_units`):
 
 .. code-block:: ipython
 
    In [9]: kg = total.sel(time=["2020-01-01", "2022-01-01"])
       ...: gg = slv.convert_units("Gg/km**2/yr").integrate().sel(time=["2020-01-01", "2022-01-01"]).compute()
       ...:
-      ...: (100 * (gg / (kg / 1e6) - 1)).to_series().round(3)  # percent
+      ...: (100 * (gg / (kg / 1e6) - 1)).to_series().round(6)  # percent
    Out[9]:
    time
-   2020-01-01   -0.205
-   2022-01-01    0.068
+   2020-01-01    0.0
+   2022-01-01    0.0
    Name: emissions, dtype: float64
 
-2020 is a leap year: converting first loses 0.2% of it, and adds 0.07% to 2022.
+The plain-array :func:`~lair.inventories.convert_units` has no years to go by,
+so it uses pint's year of 365.25 days.
 
 Regrid, and check the total
 ---------------------------
@@ -264,8 +266,8 @@ Now compare the 2022 total before and after:
        ...: print(f"before: {before / 1e6:.3f} kt")
        ...: print(f"after:  {after / 1e6:.3f} kt")
        ...: print(f"change: {100 * (after - before) / before:+.4f} %")
-   before: 22.588 kt
-   after:  22.588 kt
+   before: 22.629 kt
+   after:  22.629 kt
    change: -0.0005 %
 
 The total changed by 0.0005% (5 parts per million): the mass is kept.

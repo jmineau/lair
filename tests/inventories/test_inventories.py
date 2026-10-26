@@ -380,6 +380,99 @@ class TestBaseInventory:
             inventories.Inventory(ds, pollutant="CH4")
 
 
+def _flux_of_one(time_step, freq, src_units, start="2019-01-01", periods=2):
+    """An inventory of 2 by 2 cells with a flux of 1 in ``src_units`` everywhere."""
+    import pandas as pd
+
+    time = pd.date_range(start, periods=periods, freq=freq)
+    ds = xr.Dataset(
+        {"energy": (("time", "lat", "lon"), np.ones((periods, 2, 2)))},
+        coords={"time": time, "lat": [40.05, 40.15], "lon": [-111.95, -111.85]},
+    )
+    return inventories.Inventory(
+        ds, pollutant="CH4", src_units=src_units, time_step=time_step
+    )
+
+
+def _values(inv):
+    """The flux of the first cell in each time step."""
+    return inv.data["energy"].values[:, 0, 0]
+
+
+class TestConvertUnitsCalendar:
+    """
+    An inventory's convert_units gives a per-step unit the length of each step.
+
+    A flux per year on annual data is per that year (365 or 366 days), a flux per
+    month on monthly data per that month, not pint's year of 365.25 days and its
+    twelfth. 2019 is not a leap year and 2020 is.
+    """
+
+    def test_per_second_to_per_year(self):
+        inv = _flux_of_one("annual", "YS", "kg/m**2/s").convert_units("kg/m**2/yr")
+        np.testing.assert_allclose(_values(inv), [365 * 86400, 366 * 86400])
+        assert inv.data["energy"].attrs["units"] == "kg/m**2/yr"
+
+    def test_per_year_to_per_second(self):
+        inv = _flux_of_one("annual", "YS", "Mg km-2 a-1").convert_units("Mg km-2 s-1")
+        np.testing.assert_allclose(
+            _values(inv), [1 / (365 * 86400), 1 / (366 * 86400)], rtol=1e-12
+        )
+
+    def test_per_year_round_trip(self):
+        inv = _flux_of_one("annual", "YS", "Mg km-2 a-1")
+        back = inv.convert_units("kg m-2 s-1").convert_units("Mg km-2 a-1")
+        np.testing.assert_allclose(_values(back), [1.0, 1.0], rtol=1e-12)
+
+    def test_per_year_to_per_year(self):
+        inv = _flux_of_one("annual", "YS", "Mg km-2 a-1").convert_units("Gg km-2 yr-1")
+        np.testing.assert_allclose(_values(inv), [1e-3, 1e-3], rtol=1e-12)
+
+    def test_per_second_to_per_month(self):
+        inv = _flux_of_one("monthly", "MS", "kg/m**2/s", start="2020-01-01")
+        inv = inv.convert_units("kg/m**2/month")
+        np.testing.assert_allclose(_values(inv), [31 * 86400, 29 * 86400])
+
+    def test_unit_of_another_length_uses_pint(self):
+        # Per day on annual data is not per step: pint's day, as before
+        inv = _flux_of_one("annual", "YS", "kg/m**2/s").convert_units("kg/m**2/d")
+        np.testing.assert_allclose(_values(inv), [86400, 86400])
+
+    def test_mass_to_amount_per_step(self):
+        # The mass_flux context still applies: 1 kg of CH4 is 1000 / 16.04 mol
+        inv = _flux_of_one("annual", "YS", "kg/m**2/s").convert_units("mol/m**2/yr")
+        mw = float(inventories.molecular_weight("CH4").magnitude)
+        np.testing.assert_allclose(
+            _values(inv), np.array([365, 366]) * 86400 * 1000 / mw, rtol=1e-12
+        )
+
+    def test_total_does_not_depend_on_the_unit(self):
+        inv = _flux_of_one("annual", "YS", "kg/m**2/s")
+        kg = inv.absolute_emissions["energy"].values
+        gg = inv.convert_units("Gg/km**2/yr").absolute_emissions["energy"].values
+        np.testing.assert_allclose(gg * 1e6, kg, rtol=1e-12)
+
+    def test_standardize_units_uses_the_calendar(self):
+        import pandas as pd
+
+        time = pd.date_range("2019-01-01", periods=2, freq="YS")
+        ds = xr.Dataset(
+            {"energy": (("time", "lat", "lon"), np.ones((2, 2, 2)))},
+            coords={"time": time, "lat": [40.05, 40.15], "lon": [-111.95, -111.85]},
+        )
+        inv = inventories.Inventory(
+            ds, pollutant="CH4", src_units="Mg km-2 a-1", standardize_units=True
+        )
+        # 1 Mg km-2 in the year, per day of that year, in kg km-2 d-1
+        np.testing.assert_allclose(_values(inv), [1e3 / 365, 1e3 / 366], rtol=1e-12)
+
+    def test_plain_array_keeps_pints_year(self):
+        # convert_units of a plain array has no time steps
+        flux = xr.DataArray([1.0], dims="x", attrs={"units": "kg/m**2/s"})
+        out = inventories.convert_units(flux, "CH4", "kg/m**2/yr")
+        np.testing.assert_allclose(out.values, [365.25 * 86400])
+
+
 # --- Attributes ----------------------------------------------------------------
 # lair.inventories must not change xarray's global options (GitHub issue #38):
 # the operations that need attributes kept set keep_attrs themselves.
