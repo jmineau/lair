@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
+    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.Inventory.convert_units" href="lair.inventories.Inventory.convert_units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
+  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -824,12 +825,21 @@
 <dd><p>Get the inventory files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>None | list[Path]</em> – The inventory files.</p>
+<dd class="field-odd"><p><em>None | list[Path]</em> – The inventory files: the file <code class="docutils literal notranslate"><span class="pre">data</span></code> named, or the <code class="docutils literal notranslate"><span class="pre">.nc</span></code> files
+in its folder. None for an inventory made from a Dataset. The
+subclasses choose their own files (see each one’s Notes).</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>Path</em></a>]</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.inventories.EDGAR.get_files.html#lair.inventories.EDGAR.get_files" title="lair.inventories.EDGAR.get_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EDGAR.get_files</span></code></a></dt><dd><p>EDGAR’s files, chosen by year.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 </section>

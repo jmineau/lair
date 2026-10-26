@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
+    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.GFEIv1" href="lair.inventories.GFEIv1.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
+  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -827,12 +828,20 @@
 <dd class="field-odd"><p><strong>kind</strong> (<em>Literal</em><em>[</em><em>'relative'</em><em>, </em><em>'geometric'</em><em>]</em>) – The kind of standard deviation to get (‘relative’, ‘geometric’).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>xr.Dataset</em> – The standard deviations.</p>
+<dd class="field-even"><p><em>xr.Dataset</em> – The standard deviations, one variable per sector, from the sector’s
+<code class="docutils literal notranslate"><span class="pre">_rsd</span></code> or <code class="docutils literal notranslate"><span class="pre">_gsd</span></code> file. They are not pint-quantified.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.9.0)"><em>Dataset</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.inventories.GFEIv1.html#lair.inventories.GFEIv1" title="lair.inventories.GFEIv1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GFEIv1</span></code></a></dt><dd><p>The emissions they belong to.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 </section>

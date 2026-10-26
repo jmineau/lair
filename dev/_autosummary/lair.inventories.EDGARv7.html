@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
+    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.EDGAR.get_sector_name" href="lair.inventories.EDGAR.get_sector_name.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
+  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -853,6 +854,22 @@ read the <code class="docutils literal notranslate"><span class="pre">TOTALS</sp
   <span class="n">AGS</span><span class="o">/</span><span class="n">v7</span><span class="mf">.0</span><span class="n">_FT2021_CH4_2021_AGS</span><span class="mf">.0.1</span><span class="n">x0</span><span class="mf">.1</span><span class="o">.</span><span class="n">nc</span>
   <span class="n">AWB</span><span class="o">/</span><span class="n">v7</span><span class="mf">.0</span><span class="n">_FT2021_CH4_2021_AWB</span><span class="mf">.0.1</span><span class="n">x0</span><span class="mf">.1</span><span class="o">.</span><span class="n">nc</span>
   <span class="o">...</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.inventories.EDGARv8.html#lair.inventories.EDGARv8" title="lair.inventories.EDGARv8"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EDGARv8</span></code></a></dt><dd><p>The next version, with monthly files too.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>It reads <code class="docutils literal notranslate"><span class="pre">$LAIR_INVENTORY_DIR</span></code>, so these lines are not run when the docs
+build:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">EDGARv7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv7</span><span class="p">(</span><span class="s2">&quot;CH4&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">2021</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;Enteric_fermentation&quot;</span> <span class="ow">in</span> <span class="n">inv</span><span class="o">.</span><span class="n">data</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>

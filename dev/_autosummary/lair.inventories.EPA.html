@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
+    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.EDGARv8" href="lair.inventories.EDGARv8.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
+  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -827,19 +828,36 @@ includes time series of annual methane emission maps with 0.1° x 0.1°
 United State (CONUS). This gridded methane inventory is designed to be
 consistent with methane emissions from the U.S. EPA Inventory of U.S.
 Greenhouse Gas Emissions and Sinks (U.S. GHGI).</p>
+<p>lair’s totals differ a little from EPA’s own. EPA’s files give each cell’s
+area on a sphere of 6371 km (their <code class="docutils literal notranslate"><span class="pre">grid_cell_area</span></code>, which lair drops);
+lair uses the area on the WGS84 ellipsoid, as for every inventory
+(<a class="reference internal" href="lair.geo.gridcell_area.html#lair.geo.gridcell_area" title="lair.geo.gridcell_area"><code class="xref py py-func docutils literal notranslate"><span class="pre">lair.geo.gridcell_area()</span></code></a>). A 0.1 degree cell in the Salt Lake Valley
+(40.75 N) is 93.783 km2 on the ellipsoid and 93.668 km2 on the sphere, so
+lair’s totals there are about 0.12% above EPA’s. The difference changes
+with latitude: about 0.2% below at 25 N and 0.3% above at 49 N.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>Path</em><em> | </em><em>Dataset</em>)</p></li>
-<li><p><strong>pollutant</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>src_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>crs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>standardize_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>)</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>Path</em>) – The file or folder, which <a class="reference internal" href="lair.inventories.EPAv1.html#lair.inventories.EPAv1" title="lair.inventories.EPAv1"><code class="xref py py-class docutils literal notranslate"><span class="pre">EPAv1</span></code></a> and <a class="reference internal" href="lair.inventories.EPAv2.html#lair.inventories.EPAv2" title="lair.inventories.EPAv2"><code class="xref py py-class docutils literal notranslate"><span class="pre">EPAv2</span></code></a> build from
+their own arguments.</p></li>
+<li><p><strong>pollutant</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <code class="docutils literal notranslate"><span class="pre">'CH4'</span></code>.</p></li>
+<li><p><strong>src_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <code class="docutils literal notranslate"><span class="pre">'molec</span> <span class="pre">cm-2</span> <span class="pre">s-1'</span></code>, EPA’s units.</p></li>
+<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – As <a class="reference internal" href="lair.inventories.EPAv1.html#lair.inventories.EPAv1" title="lair.inventories.EPAv1"><code class="xref py py-class docutils literal notranslate"><span class="pre">EPAv1</span></code></a> and <a class="reference internal" href="lair.inventories.EPAv2.html#lair.inventories.EPAv2" title="lair.inventories.EPAv2"><code class="xref py py-class docutils literal notranslate"><span class="pre">EPAv2</span></code></a> read it.</p></li>
+<li><p><strong>crs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <code class="docutils literal notranslate"><span class="pre">'EPSG:4326'</span></code>.</p></li>
+<li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <code class="docutils literal notranslate"><span class="pre">'v1'</span></code> or <code class="docutils literal notranslate"><span class="pre">'v2'</span></code>.</p></li>
+<li><p><strong>standardize_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – False.</p></li>
 </ul>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.inventories.EPAv2.html#lair.inventories.EPAv2" title="lair.inventories.EPAv2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EPAv2</span></code></a></dt><dd><p>The gridded GHGI, 2012 to 2020.</p>
+</dd>
+<dt><a class="reference internal" href="lair.inventories.EPAv1.html#lair.inventories.EPAv1" title="lair.inventories.EPAv1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EPAv1</span></code></a></dt><dd><p>The 2012 inventory.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <p class="rubric">Inherited</p>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
+    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,10 +56,10 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="lair.inventories.molecular_weight" href="lair.inventories.molecular_weight.html" />
-    <link rel="prev" title="lair.inventories.DST_UNITS" href="lair.inventories.DST_UNITS.html" />
+    <link rel="prev" title="lair.inventories.DEFAULT_PINT_FMT" href="lair.inventories.DEFAULT_PINT_FMT.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
+  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -826,6 +827,11 @@ the <code class="docutils literal notranslate"><span class="pre">units</span></c
 coordinates and their attributes, other attributes) as it was. A conversion
 between an amount (mol) and a mass (kg) uses the molecular weight of
 <code class="docutils literal notranslate"><span class="pre">pollutant</span></code>, through the <code class="docutils literal notranslate"><span class="pre">mass_flux</span></code> pint context.</p>
+<p>The data has no time steps here, so a flux per year is per pint’s year of
+365.25 days, and a flux per month per a twelfth of it.
+<a class="reference internal" href="lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Inventory.convert_units()</span></code></a> gives a flux per year on annual data the
+length of each year instead (366 days in a leap year), and a flux per month
+on monthly data the length of each month.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -851,7 +857,7 @@ units.</p></li>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><a class="reference internal" href="lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Inventory.convert_units</span></code></a></dt><dd><p>The same for an inventory’s data.</p>
+<dt><a class="reference internal" href="lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Inventory.convert_units</span></code></a></dt><dd><p>The same for an inventory’s data, with the calendar length of each time step.</p>
 </dd>
 <dt><a class="reference internal" href="lair.inventories.molecular_weight.html#lair.inventories.molecular_weight" title="lair.inventories.molecular_weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">molecular_weight</span></code></a></dt><dd><p>The molecular weight the conversion uses.</p>
 </dd>
@@ -873,6 +879,13 @@ units.</p></li>
 <span class="go">13.86</span>
 </pre></div>
 </div>
+<p>A flux per year is per pint’s year of 365.25 days:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">per_second</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">([</span><span class="mf">1.0</span><span class="p">],</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;kg m-2 s-1&quot;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">per_year</span> <span class="o">=</span> <span class="n">convert_units</span><span class="p">(</span><span class="n">per_second</span><span class="p">,</span> <span class="s2">&quot;CH4&quot;</span><span class="p">,</span> <span class="s2">&quot;kg m-2 yr-1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="n">per_year</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">86400</span>  <span class="c1"># days</span>
+<span class="go">365.25</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
@@ -888,12 +901,12 @@ units.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="lair.inventories.DST_UNITS.html"
+       href="lair.inventories.DEFAULT_PINT_FMT.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">lair.inventories.DST_UNITS</p>
+        <p class="prev-next-title">lair.inventories.DEFAULT_PINT_FMT</p>
       </div>
     </a>
     <a class="right-next"

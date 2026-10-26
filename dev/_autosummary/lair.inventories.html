@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
+    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.hrrr.ZarrId.format_chunk_id" href="lair.hrrr.ZarrId.format_chunk_id.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
+  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a aria-current="page" class="current reference internal" href="#">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -812,12 +813,17 @@
                   
   <section id="module-lair.inventories">
 <span id="lair-inventories"></span><h1>lair.inventories<a class="headerlink" href="#module-lair.inventories" title="Link to this heading">#</a></h1>
-<p>Emissions Inventories</p>
-<p>An emission(s) inventory is an accounting of the amount of pollutants
-discharged into the atmosphere. An emission inventory usually contains
-the total emissions for one or more specific greenhouse gases or air
-pollutants, originating from all source categories in a certain
-geographical area and within a specified time span, usually a specific year.</p>
+<p>Gridded emission inventories.</p>
+<p>An emission inventory is an accounting of the amount of a pollutant released
+into the atmosphere, by source sector, over an area and a period, usually a
+year. <a class="reference internal" href="lair.inventories.Inventory.html#lair.inventories.Inventory" title="lair.inventories.Inventory"><code class="xref py py-class docutils literal notranslate"><span class="pre">Inventory</span></code></a> holds one on a grid, one variable per sector, as a
+flux with pint units, and gives its totals (<a class="reference internal" href="lair.inventories.Inventory.total_emissions.html#lair.inventories.Inventory.total_emissions" title="lair.inventories.Inventory.total_emissions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">total_emissions</span></code></a>,
+<a class="reference internal" href="lair.inventories.Inventory.absolute_emissions.html#lair.inventories.Inventory.absolute_emissions" title="lair.inventories.Inventory.absolute_emissions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">absolute_emissions</span></code></a>, <a class="reference internal" href="lair.inventories.Inventory.integrate.html#lair.inventories.Inventory.integrate" title="lair.inventories.Inventory.integrate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">integrate()</span></code></a>), units
+(<a class="reference internal" href="lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_units()</span></code></a>) and grid (<code class="docutils literal notranslate"><span class="pre">clip</span></code>, <code class="docutils literal notranslate"><span class="pre">regrid</span></code>,
+<code class="docutils literal notranslate"><span class="pre">resample</span></code>). Its subclasses read the archives of EDGAR, the EPA, GFEI, Vulcan
+and WetCHARTs from <code class="docutils literal notranslate"><span class="pre">$LAIR_INVENTORY_DIR</span></code>. <a class="reference internal" href="../examples/inventory.html"><span class="doc">Total an inventory over a region</span></a> totals
+EDGAR over a region. The module needs the <code class="docutils literal notranslate"><span class="pre">geo</span></code> and <code class="docutils literal notranslate"><span class="pre">science</span></code> extras, and
+regridding needs ESMF as well (see <a class="reference internal" href="../index.html#optional-dependencies"><span class="std std-ref">Optional dependencies</span></a>).</p>
 <p class="rubric">Attributes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
@@ -825,7 +831,10 @@ geographical area and within a specified time span, usually a specific year.</p>
 <td><p>Environment variable holding the inventory archive root (with EDGAR/, EPA/, GFEI/, vulcan/ and WetCHARTs/ subdirectories)</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="lair.inventories.DST_UNITS.html#lair.inventories.DST_UNITS" title="lair.inventories.DST_UNITS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DST_UNITS</span></code></a></p></td>
-<td><p>Default destination units</p></td>
+<td><p>The units <code class="docutils literal notranslate"><span class="pre">standardize_units=True</span></code> converts an <a class="reference internal" href="lair.inventories.Inventory.html#lair.inventories.Inventory" title="lair.inventories.Inventory"><code class="xref py py-class docutils literal notranslate"><span class="pre">Inventory</span></code></a> to.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html#lair.inventories.DEFAULT_PINT_FMT" title="lair.inventories.DEFAULT_PINT_FMT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_PINT_FMT</span></code></a></p></td>
+<td><p>The pint format of the <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute an <a class="reference internal" href="lair.inventories.Inventory.html#lair.inventories.Inventory" title="lair.inventories.Inventory"><code class="xref py py-class docutils literal notranslate"><span class="pre">Inventory</span></code></a> writes: abbreviated and compact, as in <code class="docutils literal notranslate"><span class="pre">kg/km**2/d</span></code>.</p></td>
 </tr>
 </tbody>
 </table>

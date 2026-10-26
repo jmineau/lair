@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
+    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.soundings.merge" href="lair.soundings.merge.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
+  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,6 +476,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -819,9 +820,16 @@
 <dt class="sig sig-object py" id="lair.soundings.Sounding">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lair.soundings.</span></span><span class="sig-name descname"><span class="pre">Sounding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/soundings.html#Sounding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.soundings.Sounding" title="Link to this definition">#</a></dt>
 <dd><p>Upper air sounding data.</p>
+<p>One sounding file, as <a class="reference internal" href="lair.soundings.download_sounding.html#lair.soundings.download_sounding" title="lair.soundings.download_sounding"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_sounding()</span></code></a> saves it: a CSV named
+<code class="docutils literal notranslate"><span class="pre">&lt;station&gt;_&lt;YYYYmmddHH&gt;.csv</span></code> for the UTC hour of the sounding, one row per
+level, with the station’s attributes repeated in columns of their own.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Variables<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The path to the sounding file. The station and time are read from its
+name.</p>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The path to the sounding data.</p></li>
 <li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The filename of the sounding data.</p></li>
 <li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The station identifier.</p></li>
@@ -835,10 +843,44 @@ meters; <code class="docutils literal notranslate"><span class="pre">temperature
 <a class="reference internal" href="lair.soundings.download_sounding.html#lair.soundings.download_sounding" title="lair.soundings.download_sounding"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_sounding()</span></code></a> saves every file in these units.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.soundings.get_soundings.html#lair.soundings.get_soundings" title="lair.soundings.get_soundings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_soundings</span></code></a></dt><dd><p>A station’s soundings for a period, on the same heights.</p>
 </dd>
 </dl>
+</div>
+<p class="rubric">Examples</p>
+<p>A made-up sounding with two levels, saved as Wyoming’s are:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.soundings</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sounding</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">folder</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">levels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span>
+<span class="gp">... </span>        <span class="s2">&quot;pressure&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">870.0</span><span class="p">,</span> <span class="mf">700.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1289.0</span><span class="p">,</span> <span class="mf">3000.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">12.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;dewpoint&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">8.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">20.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">180.0</span><span class="p">,</span> <span class="mf">270.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;u_wind&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;v_wind&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;station&quot;</span><span class="p">:</span> <span class="s2">&quot;SLC&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15 12:00&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;elevation&quot;</span><span class="p">:</span> <span class="mf">1289.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">levels</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">folder</span> <span class="o">/</span> <span class="s2">&quot;SLC_2024011512.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sounding</span> <span class="o">=</span> <span class="n">Sounding</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">folder</span> <span class="o">/</span> <span class="s2">&quot;SLC_2024011512.csv&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sounding</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">sounding</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">sounding</span><span class="o">.</span><span class="n">elevation</span><span class="p">)</span>
+<span class="go">(&#39;SLC&#39;, datetime.datetime(2024, 1, 15, 12, 0), 1289.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">sounding</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="go">[&#39;pressure&#39;, &#39;height&#39;, &#39;temperature&#39;, &#39;dewpoint&#39;, &#39;direction&#39;, &#39;speed&#39;, &#39;u_wind&#39;, &#39;v_wind&#39;]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <p class="rubric">Methods</p>

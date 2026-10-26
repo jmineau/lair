@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
+    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="lair.inventories.convert_units" href="lair.inventories.convert_units.html" />
+    <link rel="next" title="lair.inventories.DEFAULT_PINT_FMT" href="lair.inventories.DEFAULT_PINT_FMT.html" />
     <link rel="prev" title="lair.inventories.INVENTORY_DIR_ENV" href="lair.inventories.INVENTORY_DIR_ENV.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
+  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -818,7 +819,11 @@
 <dl class="py data">
 <dt class="sig sig-object py" id="lair.inventories.DST_UNITS">
 <span class="sig-prename descclassname"><span class="pre">lair.inventories.</span></span><span class="sig-name descname"><span class="pre">DST_UNITS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'kg</span> <span class="pre">km-2</span> <span class="pre">d-1'</span></span><a class="headerlink" href="#lair.inventories.DST_UNITS" title="Link to this definition">#</a></dt>
-<dd><p>Default destination units</p>
+<dd><p>The units <code class="docutils literal notranslate"><span class="pre">standardize_units=True</span></code> converts an <a class="reference internal" href="lair.inventories.Inventory.html#lair.inventories.Inventory" title="lair.inventories.Inventory"><code class="xref py py-class docutils literal notranslate"><span class="pre">Inventory</span></code></a> to.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Inventory.convert_units()</span></code></a>, which converts to any units.</p>
+</div>
 </dd></dl>
 
 </section>
@@ -843,11 +848,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="lair.inventories.convert_units.html"
+       href="lair.inventories.DEFAULT_PINT_FMT.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">lair.inventories.convert_units</p>
+        <p class="prev-next-title">lair.inventories.DEFAULT_PINT_FMT</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
