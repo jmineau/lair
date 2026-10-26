@@ -28,12 +28,16 @@ import pandas as pd
 #:
 #: Put the data in local time first, then ``index.hour.isin(AFTERNOON)`` selects
 #: them (the :doc:`clock example </examples/clock>` shows it).
+#:
+#: .. seealso:: :func:`convert_timezones`, which puts the data in local time.
 AFTERNOON = [12, 13, 14, 15, 16]
 
 #: The meteorological season of each month (1 to 12), as ``'DJF'``, ``'MAM'``,
 #: ``'JJA'`` or ``'SON'``.
 #:
 #: :func:`seasonal` labels its groups with these.
+#:
+#: .. seealso:: :func:`seasonal`, which groups data by these seasons.
 SEASONS = {
     1: "DJF",
     2: "DJF",
@@ -54,6 +58,33 @@ class TimeRange:
     """
     TimeRange class to represent a time range with start and stop times.
 
+    The range includes its start and not its stop, so ``TimeRange("2024")``
+    covers 2024 and stops at 2025-01-01 00:00.
+
+    Parameters
+    ----------
+    time_range : TimeRange | str | list | tuple | slice | None, optional
+        The whole range in one argument: another ``TimeRange``; an ISO 8601
+        string, which covers the period it names (``"2024"`` is all of
+        2024, ``"2024-07-04"`` that day); a ``(start, stop)`` pair; or a
+        slice. With no ``start`` or ``stop`` either, the default (None) is a
+        range open at both ends.
+    start : str | dt.datetime | numpy.datetime64 | None, optional
+        The start, when ``time_range`` is not given. A string stands for
+        the start of the period it names. None leaves the range open at the
+        start.
+    stop : str | dt.datetime | numpy.datetime64 | None, optional
+        The stop, when ``time_range`` is not given. It is not part of the
+        range. A string stands for the end of the period it names:
+        ``"2024"`` stops at 2025-01-01 00:00. None leaves the range open at
+        the end.
+
+    Raises
+    ------
+    ValueError
+        If ``time_range`` is given together with ``start`` or ``stop``, or
+        if any of them has an unrecognized format.
+
     Attributes
     ----------
     start : dt.datetime | None
@@ -67,6 +98,24 @@ class TimeRange:
     -------
     parse_iso(string: str, inclusive: bool = False) -> dt.datetime
         Parse the ISO8601 formatted time string and return a datetime object.
+
+    See Also
+    --------
+    TimeRange.parse_iso : How a string becomes a start or a stop.
+
+    Examples
+    --------
+    >>> import datetime as dt
+    >>> from lair.clock import TimeRange
+    >>> july = TimeRange("2024-07")
+    >>> july.start, july.stop
+    (datetime.datetime(2024, 7, 1, 0, 0), datetime.datetime(2024, 8, 1, 0, 0))
+    >>> dt.datetime(2024, 7, 31, 23) in july
+    True
+    >>> TimeRange(start="2024-07-04")
+    TimeRange(start=2024-07-04 00:00:00, stop=None)
+    >>> str(TimeRange())
+    'Entire Observation Period'
     """
 
     # typing.Union, not X | Y: the annotation below adds the "TimeRange" forward
@@ -85,33 +134,7 @@ class TimeRange:
         start: _input_types | dt.datetime = None,
         stop: _input_types | dt.datetime = None,
     ):
-        """
-        Initialize a TimeRange object with the specified time range.
-
-        Parameters
-        ----------
-        time_range : TimeRange | str | list | tuple | slice | None, optional
-            The whole range in one argument: another ``TimeRange``; an ISO 8601
-            string, which covers the period it names (``"2024"`` is all of
-            2024, ``"2024-07-04"`` that day); a ``(start, stop)`` pair; or a
-            slice. With no ``start`` or ``stop`` either, the default (None) is a
-            range open at both ends.
-        start : str | dt.datetime | numpy.datetime64 | None, optional
-            The start, when ``time_range`` is not given. A string stands for
-            the start of the period it names. None leaves the range open at the
-            start.
-        stop : str | dt.datetime | numpy.datetime64 | None, optional
-            The stop, when ``time_range`` is not given. It is not part of the
-            range. A string stands for the end of the period it names:
-            ``"2024"`` stops at 2025-01-01 00:00. None leaves the range open at
-            the end.
-
-        Raises
-        ------
-        ValueError
-            If ``time_range`` is given together with ``start`` or ``stop``, or
-            if any of them has an unrecognized format.
-        """
+        """Initialize a TimeRange; the class docstring describes the parameters."""
         if time_range and (start or stop):
             raise ValueError("Cannot specify both time_range and start/stop")
 
@@ -173,7 +196,22 @@ class TimeRange:
 
     @property
     def start(self) -> dt.datetime | None:
-        """The start of the range, or None if it is open at the start."""
+        """
+        The start of the range, or None if it is open at the start.
+
+        Setting it takes a datetime, a ``numpy.datetime64``, None, or an ISO
+        8601 string, which stands for the start of the period it names.
+
+        See Also
+        --------
+        TimeRange.stop : The end of the range.
+
+        Examples
+        --------
+        >>> from lair.clock import TimeRange
+        >>> TimeRange("2024-07").start
+        datetime.datetime(2024, 7, 1, 0, 0)
+        """
         return self._start
 
     @start.setter
@@ -189,7 +227,23 @@ class TimeRange:
 
     @property
     def stop(self) -> dt.datetime | None:
-        """The end of the range, or None if it is open at the end."""
+        """
+        The end of the range, or None if it is open at the end.
+
+        The stop itself is not in the range. Setting it takes a datetime, a
+        ``numpy.datetime64``, None, or an ISO 8601 string, which stands for the
+        end of the period it names.
+
+        See Also
+        --------
+        TimeRange.start : The start of the range.
+
+        Examples
+        --------
+        >>> from lair.clock import TimeRange
+        >>> TimeRange("2024-07").stop
+        datetime.datetime(2024, 8, 1, 0, 0)
+        """
         return self._stop
 
     @stop.setter
@@ -205,7 +259,24 @@ class TimeRange:
 
     @property
     def total_seconds(self) -> float:
-        """The length of the range in seconds; both ends must be set."""
+        """
+        The length of the range in seconds; both ends must be set.
+
+        Raises
+        ------
+        ValueError
+            If the range is open at either end.
+
+        See Also
+        --------
+        dt2decimalDate : Uses the length of a year from it.
+
+        Examples
+        --------
+        >>> from lair.clock import TimeRange
+        >>> TimeRange("2024-07").total_seconds / 86400  # days in July
+        31.0
+        """
         if self.start is None or self.stop is None:
             raise ValueError("Both start and stop times must be specified")
         return (self.stop - self.start).total_seconds()
@@ -234,6 +305,20 @@ class TimeRange:
         ------
         ValueError
             If the time_str format is invalid.
+
+        See Also
+        --------
+        TimeRange : A range made from such strings.
+
+        Examples
+        --------
+        >>> from lair.clock import TimeRange
+        >>> TimeRange.parse_iso("2024-07")
+        datetime.datetime(2024, 7, 1, 0, 0)
+        >>> TimeRange.parse_iso("2024-07", inclusive=True)
+        datetime.datetime(2024, 8, 1, 0, 0)
+        >>> TimeRange.parse_iso("2024-07-04T12Z")
+        datetime.datetime(2024, 7, 4, 12, 0)
         """
         # Parse time_range string using regex assuming ISO8601 format.
         # Each component is only allowed after the one before it, and the
@@ -300,6 +385,40 @@ class Timer(ContextDecorator):
     Time your code using a class, context manager, or decorator
 
     https://realpython.com/python-timer
+
+    Parameters
+    ----------
+    name : str, optional
+        A name to add the elapsed times up under, in the class's ``timers``
+        dict (shared by every Timer). By default None: not recorded.
+    text : str, optional
+        The message reported when the timer stops, formatted with the elapsed
+        seconds. By default ``"Elapsed time: {:0.4f} seconds"``.
+    logger : Callable[[str], None] | None, optional
+        The function that reports the message, by default ``print``. None
+        reports nothing.
+
+    See Also
+    --------
+    Timer.start : Start it by hand.
+    Timer.stop : Stop it by hand.
+
+    Examples
+    --------
+    As a context manager:
+
+    >>> from lair.clock import Timer
+    >>> with Timer(text="took {:.0f} s"):
+    ...     total = sum(range(1000))
+    took 0 s
+
+    By hand, without a report:
+
+    >>> timer = Timer(logger=None)
+    >>> timer.start()
+    >>> elapsed = timer.stop()
+    >>> elapsed >= 0
+    True
     """
 
     timers: ClassVar[dict[str, float]] = {}
@@ -319,14 +438,42 @@ class Timer(ContextDecorator):
             self.timers.setdefault(self.name, 0)
 
     def start(self) -> None:
-        """Start a new timer"""
+        """
+        Start a new timer
+
+        Raises
+        ------
+        Timer.TimerError
+            If the timer is already running.
+
+        See Also
+        --------
+        Timer.stop : Stop it and report the time.
+        """
         if self._start_time is not None:
             raise Timer.TimerError("Timer is running. Use .stop() to stop it")
 
         self._start_time = time.perf_counter()
 
     def stop(self) -> float:
-        """Stop the timer, and report the elapsed time"""
+        """
+        Stop the timer, and report the elapsed time
+
+        Returns
+        -------
+        float
+            The elapsed time, in seconds. It is also added to ``timers`` under
+            the timer's ``name``, if it has one.
+
+        Raises
+        ------
+        Timer.TimerError
+            If the timer is not running.
+
+        See Also
+        --------
+        Timer.start : Start it.
+        """
         if self._start_time is None:
             raise Timer.TimerError("Timer is not running. Use .start() to start it")
 
@@ -343,7 +490,15 @@ class Timer(ContextDecorator):
         return elapsed_time
 
     def reset_timers(self):
-        """Reset class timers"""
+        """
+        Reset class timers
+
+        Empties ``timers``, the elapsed times of every named Timer.
+
+        See Also
+        --------
+        Timer.stop : Adds to them.
+        """
         # Clear in place: existing Timer instances share this dict
         Timer.timers.clear()
 
@@ -360,6 +515,36 @@ class Timer(ContextDecorator):
 def datetime_accessor(obj, accessor="dt"):
     """
     Return the datetime accessor of the object.
+
+    A Series of times has its datetime methods under ``.dt``; a DatetimeIndex
+    has them itself. This returns whichever ``obj`` has, so code can call
+    ``tz_localize`` and the rest on either.
+
+    Parameters
+    ----------
+    obj : pd.Series | pd.DatetimeIndex | Any
+        The times.
+    accessor : str, optional
+        The name of the accessor, by default ``'dt'``.
+
+    Returns
+    -------
+    Any
+        ``obj.dt`` if ``obj`` has it, else ``obj``.
+
+    See Also
+    --------
+    convert_timezones : Uses it for a Series or an index.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from lair.clock import datetime_accessor
+    >>> times = pd.Series(pd.date_range("2024-01-01", periods=2, freq="h"))
+    >>> type(datetime_accessor(times)).__name__
+    'DatetimeProperties'
+    >>> type(datetime_accessor(pd.DatetimeIndex(times))).__name__
+    'DatetimeIndex'
     """
     if hasattr(obj, accessor):
         return getattr(obj, accessor)
@@ -393,6 +578,19 @@ def regular_times_to_intervals(
     ------
     ValueError
         If `time_step` is not one of 'hourly', 'daily', 'monthly', or 'annual'.
+
+    See Also
+    --------
+    TimeRange : One interval, from ISO strings.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from lair.clock import regular_times_to_intervals
+    >>> months = pd.date_range("2024-01-01", periods=2, freq="MS")
+    >>> intervals = regular_times_to_intervals(months)
+    >>> [str(interval) for interval in intervals]
+    ['[2024-01-01 00:00:00, 2024-02-01 00:00:00)', '[2024-02-01 00:00:00, 2024-03-01 00:00:00)']
     """
     # Convert the numpy array to pandas DatetimeIndex
     start_times = pd.to_datetime(times)
@@ -432,7 +630,24 @@ def time_difference_matrix(times, absolute: bool = True) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        The matrix of time differences.
+        The matrix of time differences, as ``timedelta64``: row i, column j is
+        time i minus time j (its absolute value by default).
+
+    See Also
+    --------
+    time_decay_matrix : An exponential decay of these differences.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from lair.clock import time_difference_matrix
+    >>> times = pd.to_datetime(
+    ...     ["2024-01-01 00:00", "2024-01-01 06:00", "2024-01-02 00:00"]
+    ... )
+    >>> time_difference_matrix(times) / pd.Timedelta("1h")
+    array([[ 0.,  6., 24.],
+           [ 6.,  0., 18.],
+           [24., 18.,  0.]])
     """
     times = pd.DatetimeIndex(
         times
@@ -452,12 +667,30 @@ def time_decay_matrix(times, decay: str | pd.Timedelta) -> np.ndarray:
     times : list[dt.datetime]
         The list of times to calculate the decay matrix for.
     decay : str | pd.Timedelta
-        The decay to use for the exponential decay.
+        The decay to use for the exponential decay: the time over which a
+        value falls to 1/e.
 
     Returns
     -------
     np.ndarray
-        The matrix of time decay values.
+        The matrix of time decay values: ``exp(-|t_i - t_j| / decay)``, 1 on
+        the diagonal.
+
+    See Also
+    --------
+    time_difference_matrix : The differences it decays.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from lair.clock import time_decay_matrix
+    >>> times = pd.to_datetime(
+    ...     ["2024-01-01 00:00", "2024-01-01 06:00", "2024-01-02 00:00"]
+    ... )
+    >>> time_decay_matrix(times, "1D").round(3)
+    array([[1.   , 0.779, 0.368],
+           [0.779, 1.   , 0.472],
+           [0.368, 0.472, 1.   ]])
     """
     # Time differences (timedelta64) over the decay time scale -> exponential decay
     diffs = time_difference_matrix(times, absolute=True)
@@ -490,7 +723,25 @@ def diurnal(
     Returns
     -------
     pd.DataFrame
-        The aggregated data.
+        The aggregated data, indexed by the time of day.
+
+    See Also
+    --------
+    seasonal : Aggregates by season and year.
+
+    Examples
+    --------
+    The mean of two days of hourly data at each hour of the day:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from lair.clock import diurnal
+    >>> times = pd.date_range("2024-01-01", periods=48, freq="h")
+    >>> data = pd.DataFrame({"ch4": np.arange(48.0)}, index=times)
+    >>> diurnal(data).head(2)
+               ch4
+    00:00:00  12.0
+    01:00:00  13.0
     """
     resolution = getattr(data.index, method)(freq).time
     agg = data.groupby(resolution).agg(statistic)
@@ -522,6 +773,25 @@ def seasonal(data: pd.DataFrame, statistic: str | list[str] = "mean") -> pd.Data
     -------
     pd.DataFrame
         The aggregated data, indexed by (``season``, ``year``).
+
+    See Also
+    --------
+    SEASONS : The season of each month.
+    diurnal : Aggregates by the time of day.
+
+    Examples
+    --------
+    Monthly data for 2024, where each month's value is its number minus one:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from lair.clock import seasonal
+    >>> months = pd.date_range("2024-01-01", periods=12, freq="MS")
+    >>> seasons = seasonal(pd.DataFrame({"value": np.arange(12.0)}, index=months))
+    >>> [f"{season} {year}" for season, year in seasons.index]
+    ['DJF 2024', 'MAM 2024', 'JJA 2024', 'SON 2024', 'DJF 2025']
+    >>> seasons["value"].tolist()
+    [0.5, 3.0, 6.0, 9.0, 11.0]
     """
     # Quarters starting in Dec/Mar/Jun/Sep line up with DJF/MAM/JJA/SON
     df = data.resample("QS-DEC").agg(statistic)  # pyrefly: ignore[no-matching-overload]
@@ -557,6 +827,17 @@ def dt2decimalDate(datetime: dt.datetime) -> float:
     -------
     float
         The decimal date.
+
+    See Also
+    --------
+    decimalDate2dt : The other way.
+
+    Examples
+    --------
+    >>> import datetime as dt
+    >>> from lair.clock import dt2decimalDate
+    >>> round(dt2decimalDate(dt.datetime(2024, 7, 1)), 4)  # 182 of 366 days
+    2024.4973
     """
     if datetime.utcoffset() is not None:
         datetime = datetime.astimezone(dt.UTC).replace(tzinfo=None)
@@ -581,6 +862,16 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
     dt.datetime
         The naive datetime object. For a decimal date made from a tz-aware
         datetime by :func:`dt2decimalDate`, this is the UTC time.
+
+    See Also
+    --------
+    dt2decimalDate : The other way.
+
+    Examples
+    --------
+    >>> from lair.clock import decimalDate2dt
+    >>> decimalDate2dt(2024.5)  # half of 366 days
+    datetime.datetime(2024, 7, 2, 0, 0)
     """
     year = int(decimalDate)
     rem = decimalDate - year
@@ -647,6 +938,34 @@ def convert_timezones(
         If there are naive times and no ``fromtz``, or a naive time is ambiguous
         or nonexistent in ``fromtz`` and ``ambiguous``/``nonexistent`` is 'raise',
         or ``driver='pandas'`` and ``x`` is not a DataFrame or Series.
+
+    See Also
+    --------
+    UTC2MTN : From UTC to Mountain time, the common case.
+    AFTERNOON : The hours to select once the data is in local time.
+
+    Examples
+    --------
+    18:00 UTC in January is 11:00 in Salt Lake City:
+
+    >>> import datetime as dt
+    >>> from lair.clock import convert_timezones
+    >>> convert_timezones(
+    ...     [dt.datetime(2024, 1, 15, 18)], "America/Denver", fromtz="UTC"
+    ... )
+    [datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))]
+
+    The index of a DataFrame, kept naive in local time with ``localize=True``:
+
+    >>> import pandas as pd
+    >>> data = pd.DataFrame(
+    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 18:00"])
+    ... )
+    >>> convert_timezones(
+    ...     data, "America/Denver", fromtz="UTC", localize=True, driver="pandas"
+    ... )
+                            ch4
+    2024-07-15 12:00:00  2000.0
     """
     if driver is None:
         times = list(x)

@@ -24,6 +24,9 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 - The API reference has a page for the package itself, with `lair.units`, the
   `mass_flux` context and `setup_ccg_filter`, and pages for `clock`'s
   `AFTERNOON`, `SEASONS` and time-zone shortcuts (`UTC2MTN` and the others).
+- The API pages of `clock` and `geo` describe every parameter of `TimeRange`,
+  `Timer`, `CRS` and `BaseGrid`, and each page has See Also links and, on most,
+  a runnable example. `geo.PC` has a page.
 - Each module's page opens with what the module holds and which example shows it.
 - Every parameter of `transects`' functions, `meteorology.ideal_gas_law`,
   `meteorology.hypsometric`, `synoptic.hourly_mean`, `plotter.NCL_cmap`,
