@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
+    <script src="../_static/documentation_options.js?v=ebadb10f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTracker.units" href="lair.noaa.CarbonTracker.units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
+  <meta name="docsearch:version" content="2026.12.10.dev23+g235588cb3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -830,14 +830,33 @@ are returned per group; otherwise a single-row summary. Output is ppm
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>points</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>DataFrame</em></a>)</p></li>
-<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>points</strong> (<em>pd.DataFrame</em>) – The points, as <a class="reference internal" href="lair.noaa.CarbonTracker.sample.html#lair.noaa.CarbonTracker.sample" title="lair.noaa.CarbonTracker.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a> takes them.</p></li>
+<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – A column of <code class="docutils literal notranslate"><span class="pre">points</span></code> to group by, such as <code class="docutils literal notranslate"><span class="pre">'receptor'</span></code>. By
+default None: one row for all the points.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>DataFrame</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>pd.DataFrame</em> – <code class="docutils literal notranslate"><span class="pre">background_ppm</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma_ppm</span></code> (the standard deviation over the
+points) and <code class="docutils literal notranslate"><span class="pre">n_endpoints</span></code> (the points that had a value), one row
+per group.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>DataFrame</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.noaa.CarbonTracker.sample.html#lair.noaa.CarbonTracker.sample" title="lair.noaa.CarbonTracker.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CarbonTracker.sample</span></code></a></dt><dd><p>The value at each point.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>With the points of <a class="reference internal" href="lair.noaa.CarbonTracker.sample.html#lair.noaa.CarbonTracker.sample" title="lair.noaa.CarbonTracker.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a>, as <a class="reference internal" href="../examples/carbontracker.html#carbontracker-background"><span class="std std-ref">the CarbonTracker example</span></a> shows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ct</span><span class="o">.</span><span class="n">background</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>  <span class="c1"># one row</span>
+<span class="n">ct</span><span class="o">.</span><span class="n">background</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">&quot;receptor&quot;</span><span class="p">)</span>  <span class="c1"># one row per receptor</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

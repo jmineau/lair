@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
+    <script src="../_static/documentation_options.js?v=ebadb10f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTrackerCO2.molefractions_dir" href="lair.noaa.CarbonTrackerCO2.molefractions_dir.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
+  <meta name="docsearch:version" content="2026.12.10.dev23+g235588cb3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -820,35 +820,34 @@
 <dt class="sig sig-object py" id="lair.noaa.GMLData">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lair.noaa.</span></span><span class="sig-name descname"><span class="pre">GMLData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">specie</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'surface'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'flask'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lab_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ccgg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'event'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pandas'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gml_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/noaa.html#GMLData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.noaa.GMLData" title="Link to this definition">#</a></dt>
 <dd><p>NOAA GML Data</p>
+<p>One file of NOAA GML’s measurements of one gas at one site: every sample
+(<code class="docutils literal notranslate"><span class="pre">frequency='event'</span></code>) or monthly means (<code class="docutils literal notranslate"><span class="pre">'month'</span></code>).</p>
+<p>Each parameter is also an attribute of the same name.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>specie</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The greenhouse gas specie.</p></li>
-<li><p><strong>site</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The site where the flask samples were collected.</p></li>
+<li><p><strong>specie</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The greenhouse gas specie, in lower case as in NOAA’s file names
+(<code class="docutils literal notranslate"><span class="pre">'ch4'</span></code>).</p></li>
+<li><p><strong>site</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The site where the flask samples were collected, its code in lower
+case (<code class="docutils literal notranslate"><span class="pre">'uta'</span></code>).</p></li>
 <li><p><strong>platform</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The platform where the flask samples were collected, by default ‘surface’.</p></li>
+<li><p><strong>sample_type</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The sample type, by default ‘flask’. Use ‘pfp’ for Portable Flask
+Package data.</p></li>
 <li><p><strong>lab_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The lab ID, by default 1.</p></li>
 <li><p><strong>measurement_group</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The measurement group, by default ‘ccgg’.</p></li>
 <li><p><strong>frequency</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The frequency of the measurements, by default ‘event’.</p></li>
-<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use to read the data, by default ‘pandas’.</p></li>
+<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The driver to use to read the data, by default ‘pandas’: a DataFrame
+from the <code class="docutils literal notranslate"><span class="pre">.txt</span></code> file, or <code class="docutils literal notranslate"><span class="pre">'xarray'</span></code>: a Dataset from the <code class="docutils literal notranslate"><span class="pre">.nc</span></code> file.</p></li>
 <li><p><strong>gml_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The NOAA GML data root, by default <code class="docutils literal notranslate"><span class="pre">$LAIR_GML_DIR</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
 <li><p><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The directory for the data.</p></li>
 <li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The filename for the data.</p></li>
 <li><p><strong>filepath</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The filepath for the data.</p></li>
 <li><p><strong>file_template</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The template for the filename.</p></li>
 <li><p><strong>driver_ext</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – The driver extensions.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>specie</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>site</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>platform</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><em>Literal</em></a><em>[</em><em>'surface'</em><em>, </em><em>'shipboard'</em><em>]</em>)</p></li>
-<li><p><strong>sample_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><em>Literal</em></a><em>[</em><em>'flask'</em><em>, </em><em>'pfp'</em><em>]</em>)</p></li>
-<li><p><strong>lab_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>)</p></li>
-<li><p><strong>measurement_group</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><em>Literal</em></a><em>[</em><em>'ccgg'</em><em>, </em><em>'sil'</em><em>]</em>)</p></li>
-<li><p><strong>frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><em>Literal</em></a><em>[</em><em>'event'</em><em>, </em><em>'month'</em><em>]</em>)</p></li>
-<li><p><strong>driver</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><em>Literal</em></a><em>[</em><em>'pandas'</em><em>, </em><em>'xarray'</em><em>]</em>)</p></li>
-<li><p><strong>gml_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>Path</em></a><em> | </em><em>None</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -870,6 +869,24 @@ names in the file name, so spell them as NOAA does, in lower case
 and <code class="docutils literal notranslate"><span class="pre">.txt</span></code> for <code class="docutils literal notranslate"><span class="pre">driver='pandas'</span></code> or <code class="docutils literal notranslate"><span class="pre">.nc</span></code> for <code class="docutils literal notranslate"><span class="pre">driver='xarray'</span></code>.
 <code class="docutils literal notranslate"><span class="pre">download()</span></code> copies the file of that name from NOAA GML’s FTP server
 (<code class="docutils literal notranslate"><span class="pre">/data/trace_gases/{specie}/{sample_type}/{platform}/{ext}/</span></code>).</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.noaa.GMLData.apply_qaqc.html#lair.noaa.GMLData.apply_qaqc" title="lair.noaa.GMLData.apply_qaqc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GMLData.apply_qaqc</span></code></a></dt><dd><p>Keeps the samples with good flags.</p>
+</dd>
+<dt><a class="reference internal" href="lair.noaa.CarbonTracker.html#lair.noaa.CarbonTracker" title="lair.noaa.CarbonTracker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CarbonTracker</span></code></a></dt><dd><p>NOAA’s model, for a background.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>Making one reads nothing; it names the file:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.noaa</span><span class="w"> </span><span class="kn">import</span> <span class="n">GMLData</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">uta</span> <span class="o">=</span> <span class="n">GMLData</span><span class="p">(</span><span class="s2">&quot;ch4&quot;</span><span class="p">,</span> <span class="s2">&quot;uta&quot;</span><span class="p">,</span> <span class="n">gml_dir</span><span class="o">=</span><span class="s2">&quot;gml&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">uta</span><span class="o">.</span><span class="n">filepath</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
+<span class="go">&#39;gml/ch4/flask/ch4_uta_surface-flask_1_ccgg_event.txt&#39;</span>
+</pre></div>
+</div>
+<p>Then <code class="docutils literal notranslate"><span class="pre">uta.download()</span></code> fetches it and <code class="docutils literal notranslate"><span class="pre">uta.data</span></code> reads it.</p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>

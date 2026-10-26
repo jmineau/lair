@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
+    <script src="../_static/documentation_options.js?v=ebadb10f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTracker.from_version" href="lair.noaa.CarbonTracker.from_version.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
+  <meta name="docsearch:version" content="2026.12.10.dev23+g235588cb3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -828,12 +828,28 @@
 <dd class="field-odd"><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The version of CarbonTracker data.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>Literal[‘ch4’, ‘co2’]</em> – The specie.</p>
+<dd class="field-even"><p><em>Literal[‘ch4’, ‘co2’]</em> – The specie: <code class="docutils literal notranslate"><span class="pre">'ch4'</span></code> if the version’s name has “ch4” in it (in any
+case), else <code class="docutils literal notranslate"><span class="pre">'co2'</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><em>Literal</em></a>[‘ch4’, ‘co2’]</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.noaa.CarbonTracker.from_version.html#lair.noaa.CarbonTracker.from_version" title="lair.noaa.CarbonTracker.from_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CarbonTracker.from_version</span></code></a></dt><dd><p>Makes the class of that gas.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.noaa</span><span class="w"> </span><span class="kn">import</span> <span class="n">CarbonTracker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CarbonTracker</span><span class="o">.</span><span class="n">get_specie_from_version</span><span class="p">(</span><span class="s2">&quot;CT-CH4-2025&quot;</span><span class="p">)</span>
+<span class="go">&#39;ch4&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CarbonTracker</span><span class="o">.</span><span class="n">get_specie_from_version</span><span class="p">(</span><span class="s2">&quot;CT2019B&quot;</span><span class="p">)</span>
+<span class="go">&#39;co2&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
+    <script src="../_static/documentation_options.js?v=ebadb10f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTrackerCH4.molefractions" href="lair.noaa.CarbonTrackerCH4.molefractions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
+  <meta name="docsearch:version" content="2026.12.10.dev23+g235588cb3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -828,12 +828,37 @@
 <dd class="field-odd"><p><strong>molefractions</strong> (<em>xr.Dataset</em>) – The molefractions Dataset.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>xr.Dataset</em> – The molefractions Dataset with the pressure calculated.</p>
+<dd class="field-even"><p><em>xr.Dataset</em> – The molefractions Dataset with the pressure calculated: a variable
+<code class="docutils literal notranslate"><span class="pre">P</span></code>, in hPa, from the hybrid coefficients <code class="docutils literal notranslate"><span class="pre">at</span></code> and <code class="docutils literal notranslate"><span class="pre">bt</span></code> and the
+surface pressure (<code class="docutils literal notranslate"><span class="pre">at</span> <span class="pre">+</span> <span class="pre">bt</span> <span class="pre">*</span> <span class="pre">surf_pressure</span></code>). The Dataset passed is
+changed too.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.9.0)"><em>Dataset</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.noaa.CarbonTrackerCH4.molefractions.html#lair.noaa.CarbonTrackerCH4.molefractions" title="lair.noaa.CarbonTrackerCH4.molefractions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CarbonTrackerCH4.molefractions</span></code></a></dt><dd><p>The Dataset it takes.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>Two levels over one cell, with a surface pressure of 850 hPa:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.noaa</span><span class="w"> </span><span class="kn">import</span> <span class="n">CarbonTrackerCH4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span>
+<span class="gp">... </span>        <span class="s2">&quot;at&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;boundary&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">5000.0</span><span class="p">]),</span>
+<span class="gp">... </span>        <span class="s2">&quot;bt&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;boundary&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]),</span>
+<span class="gp">... </span>        <span class="s2">&quot;surf_pressure&quot;</span><span class="p">:</span> <span class="mf">85000.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CarbonTrackerCH4</span><span class="o">.</span><span class="n">calc_molefractions_pressure</span><span class="p">(</span><span class="n">mf</span><span class="p">)[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="go">array([850., 475.])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

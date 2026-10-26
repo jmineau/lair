@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
+    <script src="../_static/documentation_options.js?v=ebadb10f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.WetCHARTs" href="lair.inventories.WetCHARTs.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
+  <meta name="docsearch:version" content="2026.12.10.dev23+g235588cb3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -813,7 +813,15 @@
                   
   <section id="module-lair.noaa">
 <span id="lair-noaa"></span><h1>lair.noaa<a class="headerlink" href="#module-lair.noaa" title="Link to this heading">#</a></h1>
-<p>NOAA greenhouse gas data.</p>
+<p>NOAA greenhouse gas data: CarbonTracker and NOAA GML’s measurement records.</p>
+<p><a class="reference internal" href="lair.noaa.CarbonTrackerCH4.html#lair.noaa.CarbonTrackerCH4" title="lair.noaa.CarbonTrackerCH4"><code class="xref py py-class docutils literal notranslate"><span class="pre">CarbonTrackerCH4</span></code></a> and <a class="reference internal" href="lair.noaa.CarbonTrackerCO2.html#lair.noaa.CarbonTrackerCO2" title="lair.noaa.CarbonTrackerCO2"><code class="xref py py-class docutils literal notranslate"><span class="pre">CarbonTrackerCO2</span></code></a> download and read the
+mole fractions of NOAA’s CarbonTracker model, and sample them at points, such as
+the ends of STILT trajectories, for a background
+(<a class="reference internal" href="lair.noaa.CarbonTracker.background.html#lair.noaa.CarbonTracker.background" title="lair.noaa.CarbonTracker.background"><code class="xref py py-meth docutils literal notranslate"><span class="pre">background()</span></code></a>). <a class="reference internal" href="lair.noaa.GMLData.html#lair.noaa.GMLData" title="lair.noaa.GMLData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GMLData</span></code></a> downloads and reads NOAA
+GML’s records of one gas at one site, event by event or as monthly means. The
+data roots are <code class="docutils literal notranslate"><span class="pre">$LAIR_CARBONTRACKER_DIR</span></code> and <code class="docutils literal notranslate"><span class="pre">$LAIR_GML_DIR</span></code> (see
+<a class="reference internal" href="../data.html#data-locations"><span class="std std-ref">Data locations</span></a>), and the cache is in <code class="docutils literal notranslate"><span class="pre">$LAIR_CACHE_DIR</span></code>.
+<a class="reference internal" href="../examples/carbontracker.html"><span class="doc">Sample CarbonTracker at points</span></a> samples CarbonTracker at four points.</p>
 <p class="rubric">Attributes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>

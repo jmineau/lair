@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
+    <script src="../_static/documentation_options.js?v=ebadb10f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.GMLData.data" href="lair.noaa.GMLData.data.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
+  <meta name="docsearch:version" content="2026.12.10.dev23+g235588cb3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -836,6 +836,27 @@ By default None.</p></li>
 <dd class="field-even"><p><em>pd.DataFrame | xr.Dataset</em> – The filtered data.</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.noaa.GMLData.data.html#lair.noaa.GMLData.data" title="lair.noaa.GMLData.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GMLData.data</span></code></a></dt><dd><p>The data to filter.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>NOAA marks a good sample <code class="docutils literal notranslate"><span class="pre">...</span></code>; a sample with a flag is kept only
+when that flag is allowed:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.noaa</span><span class="w"> </span><span class="kn">import</span> <span class="n">GMLData</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">samples</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1900.0</span><span class="p">,</span> <span class="mf">2400.0</span><span class="p">],</span> <span class="s2">&quot;qcflag&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="s2">&quot;..P&quot;</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">GMLData</span><span class="o">.</span><span class="n">apply_qaqc</span><span class="p">(</span><span class="n">samples</span><span class="p">)[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="go">[1900.0]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">GMLData</span><span class="o">.</span><span class="n">apply_qaqc</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="s2">&quot;..P&quot;</span><span class="p">)[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="go">[1900.0, 2400.0]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

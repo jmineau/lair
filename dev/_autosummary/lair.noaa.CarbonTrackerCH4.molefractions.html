@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2c6c02db"></script>
+    <script src="../_static/documentation_options.js?v=ebadb10f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTrackerCH4" href="lair.noaa.CarbonTrackerCH4.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev22+g431dfb2d5" />
+  <meta name="docsearch:version" content="2026.12.10.dev23+g235588cb3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -831,6 +831,19 @@
     and nothing is cached.</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.noaa.CarbonTracker.sample.html#lair.noaa.CarbonTracker.sample" title="lair.noaa.CarbonTracker.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CarbonTracker.sample</span></code></a></dt><dd><p>Reads only the days of the points.</p>
+</dd>
+<dt><a class="reference internal" href="lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure.html#lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure" title="lair.noaa.CarbonTrackerCH4.calc_molefractions_pressure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CarbonTrackerCH4.calc_molefractions_pressure</span></code></a></dt><dd><p>Adds the pressure of each level.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>Each time step is labeled by the center of its 3-hour period (01:30,
+04:30, … UTC). It opens every file of the version; with
+<code class="docutils literal notranslate"><span class="pre">cache=True</span></code> a later read loads the cache instead.</p>
 </dd></dl>
 
 </section>
