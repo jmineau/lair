@@ -32,6 +32,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `meteorology.hypsometric`, `synoptic.hourly_mean`, `plotter.NCL_cmap`,
   `Pollutant`, `Cacher`, `ZarrId` and `Winds` is described on its page; See Also
   links and runnable examples join `meteorology`, `air` and `transects`.
+- The API pages of `inventories` describe every parameter of the inventory
+  classes, and each page has See Also links and an example: runnable for
+  `Inventory`, `molecular_weight` and `sum_sectors`, and for the readers of
+  `$LAIR_INVENTORY_DIR`, shown without running. The `EPA` page says why lair's
+  EPA totals differ a little from EPA's own: lair uses each cell's area on the
+  WGS84 ellipsoid, EPA's files a sphere (in the Salt Lake Valley lair's totals
+  are about 0.12% higher).
 - `EDGARv7` and `EDGARv8` take `start` and `end`, the first and last year to
   read (both included; the names `get_soundings` uses for a time range; #158). lair
   chooses the files of those years by the year in their names and opens only

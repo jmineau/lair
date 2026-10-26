@@ -1,11 +1,16 @@
 """
-Emissions Inventories
+Gridded emission inventories.
 
-An emission(s) inventory is an accounting of the amount of pollutants
-discharged into the atmosphere. An emission inventory usually contains
-the total emissions for one or more specific greenhouse gases or air
-pollutants, originating from all source categories in a certain
-geographical area and within a specified time span, usually a specific year.
+An emission inventory is an accounting of the amount of a pollutant released
+into the atmosphere, by source sector, over an area and a period, usually a
+year. :class:`Inventory` holds one on a grid, one variable per sector, as a
+flux with pint units, and gives its totals (:attr:`~Inventory.total_emissions`,
+:attr:`~Inventory.absolute_emissions`, :meth:`~Inventory.integrate`), units
+(:meth:`~Inventory.convert_units`) and grid (``clip``, ``regrid``,
+``resample``). Its subclasses read the archives of EDGAR, the EPA, GFEI, Vulcan
+and WetCHARTs from ``$LAIR_INVENTORY_DIR``. :doc:`/examples/inventory` totals
+EDGAR over a region. The module needs the ``geo`` and ``science`` extras, and
+regridding needs ESMF as well (see :ref:`optional-dependencies`).
 """
 
 from __future__ import (
@@ -45,11 +50,20 @@ logger = logging.getLogger(__name__)
 
 #: Environment variable holding the inventory archive root
 #: (with EDGAR/, EPA/, GFEI/, vulcan/ and WetCHARTs/ subdirectories)
+#:
+#: .. seealso:: :ref:`data-locations`, which lists every variable; each
+#:    inventory's Notes show its folder.
 INVENTORY_DIR_ENV = "LAIR_INVENTORY_DIR"
 
-#: Default destination units
+#: The units ``standardize_units=True`` converts an :class:`Inventory` to.
+#:
+#: .. seealso:: :meth:`Inventory.convert_units`, which converts to any units.
 DST_UNITS: str = "kg km-2 d-1"
 
+#: The pint format of the ``units`` attribute an :class:`Inventory` writes:
+#: abbreviated and compact, as in ``kg/km**2/d``.
+#:
+#: .. seealso:: :attr:`Inventory.data`, whose variables carry it.
 DEFAULT_PINT_FMT = "~C"
 
 Regrid_Methods = Literal["conservative", "conservative_normed"]
@@ -106,6 +120,19 @@ def molecular_weight(pollutant: str) -> pint.Quantity:
     -------
     pint.Quantity
         The molecular weight.
+
+    See Also
+    --------
+    convert_units : Converts between an amount (mol) and a mass with it.
+
+    Examples
+    --------
+    >>> from lair.inventories import molecular_weight
+    >>> mw = molecular_weight("CH4")
+    >>> f"{mw:.3f~P}"
+    '16.043 g/mol'
+    >>> f"{molecular_weight('NOx'):.3f~P}"  # as NO2
+    '46.006 g/mol'
     """
     formula = _MASS_BASIS.get(pollutant.upper(), pollutant)
     return Formula(formula).mass * units("g/mol")
@@ -325,6 +352,29 @@ def sum_sectors(data: Dataset, exclude: list[str] | None = None) -> DataArray:
         If ``exclude`` names a sector that is not in ``data``, or if the sectors
         that are summed are in different units (the numbers cannot be added as
         they are; convert them to one unit first).
+
+    See Also
+    --------
+    Inventory.total_emissions : This sum of an inventory's data.
+    Inventory.integrate : The total over a region, as a mass.
+
+    Examples
+    --------
+    A sector with no emission in a cell (NaN) adds nothing there:
+
+    >>> import xarray as xr
+    >>> from lair.inventories import sum_sectors
+    >>> units = {"units": "kg m-2 s-1"}
+    >>> data = xr.Dataset(
+    ...     {
+    ...         "energy": ("x", [1.0, float("nan")], units),
+    ...         "waste": ("x", [2.0, 3.0], units),
+    ...     }
+    ... )
+    >>> sum_sectors(data).values
+    array([3., 3.])
+    >>> sum_sectors(data, exclude=["energy"]).values
+    array([2., 3.])
     """
     if exclude:
         unknown = sorted(set(exclude) - set(data.data_vars))
@@ -454,10 +504,83 @@ class Inventory(BaseGrid):
     """
     Base class for inventories.
 
+    An inventory holds a flux on a grid, one variable per sector, with pint
+    units. The subclasses (:class:`EDGARv8` and the others) read a product's
+    files; this class also takes a dataset of your own.
+
     Time labels mark the **start** of each time step, whatever the provider
     uses: Jan 1 for annual data, the 1st of the month for monthly, 00:00 for
     daily and the top of the hour for hourly. So ``sel(time="2020-01-01")``
     selects January 2020 in every monthly inventory.
+
+    Each parameter but ``data`` and ``standardize_units`` is also an attribute
+    of the same name.
+
+    Parameters
+    ----------
+    data : str | Path | xr.Dataset
+        The inventory data. If a string or Path, the path to the data. If an xr.Dataset, the data itself.
+        Data should have dimensions of time, lat, lon and each variable should be a different emissions sector.
+        If the source data is not in the correct format, the `_process` method should be overridden.
+    pollutant : str
+        The pollutant, as a chemical formula (``'CH4'``). An all-lowercase name
+        is upper-cased (``'ch4'``); a mixed-case one is kept (``'NOx'``).
+    src_units : str, optional
+        The source units of the data, by default None. If given, every variable
+        is taken to be in these units. If None, each variable's own ``units``
+        attribute is used (and every variable must have one). Variables in
+        different units are kept as they are, but the totals
+        (:attr:`total_emissions`, :meth:`integrate`) raise a ``ValueError``
+        until they are converted to one unit: ``standardize_units=True``, or
+        :meth:`convert_units`.
+    time_step : str, optional
+        The time step of the data, by default 'annual': ``'annual'``,
+        ``'monthly'``, ``'quarterly'``, ``'biweekly'``, ``'daily'`` or
+        ``'hourly'``. :attr:`absolute_emissions` multiplies by its length.
+    crs : str, optional
+        The CRS of the data, by default 'EPSG:4326'.
+    version : str, optional
+        The version of the inventory, by default None.
+    standardize_units : bool, optional
+        Whether to standardize the units of all variables to the same units, by default False.
+        If True, all variables are assumed to be emissions and are converted to
+        :data:`DST_UNITS` (``kg km-2 d-1``) as :meth:`convert_units` converts them.
+        If False, the units of each variable are retained as-is.
+
+    Raises
+    ------
+    FileNotFoundError
+        If ``data`` is a path with no files.
+    ValueError
+        If ``data`` is neither a path nor a Dataset, or a variable has no units.
+
+    See Also
+    --------
+    EDGARv8 : An inventory read from EDGAR's files.
+    sum_sectors : The sum of the sectors.
+
+    Examples
+    --------
+    An inventory of your own: one sector, a flux of 1e-9 kg m-2 s-1 on four
+    cells of 0.1 degree, in 2019 and 2020:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import xarray as xr
+    >>> from lair.inventories import Inventory
+    >>> ds = xr.Dataset(
+    ...     {"energy": (("time", "lat", "lon"), np.full((2, 2, 2), 1e-9))},
+    ...     coords={
+    ...         "time": pd.date_range("2019-01-01", periods=2, freq="YS"),
+    ...         "lat": [40.05, 40.15],
+    ...         "lon": [-111.95, -111.85],
+    ...     },
+    ... )
+    >>> inv = Inventory(ds, pollutant="CH4", src_units="kg m-2 s-1")
+    >>> inv.get_units()
+    ('kg', 'm**2', 's')
+    >>> (inv.integrate() / 1e3).values.round()  # tonnes; 2020 has a day more
+    array([11943., 11976.])
     """
 
     def __init__(
@@ -470,36 +593,7 @@ class Inventory(BaseGrid):
         version: str | None = None,
         standardize_units: bool = False,
     ) -> None:
-        """
-        Initialize the inventory.
-
-        Parameters
-        ----------
-        data : str | Path | xr.Dataset
-            The inventory data. If a string or Path, the path to the data. If an xr.Dataset, the data itself.
-            Data should have dimensions of time, lat, lon and each variable should be a different emissions sector.
-            If the source data is not in the correct format, the `_process` method should be overridden.
-        pollutant : str
-            The pollutant.
-        src_units : str, optional
-            The source units of the data, by default None. If given, every variable
-            is taken to be in these units. If None, each variable's own ``units``
-            attribute is used (and every variable must have one). Variables in
-            different units are kept as they are, but the totals
-            (:attr:`total_emissions`, :meth:`integrate`) raise a ``ValueError``
-            until they are converted to one unit: ``standardize_units=True``, or
-            :meth:`convert_units`.
-        time_step : str, optional
-            The time step of the data, by default 'annual'.
-        crs : str, optional
-            The CRS of the data, by default 'EPSG:4326'.
-        version : str, optional
-            The version of the inventory, by default None.
-        standardize_units : bool, optional
-            Whether to standardize the units of all variables to the same units, by default False.
-            If True, all variables are assumed to be emissions and in the same units.
-            If False, the units of each variable are retained as-is.
-        """
+        """Initialize the inventory; the class docstring describes the parameters."""
         # Upper-case all-lowercase names ('ch4' -> 'CH4') but keep mixed-case
         # formulas as given: 'NOx'.upper() would no longer be a formula
         self.pollutant: str = (
@@ -569,7 +663,13 @@ class Inventory(BaseGrid):
         Returns
         -------
         str
-            The standard name.
+            The standard name: ``<time_step>_<pollutant>_emissions``, such as
+            ``annual_CH4_emissions``. The loaders give it to each variable as
+            its ``standard_name`` attribute.
+
+        See Also
+        --------
+        Inventory.data : The variables that carry it.
         """
         return f"{self.time_step.lower()}_{self.pollutant}_emissions"
 
@@ -580,7 +680,13 @@ class Inventory(BaseGrid):
         Returns
         -------
         None | list[Path]
-            The inventory files.
+            The inventory files: the file ``data`` named, or the ``.nc`` files
+            in its folder. None for an inventory made from a Dataset. The
+            subclasses choose their own files (see each one's Notes).
+
+        See Also
+        --------
+        EDGAR.get_files : EDGAR's files, chosen by year.
         """
         if self.path is None:
             return None
@@ -617,6 +723,17 @@ class Inventory(BaseGrid):
         ValueError
             If the sectors are in different units, which have no single quantity,
             area and time unit.
+
+        See Also
+        --------
+        Inventory.convert_units : Converts the data to other units.
+
+        Examples
+        --------
+        For EDGAR (``kg m-2 s-1``)::
+
+            inv.get_units()  # ('kg', 'm**2', 's')
+            inv.get_units(pint=True)  # quantities of 1 kg, 1 m**2 and 1 s
         """
         # The area and time units of the first variable are used for all of them
         _require_same_units(
@@ -736,7 +853,12 @@ class Inventory(BaseGrid):
         Returns
         -------
         xr.DataArray
-            The collapsed data.
+            The collapsed data: the sectors stacked along a new ``sector``
+            dimension, named ``emissions``, in the data's units (not summed).
+
+        See Also
+        --------
+        Inventory.total_emissions : The sectors summed.
         """
         return self._data.to_dataarray(dim="sector", name="emissions").pint.dequantify(
             DEFAULT_PINT_FMT
@@ -751,10 +873,19 @@ class Inventory(BaseGrid):
         .. note::
             `pint` units have been dequantified and stored in variable attributes.
 
+        Setting it takes a dataset whose variables have a ``units`` attribute
+        and quantifies them again.
+
         Returns
         -------
-        xr.DataArray | xr.Dataset
-            The inventory data.
+        xr.Dataset
+            The inventory data, one variable per sector, each with its units in
+            its ``units`` attribute (``kg/m**2/s``).
+
+        See Also
+        --------
+        Inventory.quantify : The same data with pint units.
+        Inventory.total_emissions : The sectors summed.
         """
         return self._data.pint.dequantify(DEFAULT_PINT_FMT)
 
@@ -770,7 +901,12 @@ class Inventory(BaseGrid):
         Returns
         -------
         xr.Dataset
-            The quantified data.
+            The quantified data: the inventory's own dataset, not a copy, with
+            pint units on the variables and plain coordinates.
+
+        See Also
+        --------
+        Inventory.data : The same data, with the units in attributes.
         """
         return self._data
 
@@ -911,6 +1047,16 @@ class Inventory(BaseGrid):
         Inventory
             The regridded inventory. If `inplace=True` returns `self`,
             otherwise returns a new Inventory copy.
+
+        See Also
+        --------
+        Inventory.resample : To a new resolution over the same area.
+        lair.geo.regrid : The same for any field, bilinear by default.
+
+        Notes
+        -----
+        :doc:`The inventory example </examples/inventory>` checks that a
+        conservative regrid keeps the total.
         """
         return super().regrid(out_grid, method=method, inplace=inplace)
 
@@ -937,11 +1083,26 @@ class Inventory(BaseGrid):
             is assumed to be the same in both dimensions.
         regrid_method : str, optional
             The regridding method, by default 'conservative'.
+        inplace : bool, optional
+            Whether to modify the data in place, by default False.
 
         Returns
         -------
-        BaseGrid
-            The resampled grid
+        Inventory
+            The resampled inventory. If `inplace=True` returns `self`,
+            otherwise returns a new Inventory copy.
+
+        See Also
+        --------
+        Inventory.regrid : To a grid you give.
+        lair.geo.resample : The same for any field, bilinear by default.
+
+        Examples
+        --------
+        From EDGAR's 0.1 degree to 0.01 degree, as :doc:`the inventory example
+        </examples/inventory>` does, keeping the total::
+
+            fine = inv.resample(0.01)
         """
         return super().resample(resolution, regrid_method, inplace=inplace)
 
@@ -963,11 +1124,19 @@ class Inventory(BaseGrid):
             is assumed to be the same in both dimensions.
         regrid_method : str, optional
             The regridding method, by default 'conservative'.
+        inplace : bool, optional
+            Whether to modify the data in place, by default False.
 
         Returns
         -------
-        BaseGrid
-            The reprojected grid
+        Inventory
+            The reprojected inventory, on EPSG:4326 lat/lon. If `inplace=True`
+            returns `self`, otherwise returns a new Inventory copy.
+
+        See Also
+        --------
+        Vulcan.reproject : The one inventory not on lat/lon (it is on a Lambert
+            conformal grid).
         """
         return super().reproject(resolution, regrid_method, inplace=inplace)
 
@@ -1008,6 +1177,16 @@ class Inventory(BaseGrid):
         the field is drawn, with no state lines, coastlines or tick labels.
         :ref:`The maps example <maps-plot>` times the default time step and adds
         them.
+
+        See Also
+        --------
+        lair.geo.plot_grid : Draws a grid's cell edges on a map.
+
+        Examples
+        --------
+        The last year, one sector::
+
+            ax = inv.plot(time=-1, sector="Solid_waste_landfills")
         """
         if ax is None:
             fig, ax = plt.subplots(subplot_kw={"projection": PC})
@@ -1047,6 +1226,34 @@ class Inventory(BaseGrid):
 class MultiModelInventory(Inventory):
     """
     Base class for inventories that are multi-model.
+
+    The files hold an ensemble along a ``model`` dimension. The inventory keeps
+    one member, or the mean or median of them, and the whole ensemble in
+    ``multimodel_data``.
+
+    Parameters
+    ----------
+    data : str | Path | xr.Dataset
+        As for :class:`Inventory`, with a ``model`` dimension.
+    pollutant : str
+        As for :class:`Inventory`.
+    src_units : str, optional
+        As for :class:`Inventory`.
+    time_step : str, optional
+        As for :class:`Inventory`.
+    crs : str, optional
+        As for :class:`Inventory`.
+    version : str, optional
+        As for :class:`Inventory`.
+    model : int | str, optional
+        The model to select from the multimodel data, by default None.
+        Either a value of the ``model`` coordinate (a numeric string is cast
+        to match an integer coordinate), ``'mean'`` or ``'median'`` for the
+        ensemble mean or median. If None, the mean of all models is used.
+
+    See Also
+    --------
+    WetCHARTs : The multi-model inventory lair reads.
     """
 
     multimodel_data: Dataset
@@ -1061,31 +1268,7 @@ class MultiModelInventory(Inventory):
         version: str | None = None,
         model: int | str | None = None,
     ) -> None:
-        """
-        Initialize the multi-model inventory.
-
-        Parameters
-        ----------
-        data : str | Path | xr.Dataset
-            The inventory data. If a string or Path, the path to the data. If an xr.Dataset, the data itself.
-            Data should have dimensions of time, lat, lon and each variable should be a different emissions sector.
-            If the source data is not in the correct format, the `_process` method should be overridden.
-        pollutant : str
-            The pollutant.
-        src_units : str, optional
-            The source units of the data, by default None. If None, the units are extracted from the data attributes.
-        time_step : str, optional
-            The time step of the data, by default 'annual'.
-        crs : str, optional
-            The CRS of the data, by default 'EPSG:4326'.
-        version : str, optional
-            The version of the inventory, by default None.
-        model : int | str, optional
-            The model to select from the multimodel data, by default None.
-            Either a value of the ``model`` coordinate (a numeric string is cast
-            to match an integer coordinate), ``'mean'`` or ``'median'`` for the
-            ensemble mean or median. If None, the mean of all models is used.
-        """
+        """Initialize the inventory; the class docstring describes the parameters."""
         self.model = model or "mean"
         super().__init__(
             data,
@@ -1161,6 +1344,29 @@ class EDGAR(Inventory, metaclass=ABCMeta):
     and is not in the data; if no file is for the years asked, the class raises
     ``FileNotFoundError``, naming the years the archive has. With neither, every
     year is read.
+
+    Parameters
+    ----------
+    data : str | Path
+        The folder of one version and pollutant, which :class:`EDGARv7` and
+        :class:`EDGARv8` build from their own arguments.
+    pollutant : str
+        As for :class:`Inventory`.
+    src_units : str
+        ``'kg m-2 s-1'``, EDGAR's units.
+    time_step : str
+        ``'annual'``, or ``'monthly'`` for EDGAR v8's monthly files.
+    crs : str
+        ``'EPSG:4326'``.
+    version : str
+        ``'v7'`` or ``'v8'``.
+    standardize_units : bool
+        False.
+
+    See Also
+    --------
+    EDGARv8 : The version to use.
+    EDGARv7 : The version before it.
     """
 
     src_units: str = "kg m-2 s-1"
@@ -1349,6 +1555,10 @@ class EDGAR(Inventory, metaclass=ABCMeta):
         ------
         FileNotFoundError
             If there are files, but none for the years asked.
+
+        See Also
+        --------
+        Inventory.get_files : The files of an inventory that is not EDGAR.
         """
         files = [f for f in self._file_root().rglob("*.nc") if "TOTALS" not in f.stem]
         if not files or (self._start is None and self._end is None):
@@ -1398,6 +1608,17 @@ class EDGAR(Inventory, metaclass=ABCMeta):
         -------
         str
             The formatted name. Sectors missing from ``sectors`` keep their code.
+
+        See Also
+        --------
+        EDGARv7 : Names its variables with it.
+
+        Examples
+        --------
+        The variable that EDGAR v7's ``ENF`` files become, for an ``EDGARv7``
+        ``inv``::
+
+            inv.get_sector_name("ENF")  # 'Enteric_fermentation'
         """
         if sector not in self.sectors:
             return sector
@@ -1451,6 +1672,20 @@ class EDGARv7(EDGAR):
           AGS/v7.0_FT2021_CH4_2021_AGS.0.1x0.1.nc
           AWB/v7.0_FT2021_CH4_2021_AWB.0.1x0.1.nc
           ...
+
+    See Also
+    --------
+    EDGARv8 : The next version, with monthly files too.
+
+    Examples
+    --------
+    It reads ``$LAIR_INVENTORY_DIR``, so these lines are not run when the docs
+    build:
+
+    >>> from lair.inventories import EDGARv7
+    >>> inv = EDGARv7("CH4", start=2021)  # doctest: +SKIP
+    >>> "Enteric_fermentation" in inv.data  # doctest: +SKIP
+    True
     """
 
     version: str = "v7"
@@ -1565,6 +1800,22 @@ class EDGARv8(EDGAR):
     open only the files of those years (both included)::
 
         inv = EDGARv8("CH4", start=2015, end=2022)  # 8 steps, opened in 3 s
+
+    See Also
+    --------
+    EDGARv7 : The version before.
+    Inventory.integrate : The total over a region.
+
+    Examples
+    --------
+    The methane EDGAR v8 puts in the Salt Lake Valley each year, in kg, as
+    :doc:`/examples/inventory` computes it. It reads ``$LAIR_INVENTORY_DIR``, so
+    these lines are not run when the docs build:
+
+    >>> from lair.inventories import EDGARv8
+    >>> inv = EDGARv8("CH4", start=2020, end=2022)  # doctest: +SKIP
+    >>> slv = inv.clip(bbox=(-112.3, 40.4, -111.7, 41.0))  # doctest: +SKIP
+    >>> slv.integrate().compute()  # doctest: +SKIP
     """
 
     version: str = "v8"
@@ -1645,6 +1896,37 @@ class EPA(Inventory, metaclass=ABCMeta):
     United State (CONUS). This gridded methane inventory is designed to be
     consistent with methane emissions from the U.S. EPA Inventory of U.S.
     Greenhouse Gas Emissions and Sinks (U.S. GHGI).
+
+    lair's totals differ a little from EPA's own. EPA's files give each cell's
+    area on a sphere of 6371 km (their ``grid_cell_area``, which lair drops);
+    lair uses the area on the WGS84 ellipsoid, as for every inventory
+    (:func:`lair.geo.gridcell_area`). A 0.1 degree cell in the Salt Lake Valley
+    (40.75 N) is 93.783 km2 on the ellipsoid and 93.668 km2 on the sphere, so
+    lair's totals there are about 0.12% above EPA's. The difference changes
+    with latitude: about 0.2% below at 25 N and 0.3% above at 49 N.
+
+    Parameters
+    ----------
+    data : str | Path
+        The file or folder, which :class:`EPAv1` and :class:`EPAv2` build from
+        their own arguments.
+    pollutant : str
+        ``'CH4'``.
+    src_units : str
+        ``'molec cm-2 s-1'``, EPA's units.
+    time_step : str
+        As :class:`EPAv1` and :class:`EPAv2` read it.
+    crs : str
+        ``'EPSG:4326'``.
+    version : str
+        ``'v1'`` or ``'v2'``.
+    standardize_units : bool
+        False.
+
+    See Also
+    --------
+    EPAv2 : The gridded GHGI, 2012 to 2020.
+    EPAv1 : The 2012 inventory.
     """
 
     pollutant: str = "CH4"
@@ -1716,6 +1998,18 @@ class EPAv1(EPA):
 
     So the monthly and daily totals are not U.S. totals.
 
+    Parameters
+    ----------
+    time_step : str, optional
+        The time step of the data, by default 'Annual': ``'Annual'``,
+        ``'Monthly'`` or ``'Daily'``, in any case.
+    inventory_dir : str, optional
+        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
+
+    See Also
+    --------
+    EPAv2 : The gridded GHGI of the years after.
+
     Notes
     -----
     One file per time step, in ``EPA/v1/`` below the inventory root
@@ -1727,6 +2021,15 @@ class EPAv1(EPA):
           GEPA_Annual.nc
           GEPA_Monthly.nc
           GEPA_Daily.nc
+
+    Examples
+    --------
+    The 2012 total of the human sectors. It reads ``$LAIR_INVENTORY_DIR``, so
+    these lines are not run when the docs build:
+
+    >>> from lair.inventories import EPAv1, sum_sectors
+    >>> epa = EPAv1()  # doctest: +SKIP
+    >>> flux = sum_sectors(epa.data, exclude=["Forest_Fires"])  # doctest: +SKIP
     """
 
     version: str = "v1"
@@ -1735,16 +2038,7 @@ class EPAv1(EPA):
     _emissions_prefix: str = "emissions"
 
     def __init__(self, time_step="Annual", inventory_dir: str | None = None) -> None:
-        """
-        Initialize the EPA inventory.
-
-        Parameters
-        ----------
-        time_step : str, optional
-            The time step of the data, by default 'Annual'.
-        inventory_dir : str, optional
-            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
-        """
+        """Initialize the inventory; the class docstring describes the parameters."""
         self.epa_dir = os.path.join(
             get_data_dir(INVENTORY_DIR_ENV, inventory_dir), "EPA"
         )
@@ -1807,6 +2101,21 @@ class EPAv2(EPA):
     ``scale_by_month=True`` keeps every sector, holding those without monthly scale
     factors at their annual rate, so its total covers the same sectors.
 
+    Parameters
+    ----------
+    express : bool, optional
+        Whether to use the express extension, by default False.
+    scale_by_month : bool, optional
+        Whether to scale emissions by month, by default False. The data is then
+        monthly: each year's flux times EPA's monthly scale factors
+        (:meth:`get_monthly_scale_factors`).
+    inventory_dir : str, optional
+        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
+
+    See Also
+    --------
+    EPA : Why lair's totals differ a little from EPA's own.
+
     Notes
     -----
     One file per year, in ``EPA/v2/`` below the inventory root
@@ -1826,6 +2135,16 @@ class EPAv2(EPA):
           monthly_scale_factors/
             Gridded_GHGI_Methane_v2_Monthly_Scale_Factors_2012.nc
             ...
+
+    Examples
+    --------
+    The express extension by month, without the supplemental ``PostMeter``
+    sector. It reads ``$LAIR_INVENTORY_DIR``, so these lines are not run when
+    the docs build:
+
+    >>> from lair.inventories import EPAv2, sum_sectors
+    >>> epa = EPAv2(express=True, scale_by_month=True)  # doctest: +SKIP
+    >>> flux = sum_sectors(epa.data, exclude=["PostMeter"])  # doctest: +SKIP
     """
 
     version: str = "v2"
@@ -1843,18 +2162,7 @@ class EPAv2(EPA):
         scale_by_month: bool = False,
         inventory_dir: str | None = None,
     ) -> None:
-        """
-        Initialize the EPA inventory.
-
-        Parameters
-        ----------
-        express : bool, optional
-            Whether to use the express extension, by default False.
-        scale_by_month : bool, optional
-            Whether to scale emissions by month, by default False.
-        inventory_dir : str, optional
-            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
-        """
+        """Initialize the inventory; the class docstring describes the parameters."""
         self.epa_dir = os.path.join(
             get_data_dir(INVENTORY_DIR_ENV, inventory_dir), "EPA"
         )
@@ -1873,7 +2181,12 @@ class EPAv2(EPA):
         Returns
         -------
         xr.Dataset
-            The monthly scale factors.
+            The monthly scale factors, one variable per sector that has them,
+            from the files in ``EPA/v2/monthly_scale_factors/`` (2012 to 2018).
+
+        See Also
+        --------
+        EPAv2 : ``scale_by_month=True`` applies them.
         """
         files = list(
             Path(self.epa_dir, self.version, "monthly_scale_factors").glob("*.nc")
@@ -1948,6 +2261,16 @@ class GFEI(Inventory, metaclass=ABCMeta):
     which provides a 0.1 x 0.1 degree grid of methane emissions
     of fugitive emissions related to oil, gas, and coal activities
     (IPCC Sector 1B1 and 1B2).
+
+    Parameters
+    ----------
+    inventory_dir : str, optional
+        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
+
+    See Also
+    --------
+    GFEIv2 : The 2019 inventory.
+    GFEIv1 : The 2016 inventory.
     """
 
     pollutant: str = "CH4"
@@ -1956,14 +2279,7 @@ class GFEI(Inventory, metaclass=ABCMeta):
     _file_prefix: str
 
     def __init__(self, inventory_dir: str | None = None) -> None:
-        """
-        Initialize the GFEI inventory.
-
-        Parameters
-        ----------
-        inventory_dir : str, optional
-            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
-        """
+        """Initialize the inventory; the class docstring describes the parameters."""
         path = os.path.join(
             get_data_dir(INVENTORY_DIR_ENV, inventory_dir), "GFEI", str(self.version)
         )
@@ -1972,7 +2288,13 @@ class GFEI(Inventory, metaclass=ABCMeta):
         )
 
     def get_files(self) -> list[Path]:
-        """Return the sector files, without the ``All``, ``gsd`` and ``rsd`` ones."""
+        """
+        Return the sector files, without the ``All``, ``gsd`` and ``rsd`` ones.
+
+        See Also
+        --------
+        GFEIv1.get_standard_deviations : Reads the ``gsd`` and ``rsd`` files.
+        """
         p = self._file_root()
         return [
             f
@@ -2045,6 +2367,24 @@ class GFEIv1(GFEI):
           Global_Fuel_Exploitation_Inventory_Gas_Distribution.nc
           ...
           Global_Fuel_Exploitation_Inventory_Total_Fuel_Exploitation.nc
+
+    Parameters
+    ----------
+    inventory_dir : str, optional
+        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
+
+    See Also
+    --------
+    GFEIv2 : The update, for 2019.
+
+    Examples
+    --------
+    It reads ``$LAIR_INVENTORY_DIR``, so these lines are not run when the docs
+    build:
+
+    >>> from lair.inventories import GFEIv1
+    >>> gfei = GFEIv1()  # doctest: +SKIP
+    >>> rsd = gfei.get_standard_deviations("relative")  # doctest: +SKIP
     """
 
     version: str = "v1"
@@ -2064,7 +2404,12 @@ class GFEIv1(GFEI):
         Returns
         -------
         xr.Dataset
-            The standard deviations.
+            The standard deviations, one variable per sector, from the sector's
+            ``_rsd`` or ``_gsd`` file. They are not pint-quantified.
+
+        See Also
+        --------
+        GFEIv1 : The emissions they belong to.
         """
         kind_short = {
             "relative": "rsd",
@@ -2115,6 +2460,25 @@ class GFEIv2(GFEI):
           Global_Fuel_Exploitation_Inventory_v2_2019_Gas_Distribution.nc
           ...
           Global_Fuel_Exploitation_Inventory_v2_2019_Total_Fuel_Exploitation.nc
+
+    Parameters
+    ----------
+    inventory_dir : str, optional
+        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
+
+    See Also
+    --------
+    GFEIv1 : The 2016 inventory, with standard deviations.
+
+    Examples
+    --------
+    It reads ``$LAIR_INVENTORY_DIR``, so these lines are not run when the docs
+    build:
+
+    >>> from lair.inventories import GFEIv2
+    >>> gfei = GFEIv2()  # doctest: +SKIP
+    >>> gfei.get_units()  # doctest: +SKIP
+    ('Mg', 'km**2', 'yr')
     """
 
     version: str = "v2"
@@ -2166,6 +2530,34 @@ class Vulcan(Inventory):
             Vulcan.v3.US.hourly.1km.airport.mn.2015.d001.nc4
             Vulcan.v3.US.hourly.1km.airport.mn.2015.d002.nc4
             ...
+
+    Parameters
+    ----------
+    time_step : Literal['annual', 'hourly'], optional
+        The time step of the data, by default 'annual'.
+    region : Literal['US', 'AK'], optional
+        The region of the data, by default 'US'. ``'AK'`` raises a
+        ``ValueError``: Alaska crosses the 180th meridian.
+    inventory_dir : str, optional
+        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
+
+    See Also
+    --------
+    Vulcan.clip : Clip in the native Lambert conformal coordinates first.
+    Vulcan.reproject : Then put it on a lat/lon grid.
+
+    Examples
+    --------
+    The data is on Vulcan's 1 km Lambert conformal grid: clip it, then reproject
+    it to lat/lon. It reads ``$LAIR_INVENTORY_DIR``, so these lines are not run
+    when the docs build:
+
+    >>> from lair.inventories import Vulcan
+    >>> vulcan = Vulcan()  # doctest: +SKIP
+    >>> box = vulcan.clip(  # doctest: +SKIP
+    ...     bbox=(-112.3, 40.4, -111.7, 41.0), crs="EPSG:4326"
+    ... )
+    >>> latlon = box.reproject(0.01)  # doctest: +SKIP
     """
 
     # hourly data is 1.6 Tb !!!
@@ -2194,18 +2586,7 @@ class Vulcan(Inventory):
         region: Literal["US", "AK"] = "US",
         inventory_dir: str | None = None,
     ) -> None:
-        """
-        Initialize the Vulcan inventory.
-
-        Parameters
-        ----------
-        time_step : Literal['annual', 'hourly'], optional
-            The time step of the data, by default 'annual'.
-        region : Literal['US', 'AK'], optional
-            The region of the data, by default 'US'.
-        inventory_dir : str, optional
-            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
-        """
+        """Initialize the inventory; the class docstring describes the parameters."""
         self.vulcan_dir = os.path.join(
             get_data_dir(INVENTORY_DIR_ENV, inventory_dir), "vulcan"
         )
@@ -2227,7 +2608,13 @@ class Vulcan(Inventory):
         self._is_clipped = False
 
     def get_files(self, uncertainty="central") -> list[Path]:
-        """Return this region's sector files for one uncertainty (``central`` by default)."""
+        """
+        Return this region's sector files for one uncertainty (``central`` by default).
+
+        See Also
+        --------
+        Vulcan.get_uncertainties : Reads the ``lower`` and ``upper`` files.
+        """
         p = self._file_root()
         uncertainty = self._uncertainties[uncertainty]
         return [
@@ -2251,6 +2638,10 @@ class Vulcan(Inventory):
             The bound for each sector over the full (unclipped) domain, in
             tonnes of CO2 per km2 per time step (converted from tonnes of carbon
             like the central estimate; not pint-quantified).
+
+        See Also
+        --------
+        Vulcan.data : The central estimate.
         """
         if self.time_step != "annual":
             raise ValueError("Uncertainties are only available for annual data")
@@ -2296,6 +2687,10 @@ class Vulcan(Inventory):
         -------
         Vulcan
             The clipped inventory.
+
+        See Also
+        --------
+        Vulcan.reproject : Needs the data clipped first.
         """
         clipped = super().clip(bbox, extent, geom, crs, inplace=inplace, **kwargs)
         clipped._is_clipped = True
@@ -2331,6 +2726,15 @@ class Vulcan(Inventory):
         -------
         Vulcan
             The reprojected inventory (on EPSG:4326 lat/lon).
+
+        Raises
+        ------
+        ValueError
+            If the data was not clipped first and ``force`` is False.
+
+        See Also
+        --------
+        Vulcan.clip : Clip first.
         """
         if not self._is_clipped and not force:
             raise ValueError(
@@ -2406,6 +2810,28 @@ class WetCHARTs(MultiModelInventory):
           WetCHARTs_v1_3_1_2001.nc
           ...
           WetCHARTs_v1_3_1_2019.nc
+
+    Parameters
+    ----------
+    model : int | str | None, optional
+        The model to select, by default None: a four-digit ensemble member
+        code (e.g. ``1913`` or ``'1913'``), ``'mean'`` or ``'median'``.
+        If None, the ensemble mean is used.
+    inventory_dir : str, optional
+        Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
+
+    See Also
+    --------
+    MultiModelInventory : How the ensemble member is chosen.
+
+    Examples
+    --------
+    The ensemble median, and every member in ``multimodel_data``. It reads
+    ``$LAIR_INVENTORY_DIR``, so these lines are not run when the docs build:
+
+    >>> from lair.inventories import WetCHARTs
+    >>> wet = WetCHARTs(model="median")  # doctest: +SKIP
+    >>> members = wet.multimodel_data.model.values  # doctest: +SKIP
     """
 
     version: str = "v1.3.1"
@@ -2416,18 +2842,7 @@ class WetCHARTs(MultiModelInventory):
     def __init__(
         self, model: int | str | None = None, inventory_dir: str | None = None
     ):
-        """
-        Initialize the WetCHARTs inventory.
-
-        Parameters
-        ----------
-        model : int | str | None, optional
-            The model to select, by default None: a four-digit ensemble member
-            code (e.g. ``1913`` or ``'1913'``), ``'mean'`` or ``'median'``.
-            If None, the ensemble mean is used.
-        inventory_dir : str, optional
-            Root of the inventory archive, by default ``$LAIR_INVENTORY_DIR``.
-        """
+        """Initialize the inventory; the class docstring describes the parameters."""
         self.wetcharts_dir = os.path.join(
             get_data_dir(INVENTORY_DIR_ENV, inventory_dir), "WetCHARTs"
         )
