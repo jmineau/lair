@@ -49,6 +49,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   not in the data; no file at all for the years asked raises `FileNotFoundError`,
   and a `start` or `end` that is not an integer raises `TypeError`. Without them
   every year is read, as before. A monthly year has all its twelve months.
+- The API pages of `soundings` and `background` have See Also links and
+  runnable examples on made-up data: a sounding read by `Sounding` and
+  `get_soundings`, and each background method. `Sounding`'s page describes its
+  `path`.
 
 ### Changed
 

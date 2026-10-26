@@ -64,6 +64,25 @@ def rolling_baseline(
     -------
     pd.Series
         Baseline concentration
+
+    See Also
+    --------
+    phase_shift_corrected_baseline : A low quantile that follows fast changes
+        in one-second data.
+    thoning : A smooth curve through the data.
+
+    Examples
+    --------
+    Hourly methane at 2000 ppb with a spike of 50 ppb every morning at 08:00;
+    the baseline leaves the spikes out:
+
+    >>> import pandas as pd
+    >>> from lair.background import rolling_baseline
+    >>> times = pd.date_range("2024-01-01", periods=72, freq="h")
+    >>> ch4 = pd.Series(2000.0, index=times)
+    >>> ch4[times.hour == 8] += 50.0
+    >>> rolling_baseline(ch4, window="24h").unique()
+    array([2000.])
     """
     window = pd.Timedelta(window)
     baseline = (
@@ -110,6 +129,26 @@ def phase_shift_corrected_baseline(
     pd.Series
         Baseline concentration at the times of ``data``, so ``data - baseline``
         lines up row for row. A time off the one-second grid gets NaN.
+
+    See Also
+    --------
+    rolling_baseline : A rolling low quantile for data of any rate.
+
+    Examples
+    --------
+    Two hours of one-second methane at 2000 ppb with a plume of 100 ppb for
+    five minutes, and a window of ten minutes:
+
+    >>> import pandas as pd
+    >>> from lair.background import phase_shift_corrected_baseline
+    >>> times = pd.date_range("2024-01-01 12:00", periods=7200, freq="s")
+    >>> ch4 = pd.Series(2000.0, index=times)
+    >>> ch4.iloc[3000:3300] += 100.0
+    >>> baseline = phase_shift_corrected_baseline(ch4, n=600)
+    >>> baseline.round(6).unique()
+    array([2000.])
+    >>> round(float((ch4 - baseline).max()), 6)  # the plume above the baseline
+    100.0
     """
     if not n % 2:
         n += 1
@@ -162,7 +201,33 @@ def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:
     Returns
     -------
     ccgFilter
-        Thoning filter object.
+        Thoning filter object. Its methods (``getSmoothValue``,
+        ``getTrendValue``, ``getHarmonicValue``, ...) take decimal years
+        (:func:`lair.clock.dt2decimalDate`).
+
+    See Also
+    --------
+    thoning : The smooth curve at given times, from this filter.
+
+    Examples
+    --------
+    The trend of three years of made-up daily CO2 that grows 2.5 ppm a year,
+    with a seasonal cycle and noise:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from lair.background import thoning_filter
+    >>> from lair.clock import dt2decimalDate
+    >>> rng = np.random.default_rng(0)
+    >>> days = pd.date_range("2020-01-01", "2022-12-31", freq="D")
+    >>> years = (days - days[0]).days / 365.25
+    >>> seasons = 3 * np.cos(2 * np.pi * years)
+    >>> noise = rng.normal(0, 0.5, days.size)
+    >>> co2 = pd.Series(410 + 2.5 * years + seasons + noise, index=days)
+    >>> filt = thoning_filter(co2)
+    >>> jan1 = [dt2decimalDate(pd.Timestamp(f"{y}-01-01")) for y in (2021, 2022)]
+    >>> filt.getTrendValue(np.array(jan1)).round(1)
+    array([412.5, 415. ])
     """
     if data.isna().any():
         raise ValueError("Data contains NaN values.")
@@ -226,6 +291,32 @@ def thoning(
     -------
     pd.Series
         Smoothed data, at ``smooth_time``.
+
+    See Also
+    --------
+    thoning_filter : The filter itself, for its trend and harmonics.
+    rolling_baseline : A low quantile instead of a curve through everything.
+
+    Examples
+    --------
+    Three years of made-up daily CO2 that grows 2.5 ppm a year, with a seasonal
+    cycle and noise, smoothed, then read on the first of each month:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from lair.background import thoning
+    >>> rng = np.random.default_rng(0)
+    >>> days = pd.date_range("2020-01-01", "2022-12-31", freq="D")
+    >>> years = (days - days[0]).days / 365.25
+    >>> seasons = 3 * np.cos(2 * np.pi * years)
+    >>> noise = rng.normal(0, 0.5, days.size)
+    >>> co2 = pd.Series(410 + 2.5 * years + seasons + noise, index=days)
+    >>> smooth = thoning(co2)
+    >>> round(float(smooth.iloc[-1] - smooth.iloc[0]), 1)
+    7.6
+    >>> months = pd.date_range("2020-01-01", "2022-12-01", freq="MS")
+    >>> thoning(co2, smooth_time=months).round(1).head(3).tolist()
+    [413.0, 412.8, 412.1]
     """
     # Drop nans (filter does not handle them)
     orig_index = data.index.copy()  # however, we may want to return the original index

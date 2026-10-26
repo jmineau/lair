@@ -33,12 +33,25 @@ logger = logging.getLogger(__name__)
 
 
 #: Environment variable holding the sounding archive root (one subdirectory per station)
+#:
+#: .. seealso:: :ref:`data-locations`, which lists every variable;
+#:    :doc:`/examples/soundings` shows the folder.
 SOUNDING_DIR_ENV = "LAIR_SOUNDING_DIR"
 
 
 class Sounding:
     """
     Upper air sounding data.
+
+    One sounding file, as :func:`download_sounding` saves it: a CSV named
+    ``<station>_<YYYYmmddHH>.csv`` for the UTC hour of the sounding, one row per
+    level, with the station's attributes repeated in columns of their own.
+
+    Parameters
+    ----------
+    path : str
+        The path to the sounding file. The station and time are read from its
+        name.
 
     Attributes
     ----------
@@ -64,6 +77,41 @@ class Sounding:
     -------
     interpolate(start=None, stop=5000, interval=10)
         Interpolate sounding data to regular height intervals.
+
+    See Also
+    --------
+    get_soundings : A station's soundings for a period, on the same heights.
+
+    Examples
+    --------
+    A made-up sounding with two levels, saved as Wyoming's are:
+
+    >>> import pathlib
+    >>> import tempfile
+    >>> import pandas as pd
+    >>> from lair.soundings import Sounding
+    >>> folder = pathlib.Path(tempfile.mkdtemp())
+    >>> levels = pd.DataFrame(
+    ...     {
+    ...         "pressure": [870.0, 700.0],
+    ...         "height": [1289.0, 3000.0],
+    ...         "temperature": [-5.0, -12.0],
+    ...         "dewpoint": [-8.0, -20.0],
+    ...         "direction": [180.0, 270.0],
+    ...         "speed": [5.0, 10.0],
+    ...         "u_wind": [0.0, 10.0],
+    ...         "v_wind": [5.0, 0.0],
+    ...         "station": "SLC",
+    ...         "time": "2024-01-15 12:00",
+    ...         "elevation": 1289.0,
+    ...     }
+    ... )
+    >>> levels.to_csv(folder / "SLC_2024011512.csv", index=False)
+    >>> sounding = Sounding(str(folder / "SLC_2024011512.csv"))
+    >>> sounding.station, sounding.time, float(sounding.elevation)
+    ('SLC', datetime.datetime(2024, 1, 15, 12, 0), 1289.0)
+    >>> list(sounding.data.columns)
+    ['pressure', 'height', 'temperature', 'dewpoint', 'direction', 'speed', 'u_wind', 'v_wind']
     """
 
     _attrs = [
@@ -93,14 +141,9 @@ class Sounding:
 
     def __init__(self, path: str):
         """
-        Initialize a Sounding object.
+        Initialize a Sounding object; the class docstring describes the parameters.
 
         Strips the station identifier and time from the filename and reads the data.
-
-        Parameters
-        ----------
-        path : str
-            The path to the sounding data.
         """
         self.path = path
         self.filename = os.path.basename(path)
@@ -146,6 +189,11 @@ class Sounding:
         -------
         xr.Dataset
             The interpolated sounding data.
+
+        See Also
+        --------
+        get_soundings : Interpolates every sounding of a period to the same
+            heights.
 
         Examples
         --------
@@ -203,7 +251,18 @@ class Sounding:
         return ds
 
     def plot(self):
-        """Plot the sounding (not implemented yet)."""
+        """
+        Plot the sounding (not implemented yet).
+
+        Raises
+        ------
+        NotImplementedError
+            Always.
+
+        See Also
+        --------
+        Sounding.interpolate : The profiles to plot with xarray, for now.
+        """
         raise NotImplementedError
 
 
@@ -219,7 +278,13 @@ def merge(soundings: list) -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        The merged sounding data.
+        The merged sounding data: the levels of every sounding, one row per
+        level, with each sounding's station attributes (``station``, ``time``,
+        ``elevation``, ...) as columns.
+
+    See Also
+    --------
+    get_soundings : With ``driver="pandas"``, merges a period's soundings.
     """
     dfs = []
     for sounding in soundings:
@@ -326,6 +391,23 @@ def download_sounding(station, date, dst=None) -> str:
     ``pw`` and ``station_number`` are saved only if Wyoming sends them, which
     it no longer does. A file that is already in ``dst`` is not downloaded
     again or changed.
+
+    See Also
+    --------
+    download_soundings : Every sounding of a period.
+    Sounding : Reads the file.
+
+    Examples
+    --------
+    The 12 UTC sounding of Salt Lake City on 2024-01-15, into a folder of your
+    own. It needs the network, so it is not run when the docs build:
+
+    >>> import datetime as dt
+    >>> from lair.soundings import download_sounding
+    >>> download_sounding(  # doctest: +SKIP
+    ...     "SLC", dt.datetime(2024, 1, 15, 12), dst="soundings/SLC"
+    ... )
+    'soundings/SLC/SLC_2024011512.csv'
     """
     date = _naive_utc(date)
     if dst is None:
@@ -363,9 +445,34 @@ def download_soundings(station, start, end, dst=None, months=None):
         The end date and time (inclusive). Naive times are taken as UTC;
         tz-aware times are converted.
     dst : str
-        The destination directory.
+        The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/<station>``.
     months : list
-        The months to download.
+        The months to download (1 to 12), by default every month.
+
+    Raises
+    ------
+    ValueError
+        If the unit siphon reports for a wind is not one :func:`download_sounding`
+        can convert, or Wyoming answers with an error other than "No data
+        available" (a sounding Wyoming does not have is logged and skipped).
+    requests.exceptions.HTTPError
+        For an HTTP error other than Wyoming's "Please try again later", after
+        which the same sounding is asked for again 2 seconds later.
+
+    See Also
+    --------
+    get_soundings : Reads them, with ``download=True`` downloading first.
+    download_sounding : One sounding.
+
+    Examples
+    --------
+    The soundings of January 2024, at 00 and 12 UTC. It needs the network, so
+    it is not run when the docs build:
+
+    >>> from lair.soundings import download_soundings
+    >>> download_soundings(  # doctest: +SKIP
+    ...     "SLC", "2024-01-01", "2024-01-31 12:00", dst="soundings/SLC"
+    ... )
     """
     logger.info("Downloading soundings...")
 
@@ -468,6 +575,32 @@ def get_soundings(
     See Also
     --------
     download_soundings : Download soundings without reading them.
+
+    Examples
+    --------
+    Two made-up soundings in a folder, read as one dataset on the same
+    heights (:doc:`/examples/soundings` reads real ones):
+
+    >>> import pathlib
+    >>> import tempfile
+    >>> import pandas as pd
+    >>> from lair.soundings import get_soundings
+    >>> folder = pathlib.Path(tempfile.mkdtemp())
+    >>> for hour, ground in [("2024011500", -8.0), ("2024011512", -5.0)]:
+    ...     pd.DataFrame(
+    ...         {
+    ...             "height": [1289.0, 5100.0],
+    ...             "temperature": [ground, -30.0],
+    ...             "station": "SLC",
+    ...             "time": pd.to_datetime(hour, format="%Y%m%d%H"),
+    ...             "elevation": 1289.0,
+    ...         }
+    ...     ).to_csv(folder / f"SLC_{hour}.csv", index=False)
+    >>> ds = get_soundings(sounding_dir=str(folder))
+    >>> ds.temperature.sizes
+    Frozen({'time': 2, 'height': 372})
+    >>> ds.temperature.sel(height=1289.0).values
+    array([-8., -5.])
     """
     # File times are naive UTC, so compare against naive UTC bounds
     start = _naive_utc(start).to_pydatetime() if start is not None else None
