@@ -1,18 +1,6 @@
 LAIR: Land-Air Interactions Research
 ====================================
 
-.. image:: https://github.com/jmineau/lair/actions/workflows/tests.yml/badge.svg
-   :target: https://github.com/jmineau/lair/actions/workflows/tests.yml
-   :alt: Tests
-
-.. image:: https://github.com/jmineau/lair/actions/workflows/docs.yml/badge.svg
-   :target: https://github.com/jmineau/lair/actions/workflows/docs.yml
-   :alt: Documentation
-
-.. image:: https://github.com/jmineau/lair/actions/workflows/quality.yml/badge.svg
-   :target: https://github.com/jmineau/lair/actions/workflows/quality.yml
-   :alt: Code Quality
-
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.22900040.svg
    :target: https://doi.org/10.5281/zenodo.22900040
    :alt: DOI
