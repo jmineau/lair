@@ -123,6 +123,12 @@ def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
     between an amount (mol) and a mass (kg) uses the molecular weight of
     ``pollutant``, through the ``mass_flux`` pint context.
 
+    The data has no time steps here, so a flux per year is per pint's year of
+    365.25 days, and a flux per month per a twelfth of it.
+    :meth:`Inventory.convert_units` gives a flux per year on annual data the
+    length of each year instead (366 days in a leap year), and a flux per month
+    on monthly data the length of each month.
+
     Parameters
     ----------
     data : xr.DataArray | xr.Dataset
@@ -147,7 +153,8 @@ def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
 
     See Also
     --------
-    Inventory.convert_units : The same for an inventory's data.
+    Inventory.convert_units : The same for an inventory's data, with the
+        calendar length of each time step.
     molecular_weight : The molecular weight the conversion uses.
 
     Examples
@@ -166,6 +173,13 @@ def convert_units(data: _XarrayT, pollutant: str, dst_units: Any) -> _XarrayT:
     'kg km-2 d-1'
     >>> round(float(kg[0, 0]), 2)
     13.86
+
+    A flux per year is per pint's year of 365.25 days:
+
+    >>> per_second = xr.DataArray([1.0], dims="x", attrs={"units": "kg m-2 s-1"})
+    >>> per_year = convert_units(per_second, "CH4", "kg m-2 yr-1")
+    >>> float(per_year[0]) / 86400  # days
+    365.25
     """
     if not isinstance(data, xr.Dataset | xr.DataArray):
         raise TypeError("data must be an xarray Dataset or DataArray")
@@ -355,6 +369,87 @@ def _label_period_starts(data: Dataset, bounds: str = "time_bnds") -> Dataset:
     return data.assign_coords(time=start.values)
 
 
+def _seconds_per_step(data: Dataset, time_step: str) -> DataArray:
+    """
+    Return the true calendar length of each time step of ``data``, in seconds.
+
+    Leap years have 366 days and months their actual number of days. lair
+    follows the calendar rather than any product's own convention; EDGAR
+    (v7 ``cell_method``, v8 ``global_total``) uses the calendar too.
+    """
+    time = data.time
+    if time_step == "annual":
+        seconds_per_step = (
+            (time.dt.is_leap_year * 366 + (~time.dt.is_leap_year) * 365) * 24 * 3600
+        )
+    elif time_step == "monthly":
+        seconds_per_step = time.dt.days_in_month * 24 * 3600
+    elif time_step == "quarterly":
+        t = time.to_index()  # days in each 3-month quarter starting at `time`
+        seconds_per_step = (
+            ((t + pd.DateOffset(months=3)) - t).days.to_numpy() * 24 * 3600
+        )
+    elif time_step == "biweekly":
+        seconds_per_step = np.full(time.size, 14 * 24 * 3600)
+    elif time_step == "daily":
+        seconds_per_step = np.full(time.size, 24 * 3600)
+    elif time_step == "hourly":
+        seconds_per_step = np.full(time.size, 3600)
+    else:
+        raise ValueError(f"Time step {time_step} not supported")
+    if isinstance(seconds_per_step, xr.DataArray):
+        seconds_per_step = seconds_per_step.data
+    return data.assign(sec_per_step=("time", seconds_per_step)).sec_per_step
+
+
+def _is_per_step(unit: Any, time_step: str) -> bool:
+    """
+    Whether ``unit`` is a rate per one time step of ``time_step``.
+
+    A flux per year with annual data, per month with monthly data, and so on
+    (``_STEP_UNITS``). The unit is read as quantity, area and time, as
+    :meth:`Inventory.get_units` reads it.
+    """
+    step_unit = _STEP_UNITS.get(time_step)
+    if step_unit is None or unit is None:
+        return False
+    parts = f"{units.Unit(unit):~C}".split("/")
+    return len(parts) == 3 and units.Unit(parts[2]) == units.Unit(step_unit)
+
+
+@_keep_attrs
+def _convert_units_by_step(
+    data: Dataset, pollutant: str, dst_units: Any, time_step: str
+) -> Dataset:
+    """
+    Convert pint-quantified inventory data, with the calendar for a per-step unit.
+
+    A flux per time step (per year with annual data, per month with monthly data)
+    covers the calendar length of that step: 366 days in a leap year, the days of
+    each month. pint alone would use its year of 365.25 days and a month of 1/12
+    of that. So a variable in a per-step unit is first made a flux per second
+    with each step's own length, and a per-step ``dst_units`` is reached from a
+    flux per second the same way. Any other conversion is :func:`convert_units`.
+    """
+    dst_per_step = _is_per_step(dst_units, time_step)
+    src_per_step = [
+        var for var in data.data_vars if _is_per_step(data[var].pint.units, time_step)
+    ]
+    if "time" not in data.coords or not (dst_per_step or src_per_step):
+        return convert_units(data, pollutant, dst_units)
+
+    step = units(_STEP_UNITS[time_step])
+    seconds = _seconds_per_step(data, time_step) * units("s")
+    data = data.copy()
+    for var in src_per_step:
+        data[var] = data[var] * step / seconds
+    if dst_per_step:
+        per_second = units.Unit(dst_units) * step.units / units.Unit("s")
+        data = convert_units(data, pollutant, per_second)
+        data = data * seconds / step
+    return convert_units(data, pollutant, dst_units)
+
+
 class Inventory(BaseGrid):
     """
     Base class for inventories.
@@ -456,7 +551,7 @@ class Inventory(BaseGrid):
         self.src_units: str | pint.registry.Unit | None = src_units
         ds = self._quantify(ds)
         if standardize_units:
-            ds = convert_units(ds, pollutant=self.pollutant, dst_units=DST_UNITS)
+            ds = _convert_units_by_step(ds, self.pollutant, DST_UNITS, self.time_step)
 
         # Set the rioxarray CRS. Projected inventories (e.g. Vulcan) are on x/y
         # with 2D lat/lon coords; the rest are on 1D lat/lon.
@@ -569,10 +664,9 @@ class Inventory(BaseGrid):
           month. This matches EDGAR, whose leap-year files state
           ``interval: 1 year, 366 days``.
 
-        So convert the result, not the flux. Converting ``kg/m**2/s`` to
-        ``Gg/km**2/yr`` first goes through pint's year of 365.25 days, and each
-        value is then taken as one step: a leap year comes out 0.2% low, any
-        other year 0.07% high.
+        So the unit of the flux does not matter. :meth:`Inventory.convert_units`
+        gives a rate per time step the same calendar length, so converting
+        ``kg/m**2/s`` to ``Gg/km**2/yr`` first gives the same masses.
 
         Returns
         -------
@@ -596,7 +690,7 @@ class Inventory(BaseGrid):
         if step_unit is not None and units.Unit(time_unit) == units.Unit(step_unit):
             absolute = absolute * units(time_unit)
         else:
-            seconds_per_step = self._seconds_per_step()
+            seconds_per_step = _seconds_per_step(self._data, self.time_step)
             # Multiply by the time in the time step to get mass|substance per gridcell
             absolute = absolute * (seconds_per_step * units("s")).pint.to(time_unit)
 
@@ -605,38 +699,6 @@ class Inventory(BaseGrid):
             "standard_name": f"{self.time_step.lower()}_emissions_per_gridcell",
         }
         return absolute.pint.dequantify(DEFAULT_PINT_FMT)
-
-    def _seconds_per_step(self) -> DataArray:
-        """
-        Return the true calendar length of each time step, in seconds.
-
-        Leap years have 366 days and months their actual number of days. lair
-        follows the calendar rather than any product's own convention; EDGAR
-        (v7 ``cell_method``, v8 ``global_total``) uses the calendar too.
-        """
-        time = self._data.time
-        if self.time_step == "annual":
-            seconds_per_step = (
-                (time.dt.is_leap_year * 366 + (~time.dt.is_leap_year) * 365) * 24 * 3600
-            )
-        elif self.time_step == "monthly":
-            seconds_per_step = time.dt.days_in_month * 24 * 3600
-        elif self.time_step == "quarterly":
-            t = time.to_index()  # days in each 3-month quarter starting at `time`
-            seconds_per_step = (
-                ((t + pd.DateOffset(months=3)) - t).days.to_numpy() * 24 * 3600
-            )
-        elif self.time_step == "biweekly":
-            seconds_per_step = np.full(time.size, 14 * 24 * 3600)
-        elif self.time_step == "daily":
-            seconds_per_step = np.full(time.size, 24 * 3600)
-        elif self.time_step == "hourly":
-            seconds_per_step = np.full(time.size, 3600)
-        else:
-            raise ValueError(f"Time step {self.time_step} not supported")
-        if isinstance(seconds_per_step, xr.DataArray):
-            seconds_per_step = seconds_per_step.data
-        return self._data.assign(sec_per_step=("time", seconds_per_step)).sec_per_step
 
     @property
     def total_emissions(self) -> DataArray:
@@ -716,6 +778,16 @@ class Inventory(BaseGrid):
         """
         Convert the units of the data to the desired output units.
 
+        A flux per time step, per year on annual data or per month on monthly
+        data (``time_step``), is a flux over the calendar length of that step:
+        366 days in a leap year, 365 in any other, and the days of each month.
+        pint alone, as in the plain-array :func:`convert_units`, would use its
+        year of 365.25 days and a twelfth of it for a month. So the totals,
+        :attr:`absolute_emissions` and :meth:`integrate`, are the same in any
+        unit. Any other unit (per second, per day on annual data) converts as
+        pint converts it. An amount (mol) and a mass (kg) convert through the
+        molecular weight of the inventory's pollutant.
+
         Parameters
         ----------
         dst_units : Any
@@ -728,9 +800,34 @@ class Inventory(BaseGrid):
         Inventory
             The inventory with converted units. If `inplace=True` returns `self`,
             otherwise returns a new Inventory copy.
+
+        See Also
+        --------
+        convert_units : The same for a plain array or dataset, with pint's year.
+
+        Examples
+        --------
+        A flux of 1 kg m-2 s-1 in 2019 and 2020, per year:
+
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import xarray as xr
+        >>> from lair.inventories import Inventory
+        >>> ds = xr.Dataset(
+        ...     {"energy": (("time", "lat", "lon"), np.ones((2, 1, 1)))},
+        ...     coords={
+        ...         "time": pd.date_range("2019-01-01", periods=2, freq="YS"),
+        ...         "lat": [40.05],
+        ...         "lon": [-111.95],
+        ...     },
+        ... )
+        >>> inv = Inventory(ds, pollutant="CH4", src_units="kg m-2 s-1")
+        >>> per_year = inv.convert_units("kg m-2 yr-1")
+        >>> per_year.data["energy"].values.ravel() / 86400  # days in each year
+        array([365., 366.])
         """
-        data = convert_units(
-            data=self._data, pollutant=self.pollutant, dst_units=dst_units
+        data = _convert_units_by_step(
+            self._data, self.pollutant, dst_units, self.time_step
         )
         if inplace:
             self._data = data
