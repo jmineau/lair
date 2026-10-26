@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=f2c9fc4e"></script>
+    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.clock.time_difference_matrix" href="lair.clock.time_difference_matrix.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev18+g98cac8ed1" />
+  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -598,6 +598,7 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.PC.html">lair.geo.PC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_locator_map.html">lair.geo.add_locator_map</a></li>
@@ -818,15 +819,51 @@
 <dt class="sig sig-object py" id="lair.clock.TimeRange">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lair.clock.</span></span><span class="sig-name descname"><span class="pre">TimeRange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/clock.html#TimeRange"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.clock.TimeRange" title="Link to this definition">#</a></dt>
 <dd><p>TimeRange class to represent a time range with start and stop times.</p>
+<p>The range includes its start and not its stop, so <code class="docutils literal notranslate"><span class="pre">TimeRange(&quot;2024&quot;)</span></code>
+covers 2024 and stops at 2025-01-01 00:00.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time_range</strong> (<a class="reference internal" href="#lair.clock.TimeRange" title="lair.clock.TimeRange"><em>TimeRange</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#slice" title="(in Python v3.15)"><em>slice</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#slice" title="(in Python v3.15)"><em>slice</em></a><em> | </em><em>None</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a>)</p></li>
-<li><p><strong>stop</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a><em> | </em><em>None</em><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#slice" title="(in Python v3.15)"><em>slice</em></a><em> | </em><em>None</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime</em></a>)</p></li>
+<li><p><strong>time_range</strong> (<a class="reference internal" href="#lair.clock.TimeRange" title="lair.clock.TimeRange"><em>TimeRange</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#slice" title="(in Python v3.15)"><em>slice</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The whole range in one argument: another <code class="docutils literal notranslate"><span class="pre">TimeRange</span></code>; an ISO 8601
+string, which covers the period it names (<code class="docutils literal notranslate"><span class="pre">&quot;2024&quot;</span></code> is all of
+2024, <code class="docutils literal notranslate"><span class="pre">&quot;2024-07-04&quot;</span></code> that day); a <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">stop)</span></code> pair; or a
+slice. With no <code class="docutils literal notranslate"><span class="pre">start</span></code> or <code class="docutils literal notranslate"><span class="pre">stop</span></code> either, the default (None) is a
+range open at both ends.</p></li>
+<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>dt.datetime</em><em> | </em><a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.datetime64" title="(in NumPy v2.5)"><em>numpy.datetime64</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The start, when <code class="docutils literal notranslate"><span class="pre">time_range</span></code> is not given. A string stands for
+the start of the period it names. None leaves the range open at the
+start.</p></li>
+<li><p><strong>stop</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>dt.datetime</em><em> | </em><a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.datetime64" title="(in NumPy v2.5)"><em>numpy.datetime64</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The stop, when <code class="docutils literal notranslate"><span class="pre">time_range</span></code> is not given. It is not part of the
+range. A string stands for the end of the period it names:
+<code class="docutils literal notranslate"><span class="pre">&quot;2024&quot;</span></code> stops at 2025-01-01 00:00. None leaves the range open at
+the end.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">time_range</span></code> is given together with <code class="docutils literal notranslate"><span class="pre">start</span></code> or <code class="docutils literal notranslate"><span class="pre">stop</span></code>, or
+    if any of them has an unrecognized format.</p>
+</dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.clock.TimeRange.parse_iso.html#lair.clock.TimeRange.parse_iso" title="lair.clock.TimeRange.parse_iso"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeRange.parse_iso</span></code></a></dt><dd><p>How a string becomes a start or a stop.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeRange</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">july</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="p">(</span><span class="s2">&quot;2024-07&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">july</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">july</span><span class="o">.</span><span class="n">stop</span>
+<span class="go">(datetime.datetime(2024, 7, 1, 0, 0), datetime.datetime(2024, 8, 1, 0, 0))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span> <span class="ow">in</span> <span class="n">july</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">TimeRange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s2">&quot;2024-07-04&quot;</span><span class="p">)</span>
+<span class="go">TimeRange(start=2024-07-04 00:00:00, stop=None)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">TimeRange</span><span class="p">())</span>
+<span class="go">&#39;Entire Observation Period&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <p class="rubric">Attributes</p>

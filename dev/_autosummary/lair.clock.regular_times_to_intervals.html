@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=f2c9fc4e"></script>
+    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.clock.dt2decimalDate" href="lair.clock.dt2decimalDate.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev18+g98cac8ed1" />
+  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -598,6 +598,7 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.PC.html">lair.geo.PC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_locator_map.html">lair.geo.add_locator_map</a></li>
@@ -837,6 +838,22 @@ Determines the length of each interval. Default is ‘monthly’.</p></li>
 <dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.IntervalIndex.html#pandas.IntervalIndex" title="(in pandas v3.1)"><em>IntervalIndex</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.clock.TimeRange.html#lair.clock.TimeRange" title="lair.clock.TimeRange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeRange</span></code></a></dt><dd><p>One interval, from ISO strings.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">regular_times_to_intervals</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">months</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;MS&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">regular_times_to_intervals</span><span class="p">(</span><span class="n">months</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span> <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">]</span>
+<span class="go">[&#39;[2024-01-01 00:00:00, 2024-02-01 00:00:00)&#39;, &#39;[2024-02-01 00:00:00, 2024-03-01 00:00:00)&#39;]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=f2c9fc4e"></script>
+    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.clock.convert_timezones" href="lair.clock.convert_timezones.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev18+g98cac8ed1" />
+  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -598,6 +598,7 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.PC.html">lair.geo.PC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_locator_map.html">lair.geo.add_locator_map</a></li>
@@ -818,6 +819,37 @@
 <dt class="sig sig-object py" id="lair.clock.datetime_accessor">
 <span class="sig-prename descclassname"><span class="pre">lair.clock.</span></span><span class="sig-name descname"><span class="pre">datetime_accessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accessor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dt'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/clock.html#datetime_accessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.clock.datetime_accessor" title="Link to this definition">#</a></dt>
 <dd><p>Return the datetime accessor of the object.</p>
+<p>A Series of times has its datetime methods under <code class="docutils literal notranslate"><span class="pre">.dt</span></code>; a DatetimeIndex
+has them itself. This returns whichever <code class="docutils literal notranslate"><span class="pre">obj</span></code> has, so code can call
+<code class="docutils literal notranslate"><span class="pre">tz_localize</span></code> and the rest on either.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> (<em>pd.Series</em><em> | </em><em>pd.DatetimeIndex</em><em> | </em><em>Any</em>) – The times.</p></li>
+<li><p><strong>accessor</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the accessor, by default <code class="docutils literal notranslate"><span class="pre">'dt'</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Any</em> – <code class="docutils literal notranslate"><span class="pre">obj.dt</span></code> if <code class="docutils literal notranslate"><span class="pre">obj</span></code> has it, else <code class="docutils literal notranslate"><span class="pre">obj</span></code>.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_timezones</span></code></a></dt><dd><p>Uses it for a Series or an index.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime_accessor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">datetime_accessor</span><span class="p">(</span><span class="n">times</span><span class="p">))</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;DatetimeProperties&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">datetime_accessor</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">times</span><span class="p">)))</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;DatetimeIndex&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

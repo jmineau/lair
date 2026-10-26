@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=f2c9fc4e"></script>
+    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo.add_latlon_ticks" href="lair.geo.add_latlon_ticks.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev18+g98cac8ed1" />
+  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -598,6 +598,7 @@
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.PC.html">lair.geo.PC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.geo.add_locator_map</a></li>
@@ -844,6 +845,28 @@ of longitude and latitude</p></li>
 <dd class="field-odd"><p><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>Axes</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.geo.plot_grid.html#lair.geo.plot_grid" title="lair.geo.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a></dt><dd><p>Draws a grid’s cells on the main map.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>A locator map of Utah and its neighbors in the top left of <code class="docutils literal notranslate"><span class="pre">fig</span></code>, with
+the main map’s extent outlined in red, as <a class="reference internal" href="../examples/maps.html"><span class="doc">Draw a map of an inventory</span></a> draws it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">add_locator_map</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">,</span>
+    <span class="n">main_extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.5</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">],</span>
+    <span class="n">main_extent_crs</span><span class="o">=</span><span class="n">PC</span><span class="p">,</span>
+    <span class="n">locator_rect</span><span class="o">=</span><span class="p">(</span><span class="mf">0.14</span><span class="p">,</span> <span class="mf">0.58</span><span class="p">,</span> <span class="mf">0.24</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">),</span>
+    <span class="n">locator_extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">117</span><span class="p">,</span> <span class="o">-</span><span class="mi">106</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">43</span><span class="p">],</span>
+    <span class="n">locator_crs</span><span class="o">=</span><span class="n">PC</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

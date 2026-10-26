@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=f2c9fc4e"></script>
+    <script src="../_static/documentation_options.js?v=41e2e33e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.geo.BaseGrid.resample" href="lair.geo.BaseGrid.resample.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev18+g98cac8ed1" />
+  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -598,6 +598,7 @@
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.PC.html">lair.geo.PC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_locator_map.html">lair.geo.add_locator_map</a></li>
@@ -826,13 +827,30 @@ for converting to other CRS classes.</p>
 <p><cite>osgeo</cite>, <cite>fiona</cite>, and <cite>pycrs</cite> conversions have not been implemented.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Variables<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>crs</strong> (<em>pyproj.CRS</em>) – Pyproj CRS object</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>crs</strong> (<em>Any</em>) – The CRS: another <code class="docutils literal notranslate"><span class="pre">CRS</span></code>, an EPSG code (<code class="docutils literal notranslate"><span class="pre">4326</span></code>), an <code class="docutils literal notranslate"><span class="pre">&quot;EPSG:...&quot;</span></code>
+string, a cartopy, pyproj or rasterio CRS, or anything
+<code class="docutils literal notranslate"><span class="pre">pyproj.CRS.from_user_input</span></code> reads (a PROJ string, WKT).</p>
 </dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>crs</strong> (<em>Any</em>)</p>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>crs</strong> (<em>pyproj.CRS</em>) – Pyproj CRS object</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.geo.write_rio_crs.html#lair.geo.write_rio_crs" title="lair.geo.write_rio_crs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_rio_crs</span></code></a></dt><dd><p>Writes a CRS to xarray data.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.geo</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRS</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CRS</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">epsg</span>
+<span class="go">4326</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CRS</span><span class="p">(</span><span class="mi">4326</span><span class="p">)</span><span class="o">.</span><span class="n">to_pyproj</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;WGS 84&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <p class="rubric">Attributes</p>

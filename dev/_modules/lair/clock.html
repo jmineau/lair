@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=f2c9fc4e"></script>
+    <script src="../../_static/documentation_options.js?v=41e2e33e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev18+g98cac8ed1" />
+  <meta name="docsearch:version" content="2026.12.10.dev19+g3c5a0cede" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -464,12 +464,16 @@
 <span class="c1">#:</span>
 <span class="c1">#: Put the data in local time first, then ``index.hour.isin(AFTERNOON)`` selects</span>
 <span class="c1">#: them (the :doc:`clock example &lt;/examples/clock&gt;` shows it).</span>
+<span class="c1">#:</span>
+<span class="c1">#: .. seealso:: :func:`convert_timezones`, which puts the data in local time.</span>
 <span class="n">AFTERNOON</span> <span class="o">=</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
 
 <span class="c1">#: The meteorological season of each month (1 to 12), as ``&#39;DJF&#39;``, ``&#39;MAM&#39;``,</span>
 <span class="c1">#: ``&#39;JJA&#39;`` or ``&#39;SON&#39;``.</span>
 <span class="c1">#:</span>
 <span class="c1">#: :func:`seasonal` labels its groups with these.</span>
+<span class="c1">#:</span>
+<span class="c1">#: .. seealso:: :func:`seasonal`, which groups data by these seasons.</span>
 <span class="n">SEASONS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
     <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
@@ -492,6 +496,33 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    TimeRange class to represent a time range with start and stop times.</span>
 
+<span class="sd">    The range includes its start and not its stop, so ``TimeRange(&quot;2024&quot;)``</span>
+<span class="sd">    covers 2024 and stops at 2025-01-01 00:00.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time_range : TimeRange | str | list | tuple | slice | None, optional</span>
+<span class="sd">        The whole range in one argument: another ``TimeRange``; an ISO 8601</span>
+<span class="sd">        string, which covers the period it names (``&quot;2024&quot;`` is all of</span>
+<span class="sd">        2024, ``&quot;2024-07-04&quot;`` that day); a ``(start, stop)`` pair; or a</span>
+<span class="sd">        slice. With no ``start`` or ``stop`` either, the default (None) is a</span>
+<span class="sd">        range open at both ends.</span>
+<span class="sd">    start : str | dt.datetime | numpy.datetime64 | None, optional</span>
+<span class="sd">        The start, when ``time_range`` is not given. A string stands for</span>
+<span class="sd">        the start of the period it names. None leaves the range open at the</span>
+<span class="sd">        start.</span>
+<span class="sd">    stop : str | dt.datetime | numpy.datetime64 | None, optional</span>
+<span class="sd">        The stop, when ``time_range`` is not given. It is not part of the</span>
+<span class="sd">        range. A string stands for the end of the period it names:</span>
+<span class="sd">        ``&quot;2024&quot;`` stops at 2025-01-01 00:00. None leaves the range open at</span>
+<span class="sd">        the end.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``time_range`` is given together with ``start`` or ``stop``, or</span>
+<span class="sd">        if any of them has an unrecognized format.</span>
+
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    start : dt.datetime | None</span>
@@ -505,6 +536,24 @@
 <span class="sd">    -------</span>
 <span class="sd">    parse_iso(string: str, inclusive: bool = False) -&gt; dt.datetime</span>
 <span class="sd">        Parse the ISO8601 formatted time string and return a datetime object.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    TimeRange.parse_iso : How a string becomes a start or a stop.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import TimeRange</span>
+<span class="sd">    &gt;&gt;&gt; july = TimeRange(&quot;2024-07&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; july.start, july.stop</span>
+<span class="sd">    (datetime.datetime(2024, 7, 1, 0, 0), datetime.datetime(2024, 8, 1, 0, 0))</span>
+<span class="sd">    &gt;&gt;&gt; dt.datetime(2024, 7, 31, 23) in july</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; TimeRange(start=&quot;2024-07-04&quot;)</span>
+<span class="sd">    TimeRange(start=2024-07-04 00:00:00, stop=None)</span>
+<span class="sd">    &gt;&gt;&gt; str(TimeRange())</span>
+<span class="sd">    &#39;Entire Observation Period&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># typing.Union, not X | Y: the annotation below adds the &quot;TimeRange&quot; forward</span>
@@ -523,33 +572,7 @@
         <span class="n">start</span><span class="p">:</span> <span class="n">_input_types</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">stop</span><span class="p">:</span> <span class="n">_input_types</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize a TimeRange object with the specified time range.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        time_range : TimeRange | str | list | tuple | slice | None, optional</span>
-<span class="sd">            The whole range in one argument: another ``TimeRange``; an ISO 8601</span>
-<span class="sd">            string, which covers the period it names (``&quot;2024&quot;`` is all of</span>
-<span class="sd">            2024, ``&quot;2024-07-04&quot;`` that day); a ``(start, stop)`` pair; or a</span>
-<span class="sd">            slice. With no ``start`` or ``stop`` either, the default (None) is a</span>
-<span class="sd">            range open at both ends.</span>
-<span class="sd">        start : str | dt.datetime | numpy.datetime64 | None, optional</span>
-<span class="sd">            The start, when ``time_range`` is not given. A string stands for</span>
-<span class="sd">            the start of the period it names. None leaves the range open at the</span>
-<span class="sd">            start.</span>
-<span class="sd">        stop : str | dt.datetime | numpy.datetime64 | None, optional</span>
-<span class="sd">            The stop, when ``time_range`` is not given. It is not part of the</span>
-<span class="sd">            range. A string stands for the end of the period it names:</span>
-<span class="sd">            ``&quot;2024&quot;`` stops at 2025-01-01 00:00. None leaves the range open at</span>
-<span class="sd">            the end.</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        ValueError</span>
-<span class="sd">            If ``time_range`` is given together with ``start`` or ``stop``, or</span>
-<span class="sd">            if any of them has an unrecognized format.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a TimeRange; the class docstring describes the parameters.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">time_range</span> <span class="ow">and</span> <span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="n">stop</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot specify both time_range and start/stop&quot;</span><span class="p">)</span>
 
@@ -611,7 +634,22 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The start of the range, or None if it is open at the start.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The start of the range, or None if it is open at the start.</span>
+
+<span class="sd">        Setting it takes a datetime, a ``numpy.datetime64``, None, or an ISO</span>
+<span class="sd">        8601 string, which stands for the start of the period it names.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        TimeRange.stop : The end of the range.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange(&quot;2024-07&quot;).start</span>
+<span class="sd">        datetime.datetime(2024, 7, 1, 0, 0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span>
 
     <span class="nd">@start</span><span class="o">.</span><span class="n">setter</span>
@@ -627,7 +665,23 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The end of the range, or None if it is open at the end.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The end of the range, or None if it is open at the end.</span>
+
+<span class="sd">        The stop itself is not in the range. Setting it takes a datetime, a</span>
+<span class="sd">        ``numpy.datetime64``, None, or an ISO 8601 string, which stands for the</span>
+<span class="sd">        end of the period it names.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        TimeRange.start : The start of the range.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange(&quot;2024-07&quot;).stop</span>
+<span class="sd">        datetime.datetime(2024, 8, 1, 0, 0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span>
 
     <span class="nd">@stop</span><span class="o">.</span><span class="n">setter</span>
@@ -643,7 +697,24 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">total_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The length of the range in seconds; both ends must be set.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The length of the range in seconds; both ends must be set.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the range is open at either end.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        dt2decimalDate : Uses the length of a year from it.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange(&quot;2024-07&quot;).total_seconds / 86400  # days in July</span>
+<span class="sd">        31.0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both start and stop times must be specified&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
@@ -674,6 +745,20 @@
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If the time_str format is invalid.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        TimeRange : A range made from such strings.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso(&quot;2024-07&quot;)</span>
+<span class="sd">        datetime.datetime(2024, 7, 1, 0, 0)</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso(&quot;2024-07&quot;, inclusive=True)</span>
+<span class="sd">        datetime.datetime(2024, 8, 1, 0, 0)</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso(&quot;2024-07-04T12Z&quot;)</span>
+<span class="sd">        datetime.datetime(2024, 7, 4, 12, 0)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Parse time_range string using regex assuming ISO8601 format.</span>
         <span class="c1"># Each component is only allowed after the one before it, and the</span>
@@ -744,6 +829,40 @@
 <span class="sd">    Time your code using a class, context manager, or decorator</span>
 
 <span class="sd">    https://realpython.com/python-timer</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        A name to add the elapsed times up under, in the class&#39;s ``timers``</span>
+<span class="sd">        dict (shared by every Timer). By default None: not recorded.</span>
+<span class="sd">    text : str, optional</span>
+<span class="sd">        The message reported when the timer stops, formatted with the elapsed</span>
+<span class="sd">        seconds. By default ``&quot;Elapsed time: {:0.4f} seconds&quot;``.</span>
+<span class="sd">    logger : Callable[[str], None] | None, optional</span>
+<span class="sd">        The function that reports the message, by default ``print``. None</span>
+<span class="sd">        reports nothing.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    Timer.start : Start it by hand.</span>
+<span class="sd">    Timer.stop : Stop it by hand.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    As a context manager:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.clock import Timer</span>
+<span class="sd">    &gt;&gt;&gt; with Timer(text=&quot;took {:.0f} s&quot;):</span>
+<span class="sd">    ...     total = sum(range(1000))</span>
+<span class="sd">    took 0 s</span>
+
+<span class="sd">    By hand, without a report:</span>
+
+<span class="sd">    &gt;&gt;&gt; timer = Timer(logger=None)</span>
+<span class="sd">    &gt;&gt;&gt; timer.start()</span>
+<span class="sd">    &gt;&gt;&gt; elapsed = timer.stop()</span>
+<span class="sd">    &gt;&gt;&gt; elapsed &gt;= 0</span>
+<span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">timers</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -765,7 +884,18 @@
 <div class="viewcode-block" id="Timer.start">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.start.html#lair.clock.Timer.start">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start a new timer&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start a new timer</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        Timer.TimerError</span>
+<span class="sd">            If the timer is already running.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        Timer.stop : Stop it and report the time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">Timer</span><span class="o">.</span><span class="n">TimerError</span><span class="p">(</span><span class="s2">&quot;Timer is running. Use .stop() to stop it&quot;</span><span class="p">)</span>
 
@@ -775,7 +905,24 @@
 <div class="viewcode-block" id="Timer.stop">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.stop.html#lair.clock.Timer.stop">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the timer, and report the elapsed time&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the timer, and report the elapsed time</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The elapsed time, in seconds. It is also added to ``timers`` under</span>
+<span class="sd">            the timer&#39;s ``name``, if it has one.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        Timer.TimerError</span>
+<span class="sd">            If the timer is not running.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        Timer.start : Start it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">Timer</span><span class="o">.</span><span class="n">TimerError</span><span class="p">(</span><span class="s2">&quot;Timer is not running. Use .start() to start it&quot;</span><span class="p">)</span>
 
@@ -795,7 +942,15 @@
 <div class="viewcode-block" id="Timer.reset_timers">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.reset_timers.html#lair.clock.Timer.reset_timers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_timers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset class timers&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset class timers</span>
+
+<span class="sd">        Empties ``timers``, the elapsed times of every named Timer.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        Timer.stop : Adds to them.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Clear in place: existing Timer instances share this dict</span>
         <span class="n">Timer</span><span class="o">.</span><span class="n">timers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
@@ -816,6 +971,36 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">datetime_accessor</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="o">=</span><span class="s2">&quot;dt&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the datetime accessor of the object.</span>
+
+<span class="sd">    A Series of times has its datetime methods under ``.dt``; a DatetimeIndex</span>
+<span class="sd">    has them itself. This returns whichever ``obj`` has, so code can call</span>
+<span class="sd">    ``tz_localize`` and the rest on either.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : pd.Series | pd.DatetimeIndex | Any</span>
+<span class="sd">        The times.</span>
+<span class="sd">    accessor : str, optional</span>
+<span class="sd">        The name of the accessor, by default ``&#39;dt&#39;``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Any</span>
+<span class="sd">        ``obj.dt`` if ``obj`` has it, else ``obj``.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    convert_timezones : Uses it for a Series or an index.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import datetime_accessor</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.Series(pd.date_range(&quot;2024-01-01&quot;, periods=2, freq=&quot;h&quot;))</span>
+<span class="sd">    &gt;&gt;&gt; type(datetime_accessor(times)).__name__</span>
+<span class="sd">    &#39;DatetimeProperties&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type(datetime_accessor(pd.DatetimeIndex(times))).__name__</span>
+<span class="sd">    &#39;DatetimeIndex&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="p">)</span>
@@ -852,6 +1037,19 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If `time_step` is not one of &#39;hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;, or &#39;annual&#39;.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    TimeRange : One interval, from ISO strings.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import regular_times_to_intervals</span>
+<span class="sd">    &gt;&gt;&gt; months = pd.date_range(&quot;2024-01-01&quot;, periods=2, freq=&quot;MS&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; intervals = regular_times_to_intervals(months)</span>
+<span class="sd">    &gt;&gt;&gt; [str(interval) for interval in intervals]</span>
+<span class="sd">    [&#39;[2024-01-01 00:00:00, 2024-02-01 00:00:00)&#39;, &#39;[2024-02-01 00:00:00, 2024-03-01 00:00:00)&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Convert the numpy array to pandas DatetimeIndex</span>
     <span class="n">start_times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
@@ -894,7 +1092,24 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
-<span class="sd">        The matrix of time differences.</span>
+<span class="sd">        The matrix of time differences, as ``timedelta64``: row i, column j is</span>
+<span class="sd">        time i minus time j (its absolute value by default).</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    time_decay_matrix : An exponential decay of these differences.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import time_difference_matrix</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.to_datetime(</span>
+<span class="sd">    ...     [&quot;2024-01-01 00:00&quot;, &quot;2024-01-01 06:00&quot;, &quot;2024-01-02 00:00&quot;]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; time_difference_matrix(times) / pd.Timedelta(&quot;1h&quot;)</span>
+<span class="sd">    array([[ 0.,  6., 24.],</span>
+<span class="sd">           [ 6.,  0., 18.],</span>
+<span class="sd">           [24., 18.,  0.]])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span>
         <span class="n">times</span>
@@ -917,12 +1132,30 @@
 <span class="sd">    times : list[dt.datetime]</span>
 <span class="sd">        The list of times to calculate the decay matrix for.</span>
 <span class="sd">    decay : str | pd.Timedelta</span>
-<span class="sd">        The decay to use for the exponential decay.</span>
+<span class="sd">        The decay to use for the exponential decay: the time over which a</span>
+<span class="sd">        value falls to 1/e.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
-<span class="sd">        The matrix of time decay values.</span>
+<span class="sd">        The matrix of time decay values: ``exp(-|t_i - t_j| / decay)``, 1 on</span>
+<span class="sd">        the diagonal.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    time_difference_matrix : The differences it decays.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import time_decay_matrix</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.to_datetime(</span>
+<span class="sd">    ...     [&quot;2024-01-01 00:00&quot;, &quot;2024-01-01 06:00&quot;, &quot;2024-01-02 00:00&quot;]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; time_decay_matrix(times, &quot;1D&quot;).round(3)</span>
+<span class="sd">    array([[1.   , 0.779, 0.368],</span>
+<span class="sd">           [0.779, 1.   , 0.472],</span>
+<span class="sd">           [0.368, 0.472, 1.   ]])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Time differences (timedelta64) over the decay time scale -&gt; exponential decay</span>
     <span class="n">diffs</span> <span class="o">=</span> <span class="n">time_difference_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -958,7 +1191,25 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    pd.DataFrame</span>
-<span class="sd">        The aggregated data.</span>
+<span class="sd">        The aggregated data, indexed by the time of day.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    seasonal : Aggregates by season and year.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The mean of two days of hourly data at each hour of the day:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import diurnal</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.date_range(&quot;2024-01-01&quot;, periods=48, freq=&quot;h&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; data = pd.DataFrame({&quot;ch4&quot;: np.arange(48.0)}, index=times)</span>
+<span class="sd">    &gt;&gt;&gt; diurnal(data).head(2)</span>
+<span class="sd">               ch4</span>
+<span class="sd">    00:00:00  12.0</span>
+<span class="sd">    01:00:00  13.0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">resolution</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">method</span><span class="p">)(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">time</span>
     <span class="n">agg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>
@@ -993,6 +1244,25 @@
 <span class="sd">    -------</span>
 <span class="sd">    pd.DataFrame</span>
 <span class="sd">        The aggregated data, indexed by (``season``, ``year``).</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SEASONS : The season of each month.</span>
+<span class="sd">    diurnal : Aggregates by the time of day.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Monthly data for 2024, where each month&#39;s value is its number minus one:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import seasonal</span>
+<span class="sd">    &gt;&gt;&gt; months = pd.date_range(&quot;2024-01-01&quot;, periods=12, freq=&quot;MS&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; seasons = seasonal(pd.DataFrame({&quot;value&quot;: np.arange(12.0)}, index=months))</span>
+<span class="sd">    &gt;&gt;&gt; [f&quot;{season} {year}&quot; for season, year in seasons.index]</span>
+<span class="sd">    [&#39;DJF 2024&#39;, &#39;MAM 2024&#39;, &#39;JJA 2024&#39;, &#39;SON 2024&#39;, &#39;DJF 2025&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; seasons[&quot;value&quot;].tolist()</span>
+<span class="sd">    [0.5, 3.0, 6.0, 9.0, 11.0]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Quarters starting in Dec/Mar/Jun/Sep line up with DJF/MAM/JJA/SON</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;QS-DEC&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>  <span class="c1"># pyrefly: ignore[no-matching-overload]</span>
@@ -1031,6 +1301,17 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        The decimal date.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    decimalDate2dt : The other way.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import dt2decimalDate</span>
+<span class="sd">    &gt;&gt;&gt; round(dt2decimalDate(dt.datetime(2024, 7, 1)), 4)  # 182 of 366 days</span>
+<span class="sd">    2024.4973</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcoffset</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -1058,6 +1339,16 @@
 <span class="sd">    dt.datetime</span>
 <span class="sd">        The naive datetime object. For a decimal date made from a tz-aware</span>
 <span class="sd">        datetime by :func:`dt2decimalDate`, this is the UTC time.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    dt2decimalDate : The other way.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import decimalDate2dt</span>
+<span class="sd">    &gt;&gt;&gt; decimalDate2dt(2024.5)  # half of 366 days</span>
+<span class="sd">    datetime.datetime(2024, 7, 2, 0, 0)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">decimalDate</span><span class="p">)</span>
     <span class="n">rem</span> <span class="o">=</span> <span class="n">decimalDate</span> <span class="o">-</span> <span class="n">year</span>
@@ -1096,7 +1387,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    x : list[dt.datetime] | pd.DataFrame | pd.Series</span>
 <span class="sd">        The times to convert. With ``driver=&#39;pandas&#39;``, the index of a</span>
-<span class="sd">        DataFrame or the values of a Series.</span>
+<span class="sd">        DataFrame or the values of a Series. Without it, a list: put a single</span>
+<span class="sd">        time in one (a bare datetime raises ``TypeError``).</span>
 <span class="sd">    totz : str</span>
 <span class="sd">        The timezone to convert the times to.</span>
 <span class="sd">    fromtz : str, optional</span>
@@ -1127,6 +1419,40 @@
 <span class="sd">        If there are naive times and no ``fromtz``, or a naive time is ambiguous</span>
 <span class="sd">        or nonexistent in ``fromtz`` and ``ambiguous``/``nonexistent`` is &#39;raise&#39;,</span>
 <span class="sd">        or ``driver=&#39;pandas&#39;`` and ``x`` is not a DataFrame or Series.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    UTC2MTN : From UTC to Mountain time, the common case.</span>
+<span class="sd">    AFTERNOON : The hours to select once the data is in local time.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    18:00 UTC in January is 11:00 in Salt Lake City:</span>
+
+<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import convert_timezones</span>
+<span class="sd">    &gt;&gt;&gt; convert_timezones(</span>
+<span class="sd">    ...     [dt.datetime(2024, 1, 15, 18)], &quot;America/Denver&quot;, fromtz=&quot;UTC&quot;</span>
+<span class="sd">    ... )</span>
+<span class="sd">    [datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))]</span>
+
+<span class="sd">    The shortcuts take the same list; in July, 18:00 UTC is 12:00 daylight time:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.clock import UTC2MTN</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MTN([dt.datetime(2024, 7, 15, 18)])</span>
+<span class="sd">    [datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))]</span>
+
+<span class="sd">    The index of a DataFrame, kept naive in local time with ``localize=True``:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 18:00&quot;])</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; convert_timezones(</span>
+<span class="sd">    ...     data, &quot;America/Denver&quot;, fromtz=&quot;UTC&quot;, localize=True, driver=&quot;pandas&quot;</span>
+<span class="sd">    ... )</span>
+<span class="sd">                            ch4</span>
+<span class="sd">    2024-07-15 12:00:00  2000.0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">driver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
