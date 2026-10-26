@@ -21,6 +21,10 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   `PintExceptionGroup: Cannot convert variables` for anything that was not
   already pint-quantified. A variable without a `units` attribute raises a
   `ValueError` that names it. Pint-quantified data converts as before.
+- The `noaa` module page says what the module holds, and the API pages of
+  `CarbonTracker`, `CarbonTrackerCH4`, `CarbonTrackerCO2` and `GMLData`
+  describe every parameter. Each page has See Also links and an example, which
+  runs where it reads no data.
 - The API reference has a page for the package itself, with `lair.units`, the
   `mass_flux` context and `setup_ccg_filter`, and pages for `clock`'s
   `AFTERNOON`, `SEASONS` and time-zone shortcuts (`UTC2MTN` and the others).

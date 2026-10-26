@@ -1,5 +1,14 @@
 """
-NOAA greenhouse gas data.
+NOAA greenhouse gas data: CarbonTracker and NOAA GML's measurement records.
+
+:class:`CarbonTrackerCH4` and :class:`CarbonTrackerCO2` download and read the
+mole fractions of NOAA's CarbonTracker model, and sample them at points, such as
+the ends of STILT trajectories, for a background
+(:meth:`~CarbonTracker.background`). :class:`GMLData` downloads and reads NOAA
+GML's records of one gas at one site, event by event or as monthly means. The
+data roots are ``$LAIR_CARBONTRACKER_DIR`` and ``$LAIR_GML_DIR`` (see
+:ref:`data-locations`), and the cache is in ``$LAIR_CACHE_DIR``.
+:doc:`/examples/carbontracker` samples CarbonTracker at four points.
 """
 
 import datetime as dt
@@ -23,9 +32,15 @@ from lair.parallel import _allowed_cpus
 from lair.records import Cacher, ftp_download, list_files
 
 #: Environment variable holding the CarbonTracker data root
+#:
+#: .. seealso:: :ref:`data-locations`, which lists every variable;
+#:    :ref:`carbontracker-data` shows the folder.
 CARBONTRACKER_DIR_ENV = "LAIR_CARBONTRACKER_DIR"
 
 #: Environment variable holding the NOAA GML data root
+#:
+#: .. seealso:: :ref:`data-locations`, which lists every variable;
+#:    :class:`GMLData`'s Notes show the folder.
 GML_DIR_ENV = "LAIR_GML_DIR"
 
 
@@ -168,6 +183,27 @@ class CarbonTracker(metaclass=ABCMeta):
     """
     NOAA CarbonTracker
 
+    The base of :class:`CarbonTrackerCH4` and :class:`CarbonTrackerCO2`, which
+    are the classes to make (or :meth:`from_version`).
+
+    Parameters
+    ----------
+    version : str
+        The version of CarbonTracker data to download.
+        Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.
+    carbon_tracker_directory : str, optional
+        The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.
+    cache : bool, optional
+        Whether to cache the data, by default True. The cache is a file in
+        ``LAIR_CACHE_DIR`` (default ``~/.cache/lair``), and the folder is
+        made the first time the data is read, so ``cache=False`` needs no
+        writable folder.
+
+    Raises
+    ------
+    TypeError
+        If made as ``CarbonTracker`` itself, which has no gas.
+
     Attributes
     ----------
     specie : Literal['ch4', 'co2']
@@ -175,7 +211,7 @@ class CarbonTracker(metaclass=ABCMeta):
     version : str
         The CarbonTracker version.
     directory : str
-        The directory for the version.
+        The directory for the version: ``<root>/<specie>/<version>``.
     cache : bool
         Whether to cache the data (in ``LAIR_CACHE_DIR``).
 
@@ -187,10 +223,18 @@ class CarbonTracker(metaclass=ABCMeta):
         Create a CarbonTracker object from the version.
     download(sub_dirs=['fluxes', 'molefractions'], pattern=None)
         Download CarbonTracker data from the NOAA GML FTP server.
+
+    See Also
+    --------
+    CarbonTrackerCH4 : CarbonTracker-CH4.
+    CarbonTrackerCO2 : CarbonTracker for CO2.
     """
 
     specie: Literal["ch4", "co2"]
     #: Units of the molefraction field ('ppb' for CH4, 'ppm' for CO2)
+    #:
+    #: .. seealso:: :meth:`CarbonTracker.sample`, whose ``ct_<specie>_<units>``
+    #:    column is in them.
     units: Literal["ppb", "ppm"]
 
     def __init__(
@@ -199,22 +243,7 @@ class CarbonTracker(metaclass=ABCMeta):
         carbon_tracker_directory: str | Path | None = None,
         cache: bool = True,
     ):
-        """
-        Initialize a CarbonTracker object.
-
-        Parameters
-        ----------
-        version : str
-            The version of CarbonTracker data to download.
-            Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.
-        carbon_tracker_directory : str, optional
-            The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.
-        cache : bool, optional
-            Whether to cache the data, by default True. The cache is a file in
-            ``LAIR_CACHE_DIR`` (default ``~/.cache/lair``), and the folder is
-            made the first time the data is read, so ``cache=False`` needs no
-            writable folder.
-        """
+        """Initialize a CarbonTracker; the class docstring describes the parameters."""
         if not hasattr(self, "specie"):
             raise TypeError(
                 "Use CarbonTrackerCH4 / CarbonTrackerCO2, or "
@@ -248,7 +277,20 @@ class CarbonTracker(metaclass=ABCMeta):
         Returns
         -------
         Literal['ch4', 'co2']
-            The specie.
+            The specie: ``'ch4'`` if the version's name has "ch4" in it (in any
+            case), else ``'co2'``.
+
+        See Also
+        --------
+        CarbonTracker.from_version : Makes the class of that gas.
+
+        Examples
+        --------
+        >>> from lair.noaa import CarbonTracker
+        >>> CarbonTracker.get_specie_from_version("CT-CH4-2025")
+        'ch4'
+        >>> CarbonTracker.get_specie_from_version("CT2019B")
+        'co2'
         """
         return "ch4" if "ch4" in version.lower() else "co2"
 
@@ -268,7 +310,20 @@ class CarbonTracker(metaclass=ABCMeta):
         Returns
         -------
         CarbonTracker
-            The CarbonTracker object.
+            The CarbonTracker object: a :class:`CarbonTrackerCH4` or a
+            :class:`CarbonTrackerCO2`, with the other arguments at their defaults.
+
+        See Also
+        --------
+        CarbonTracker.get_specie_from_version : How the gas is told.
+
+        Examples
+        --------
+        Nothing is read until the data is used:
+
+        >>> from lair.noaa import CarbonTracker
+        >>> CarbonTracker.from_version("CT2019B", "carbontracker")
+        CarbonTrackerCO2(version=CT2019B, directory=carbontracker/co2/CT2019B)
         """
         specie = CarbonTracker.get_specie_from_version(version)
         if specie == "co2":
@@ -294,6 +349,28 @@ class CarbonTracker(metaclass=ABCMeta):
         pattern : str, optional
             Only download matching files: a glob against the remote path if it
             has wildcards (e.g. ``'*2015-06*'``), else a substring. By default None.
+
+        See Also
+        --------
+        lair.records.ftp_download : Does the download.
+
+        Notes
+        -----
+        The files go into ``directory``, in the server's folder layout below the
+        version. Without ``pattern`` every file of the folders is downloaded:
+        the CT-CH4-2025 mole fractions of 2015 to 2023 alone are 127 GB.
+
+        Examples
+        --------
+        One day of mole fractions, as :doc:`/examples/carbontracker` downloads
+        it. It needs the network (about five minutes), so it is not run when the
+        docs build:
+
+        >>> from lair.noaa import CarbonTrackerCH4
+        >>> ct = CarbonTrackerCH4(carbon_tracker_directory="carbontracker")
+        >>> ct.download(  # doctest: +SKIP
+        ...     sub_dirs=["molefractions"], pattern="*2020-01-15*"
+        ... )
         """
         host = "ftp.gml.noaa.gov"
         parent = "/products/carbontracker"
@@ -313,7 +390,20 @@ class CarbonTracker(metaclass=ABCMeta):
 
     @property
     def molefractions_dir(self) -> Path:
-        """Directory of the molefraction (concentration-field) files."""
+        """
+        Directory of the molefraction (concentration-field) files.
+
+        See Also
+        --------
+        CarbonTrackerCH4.molefractions : Reads them.
+
+        Examples
+        --------
+        >>> from lair.noaa import CarbonTrackerCH4
+        >>> ct = CarbonTrackerCH4(carbon_tracker_directory="carbontracker")
+        >>> ct.molefractions_dir.as_posix()
+        'carbontracker/ch4/CT-CH4-2025/molefractions'
+        """
         return self.directory / "molefractions"
 
     @staticmethod
@@ -432,6 +522,40 @@ class CarbonTracker(metaclass=ABCMeta):
         3-hour means labeled by their centers (``ct_time``: 01:30, 04:30, ...
         UTC), so a point takes the mean of the period it is in, and a point on
         the boundary of two periods (03:00) takes the later one.
+
+        Parameters
+        ----------
+        points : pd.DataFrame
+            The points, with the columns ``datetime`` (UTC), ``lati`` and
+            ``long`` (degrees) and ``zagl`` (meters above ground).
+
+        Returns
+        -------
+        pd.DataFrame
+            The points, with ``ct_<specie>_<units>`` (``ct_ch4_ppb``) and the
+            cell, time and level it came from (``ct_latitude``,
+            ``ct_longitude``, ``ct_time``, ``ct_level``). A point outside the
+            grid gets NaN.
+
+        See Also
+        --------
+        CarbonTracker.background : Their mean.
+
+        Examples
+        --------
+        :ref:`The CarbonTracker example <carbontracker-data>` samples four
+        points west of Salt Lake City; it reads the folder of one downloaded
+        day::
+
+            points = pd.DataFrame(
+                {
+                    "datetime": pd.to_datetime(["2020-01-15 17:00"] * 2),  # UTC
+                    "lati": [41.5, 39.5],
+                    "long": [-114.5, -114.5],
+                    "zagl": [100.0, 100.0],
+                }
+            )
+            ct.sample(points)[["lati", "ct_ch4_ppb", "ct_time", "ct_level"]]
         """
         points = points.reset_index(drop=True)
         if points.empty:
@@ -456,6 +580,33 @@ class CarbonTracker(metaclass=ABCMeta):
         over them. With ``by`` (e.g. ``'receptor'``) the mean and 1-sigma spread
         are returned per group; otherwise a single-row summary. Output is ppm
         (CT-CH4 mole fractions are stored in ppb, CO2 in ppm).
+
+        Parameters
+        ----------
+        points : pd.DataFrame
+            The points, as :meth:`sample` takes them.
+        by : str, optional
+            A column of ``points`` to group by, such as ``'receptor'``. By
+            default None: one row for all the points.
+
+        Returns
+        -------
+        pd.DataFrame
+            ``background_ppm``, ``sigma_ppm`` (the standard deviation over the
+            points) and ``n_endpoints`` (the points that had a value), one row
+            per group.
+
+        See Also
+        --------
+        CarbonTracker.sample : The value at each point.
+
+        Examples
+        --------
+        With the points of :meth:`sample`, as :ref:`the CarbonTracker example
+        <carbontracker-background>` shows::
+
+            ct.background(points)  # one row
+            ct.background(points, by="receptor")  # one row per receptor
         """
         sampled = self.sample(points)
         col = f"ct_{self.specie}_{self.units}"
@@ -486,11 +637,20 @@ class CarbonTrackerCH4(CarbonTracker):
     """
     NOAA CarbonTracker-CH4
 
-    Attributes
+    Mole fractions are in ppb. :ref:`The CarbonTracker example
+    <carbontracker-data>` shows the folder.
+
+    Each parameter is also an attribute of the same name.
+
+    Parameters
     ----------
-    molefractions : xr.Dataset
-        The molefractions Dataset.
-    parallel_parse : bool
+    version : str, optional
+        The version, by default ``'CT-CH4-2025'``.
+    carbon_tracker_directory : str, optional
+        The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.
+    cache : bool, optional
+        Whether to cache the data, by default True (see :class:`CarbonTracker`).
+    parallel_parse : bool, optional
         Whether ``molefractions`` opens the files in worker processes, one for
         each CPU this process may use (default True), or one at a time. The
         workers import the calling script again, so a script that reads
@@ -500,6 +660,18 @@ class CarbonTrackerCH4(CarbonTracker):
     -------
     calc_molefractions_pressure(molefractions)
         Calculate the pressure at each level in the molefractions Dataset.
+
+    See Also
+    --------
+    CarbonTrackerCO2 : The same for CO2.
+
+    Examples
+    --------
+    Nothing is read until the data is used:
+
+    >>> from lair.noaa import CarbonTrackerCH4
+    >>> CarbonTrackerCH4(carbon_tracker_directory="carbontracker")
+    CarbonTrackerCH4(version=CT-CH4-2025, directory=carbontracker/ch4/CT-CH4-2025)
     """
 
     specie = "ch4"
@@ -527,6 +699,18 @@ class CarbonTrackerCH4(CarbonTracker):
             releases (their names end with the same ``YYYY-MM-DD.nc``). The
             message names the day and both files. The files are not opened,
             and nothing is cached.
+
+        See Also
+        --------
+        CarbonTracker.sample : Reads only the days of the points.
+        CarbonTrackerCH4.calc_molefractions_pressure : Adds the pressure of
+            each level.
+
+        Notes
+        -----
+        Each time step is labeled by the center of its 3-hour period (01:30,
+        04:30, ... UTC). It opens every file of the version; with
+        ``cache=True`` a later read loads the cache instead.
         """
         path = self.directory / "molefractions"
 
@@ -560,7 +744,30 @@ class CarbonTrackerCH4(CarbonTracker):
         Returns
         -------
         xr.Dataset
-            The molefractions Dataset with the pressure calculated.
+            The molefractions Dataset with the pressure calculated: a variable
+            ``P``, in hPa, from the hybrid coefficients ``at`` and ``bt`` and the
+            surface pressure (``at + bt * surf_pressure``). The Dataset passed is
+            changed too.
+
+        See Also
+        --------
+        CarbonTrackerCH4.molefractions : The Dataset it takes.
+
+        Examples
+        --------
+        Two levels over one cell, with a surface pressure of 850 hPa:
+
+        >>> import xarray as xr
+        >>> from lair.noaa import CarbonTrackerCH4
+        >>> mf = xr.Dataset(
+        ...     {
+        ...         "at": ("boundary", [0.0, 5000.0]),
+        ...         "bt": ("boundary", [1.0, 0.5]),
+        ...         "surf_pressure": 85000.0,
+        ...     }
+        ... )
+        >>> CarbonTrackerCH4.calc_molefractions_pressure(mf)["P"].values
+        array([850., 475.])
         """
         molefractions["P"] = (
             molefractions.at + molefractions.bt * molefractions.surf_pressure
@@ -582,19 +789,38 @@ class CarbonTrackerCO2(CarbonTracker):
     the daily molefraction files flat in ``molefractions/co2_total/``, one file
     per grid (``CT2019B.molefrac_nam1x1_2015-06-01.nc``, ``..._glb3x2_...``).
 
-    Attributes
+    Each parameter is also an attribute of the same name.
+
+    Parameters
     ----------
-    grid : str
+    version : str
+        The version, such as ``'CT2019B'``.
+    carbon_tracker_directory : str, optional
+        The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.
+    cache : bool, optional
+        Whether to cache the data, by default True (see :class:`CarbonTracker`).
+    grid : str, optional
         The molefraction grid to read, e.g. ``'nam1x1'`` (North America,
-        1x1 deg) or ``'glb3x2'`` (global, 3x2 deg). Points outside the grid
-        sample as NaN.
-    molefractions : xr.Dataset
-        The molefractions Dataset.
-    parallel_parse : bool
+        1x1 deg, the default) or ``'glb3x2'`` (global, 3x2 deg). Points outside
+        the grid sample as NaN.
+    parallel_parse : bool, optional
         Whether ``molefractions`` opens the files in worker processes, one for
         each CPU this process may use (default True), or one at a time. The
         workers import the calling script again, so a script that reads
         ``molefractions`` needs the ``if __name__ == "__main__":`` guard.
+
+    See Also
+    --------
+    CarbonTrackerCH4 : The same for methane.
+
+    Examples
+    --------
+    Nothing is read until the data is used:
+
+    >>> from lair.noaa import CarbonTrackerCO2
+    >>> ct = CarbonTrackerCO2("CT2019B", "carbontracker", grid="glb3x2")
+    >>> ct.molefractions_dir.as_posix()
+    'carbontracker/co2/CT2019B/molefractions/co2_total'
     """
 
     specie = "co2"
@@ -614,7 +840,13 @@ class CarbonTrackerCO2(CarbonTracker):
 
     @property
     def molefractions_dir(self) -> Path:
-        """Directory of the total-CO2 molefraction files."""
+        """
+        Directory of the total-CO2 molefraction files.
+
+        See Also
+        --------
+        CarbonTrackerCO2.molefractions : Reads them.
+        """
         return self.directory / "molefractions" / "co2_total"
 
     def _molefraction_file_for_date(self, date) -> Path | None:
@@ -639,6 +871,11 @@ class CarbonTrackerCO2(CarbonTracker):
             from two releases (their names end with the same
             ``YYYY-MM-DD.nc``). The message names the day and both files. The
             files are not opened, and nothing is cached.
+
+        See Also
+        --------
+        CarbonTracker.sample : Reads only the days of the points.
+        CarbonTrackerCH4.molefractions : The same for methane.
         """
         files = sorted(
             str(f) for f in self.molefractions_dir.glob(f"*molefrac_{self.grid}_*.nc")
@@ -676,14 +913,24 @@ class GMLData:
     """
     NOAA GML Data
 
-    Attributes
+    One file of NOAA GML's measurements of one gas at one site: every sample
+    (``frequency='event'``) or monthly means (``'month'``).
+
+    Each parameter is also an attribute of the same name.
+
+    Parameters
     ----------
     specie : str
-        The greenhouse gas specie.
+        The greenhouse gas specie, in lower case as in NOAA's file names
+        (``'ch4'``).
     site : str
-        The site where the flask samples were collected.
+        The site where the flask samples were collected, its code in lower
+        case (``'uta'``).
     platform : str, optional
         The platform where the flask samples were collected, by default 'surface'.
+    sample_type : str, optional
+        The sample type, by default 'flask'. Use 'pfp' for Portable Flask
+        Package data.
     lab_id : int, optional
         The lab ID, by default 1.
     measurement_group : str, optional
@@ -691,9 +938,13 @@ class GMLData:
     frequency : str, optional
         The frequency of the measurements, by default 'event'.
     driver : str, optional
-        The driver to use to read the data, by default 'pandas'.
+        The driver to use to read the data, by default 'pandas': a DataFrame
+        from the ``.txt`` file, or ``'xarray'``: a Dataset from the ``.nc`` file.
     gml_dir : str, optional
         The NOAA GML data root, by default ``$LAIR_GML_DIR``.
+
+    Attributes
+    ----------
     directory : str
         The directory for the data.
     filename : str
@@ -726,6 +977,22 @@ class GMLData:
     and ``.txt`` for ``driver='pandas'`` or ``.nc`` for ``driver='xarray'``.
     ``download()`` copies the file of that name from NOAA GML's FTP server
     (``/data/trace_gases/{specie}/{sample_type}/{platform}/{ext}/``).
+
+    See Also
+    --------
+    GMLData.apply_qaqc : Keeps the samples with good flags.
+    CarbonTracker : NOAA's model, for a background.
+
+    Examples
+    --------
+    Making one reads nothing; it names the file:
+
+    >>> from lair.noaa import GMLData
+    >>> uta = GMLData("ch4", "uta", gml_dir="gml")
+    >>> uta.filepath.as_posix()
+    'gml/ch4/flask/ch4_uta_surface-flask_1_ccgg_event.txt'
+
+    Then ``uta.download()`` fetches it and ``uta.data`` reads it.
     """
 
     file_template = "{specie}_{site}_{platform}-{sample_type}_{lab_id}_{measurement_group}_{frequency}.{ext}"
@@ -744,31 +1011,7 @@ class GMLData:
         driver: Literal["pandas", "xarray"] = "pandas",
         gml_dir: str | Path | None = None,
     ):
-        """
-        Initialize a GMLData object.
-
-        Parameters
-        ----------
-        specie : str
-            The greenhouse gas specie.
-        site : str
-            The site where the flask samples were collected.
-        platform : str, optional
-            The platform where the flask samples were collected, by default 'surface'.
-        sample_type : str, optional
-            The sample type, by default 'flask'. Use 'pfp' for Portable Flask
-            Package data.
-        lab_id : int, optional
-            The lab ID, by default 1.
-        measurement_group : str, optional
-            The measurement group, by default 'ccgg'.
-        frequency : str, optional
-            The frequency of the measurements, by default 'event'.
-        driver : str, optional
-            The driver to use to read the data, by default 'pandas'.
-        gml_dir : str, optional
-            The NOAA GML data root, by default ``$LAIR_GML_DIR``.
-        """
+        """Initialize a GMLData; the class docstring describes the parameters."""
         self.specie = specie
         self.site = site
         self.platform = platform
@@ -790,7 +1033,21 @@ class GMLData:
         return f"NOAA GML Data({self.specie}, {self.site}, {self.sample_type})"
 
     def download(self):
-        """Download the file from NOAA GML's FTP server and return its path."""
+        """
+        Download the file from NOAA GML's FTP server and return its path.
+
+        See Also
+        --------
+        GMLData.data : Reads the file.
+
+        Examples
+        --------
+        It needs the network, so it is not run when the docs build:
+
+        >>> from lair.noaa import GMLData
+        >>> GMLData("ch4", "uta", gml_dir="gml").download()  # doctest: +SKIP
+        'gml/ch4/flask/ch4_uta_surface-flask_1_ccgg_event.txt'
+        """
         host = "ftp.gml.noaa.gov"
         path = f"/data/trace_gases/{self.specie}/{self.sample_type}/{self.platform}/{self.ext}/{self.filename}"
         ftp_download(host, path, str(self.directory))
@@ -798,7 +1055,19 @@ class GMLData:
 
     @cached_property
     def data(self):
-        """The file's data, read once."""
+        """
+        The file's data, read once.
+
+        With ``driver='pandas'``, a DataFrame indexed by ``datetime``, sorted:
+        the sample times of an event file (naive, as NOAA writes them in UTC),
+        or the first of each month for a monthly file. With ``'xarray'``, the
+        NetCDF file's Dataset, with ``time`` along ``obs``.
+
+        See Also
+        --------
+        GMLData.apply_qaqc : Keeps the samples with good flags.
+        GMLData.download : Fetches the file first.
+        """
         if self.driver == "pandas" and self.frequency == "month":
             data = self._read_monthly()
         elif self.driver == "pandas":
@@ -867,6 +1136,25 @@ class GMLData:
         -------
         pd.DataFrame | xr.Dataset
             The filtered data.
+
+        See Also
+        --------
+        GMLData.data : The data to filter.
+
+        Examples
+        --------
+        NOAA marks a good sample ``...``; a sample with a flag is kept only
+        when that flag is allowed:
+
+        >>> import pandas as pd
+        >>> from lair.noaa import GMLData
+        >>> samples = pd.DataFrame(
+        ...     {"value": [1900.0, 2400.0], "qcflag": ["...", "..P"]}
+        ... )
+        >>> GMLData.apply_qaqc(samples)["value"].tolist()
+        [1900.0]
+        >>> GMLData.apply_qaqc(samples, flags="..P")["value"].tolist()
+        [1900.0, 2400.0]
         """
         allowed_flags = ["..."]
         if flags is not None:
