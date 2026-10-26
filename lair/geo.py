@@ -67,6 +67,16 @@ def bbox2extent(bbox: list[float]) -> list[float]:
     -------
     list[minx, maxx, miny, maxy]
         Extent
+
+    See Also
+    --------
+    extent2bbox : The other way.
+
+    Examples
+    --------
+    >>> from lair.geo import bbox2extent
+    >>> bbox2extent([-112.3, 40.4, -111.7, 41.0])
+    [-112.3, -111.7, 40.4, 41.0]
     """
     minx, miny, maxx, maxy = bbox
     extent = [minx, maxx, miny, maxy]
@@ -86,6 +96,16 @@ def extent2bbox(extent: list[float] | tuple[float, float, float, float]) -> list
     -------
     list[minx, miny, maxx, maxy]
         Bounding box
+
+    See Also
+    --------
+    bbox2extent : The other way.
+
+    Examples
+    --------
+    >>> from lair.geo import extent2bbox
+    >>> extent2bbox([-112.3, -111.7, 40.4, 41.0])
+    [-112.3, 40.4, -111.7, 41.0]
     """
     minx, maxx, miny, maxy = extent
     bbox = [minx, miny, maxx, maxy]
@@ -94,7 +114,11 @@ def extent2bbox(extent: list[float] | tuple[float, float, float, float]) -> list
 
 # ----- COORDINATES ----- #
 
-PC = ccrs.PlateCarree()  # Plate Carree projection
+#: cartopy's PlateCarree projection: plain longitude and latitude. Pass it as
+#: ``transform=`` to draw lat/lon data on a map in any projection.
+#:
+#: .. seealso:: :doc:`/examples/maps`, which draws with it.
+PC = ccrs.PlateCarree()
 
 
 class CRS:
@@ -109,6 +133,13 @@ class CRS:
     .. note::
         `osgeo`, `fiona`, and `pycrs` conversions have not been implemented.
 
+    Parameters
+    ----------
+    crs : Any
+        The CRS: another ``CRS``, an EPSG code (``4326``), an ``"EPSG:..."``
+        string, a cartopy, pyproj or rasterio CRS, or anything
+        ``pyproj.CRS.from_user_input`` reads (a PROJ string, WKT).
+
     Attributes
     ----------
     crs : pyproj.CRS
@@ -119,6 +150,18 @@ class CRS:
         PROJ4 string of the CRS
     wkt : str
         WKT string of the CRS
+
+    See Also
+    --------
+    write_rio_crs : Writes a CRS to xarray data.
+
+    Examples
+    --------
+    >>> from lair.geo import CRS
+    >>> CRS("EPSG:4326").epsg
+    4326
+    >>> CRS(4326).to_pyproj().name
+    'WGS 84'
     """
 
     def __init__(self, crs: Any):
@@ -150,34 +193,112 @@ class CRS:
 
     @property
     def epsg(self) -> int | None:
-        """Get the EPSG code of the CRS."""
+        """
+        Get the EPSG code of the CRS.
+
+        None for a CRS without one, such as Vulcan's Lambert conformal grid.
+
+        See Also
+        --------
+        CRS.wkt : The full description of the CRS.
+
+        Examples
+        --------
+        >>> from lair.geo import CRS
+        >>> CRS("EPSG:4326").epsg
+        4326
+        """
         return self.crs.to_epsg()
 
     @property
     def proj4(self) -> str:
-        """Get the PROJ4 string of the CRS."""
+        """
+        Get the PROJ4 string of the CRS.
+
+        pyproj warns that a PROJ string can lose some of a CRS's information;
+        prefer :attr:`wkt` to store one.
+
+        See Also
+        --------
+        CRS.wkt : The CRS as WKT, which loses nothing.
+        """
         return self.crs.to_proj4()
 
     @property
     def units(self) -> str:
-        """Get the units of the CRS."""
+        """
+        Get the units of the CRS.
+
+        The linear units, as rasterio names them: ``'metre'`` for a projected
+        CRS in meters, ``'unknown'`` for a geographic one (degrees).
+
+        See Also
+        --------
+        lair.geo.gridcell_area : Needs a geographic CRS or one in meters.
+
+        Examples
+        --------
+        >>> from lair.geo import CRS
+        >>> CRS("EPSG:3857").units
+        'metre'
+        """
         return self.to_rasterio().linear_units
 
     @property
     def wkt(self) -> str:
-        """Get the WKT string of the CRS."""
+        """
+        Get the WKT string of the CRS.
+
+        See Also
+        --------
+        CRS.proj4 : The shorter PROJ string.
+
+        Examples
+        --------
+        >>> from lair.geo import CRS
+        >>> CRS("EPSG:4326").wkt[:20]
+        'GEOGCRS["WGS 84",ENS'
+        """
         return self.crs.to_wkt()
 
     def to_cartopy(self) -> ccrs.CRS:
-        """Convert to cartopy CRS."""
+        """
+        Convert to cartopy CRS.
+
+        A plain ``cartopy.crs.CRS``, not a ``Projection``, so it can transform
+        data but cannot be a map's projection.
+
+        See Also
+        --------
+        CRS.to_pyproj : The pyproj CRS it is made from.
+        """
         return ccrs.CRS(self.crs)
 
     def to_rasterio(self) -> rasterio.CRS:
-        """Convert to rasterio CRS."""
+        """
+        Convert to rasterio CRS.
+
+        See Also
+        --------
+        CRS.to_pyproj : The pyproj CRS it is made from.
+        """
         return rasterio.CRS.from_user_input(self.crs)
 
     def to_pyproj(self) -> pyproj.CRS:
-        """Convert to pyproj CRS."""
+        """
+        Convert to pyproj CRS.
+
+        See Also
+        --------
+        CRS.to_cartopy : For cartopy.
+        CRS.to_rasterio : For rasterio.
+
+        Examples
+        --------
+        >>> from lair.geo import CRS
+        >>> CRS(4326).to_pyproj().is_geographic
+        True
+        """
         return self.crs
 
 
@@ -203,6 +324,18 @@ def dms2dd(d: float = 0.0, m: float = 0.0, s: float = 0.0) -> float:
     float
         Decimal degrees, or NaN if any input cannot be converted to a float
         (e.g. ``None`` or a non-numeric string).
+
+    See Also
+    --------
+    wrap_lons : Puts longitudes in one range.
+
+    Examples
+    --------
+    >>> from lair.geo import dms2dd
+    >>> dms2dd(40, 45, 36)
+    40.76
+    >>> dms2dd(-111, 53, 24)
+    -111.89
     """
     try:
         d, m, s = float(d), float(m), float(s)
@@ -237,6 +370,17 @@ def wrap_lons(
     -----
     .. copied from https://github.com/jamesp/geovista/blob/4850c519c7a37c4765befa06fbab933350637c93/lib/geovista/common.py#L274
 
+    See Also
+    --------
+    dms2dd : Degrees, minutes and seconds to degrees.
+
+    Examples
+    --------
+    >>> from lair.geo import wrap_lons
+    >>> wrap_lons([190.0, -181.0, 360.0])
+    array([-170.,  179.,    0.])
+    >>> wrap_lons(350.0, base=0)
+    array([350.])
     """
     #
     # TODO: support radians
@@ -272,6 +416,10 @@ def add_lat_ticks(
     Returns
     -------
     None
+
+    See Also
+    --------
+    add_latlon_ticks : Both axes at once.
     """
     fig = cast(Figure, ax.figure)
     # One tick per inch of axis height (independent of dpi)
@@ -317,6 +465,10 @@ def add_lon_ticks(
     Returns
     -------
     None
+
+    See Also
+    --------
+    add_latlon_ticks : Both axes at once.
     """
     fig = cast(Figure, ax.figure)
     # One tick per inch of axis width (independent of dpi)
@@ -370,6 +522,20 @@ def add_latlon_ticks(
     Returns
     -------
     None
+
+    See Also
+    --------
+    add_lat_ticks : The latitude ticks alone.
+    add_lon_ticks : The longitude ticks alone.
+
+    Examples
+    --------
+    Ticks about one per inch, on a map of the Salt Lake Valley
+    (:doc:`/examples/maps` draws one)::
+
+        extent = [-112.3, -111.7, 40.4, 41.0]
+        ax.set_extent(extent, crs=PC)
+        add_latlon_ticks(ax, extent, x_rotation=45)
     """
     xlims, ylims = extent[:2], extent[2:]
 
@@ -427,6 +593,26 @@ def add_locator_map(
     -------
     plt.Axes
         Axes object of the locator map
+
+    See Also
+    --------
+    plot_grid : Draws a grid's cells on the main map.
+
+    Examples
+    --------
+    A locator map of Utah and its neighbors in the top left of ``fig``, with
+    the main map's extent outlined in red, as :doc:`/examples/maps` draws it::
+
+        add_locator_map(
+            fig,
+            main_extent=[-112.2, -111.5, 40.4, 41.0],
+            main_extent_crs=PC,
+            locator_rect=(0.14, 0.58, 0.24, 0.26),
+            locator_extent=[-117, -106, 35, 43],
+            locator_crs=PC,
+            color="red",
+            linewidth=1.5,
+        )
     """
     import cartopy.feature as cfeature
     from shapely.geometry import box
@@ -498,6 +684,32 @@ class BaseGrid:
     for clipping, regridding, resampling, and reprojection. Operations return a new
     grid by default; pass ``inplace=True`` to modify this one instead. Either way the
     grid object is returned, for chaining.
+
+    Parameters
+    ----------
+    data : xr.DataArray | xr.Dataset
+        The gridded data, with its spatial dimensions set for rioxarray
+        (``lat``/``lon``, or ``x``/``y``).
+    crs : Any
+        The CRS of the data, anything :class:`CRS` takes. It is written to the
+        data and kept as the ``crs`` attribute.
+
+    See Also
+    --------
+    lair.inventories.Inventory : The grid of an emission inventory.
+
+    Examples
+    --------
+    >>> from lair.geo import BaseGrid, generate_regular_grid
+    >>> data = generate_regular_grid(
+    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label="lon", y_label="lat"
+    ... ).rio.set_spatial_dims(x_dim="lon", y_dim="lat")
+    >>> grid = BaseGrid(data, "EPSG:4326")
+    >>> grid.crs.epsg
+    4326
+    >>> box = grid.clip(bbox=(-112.1, 40.7, -111.9, 40.9))
+    >>> dict(box.data.sizes)
+    {'lat': 2, 'lon': 2}
     """
 
     def __init__(self, data, crs, **kwargs):
@@ -511,7 +723,11 @@ class BaseGrid:
         Returns
         -------
         BaseGrid
-            The copied grid.
+            The copied grid: a deep copy, data included.
+
+        See Also
+        --------
+        BaseGrid.clip : Returns a changed copy unless ``inplace=True``.
         """
         return copy.deepcopy(self)
 
@@ -523,7 +739,23 @@ class BaseGrid:
         Returns
         -------
         xr.DataArray
-            The grid cell area.
+            The grid cell area, on the WGS84 ellipsoid for a lat-lon grid.
+
+        See Also
+        --------
+        gridcell_area : How each cell's area is computed.
+
+        Examples
+        --------
+        Two rows of 0.1 degree cells near Salt Lake City:
+
+        >>> from lair.geo import BaseGrid, generate_regular_grid
+        >>> data = generate_regular_grid(
+        ...     -112.0, -111.8, 0.1, 40.6, 40.8, 0.1, x_label="lon", y_label="lat"
+        ... ).rio.set_spatial_dims(x_dim="lon", y_dim="lat")
+        >>> BaseGrid(data, "EPSG:4326").gridcell_area.values.round(3)
+        array([[93.922, 93.922],
+               [93.783, 93.783]])
         """
         return gridcell_area(self.data)
 
@@ -564,6 +796,10 @@ class BaseGrid:
         -------
         BaseGrid
             The clipped grid
+
+        See Also
+        --------
+        clip : The same for xarray data.
         """
         crs = crs or self.crs.to_rasterio()
         data = clip(self.data, bbox=bbox, extent=extent, geom=geom, crs=crs, **kwargs)
@@ -605,6 +841,11 @@ class BaseGrid:
         -------
         BaseGrid
             The regridded grid
+
+        See Also
+        --------
+        regrid : The same for xarray data.
+        BaseGrid.resample : To a new resolution over the same area.
         """
         data = regrid(self.data, out_grid=out_grid, method=method)
         if inplace:
@@ -641,6 +882,11 @@ class BaseGrid:
         -------
         BaseGrid
             The resampled grid
+
+        See Also
+        --------
+        resample : The same for xarray data, and the methods.
+        lair.inventories.Inventory.resample : Conservative by default, for a flux.
         """
         data = resample(self.data, resolution=resolution, regrid_method=regrid_method)
         if inplace:
@@ -673,7 +919,16 @@ class BaseGrid:
         Returns
         -------
         BaseGrid
-            The reprojected grid
+            The reprojected grid, on EPSG:4326 lat/lon.
+
+        Raises
+        ------
+        ValueError
+            If the data is already on a geographic (lat/lon) CRS.
+
+        See Also
+        --------
+        BaseGrid.resample : For data already on lat/lon.
         """
         # Any geographic CRS (EPSG:4326, OGC:CRS84, NAD83, ...) is already lat/lon
         if self.crs.to_pyproj().is_geographic:
@@ -730,6 +985,30 @@ def clip(
     -------
     xr.DataArray | xr.Dataset
         The clipped data.
+
+    Raises
+    ------
+    ValueError
+        Unless exactly one of ``bbox``, ``extent`` and ``geom`` is given.
+
+    See Also
+    --------
+    BaseGrid.clip : The same for a grid or an inventory.
+    bbox2extent : Converts between a bbox and an extent.
+
+    Examples
+    --------
+    A box of 2 by 2 cells out of 4 by 4, by bbox or by extent:
+
+    >>> from lair.geo import clip, generate_regular_grid, write_rio_crs
+    >>> grid = generate_regular_grid(
+    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label="lon", y_label="lat"
+    ... )
+    >>> grid = write_rio_crs(grid.rio.set_spatial_dims(x_dim="lon", y_dim="lat"), 4326)
+    >>> dict(clip(grid, bbox=(-112.1, 40.7, -111.9, 40.9)).sizes)
+    {'lat': 2, 'lon': 2}
+    >>> dict(clip(grid, extent=(-112.1, -111.9, 40.7, 40.9)).sizes)
+    {'lat': 2, 'lon': 2}
     """
     if (bbox is not None) + (extent is not None) + (geom is not None) != 1:
         raise ValueError("Exactly one of bbox, extent, or geom must be provided.")
@@ -814,6 +1093,11 @@ def gridcell_area(
     against 93.783 km2 on the ellipsoid. A sphere whose radius is the
     ellipsoid's radius at the cell's latitude (:func:`earth_radius`) is worse
     at 40.75 N (93.611 km2, 0.18% too small).
+
+    See Also
+    --------
+    gridcell_area_from_latlon : The same from latitudes and longitudes.
+    BaseGrid.gridcell_area : The areas of a grid's cells.
 
     Examples
     --------
@@ -901,6 +1185,18 @@ def plot_grid(
     -------
     plt.Axes
         Axes object
+
+    See Also
+    --------
+    add_latlon_ticks : Tick labels in degrees for the same map.
+
+    Examples
+    --------
+    The cells of an inventory's grid, outlined over its map, as
+    :doc:`/examples/maps` draws them::
+
+        ax = slv.plot(time="2022-01-01")
+        plot_grid(slv.data, ax=ax, add_colorbar=False)
     """
     if crs is None:
         crs = PC
@@ -973,6 +1269,23 @@ def generate_regular_grid(
     -------
     xr.DataArray
         The generated grid, dims (y_label, x_label)
+
+    See Also
+    --------
+    regrid : Regrids data to such a grid.
+
+    Examples
+    --------
+    Cells of 0.1 degree from 112.2 W to 111.8 W and 40.6 N to 41.0 N:
+
+    >>> from lair.geo import generate_regular_grid
+    >>> grid = generate_regular_grid(
+    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label="lon", y_label="lat"
+    ... )
+    >>> grid.lon.values
+    array([-112.15, -112.05, -111.95, -111.85])
+    >>> grid.lat.values
+    array([40.65, 40.75, 40.85, 40.95])
     """
     x = _cell_centers(xmin, xmax, dx)
     y = _cell_centers(ymin, ymax, dy)
@@ -1035,6 +1348,33 @@ def regrid(
     -------
     xr.DataArray | xr.Dataset
         The regridded data, the same type as ``data``.
+
+    See Also
+    --------
+    resample : To a new resolution over the same area.
+    generate_regular_grid : Makes a grid to regrid to.
+
+    Examples
+    --------
+    A flux of 1 on four cells of 0.1 degree, to cells of 0.05 degree; a
+    conservative regrid keeps the flux:
+
+    >>> import numpy as np
+    >>> import xarray as xr
+    >>> from lair.geo import generate_regular_grid, regrid
+    >>> flux = xr.DataArray(
+    ...     np.ones((2, 2)),
+    ...     coords={"lat": [40.65, 40.75], "lon": [-111.95, -111.85]},
+    ...     dims=("lat", "lon"),
+    ... )
+    >>> fine = generate_regular_grid(
+    ...     -112.0, -111.8, 0.05, 40.6, 40.8, 0.05, x_label="lon", y_label="lat"
+    ... )
+    >>> out = regrid(flux, fine, method="conservative")
+    >>> out.sizes["lat"], out.sizes["lon"]
+    (4, 4)
+    >>> float(out.min().round(3)), float(out.max().round(3))
+    (1.0, 1.0)
     """
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
@@ -1107,6 +1447,35 @@ def resample(
     -------
     xr.DataArray | xr.Dataset
         The resampled data, the same type as ``data``.
+
+    See Also
+    --------
+    regrid : To a grid you give.
+    lair.inventories.Inventory.resample : Conservative by default, for a flux.
+
+    Examples
+    --------
+    A flux of 1 on four cells of 0.1 degree, to cells of 0.05 degree. The
+    default, bilinear, leaves the outer cells at zero (they are outside the
+    outermost centers); a flux needs ``"conservative"``:
+
+    >>> import numpy as np
+    >>> import xarray as xr
+    >>> from lair.geo import resample, write_rio_crs
+    >>> flux = xr.DataArray(
+    ...     np.ones((2, 2)),
+    ...     coords={"lat": [40.65, 40.75], "lon": [-111.95, -111.85]},
+    ...     dims=("lat", "lon"),
+    ... )
+    >>> flux = write_rio_crs(flux.rio.set_spatial_dims(x_dim="lon", y_dim="lat"), 4326)
+    >>> resample(flux, 0.05).values
+    array([[0., 0., 0., 0.],
+           [0., 1., 1., 0.],
+           [0., 1., 1., 0.],
+           [0., 0., 0., 0.]])
+    >>> conservative = resample(flux, 0.05, regrid_method="conservative")
+    >>> float(conservative.min().round(3)), float(conservative.max().round(3))
+    (1.0, 1.0)
     """
     # Optional dependency for advanced regridding
     xe = import_optional_dependency("xesmf")
@@ -1170,6 +1539,25 @@ def round_latlon(
     -------
     xr.DataArray | xr.Dataset
         The data with rounded lat/lon coordinates.
+
+    See Also
+    --------
+    wrap_lons : Puts longitudes in one range.
+
+    Examples
+    --------
+    Float noise in a file's coordinates, rounded away so two grids align:
+
+    >>> import xarray as xr
+    >>> from lair.geo import round_latlon
+    >>> data = xr.DataArray(
+    ...     [[1.0]],
+    ...     coords={"lat": [40.749999999], "lon": [-111.850000001]},
+    ...     dims=("lat", "lon"),
+    ... )
+    >>> rounded = round_latlon(data, 2, 2)
+    >>> float(rounded.lat[0]), float(rounded.lon[0])
+    (40.75, -111.85)
     """
     return data.assign_coords(
         {
@@ -1194,6 +1582,24 @@ def write_rio_crs(data: _XarrayT, crs: Any) -> _XarrayT:
     -------
     DataArray | Dataset
         The data with the CRS written to the rioxarray accessor.
+
+    See Also
+    --------
+    CRS : The CRS it takes.
+    gridcell_area : Needs the CRS it writes.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import xarray as xr
+    >>> from lair.geo import write_rio_crs
+    >>> data = xr.DataArray(
+    ...     np.zeros((2, 2)),
+    ...     coords={"lat": [40.65, 40.75], "lon": [-111.95, -111.85]},
+    ...     dims=("lat", "lon"),
+    ... ).rio.set_spatial_dims(x_dim="lon", y_dim="lat")
+    >>> write_rio_crs(data, "EPSG:4326").rio.crs.to_epsg()
+    4326
     """
     if isinstance(crs, CRS):
         crs = crs.to_rasterio()
@@ -1234,8 +1640,13 @@ def bearing(lat1, lon1, lat2, lon2, deg=True, final=False):
         Bearing in degrees clockwise from true north, in ``[0, 360)``.
         Coincident points return 0.
 
+    See Also
+    --------
+    haversine : The distance between the same points.
+
     Examples
     --------
+    >>> from lair.geo import bearing
     >>> round(float(bearing(40, -111, 41, -111)), 6)  # due north
     0.0
     >>> round(float(bearing(35, 45, 35, 135)), 2)  # Baghdad -> Osaka
@@ -1272,6 +1683,10 @@ def cosine_weights(lats: np.ndarray) -> np.ndarray:
     -------
     np.ndarray
         Cosine weighting
+
+    See Also
+    --------
+    gridcell_area : The exact area of each cell, for a grid.
 
     Examples
     --------
@@ -1313,6 +1728,10 @@ def earth_radius(lat: ArrayLike) -> ArrayLike:
     -----
      - Originally copied from https://towardsdatascience.com/the-correct-way-to-average-the-globe-92ceecd172b7
      - WGS84: https://earth-info.nga.mil/GandG/publications/tr8350.2/tr8350.2-a/Chapter%203.pdf
+
+    See Also
+    --------
+    gridcell_area : Cell areas on the ellipsoid, not on a sphere of this radius.
 
     Examples
     --------
@@ -1368,6 +1787,18 @@ def gridcell_area_from_latlon(
     -------
     np.ndarray
         Grid-cell area in square-kilometers, shape (len(lat), len(lon))
+
+    See Also
+    --------
+    gridcell_area : The same for gridded xarray data.
+
+    Examples
+    --------
+    >>> from lair.geo import gridcell_area_from_latlon
+    >>> gridcell_area_from_latlon([40.65, 40.75, 40.85], [-111.95, -111.85]).round(3)
+    array([[93.922, 93.922],
+           [93.783, 93.783],
+           [93.644, 93.644]])
     """
     lat, lon = np.asarray(lat), np.asarray(lon)
     # A coordinate-only grid with cf-recognizable lat/lon
@@ -1405,6 +1836,26 @@ def haversine(lat1, lon1, lat2, lon2, R=6371, deg=True):
     -------
     float or np.ndarray
         Distance in the units of ``R``.
+
+    See Also
+    --------
+    bearing : The direction from one point to the other.
+
+    Examples
+    --------
+    From Salt Lake City to Provo and to Ogden, in km:
+
+    >>> import numpy as np
+    >>> from lair.geo import haversine
+    >>> round(float(haversine(40.7608, -111.8910, 40.2338, -111.6585)), 1)
+    61.8
+    >>> haversine(
+    ...     40.7608,
+    ...     -111.8910,
+    ...     np.array([40.2338, 41.2230]),
+    ...     np.array([-111.6585, -111.9738]),
+    ... ).round(1)
+    array([61.8, 51.9])
     """
     if deg:
         lat1, lon1, lat2, lon2 = (np.deg2rad(v) for v in (lat1, lon1, lat2, lon2))
@@ -1473,6 +1924,23 @@ def points_along_line(
     list[shapely.Point]
         Points along the network, in the order they were placed, each at least
         ``spacing`` from every other.
+
+    Raises
+    ------
+    ValueError
+        If ``spacing`` is not positive.
+
+    See Also
+    --------
+    haversine : A distance in km, where this one is in the coordinates' units.
+
+    Examples
+    --------
+    >>> from shapely import LineString
+    >>> from lair.geo import points_along_line
+    >>> points = points_along_line(LineString([(0, 0), (10, 0)]), 2.5)
+    >>> [(p.x, p.y) for p in points]
+    [(0.0, 0.0), (2.5, 0.0), (5.0, 0.0), (7.5, 0.0), (10.0, 0.0)]
     """
     import_optional_dependency("networkx")
     import networkx as nx
