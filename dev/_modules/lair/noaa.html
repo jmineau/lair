@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=f38ec485"></script>
+    <script src="../../_static/documentation_options.js?v=1fdc2e52"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev3+g20d6be7d3" />
+  <meta name="docsearch:version" content="2026.12.11.dev5+g27452be61" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -765,8 +765,8 @@
 <span class="sd">        Nothing is read until the data is used:</span>
 
 <span class="sd">        &gt;&gt;&gt; from lair.noaa import CarbonTracker</span>
-<span class="sd">        &gt;&gt;&gt; CarbonTracker.from_version(&quot;CT2019B&quot;, &quot;carbontracker&quot;)</span>
-<span class="sd">        CarbonTrackerCO2(version=CT2019B, directory=carbontracker/co2/CT2019B)</span>
+<span class="sd">        &gt;&gt;&gt; print(CarbonTracker.from_version(&quot;CT2019B&quot;, &quot;carbontracker&quot;))</span>
+<span class="sd">        CarbonTrackerCO2(CT2019B)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">specie</span> <span class="o">=</span> <span class="n">CarbonTracker</span><span class="o">.</span><span class="n">get_specie_from_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">specie</span> <span class="o">==</span> <span class="s2">&quot;co2&quot;</span><span class="p">:</span>
@@ -1126,8 +1126,8 @@
 <span class="sd">    Nothing is read until the data is used:</span>
 
 <span class="sd">    &gt;&gt;&gt; from lair.noaa import CarbonTrackerCH4</span>
-<span class="sd">    &gt;&gt;&gt; CarbonTrackerCH4(carbon_tracker_directory=&quot;carbontracker&quot;)</span>
-<span class="sd">    CarbonTrackerCH4(version=CT-CH4-2025, directory=carbontracker/ch4/CT-CH4-2025)</span>
+<span class="sd">    &gt;&gt;&gt; print(CarbonTrackerCH4(carbon_tracker_directory=&quot;carbontracker&quot;))</span>
+<span class="sd">    CarbonTrackerCH4(CT-CH4-2025)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">specie</span> <span class="o">=</span> <span class="s2">&quot;ch4&quot;</span>

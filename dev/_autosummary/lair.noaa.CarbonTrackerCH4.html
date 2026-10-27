@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=f38ec485"></script>
+    <script src="../_static/documentation_options.js?v=1fdc2e52"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.noaa.CarbonTracker.sample" href="lair.noaa.CarbonTracker.sample.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev3+g20d6be7d3" />
+  <meta name="docsearch:version" content="2026.12.11.dev5+g27452be61" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -846,8 +846,8 @@ workers import the calling script again, so a script that reads
 <p class="rubric">Examples</p>
 <p>Nothing is read until the data is used:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.noaa</span><span class="w"> </span><span class="kn">import</span> <span class="n">CarbonTrackerCH4</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">CarbonTrackerCH4</span><span class="p">(</span><span class="n">carbon_tracker_directory</span><span class="o">=</span><span class="s2">&quot;carbontracker&quot;</span><span class="p">)</span>
-<span class="go">CarbonTrackerCH4(version=CT-CH4-2025, directory=carbontracker/ch4/CT-CH4-2025)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">CarbonTrackerCH4</span><span class="p">(</span><span class="n">carbon_tracker_directory</span><span class="o">=</span><span class="s2">&quot;carbontracker&quot;</span><span class="p">))</span>
+<span class="go">CarbonTrackerCH4(CT-CH4-2025)</span>
 </pre></div>
 </div>
 </dd></dl>
