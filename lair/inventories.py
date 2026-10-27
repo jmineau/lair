@@ -46,6 +46,29 @@ shapely = import_optional_dependency("shapely")
 from molmass import Formula  # noqa: E402
 from shapely import Polygon  # noqa: E402
 
+__all__ = [
+    "INVENTORY_DIR_ENV",
+    "DST_UNITS",
+    "DEFAULT_PINT_FMT",
+    "Regrid_Methods",
+    "molecular_weight",
+    "convert_units",
+    "sum_sectors",
+    "Inventory",
+    "MultiModelInventory",
+    "EDGAR",
+    "EDGARv7",
+    "EDGARv8",
+    "EPA",
+    "EPAv1",
+    "EPAv2",
+    "GFEI",
+    "GFEIv1",
+    "GFEIv2",
+    "Vulcan",
+    "WetCHARTs",
+]
+
 logger = logging.getLogger(__name__)
 
 #: Environment variable holding the inventory archive root

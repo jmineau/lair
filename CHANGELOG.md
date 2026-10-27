@@ -17,6 +17,11 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
   valid, the clock page converts one time, and the inventory page says what
   "the Salt Lake Valley" box is, shows `clip(geom=)`, and says that only
   `resample` and `regrid` need ESMF.
+- `help(lair.clock)`, `help(lair.geo)` and `help(lair.inventories)` list only
+  lair's own names. Each module has an `__all__` now, so the typing names it
+  imports (`Literal`, `ClassVar`, `Self`, `ArrayLike`, ...) no longer print
+  their documentation, and `from lair.geo import *` no longer brings them in.
+  The API pages are the same.
 
 ## [2026.12.10] - 2026-10-27
 
