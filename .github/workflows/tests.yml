@@ -38,7 +38,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0  # setuptools-scm reads the version from tags
 
-      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           version: "0.12.23"
           python-version: ${{ matrix.python-version }}
@@ -78,7 +78,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0  # setuptools-scm reads the version from tags
 
-      - uses: prefix-dev/setup-pixi@v0.11.0
+      - uses: prefix-dev/setup-pixi@v0.11.2
         with:
           locked: true  # fail if pixi.lock is out of date with pyproject.toml
           cache: true
