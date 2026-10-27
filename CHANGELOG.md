@@ -110,6 +110,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Fixed
 
+- lair no longer uses what pandas 3.1 deprecates: `inplace=True` on `DataFrame.drop`
+  (PDEP-8), `DatetimeIndex.weekday` and `dayofyear`, and adding a column to a
+  frame with MultiIndex columns by a name that is not a full tuple. Where
+  warnings are errors (lair's and slv's tests), `soundings.Sounding` failed on
+  pandas 3.1 and `get_soundings` logged a warning and skipped every file;
+  `transects.profile(by="weekday")` and `clock.seasonal` on data with MultiIndex
+  columns failed too. Results are unchanged.
 - `geo.resample` with `regrid_method="conservative"`, and with it
   `Inventory.resample`, no longer drops the last partial cell (#145). When the
   new resolution did not divide the source's width (0.3 degrees over 4.0 degrees

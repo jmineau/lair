@@ -154,12 +154,12 @@ class Sounding:
         )
 
         self.data = pd.read_csv(path, parse_dates=["time"])
-        self.data.drop(columns=["station", "time"], inplace=True)
+        self.data = self.data.drop(columns=["station", "time"])
 
         for attr in self._attrs:
             if attr in self.data.columns:
                 setattr(self, attr, self.data[attr].iloc[0])
-                self.data.drop(columns=attr, inplace=True)
+                self.data = self.data.drop(columns=attr)
 
     def _surface_height(self) -> float:
         """Station elevation [m], or the first level's height when the file has none."""

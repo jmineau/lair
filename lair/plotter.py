@@ -367,7 +367,9 @@ def seasonalPlot(
        >>> rng = np.random.default_rng(0)
        >>> time = pd.date_range("2021-01-01", "2023-12-31", freq="1D")
        >>> trend = 1.9 + 0.00004 * np.arange(len(time))
-       >>> annual = 0.06 * np.cos(2 * np.pi * (time.dayofyear.to_numpy() - 20) / 365.25)
+       >>> annual = 0.06 * np.cos(
+       ...     2 * np.pi * (time.day_of_year.to_numpy() - 20) / 365.25
+       ... )
        >>> data = pd.DataFrame(
        ...     {"CH4": trend + annual + rng.normal(0, 0.02, len(time))}, index=time
        ... )
