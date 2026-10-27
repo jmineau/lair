@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0e3453c6"></script>
+    <script src="../_static/documentation_options.js?v=f38ec485"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="lair.clock.MST2UTC" href="lair.clock.MST2UTC.html" />
+    <link rel="next" title="lair.clock.convert_timezones" href="lair.clock.convert_timezones.html" />
     <link rel="prev" title="lair.clock.UTC2MST" href="lair.clock.UTC2MST.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
+  <meta name="docsearch:version" content="2026.12.11.dev3+g20d6be7d3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -667,11 +667,11 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.clock.html">lair.clock</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.clock.UTC2MTN</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
@@ -818,70 +818,62 @@
 <h1>lair.clock.UTC2MTN<a class="headerlink" href="#lair-clock-utc2mtn" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.clock.UTC2MTN">
-<span class="sig-prename descclassname"><span class="pre">lair.clock.</span></span><span class="sig-name descname"><span class="pre">UTC2MTN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">totz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'America/Denver'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fromtz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'UTC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">localize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambiguous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonexistent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lair.clock.UTC2MTN" title="Link to this definition">#</a></dt>
-<dd><p>Convert the times from one timezone to another.</p>
+<span class="sig-prename descclassname"><span class="pre">lair.clock.</span></span><span class="sig-name descname"><span class="pre">UTC2MTN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">localize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambiguous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonexistent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/clock.html#UTC2MTN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.clock.UTC2MTN" title="Link to this definition">#</a></dt>
+<dd><p>Convert times from UTC to Salt Lake City time (<code class="docutils literal notranslate"><span class="pre">'America/Denver'</span></code>).</p>
+<p>The result follows daylight saving time: 6 hours behind UTC in summer, 7 in
+winter. A time without a time zone is taken as UTC (the rule on the
+<a class="reference internal" href="../examples/clock.html#utc-rule"><span class="std std-ref">clock example</span></a>), and a time with one is converted from its
+own.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>dt.datetime</em><em>] </em><em>| </em><em>pd.DataFrame</em><em> | </em><em>pd.Series</em>) – The times to convert. With <code class="docutils literal notranslate"><span class="pre">driver='pandas'</span></code>, the index of a
-DataFrame or the values of a Series. Without it, a list: put a single
-time in one (a bare datetime raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>).</p></li>
-<li><p><strong>totz</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The timezone to convert the times to.</p></li>
-<li><p><strong>fromtz</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The timezone of the naive input times. Required if any input time is
-naive (tz-aware times are converted from their own timezone).</p></li>
-<li><p><strong>localize</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, the times will be localized to the totz timezone, by default False</p></li>
-<li><p><strong>driver</strong> (<em>None</em><em> | </em><em>'pandas'</em><em>, </em><em>optional</em>) – None for a list of datetimes, ‘pandas’ for a DataFrame or Series.</p></li>
-<li><p><strong>ambiguous</strong> (<em>'raise'</em><em> | </em><em>'NaT'</em><em> | </em><em>'infer'</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> | </em><em>array</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – How to localize naive times that happen twice in <code class="docutils literal notranslate"><span class="pre">fromtz</span></code> (DST
-fall-back), with pandas <code class="docutils literal notranslate"><span class="pre">tz_localize</span></code> semantics: True is the DST
-(first) instant, False the standard-time (second) one, ‘NaT’ gives NaT,
-and ‘raise’ (the default) raises a ValueError. An array gives one flag
-per input time (for a list, aware elements’ flags are ignored).</p></li>
-<li><p><strong>nonexistent</strong> (<em>'raise'</em><em> | </em><em>'NaT'</em><em> | </em><em>'shift_forward'</em><em> | </em><em>'shift_backward'</em><em> | </em><em>timedelta</em><em>, </em><em>optional</em>) – How to localize naive times that don’t exist in <code class="docutils literal notranslate"><span class="pre">fromtz</span></code> (DST
-spring-forward), with pandas <code class="docutils literal notranslate"><span class="pre">tz_localize</span></code> semantics. Default ‘raise’.</p></li>
+<li><p><strong>x</strong> (<em>dt.datetime</em><em> | </em><em>pd.Timestamp</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>dt.datetime</em><em>] </em><em>| </em><em>pd.DataFrame</em><em> | </em><em>pd.Series</em>) – The times: a single time, a list of them, or with <code class="docutils literal notranslate"><span class="pre">driver='pandas'</span></code>
+the index of a DataFrame or the values of a Series.</p></li>
+<li><p><strong>localize</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, drop the time zone from the result and keep the clock time in
+Salt Lake City. Default False.</p></li>
+<li><p><strong>driver</strong> (<em>None</em><em> | </em><em>'pandas'</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">'pandas'</span></code> for a DataFrame or Series; None for a single time or a list.</p></li>
+<li><p><strong>ambiguous</strong> (<em>optional</em>) – As in <a class="reference internal" href="lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_timezones()</span></code></a>. UTC has no repeated or skipped hours, so
+they never apply; every shortcut takes them.</p></li>
+<li><p><strong>nonexistent</strong> (<em>optional</em>) – As in <a class="reference internal" href="lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_timezones()</span></code></a>. UTC has no repeated or skipped hours, so
+they never apply; every shortcut takes them.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>list[dt.datetime] | pd.DataFrame | pd.Series</em> – The converted times.</p>
-</dd>
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If there are naive times and no <code class="docutils literal notranslate"><span class="pre">fromtz</span></code>, or a naive time is ambiguous
-    or nonexistent in <code class="docutils literal notranslate"><span class="pre">fromtz</span></code> and <code class="docutils literal notranslate"><span class="pre">ambiguous</span></code>/<code class="docutils literal notranslate"><span class="pre">nonexistent</span></code> is ‘raise’,
-    or <code class="docutils literal notranslate"><span class="pre">driver='pandas'</span></code> and <code class="docutils literal notranslate"><span class="pre">x</span></code> is not a DataFrame or Series.</p>
+<dd class="field-even"><p><em>dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</em> – The converted times, in the shape of <code class="docutils literal notranslate"><span class="pre">x</span></code>: a single time gives a single
+time, a <code class="docutils literal notranslate"><span class="pre">datetime</span></code> a <code class="docutils literal notranslate"><span class="pre">datetime</span></code> and a <code class="docutils literal notranslate"><span class="pre">pd.Timestamp</span></code> a
+<code class="docutils literal notranslate"><span class="pre">pd.Timestamp</span></code>.</p>
 </dd>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><a class="reference internal" href="lair.clock.diurnal.html#lair.clock.diurnal" title="lair.clock.diurnal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diurnal</span></code></a></dt><dd><p>Average by hour of the day, once the data is in local time.</p>
+<dt><a class="reference internal" href="lair.clock.UTC2MST.html#lair.clock.UTC2MST" title="lair.clock.UTC2MST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UTC2MST</span></code></a></dt><dd><p>UTC to Mountain Standard Time, with no daylight saving time.</p>
 </dd>
-<dt><a class="reference internal" href="lair.clock.AFTERNOON.html#lair.clock.AFTERNOON" title="lair.clock.AFTERNOON"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AFTERNOON</span></code></a></dt><dd><p>The hours to select once the data is in local time.</p>
+<dt><a class="reference internal" href="lair.clock.MTN2UTC.html#lair.clock.MTN2UTC" title="lair.clock.MTN2UTC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MTN2UTC</span></code></a></dt><dd><p>The way back, from Salt Lake City time to UTC.</p>
+</dd>
+<dt><a class="reference internal" href="lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_timezones</span></code></a></dt><dd><p>The general conversion, from any zone to any zone.</p>
 </dd>
 </dl>
 </div>
 <p class="rubric">Examples</p>
-<p>18:00 UTC in January is 11:00 in Salt Lake City:</p>
+<p>18:00 UTC in July is 12:00 daylight time:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_timezones</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">convert_timezones</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">)],</span> <span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="go">[datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC2MTN</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">UTC2MTN</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">))</span>
+<span class="go">datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))</span>
 </pre></div>
 </div>
-<p>The shortcuts take the same list; in July, 18:00 UTC is 12:00 daylight time:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC2MTN</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">UTC2MTN</span><span class="p">([</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">)])</span>
-<span class="go">[datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))]</span>
+<p>A <code class="docutils literal notranslate"><span class="pre">pd.Timestamp</span></code> gives a <code class="docutils literal notranslate"><span class="pre">pd.Timestamp</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">UTC2MTN</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2024-07-15 18:00&quot;</span><span class="p">))</span>
+<span class="go">Timestamp(&#39;2024-07-15 12:00:00-0600&#39;, tz=&#39;America/Denver&#39;)</span>
 </pre></div>
 </div>
 <p>The index of a DataFrame, kept naive in local time with <code class="docutils literal notranslate"><span class="pre">localize=True</span></code>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;ch4&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2000.0</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s2">&quot;2024-07-15 18:00&quot;</span><span class="p">])</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">convert_timezones</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">localize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span>
-<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">UTC2MTN</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">localize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
 <span class="go">                        ch4</span>
 <span class="go">2024-07-15 12:00:00  2000.0</span>
 </pre></div>
@@ -910,11 +902,11 @@ spring-forward), with pandas <code class="docutils literal notranslate"><span cl
       </div>
     </a>
     <a class="right-next"
-       href="lair.clock.MST2UTC.html"
+       href="lair.clock.convert_timezones.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">lair.clock.MST2UTC</p>
+        <p class="prev-next-title">lair.clock.convert_timezones</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

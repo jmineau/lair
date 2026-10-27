@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0e3453c6"></script>
+    <script src="../_static/documentation_options.js?v=f38ec485"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.plotter.HandlerDashedLines.create_artists" href="lair.plotter.HandlerDashedLines.create_artists.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
+  <meta name="docsearch:version" content="2026.12.11.dev3+g20d6be7d3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -667,11 +667,11 @@
 <li class="toctree-l1 current active has-children"><a aria-current="page" class="current reference internal" href="#">lair.clock</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
@@ -829,52 +829,52 @@ intervals, time-difference matrices, and diurnal and seasonal aggregates.
 <tr class="row-even"><td><p><a class="reference internal" href="lair.clock.SEASONS.html#lair.clock.SEASONS" title="lair.clock.SEASONS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SEASONS</span></code></a></p></td>
 <td><p>The meteorological season of each month (1 to 12), as <code class="docutils literal notranslate"><span class="pre">'DJF'</span></code>, <code class="docutils literal notranslate"><span class="pre">'MAM'</span></code>, <code class="docutils literal notranslate"><span class="pre">'JJA'</span></code> or <code class="docutils literal notranslate"><span class="pre">'SON'</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.UTC2.html#lair.clock.UTC2" title="lair.clock.UTC2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UTC2</span></code></a></p></td>
-<td><p>Convert the times from one timezone to another.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.UTC2MST.html#lair.clock.UTC2MST" title="lair.clock.UTC2MST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UTC2MST</span></code></a></p></td>
-<td><p>Convert the times from one timezone to another.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.UTC2MTN.html#lair.clock.UTC2MTN" title="lair.clock.UTC2MTN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UTC2MTN</span></code></a></p></td>
-<td><p>Convert the times from one timezone to another.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.MST2UTC.html#lair.clock.MST2UTC" title="lair.clock.MST2UTC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MST2UTC</span></code></a></p></td>
-<td><p>Convert the times from one timezone to another.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.MTN2UTC.html#lair.clock.MTN2UTC" title="lair.clock.MTN2UTC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MTN2UTC</span></code></a></p></td>
-<td><p>Convert the times from one timezone to another.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_timezones</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.MST2UTC.html#lair.clock.MST2UTC" title="lair.clock.MST2UTC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MST2UTC</span></code></a></p></td>
+<td><p>Convert times from Mountain Standard Time (<code class="docutils literal notranslate"><span class="pre">'MST'</span></code>) to UTC.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.MTN2UTC.html#lair.clock.MTN2UTC" title="lair.clock.MTN2UTC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MTN2UTC</span></code></a></p></td>
+<td><p>Convert times from Salt Lake City time (<code class="docutils literal notranslate"><span class="pre">'America/Denver'</span></code>) to UTC.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.UTC2.html#lair.clock.UTC2" title="lair.clock.UTC2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UTC2</span></code></a></p></td>
+<td><p>Convert times from UTC to the time zone <code class="docutils literal notranslate"><span class="pre">totz</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.UTC2MST.html#lair.clock.UTC2MST" title="lair.clock.UTC2MST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UTC2MST</span></code></a></p></td>
+<td><p>Convert times from UTC to Mountain Standard Time (<code class="docutils literal notranslate"><span class="pre">'MST'</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.UTC2MTN.html#lair.clock.UTC2MTN" title="lair.clock.UTC2MTN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UTC2MTN</span></code></a></p></td>
+<td><p>Convert times from UTC to Salt Lake City time (<code class="docutils literal notranslate"><span class="pre">'America/Denver'</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_timezones</span></code></a></p></td>
 <td><p>Convert the times from one timezone to another.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.datetime_accessor.html#lair.clock.datetime_accessor" title="lair.clock.datetime_accessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">datetime_accessor</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.datetime_accessor.html#lair.clock.datetime_accessor" title="lair.clock.datetime_accessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">datetime_accessor</span></code></a></p></td>
 <td><p>Return the datetime accessor of the object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.decimalDate2dt.html#lair.clock.decimalDate2dt" title="lair.clock.decimalDate2dt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decimalDate2dt</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.decimalDate2dt.html#lair.clock.decimalDate2dt" title="lair.clock.decimalDate2dt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decimalDate2dt</span></code></a></p></td>
 <td><p>Convert a decimal date to a datetime object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.diurnal.html#lair.clock.diurnal" title="lair.clock.diurnal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diurnal</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.diurnal.html#lair.clock.diurnal" title="lair.clock.diurnal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diurnal</span></code></a></p></td>
 <td><p>Aggregate the data to the specified frequency and compute the statistic for each group.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate" title="lair.clock.dt2decimalDate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dt2decimalDate</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate" title="lair.clock.dt2decimalDate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dt2decimalDate</span></code></a></p></td>
 <td><p>Convert a datetime object to a decimal date.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.regular_times_to_intervals.html#lair.clock.regular_times_to_intervals" title="lair.clock.regular_times_to_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regular_times_to_intervals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.regular_times_to_intervals.html#lair.clock.regular_times_to_intervals" title="lair.clock.regular_times_to_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regular_times_to_intervals</span></code></a></p></td>
 <td><p>Convert an array of regular times to intervals of the specified length.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.seasonal.html#lair.clock.seasonal" title="lair.clock.seasonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">seasonal</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.seasonal.html#lair.clock.seasonal" title="lair.clock.seasonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">seasonal</span></code></a></p></td>
 <td><p>Aggregate data by season and year.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.time_decay_matrix.html#lair.clock.time_decay_matrix" title="lair.clock.time_decay_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_decay_matrix</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.time_decay_matrix.html#lair.clock.time_decay_matrix" title="lair.clock.time_decay_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_decay_matrix</span></code></a></p></td>
 <td><p>Calculate the time decay matrix for the specified times and decay.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.time_difference_matrix.html#lair.clock.time_difference_matrix" title="lair.clock.time_difference_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_difference_matrix</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.time_difference_matrix.html#lair.clock.time_difference_matrix" title="lair.clock.time_difference_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_difference_matrix</span></code></a></p></td>
 <td><p>Calculate the time differences between each pair of times.</p></td>
 </tr>
 </tbody>

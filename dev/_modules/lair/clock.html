@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=0e3453c6"></script>
+    <script src="../../_static/documentation_options.js?v=f38ec485"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
+  <meta name="docsearch:version" content="2026.12.11.dev3+g20d6be7d3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -451,7 +451,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextDecorator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zoneinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZoneInfo</span>
 
@@ -1385,6 +1384,13 @@
 
 <span class="c1"># ----- Time Zones ----- #</span>
 
+<span class="c1"># The ``ambiguous`` and ``nonexistent`` options of ``convert_timezones`` and its</span>
+<span class="c1"># shortcuts: pandas&#39; ``tz_localize`` options.</span>
+<span class="n">_Ambiguous</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;NaT&quot;</span><span class="p">,</span> <span class="s2">&quot;infer&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">_Nonexistent</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;NaT&quot;</span><span class="p">,</span> <span class="s2">&quot;shift_forward&quot;</span><span class="p">,</span> <span class="s2">&quot;shift_backward&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span>
+
 
 <div class="viewcode-block" id="convert_timezones">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.convert_timezones.html#lair.clock.convert_timezones">[docs]</a>
@@ -1394,22 +1400,18 @@
     <span class="n">fromtz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;NaT&quot;</span><span class="p">,</span> <span class="s2">&quot;infer&quot;</span><span class="p">]</span>
-    <span class="o">|</span> <span class="nb">bool</span>
-    <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
-    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;NaT&quot;</span><span class="p">,</span> <span class="s2">&quot;shift_forward&quot;</span><span class="p">,</span> <span class="s2">&quot;shift_backward&quot;</span><span class="p">]</span>
-    <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert the times from one timezone to another.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    x : list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
 <span class="sd">        The times to convert. With ``driver=&#39;pandas&#39;``, the index of a</span>
-<span class="sd">        DataFrame or the values of a Series. Without it, a list: put a single</span>
-<span class="sd">        time in one (a bare datetime raises ``TypeError``).</span>
+<span class="sd">        DataFrame or the values of a Series. Without it, a single time or a</span>
+<span class="sd">        list (or other iterable) of them.</span>
 <span class="sd">    totz : str</span>
 <span class="sd">        The timezone to convert the times to.</span>
 <span class="sd">    fromtz : str, optional</span>
@@ -1431,8 +1433,12 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    list[dt.datetime] | pd.DataFrame | pd.Series</span>
-<span class="sd">        The converted times.</span>
+<span class="sd">    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The converted times, in the shape of ``x``. A single time gives a single</span>
+<span class="sd">        time, converted the way each element of a list is: a ``datetime`` stays</span>
+<span class="sd">        a ``datetime`` and a ``pd.Timestamp`` stays a ``pd.Timestamp`` (``pd.NaT``</span>
+<span class="sd">        if ``ambiguous`` or ``nonexistent`` is ``&#39;NaT&#39;`` and the time is one of</span>
+<span class="sd">        those).</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -1443,6 +1449,7 @@
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
+<span class="sd">    UTC2MTN : This conversion from UTC to Salt Lake City time, ready-made.</span>
 <span class="sd">    diurnal : Average by hour of the day, once the data is in local time.</span>
 <span class="sd">    AFTERNOON : The hours to select once the data is in local time.</span>
 
@@ -1452,16 +1459,15 @@
 
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import convert_timezones</span>
+<span class="sd">    &gt;&gt;&gt; convert_timezones(dt.datetime(2024, 1, 15, 18), &quot;America/Denver&quot;, fromtz=&quot;UTC&quot;)</span>
+<span class="sd">    datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))</span>
+
+<span class="sd">    A list gives a list, converted time by time:</span>
+
 <span class="sd">    &gt;&gt;&gt; convert_timezones(</span>
 <span class="sd">    ...     [dt.datetime(2024, 1, 15, 18)], &quot;America/Denver&quot;, fromtz=&quot;UTC&quot;</span>
 <span class="sd">    ... )</span>
 <span class="sd">    [datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))]</span>
-
-<span class="sd">    The shortcuts take the same list; in July, 18:00 UTC is 12:00 daylight time:</span>
-
-<span class="sd">    &gt;&gt;&gt; from lair.clock import UTC2MTN</span>
-<span class="sd">    &gt;&gt;&gt; UTC2MTN([dt.datetime(2024, 7, 15, 18)])</span>
-<span class="sd">    [datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))]</span>
 
 <span class="sd">    The index of a DataFrame, kept naive in local time with ``localize=True``:</span>
 
@@ -1476,6 +1482,12 @@
 <span class="sd">    2024-07-15 12:00:00  2000.0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">driver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># A single time: convert it as a list of one, and give back the one</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">convert_timezones</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">totz</span><span class="p">,</span> <span class="n">fromtz</span><span class="p">,</span> <span class="n">localize</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ambiguous</span><span class="p">,</span> <span class="n">nonexistent</span>
+            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
         <span class="n">times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># Assign the fromtz timezone to the naive times (aware times keep theirs).</span>
@@ -1551,20 +1563,400 @@
 
 
 
-<span class="c1">#: :func:`convert_timezones` with ``fromtz=&quot;UTC&quot;``; give ``totz``.</span>
-<span class="n">UTC2</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+<span class="c1"># The shortcuts are functions, not ``functools.partial`` objects, so that each has</span>
+<span class="c1"># its own signature and its own ``help()`` text.</span>
 
-<span class="c1">#: :func:`convert_timezones` from UTC to ``&quot;MST&quot;``, standard time all year.</span>
-<span class="n">UTC2MST</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">UTC2</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;MST&quot;</span><span class="p">)</span>
 
-<span class="c1">#: :func:`convert_timezones` from UTC to ``&quot;America/Denver&quot;``, with daylight saving.</span>
-<span class="n">UTC2MTN</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">UTC2</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;America/Denver&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="UTC2">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.UTC2.html#lair.clock.UTC2">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">UTC2</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">totz</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert times from UTC to the time zone ``totz``.</span>
 
-<span class="c1">#: :func:`convert_timezones` from ``&quot;MST&quot;`` to UTC.</span>
-<span class="n">MST2UTC</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;MST&quot;</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+<span class="sd">    A time without a time zone is taken as UTC (the rule on the</span>
+<span class="sd">    :ref:`clock example &lt;utc-rule&gt;`), and a time with one is converted from its</span>
+<span class="sd">    own. :func:`UTC2MST` and :func:`UTC2MTN` are the two common cases.</span>
 
-<span class="c1">#: :func:`convert_timezones` from ``&quot;America/Denver&quot;`` to UTC.</span>
-<span class="n">MTN2UTC</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">convert_timezones</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">totz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        the index of a DataFrame or the values of a Series.</span>
+<span class="sd">    totz : str</span>
+<span class="sd">        The time zone to convert to, such as ``&#39;America/Denver&#39;``.</span>
+<span class="sd">    localize : bool, optional</span>
+<span class="sd">        If True, drop the time zone from the result and keep the clock time of</span>
+<span class="sd">        ``totz``. Default False.</span>
+<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
+<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    ambiguous, nonexistent : optional</span>
+<span class="sd">        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so</span>
+<span class="sd">        they never apply; every shortcut takes them.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The converted times, in the shape of ``x``: a single time gives a single</span>
+<span class="sd">        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a</span>
+<span class="sd">        ``pd.Timestamp``.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    convert_timezones : The general conversion, from any zone to any zone.</span>
+<span class="sd">    UTC2MTN : UTC to Salt Lake City time.</span>
+<span class="sd">    UTC2MST : UTC to Mountain Standard Time.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    18:00 UTC in Pacific time, in July:</span>
+
+<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import UTC2</span>
+<span class="sd">    &gt;&gt;&gt; UTC2(dt.datetime(2024, 7, 15, 18), &quot;America/Los_Angeles&quot;)</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Los_Angeles&#39;))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">convert_timezones</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="n">totz</span><span class="p">,</span>
+        <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span>
+        <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
+        <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+        <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
+        <span class="n">nonexistent</span><span class="o">=</span><span class="n">nonexistent</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="UTC2MST">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.UTC2MST.html#lair.clock.UTC2MST">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">UTC2MST</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert times from UTC to Mountain Standard Time (``&#39;MST&#39;``).</span>
+
+<span class="sd">    MST is 7 hours behind UTC all year, with no daylight saving time, so every</span>
+<span class="sd">    day is 24 hours long. A time without a time zone is taken as UTC (the rule on</span>
+<span class="sd">    the :ref:`clock example &lt;utc-rule&gt;`), and a time with one is converted from</span>
+<span class="sd">    its own.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        the index of a DataFrame or the values of a Series.</span>
+<span class="sd">    localize : bool, optional</span>
+<span class="sd">        If True, drop the time zone from the result and keep the clock time in</span>
+<span class="sd">        MST. Default False.</span>
+<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
+<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    ambiguous, nonexistent : optional</span>
+<span class="sd">        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so</span>
+<span class="sd">        they never apply; every shortcut takes them.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The converted times, in the shape of ``x``: a single time gives a single</span>
+<span class="sd">        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a</span>
+<span class="sd">        ``pd.Timestamp``.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    UTC2MTN : UTC to Salt Lake City time, which follows daylight saving time.</span>
+<span class="sd">    MST2UTC : The way back, from MST to UTC.</span>
+<span class="sd">    convert_timezones : The general conversion, from any zone to any zone.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    18:00 UTC is 11:00 MST, in January and in July:</span>
+
+<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import UTC2MST</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MST(dt.datetime(2024, 7, 15, 18))</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;MST&#39;))</span>
+
+<span class="sd">    The index of a DataFrame, kept naive in MST with ``localize=True``:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 18:00&quot;])</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MST(data, localize=True, driver=&quot;pandas&quot;)</span>
+<span class="sd">                            ch4</span>
+<span class="sd">    2024-07-15 11:00:00  2000.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">UTC2</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="s2">&quot;MST&quot;</span><span class="p">,</span>
+        <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
+        <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+        <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
+        <span class="n">nonexistent</span><span class="o">=</span><span class="n">nonexistent</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="UTC2MTN">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.UTC2MTN.html#lair.clock.UTC2MTN">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">UTC2MTN</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert times from UTC to Salt Lake City time (``&#39;America/Denver&#39;``).</span>
+
+<span class="sd">    The result follows daylight saving time: 6 hours behind UTC in summer, 7 in</span>
+<span class="sd">    winter. A time without a time zone is taken as UTC (the rule on the</span>
+<span class="sd">    :ref:`clock example &lt;utc-rule&gt;`), and a time with one is converted from its</span>
+<span class="sd">    own.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        the index of a DataFrame or the values of a Series.</span>
+<span class="sd">    localize : bool, optional</span>
+<span class="sd">        If True, drop the time zone from the result and keep the clock time in</span>
+<span class="sd">        Salt Lake City. Default False.</span>
+<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
+<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    ambiguous, nonexistent : optional</span>
+<span class="sd">        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so</span>
+<span class="sd">        they never apply; every shortcut takes them.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The converted times, in the shape of ``x``: a single time gives a single</span>
+<span class="sd">        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a</span>
+<span class="sd">        ``pd.Timestamp``.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    UTC2MST : UTC to Mountain Standard Time, with no daylight saving time.</span>
+<span class="sd">    MTN2UTC : The way back, from Salt Lake City time to UTC.</span>
+<span class="sd">    convert_timezones : The general conversion, from any zone to any zone.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    18:00 UTC in July is 12:00 daylight time:</span>
+
+<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import UTC2MTN</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MTN(dt.datetime(2024, 7, 15, 18))</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))</span>
+
+<span class="sd">    A ``pd.Timestamp`` gives a ``pd.Timestamp``:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MTN(pd.Timestamp(&quot;2024-07-15 18:00&quot;))</span>
+<span class="sd">    Timestamp(&#39;2024-07-15 12:00:00-0600&#39;, tz=&#39;America/Denver&#39;)</span>
+
+<span class="sd">    The index of a DataFrame, kept naive in local time with ``localize=True``:</span>
+
+<span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 18:00&quot;])</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MTN(data, localize=True, driver=&quot;pandas&quot;)</span>
+<span class="sd">                            ch4</span>
+<span class="sd">    2024-07-15 12:00:00  2000.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">UTC2</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span>
+        <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
+        <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+        <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
+        <span class="n">nonexistent</span><span class="o">=</span><span class="n">nonexistent</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MST2UTC">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.MST2UTC.html#lair.clock.MST2UTC">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">MST2UTC</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert times from Mountain Standard Time (``&#39;MST&#39;``) to UTC.</span>
+
+<span class="sd">    Use it for a file whose times are standard time all year (its manual or</span>
+<span class="sd">    settings say so): MST has no daylight saving time, so no time is repeated or</span>
+<span class="sd">    skipped. A time without a time zone is taken as MST, and a time with one is</span>
+<span class="sd">    converted from its own.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        the index of a DataFrame or the values of a Series.</span>
+<span class="sd">    localize : bool, optional</span>
+<span class="sd">        If True, drop the time zone from the result and keep the UTC clock time.</span>
+<span class="sd">        Default False.</span>
+<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
+<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    ambiguous, nonexistent : optional</span>
+<span class="sd">        As in :func:`convert_timezones`. MST has no repeated or skipped hours, so</span>
+<span class="sd">        they never apply; every shortcut takes them.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The converted times, in the shape of ``x``: a single time gives a single</span>
+<span class="sd">        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a</span>
+<span class="sd">        ``pd.Timestamp``.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    MTN2UTC : The same from Salt Lake City time, which follows daylight saving time.</span>
+<span class="sd">    UTC2MST : The way back, from UTC to MST.</span>
+<span class="sd">    convert_timezones : The general conversion, from any zone to any zone.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    11:00 MST is 18:00 UTC:</span>
+
+<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import MST2UTC</span>
+<span class="sd">    &gt;&gt;&gt; MST2UTC(dt.datetime(2024, 7, 15, 11))</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 18, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;UTC&#39;))</span>
+
+<span class="sd">    The index of a DataFrame, kept naive in UTC with ``localize=True``:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 11:00&quot;])</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; MST2UTC(data, localize=True, driver=&quot;pandas&quot;)</span>
+<span class="sd">                            ch4</span>
+<span class="sd">    2024-07-15 18:00:00  2000.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">convert_timezones</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="s2">&quot;UTC&quot;</span><span class="p">,</span>
+        <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;MST&quot;</span><span class="p">,</span>
+        <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
+        <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+        <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
+        <span class="n">nonexistent</span><span class="o">=</span><span class="n">nonexistent</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MTN2UTC">
+<a class="viewcode-back" href="../../_autosummary/lair.clock.MTN2UTC.html#lair.clock.MTN2UTC">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">MTN2UTC</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert times from Salt Lake City time (``&#39;America/Denver&#39;``) to UTC.</span>
+
+<span class="sd">    A time without a time zone is taken as Salt Lake City clock time, and a time</span>
+<span class="sd">    with one is converted from its own. Daylight saving time repeats one hour in</span>
+<span class="sd">    November and skips one in March, so a clock-time file can hold a time that</span>
+<span class="sd">    cannot be converted without a choice: ``ambiguous`` and ``nonexistent`` make</span>
+<span class="sd">    it (the :ref:`clock example &lt;dst-errors&gt;` shows both).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        the index of a DataFrame or the values of a Series.</span>
+<span class="sd">    localize : bool, optional</span>
+<span class="sd">        If True, drop the time zone from the result and keep the UTC clock time.</span>
+<span class="sd">        Default False.</span>
+<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
+<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    ambiguous : &#39;raise&#39; | &#39;NaT&#39; | &#39;infer&#39; | bool | array of bool, optional</span>
+<span class="sd">        What to do with a time that happens twice (the clocks go back): True is</span>
+<span class="sd">        the first (daylight time), False the second (standard time). The default</span>
+<span class="sd">        &#39;raise&#39; raises a ``ValueError``. As in :func:`convert_timezones`.</span>
+<span class="sd">    nonexistent : &#39;raise&#39; | &#39;NaT&#39; | &#39;shift_forward&#39; | &#39;shift_backward&#39; | timedelta, optional</span>
+<span class="sd">        What to do with a time that never happens (the clocks go forward). The</span>
+<span class="sd">        default &#39;raise&#39; raises a ``ValueError``. As in :func:`convert_timezones`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
+<span class="sd">        The converted times, in the shape of ``x``: a single time gives a single</span>
+<span class="sd">        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a</span>
+<span class="sd">        ``pd.Timestamp``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a time is ambiguous or nonexistent and the option for it is &#39;raise&#39;.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    MST2UTC : The same from standard time, where nothing is repeated or skipped.</span>
+<span class="sd">    UTC2MTN : The way back, from UTC to Salt Lake City time.</span>
+<span class="sd">    convert_timezones : The general conversion, from any zone to any zone.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    12:00 in Salt Lake City in July is 18:00 UTC:</span>
+
+<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
+<span class="sd">    &gt;&gt;&gt; from lair.clock import MTN2UTC</span>
+<span class="sd">    &gt;&gt;&gt; MTN2UTC(dt.datetime(2024, 7, 15, 12))</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 18, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;UTC&#39;))</span>
+
+<span class="sd">    The clocks went back on 2024-11-03, so 01:30 happened twice; say which:</span>
+
+<span class="sd">    &gt;&gt;&gt; MTN2UTC(dt.datetime(2024, 11, 3, 1, 30), ambiguous=True)</span>
+<span class="sd">    datetime.datetime(2024, 11, 3, 7, 30, tzinfo=zoneinfo.ZoneInfo(key=&#39;UTC&#39;))</span>
+<span class="sd">    &gt;&gt;&gt; MTN2UTC(dt.datetime(2024, 11, 3, 1, 30), ambiguous=False)</span>
+<span class="sd">    datetime.datetime(2024, 11, 3, 8, 30, tzinfo=zoneinfo.ZoneInfo(key=&#39;UTC&#39;))</span>
+
+<span class="sd">    The index of a DataFrame, kept naive in UTC with ``localize=True``:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 12:00&quot;])</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; MTN2UTC(data, localize=True, driver=&quot;pandas&quot;)</span>
+<span class="sd">                            ch4</span>
+<span class="sd">    2024-07-15 18:00:00  2000.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">convert_timezones</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="s2">&quot;UTC&quot;</span><span class="p">,</span>
+        <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span>
+        <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
+        <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+        <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
+        <span class="n">nonexistent</span><span class="o">=</span><span class="n">nonexistent</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
 </pre></div>
 
                 </article>

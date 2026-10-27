@@ -58,8 +58,10 @@ daylight saving time). ``driver="pandas"`` converts the index of a
    local = UTC2MST(data, driver="pandas")
    local.head(3)
 
-Without ``driver="pandas"`` the shortcuts take a list of times, so to convert
-one time, put it in a list:
+Without ``driver="pandas"`` the shortcuts take a single time, or a list of
+them. A single time comes back as a single time (a ``datetime`` as a
+``datetime``, a ``pd.Timestamp`` as a ``pd.Timestamp``). With no zone these
+are UTC times (the first rule), so in July 18:00 UTC is 12:00 daylight time:
 
 .. ipython:: python
 
@@ -67,7 +69,8 @@ one time, put it in a list:
 
    from lair.clock import UTC2MTN
 
-   UTC2MTN([dt.datetime(2024, 7, 15, 18)])
+   UTC2MTN(dt.datetime(2024, 7, 15, 18))
+   UTC2MTN(pd.Timestamp("2024-07-15 18:00"))
 
 Standard time is the same offset from UTC all year, so every day is 24 hours
 long and noon is noon in January and in July. That is why the afternoon below
@@ -139,6 +142,8 @@ is converted to UTC first):
 
    dt2decimalDate(dt.datetime(2024, 7, 1))
    decimalDate2dt(2024.5)
+
+.. _dst-errors:
 
 Times that will not convert
 ---------------------------
