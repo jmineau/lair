@@ -48,11 +48,11 @@ shows them all).
 | Recipe | What it does |
 |---|---|
 | `just quality-check` | `lint`, `type-check` (pyrefly), `docstr` (docstring coverage of at least 88%) and `test`: what CI checks |
-| `just test` | pytest in parallel, skipping tests marked `network` or `slow` (extra args go to pytest; plain `uv run pytest` runs serially, for debugging) |
+| `just test` | pytest in parallel, skipping tests marked `network` or `slow`; it also runs the `>>>` examples in the docstrings under `lair/` (extra args go to pytest; plain `uv run pytest` runs serially, for debugging) |
 | `just format` | fix lint and format the code with ruff |
 | `just build-docs` | build the HTML docs into `docs/_build/`, running every example (warnings are errors) |
 | `just docs-serve` | preview the docs at <http://127.0.0.1:8000>, rebuilt on every save (on a remote machine, forward the port, e.g. VS Code's Ports panel) |
-| `just changelog` | draft CHANGELOG entries from the commits since the last release |
+| `just changelog` | draft CHANGELOG entries from the commits since the last release (run at release) |
 | `just pre-commit` | run every hook on every file |
 
 After changing dependencies in `pyproject.toml`, run `just lock` (the
@@ -66,13 +66,12 @@ after a merge or rebase conflict in it, rerun `pixi lock`.
 
 1. Branch from `main`.
 2. Make the change, with tests and NumPy-style docstrings.
-3. Add a line under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for
-   anything a user would notice.
-4. Commit with a [Conventional Commits](https://www.conventionalcommits.org/)
+3. Commit with a [Conventional Commits](https://www.conventionalcommits.org/)
    message that names the module as its scope, e.g.
-   `feat(inventories): sum_sectors(exclude=)` or `fix(soundings): ...`
-   (`just changelog` sorts the entries by type).
-5. Open a pull request. Link the issue it addresses ("Fixes #12").
+   `feat(inventories): sum_sectors(exclude=)` or `fix(soundings): ...`, with
+   `!` for a breaking change. Leave [CHANGELOG.md](CHANGELOG.md) alone: the
+   release notes are drafted from these messages when the maintainer releases.
+4. Open a pull request. Link the issue it addresses ("Fixes #12").
 
 ## Code layout
 
@@ -127,10 +126,17 @@ fails when one breaks.
   `@savefig name.png` on the line above the plotting call. A block that raises
   or warns fails the build; `:okexcept:` or `:okwarning:` under the directive
   allows one that is meant to. All pages share one session, so each page
-  imports and defines what it uses.
+  imports and defines what it uses. Split a long block so that no multi-line
+  statement is its 10th (or 100th) statement: the directive runs only the first
+  line of that one.
 - **When they run:** `just build-docs` runs everything, as CI does;
   `just docs-serve` reruns a page's blocks whenever that page is rebuilt.
   Notebooks and code cells in Markdown pages are off in this project.
+- **Docstring examples are tests too:** `just test` runs the `>>>` lines under
+  `lair/` (`--doctest-modules`). An example that needs data CI lacks gets
+  `# doctest: +SKIP` on its `>>>` line. In the lean environment a module that
+  imports an extra it lacks is skipped (`--doctest-ignore-import-errors`), so its
+  examples run only in the pixi job: `pixi run pytest lair` runs them all.
 - **Data:** an example uses synthetic data, a small file in the repository, or
   a public download, never a machine-specific path. Seed random numbers so the
   figures don't change from build to build.
@@ -184,10 +190,11 @@ version string to bump. Releases are calendar-based, `YYYY.MM.PATCH`: `MM` is
 within a period and restarts at 0 in a new one. `just next-version` prints the
 next one.
 
-1. Run `just changelog` to draft the entries from the commit messages, edit
-   them into `CHANGELOG.md` under `## [Unreleased]`, then rename that heading
-   to `## [X.Y.Z] - YYYY-MM-DD` (the version `just next-version` prints) and
-   start a new empty `## [Unreleased]` above it. Commit and push to `main`.
+1. Write the changelog: `just changelog` drafts the entries from the commit
+   messages since the last release. Edit them into `CHANGELOG.md` under
+   `## [Unreleased]`, then rename that heading to `## [X.Y.Z] - YYYY-MM-DD` (the
+   version `just next-version` prints) and start a new empty `## [Unreleased]`
+   above it. Commit and push to `main`.
 2. Run `just release`. It checks that the tree is clean, that `main` is in sync
    with GitHub, that `CHANGELOG.md` has the section, and that the version is
    newer than every existing tag, then pushes the tag `vX.Y.Z`.
@@ -201,11 +208,22 @@ metadata is in `CITATION.cff` and `.zenodo.json`.
 
 ## Dependency updates
 
-Dependabot opens one pull request a month per kind of pin: GitHub Actions,
-pre-commit hooks, and `uv.lock` (the dev tools; it never raises the minimum
-versions in `pyproject.toml`). Merge it when CI passes. Dependabot does not
-update `pixi.lock` (the environment with every extra), so the two lockfiles
-can hold different versions of a package.
+Dependabot opens one pull request a month for each of GitHub Actions and
+pre-commit hooks. Merge it when CI passes.
+
+`uv.lock` (the dev tools and every dependency) is updated by the Upgrade lock
+workflow alone, not by Dependabot, which would leave a package at its old
+version when the newest release needs a newer Python than the oldest one this
+project supports. On the 1st of each month the workflow runs `uv lock --upgrade`
+(`uv.lock` then holds the newest release for each Python; it never raises the
+minimum versions in `pyproject.toml`) and, when the lock changes, opens the pull
+request `chore/lock-upgrade` (or updates it). GitHub does not start workflows on
+a pull request that its own token opened, so the workflow starts Tests, Code
+Quality and Documentation on the branch itself; their results show on the pull
+request. Merge it when they pass. You can also run it by hand: Actions > Upgrade
+lock > Run workflow.
+
+The workflow does not touch `pixi.lock` (the environment with every extra), so the two lockfiles can hold different versions of a package.
 
 ## Template
 
