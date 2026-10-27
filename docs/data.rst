@@ -132,8 +132,8 @@ folder you can write to, or pass ``cache=False``, which saves nothing.
 
 The file holds how to open the files, not their values: 8 to 15 KB for each daily
 file, so 3.2 MB for the 366 days of a year, whose files add up to 13 GB. That
-needs one file for each day: ``molefractions`` raises an error, and caches
-nothing, when two files cover one day (see :ref:`carbontracker-data`).
+needs one file for each day (:ref:`carbontracker-data` says what happens when
+a day has two).
 
 The file is for one list of files. When the folder gains or loses a file, the next
 ``molefractions`` adds an entry for the new list, as large as the first, to the

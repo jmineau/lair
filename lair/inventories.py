@@ -1795,11 +1795,9 @@ class EDGARv8(EDGAR):
           ...
           WASTE/v8.0_FT2022_GHG_CH4_2022_WASTE_flx.nc
 
-    Without arguments every year is read: the 53 years of annual CH4 are about
-    1,300 files, and opening them takes 20 to 50 seconds. ``start`` and ``end``
-    open only the files of those years (both included)::
-
-        inv = EDGARv8("CH4", start=2015, end=2022)  # 8 steps, opened in 3 s
+    Without arguments every year is read. ``start`` and ``end`` open only the
+    files of those years (both included); :ref:`the inventory example
+    <inventory-load>` says how long every year takes.
 
     See Also
     --------

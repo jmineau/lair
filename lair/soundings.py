@@ -364,9 +364,10 @@ def download_sounding(station, date, dst=None) -> str:
         The 3-letter station identifier (e.g. ``'SLC'``) passed to the Wyoming
         service via siphon. Also used as the file-name prefix.
     date : datetime
-        The date and time. Naive times are taken as UTC; tz-aware times are
-        converted to UTC. Wyoming reads the time as UTC, and the file is named
-        for the UTC hour (``SLC_2024011512.csv`` for 12 UTC).
+        The date and time. A time without a time zone follows :ref:`the UTC
+        rule <utc-rule>`; one with a time zone is converted to UTC. Wyoming
+        reads the time as UTC, and the file is named for the UTC hour
+        (``SLC_2024011512.csv`` for 12 UTC).
     dst : str
         The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/<station>``.
 
@@ -440,10 +441,11 @@ def download_soundings(station, start, end, dst=None, months=None):
         The 3-letter station identifier (e.g. ``'SLC'``).
     start : datetime
         The start date and time. Soundings are at 00 and 12 UTC, so the first
-        one requested is the first of those at or after ``start``.
+        one requested is the first of those at or after ``start``. A time
+        without a time zone follows :ref:`the UTC rule <utc-rule>`; one with a
+        time zone is converted to UTC.
     end : datetime
-        The end date and time (inclusive). Naive times are taken as UTC;
-        tz-aware times are converted.
+        The end date and time (inclusive), read like ``start``.
     dst : str
         The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/<station>``.
     months : list
@@ -536,8 +538,9 @@ def get_soundings(
         The 3-letter station identifier (e.g. ``'SLC'``). Names the
         subdirectory of ``$LAIR_SOUNDING_DIR`` and the file prefix.
     start : datetime | str, optional
-        The start date and time (inclusive). Naive times are taken as UTC;
-        tz-aware times are converted.
+        The start date and time (inclusive). A time without a time zone follows
+        :ref:`the UTC rule <utc-rule>`; one with a time zone is converted to
+        UTC.
     end : datetime | str, optional
         The end date and time (inclusive).
     sounding_dir : str
@@ -549,9 +552,7 @@ def get_soundings(
     driver : {'xarray', 'pandas'}, optional
         Return interpolated profiles as an xarray Dataset (default), or the
         merged raw soundings as a pandas DataFrame. The profiles share one set
-        of heights, every 10 m from the station's ground (its ``elevation``,
-        the lowest among the files if they differ; see
-        :meth:`Sounding.interpolate`) up to 5000 m, not included.
+        of heights (:ref:`soundings-heights` says which).
     download : bool, optional
         Download the soundings the folder lacks, from ``start`` to ``end``,
         before reading them. The default, False, downloads nothing.

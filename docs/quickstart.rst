@@ -7,8 +7,7 @@ Install
 -------
 
 lair is installed from GitHub, not from PyPI: :ref:`installation` has the
-commands. Use the conda route if you will regrid data (it needs ESMF). For
-everything else, pip is enough.
+commands and says which route (conda or pip) your work needs.
 
 Point lair at your data
 -----------------------
@@ -18,13 +17,7 @@ Most modules need no data folder. They work on the numbers you pass in.
 The modules that read files you keep on disk (``inventories``, ``soundings``,
 and ``noaa``'s ``CarbonTracker`` and ``GMLData``) take the folder as an argument,
 or read it from a ``LAIR_*`` environment variable. :ref:`data-locations` lists
-the variables. Set the one you need before you start Python, for example:
-
-.. code-block:: bash
-
-   export LAIR_INVENTORY_DIR=/path/to/inventories
-
-If a variable is missing, lair raises a ``ValueError`` that names it.
+the variables, shows how to set one and says what happens when one is missing.
 
 A first calculation
 -------------------

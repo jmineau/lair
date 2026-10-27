@@ -8,6 +8,16 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Changed
+
+- Each fact in the docs is written on one page and the others link to it: the
+  UTC rule, the conda commands, the data variable, the CarbonTracker
+  two-files error, EDGAR v8's opening time, the valley box, `kt` and the
+  sounding heights. The front page's release example is a tag that stays
+  valid, the clock page converts one time, and the inventory page says what
+  "the Salt Lake Valley" box is, shows `clip(geom=)`, and says that only
+  `resample` and `regrid` need ESMF.
+
 ## [2026.12.10] - 2026-10-27
 
 ### Added
