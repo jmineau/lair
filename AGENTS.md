@@ -79,14 +79,10 @@ Consequences:
 ## Commands
 
 uv manages the environment (`uv sync`, lean: no extras); every task is a
-`just` recipe (`uv run just --list`), and CI runs the same recipes.
-`just quality-check` runs `lint`, `type-check` (pyrefly), `docstr` (at least
-88%) and `test` (parallel, skipping `network` and `slow`; extra args go to
-pytest). `just format` fixes lint and formatting, `just build-docs` builds
-the docs and runs every example (warnings are errors), `just docs-serve`
-previews them, and `just pre-commit` runs every hook.
-
-Tests of modules behind a missing extra `importorskip` and skip. The pixi
+`just` recipe (`uv run just --list`; CONTRIBUTING.md, "Checks"), and CI runs the
+same recipes. `just quality-check` runs `lint`, `type-check` (pyrefly), `docstr`
+(at least 88%) and `test` (parallel, skipping `network` and `slow`). Tests of
+modules behind a missing extra `importorskip` and skip. The pixi
 environment has every extra (CONTRIBUTING.md, "Setup"): `pixi run pytest ...`
 or `pixi run pyrefly check` (the recipes use uv). After editing dependencies,
 run `uv lock` **and** `pixi lock` and commit both. A failure in one
@@ -188,12 +184,16 @@ between them. Network code is tested against fakes, never live. Warnings are
 errors: assert an expected one with `pytest.warns`, and ignore one from another
 library by message in `[tool.pytest]` `filterwarnings`, with a comment naming
 the library and version. Tests run in parallel, so they must not share state.
-Details, the markers and the fakes: `tests/README.md`.
+Details, the markers and the fakes: `tests/README.md`. Docstring examples
+(`>>>` in `lair/`) run as tests (`--doctest-modules`); `# doctest: +SKIP` marks
+one that needs data CI lacks. The lean environment skips a module whose extra
+is missing; the pixi job runs it.
 
 ## Commits, changelog, releases
 
 - Conventional Commits with the module as scope (`fix(soundings): ...`), `!`
-  for a breaking change. User-visible changes go under `## [Unreleased]` in
-  `CHANGELOG.md`; `just changelog` drafts entries.
+  for a breaking change. A pull request leaves `CHANGELOG.md` alone: at release
+  `just changelog` drafts the entries from the commit messages, so write each
+  as the line a user would read.
 - The version comes from git tags (setuptools-scm). The maintainer cuts the
   releases (CONTRIBUTING.md).

@@ -4,7 +4,8 @@ All notable changes to lair are documented here. The format follows
 [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/), and versions
 are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 2026.12.7 are described in their
-[GitHub Releases](https://github.com/jmineau/lair/releases).
+[GitHub Releases](https://github.com/jmineau/lair/releases). Pull requests leave this
+file alone: the entries are written at release (`just changelog` drafts them).
 
 ## [Unreleased]
 

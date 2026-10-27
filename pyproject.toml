@@ -145,9 +145,13 @@ fallback_version = "0.0.0"  # no git metadata at all (e.g. a bare source copy)
 
 [tool.pytest]
 minversion = "9.0"
-testpaths = ["tests"]
+testpaths = ["tests", "lair"]  # lair: the docstring examples (--doctest-modules below); the package is flat, not src/
 strict = true  # strict markers, config, xfail and parametrize ids
-addopts = ["-ra"]
+# --doctest-modules runs the `>>>` examples in docstrings as tests. A module that imports an
+# optional package at the top cannot be collected without it (the lean environment):
+# --doctest-ignore-import-errors skips its examples there, as tests behind a missing extra
+# skip. The pixi environment, which has every extra, runs them all.
+addopts = ["-ra", "--doctest-modules", "--doctest-ignore-import-errors"]
 log_level = "INFO"  # show captured logs for failing tests
 # Warnings are errors, so deprecations surface early. Ignore a specific
 # third-party warning with e.g. "ignore:some message:DeprecationWarning:pkg".
