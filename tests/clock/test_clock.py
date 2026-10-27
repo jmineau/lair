@@ -432,6 +432,16 @@ class TestAggregation:
         out = clock.seasonal(df)
         assert "season" in out.index.names
 
+    def test_seasonal_with_several_statistics_keeps_the_columns(self):
+        # Several statistics give MultiIndex columns; the season is only in the index.
+        idx = pd.date_range("2023-01-31", "2024-12-31", freq="ME")
+        df = pd.DataFrame({"v": idx.month.astype(float)}, index=idx)
+        out = clock.seasonal(df, ["mean", "max"])
+
+        assert out.columns.tolist() == [("v", "mean"), ("v", "max")]
+        assert out.index.names == ["season", "year"]
+        assert out.loc[("DJF", 2024), ("v", "max")] == 12
+
     def test_seasonal_labels_djf_by_january_year(self):
         # Two years of monthly values equal to the month number
         idx = pd.date_range("2023-01-31", "2024-12-31", freq="ME")

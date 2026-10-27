@@ -314,7 +314,7 @@ def profile(
         (median) on the transits of each bin.
     """
     t = times + pd.Timedelta(hours=tz_offset_hours)
-    key = {"hour": t.hour, "weekday": t.weekday, "month": t.month}[by]
+    key = {"hour": t.hour, "weekday": t.day_of_week, "month": t.month}[by]
     bins = {"hour": np.arange(24), "weekday": np.arange(7), "month": np.arange(1, 13)}[
         by
     ]

@@ -81,7 +81,7 @@ six days in January 2023 a winter inversion holds the city's methane in all day.
       ...: times = pd.date_range("2022-01-01", "2023-12-31 23:00", freq="1h")  # UTC
       ...: years = (times - times[0]).days / 365
       ...: true = pd.Series(
-      ...:     1.95 + 0.01 * years + 0.008 * np.cos(2 * np.pi * (times.dayofyear - 30) / 365),
+      ...:     1.95 + 0.01 * years + 0.008 * np.cos(2 * np.pi * (times.day_of_year - 30) / 365),
       ...:     index=times,
       ...: )
       ...: hour = (times.hour - 7) % 24  # Mountain Standard Time

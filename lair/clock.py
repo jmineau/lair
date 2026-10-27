@@ -796,13 +796,13 @@ def seasonal(data: pd.DataFrame, statistic: str | list[str] = "mean") -> pd.Data
     # Quarters starting in Dec/Mar/Jun/Sep line up with DJF/MAM/JJA/SON
     df = data.resample("QS-DEC").agg(statistic)  # pyrefly: ignore[no-matching-overload]
     index = pd.DatetimeIndex(df.index)
-    df["season"] = index.month.map(SEASONS)
+    season = index.month.map(SEASONS)
 
     # A DJF bin starts on Dec 1, so its label is the following (Jan/Feb) year
     year = index.year + (index.month == 12)
-    df = df.set_index(["season", pd.Index(year, name="year")])
-
-    return df
+    return df.set_axis(
+        pd.MultiIndex.from_arrays([season, year], names=["season", "year"])
+    )
 
 
 # ----- Decimal Time ----- #
