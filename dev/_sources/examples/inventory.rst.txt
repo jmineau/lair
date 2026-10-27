@@ -18,10 +18,11 @@ come out of it:
 
 .. note::
 
-   This page does not run when the docs build. It needs ESMF, which the conda
-   route of :ref:`installation` installs, and EDGAR's files, which are too large
-   for the docs build. The output below was recorded from one run of this code,
-   with ESMF, on 2026-10-26.
+   This page does not run when the docs build. It needs EDGAR's files, which are
+   too large for the docs build, and, for ``resample`` and ``regrid``, ESMF,
+   which the conda route of :ref:`installation` installs (``integrate()`` works
+   without it). The output below was recorded from one run of this code, with
+   ESMF, on 2026-10-27.
 
 .. _inventory-data:
 
@@ -47,6 +48,8 @@ lair reads every ``.nc`` file under ``CH4/`` except those in ``TOTALS/``. Set
 ``LAIR_INVENTORY_DIR`` to the folder that holds ``EDGAR/`` (see
 :ref:`data-locations`), or pass it to the class as ``inventory_dir=``.
 
+.. _inventory-load:
+
 Load
 ----
 
@@ -70,17 +73,37 @@ files of those years (both included). This page reads every year.
    In [2]: list(inv.data.data_vars)[:4]
    Out[2]: ['Solid_waste_landfills', 'Agricultural_soils', 'Agricultural_waste_burning', 'Chemical_processes']
 
+.. _inventory-clip:
+
 Clip
 ----
 
-``clip`` takes a bounding box as (west, south, east, north), in degrees. This
-box, 112.3 to 111.7 W and 40.4 to 41.0 N, holds 6 by 6 cells of 0.1 degrees.
+``clip`` takes a bounding box as (west, south, east, north), in degrees. "The
+Salt Lake Valley" on this page, and on :doc:`maps`, is the box in the code
+below, 112.3 to 111.7 W and 40.4 to 41.0 N: four numbers, not a boundary read
+from a file. Its edges fall on the edges of EDGAR's cells, so it holds 6 by 6
+cells of 0.1 degrees.
 
 .. code-block:: ipython
 
    In [3]: slv = inv.clip(bbox=(-112.3, 40.4, -111.7, 41.0))  # west, south, east, north
       ...: slv.data.sizes
    Out[3]: Frozen({'time': 53, 'lat': 6, 'lon': 6})
+
+For a region that is not a rectangle, ``clip(geom=)`` takes a `shapely
+<https://shapely.readthedocs.io>`_ polygon, with its corners as (lon, lat). This
+triangle inside the box gives a smaller grid, 3 by 4 cells. Its cells outside the
+triangle stay in the grid, empty (NaN), so they add nothing to a total
+(:meth:`~lair.geo.BaseGrid.clip` says how a polygon and a box differ at the
+edges). The rest of this page uses the box.
+
+.. code-block:: ipython
+
+   In [4]: from shapely.geometry import Polygon
+      ...:
+      ...: triangle = Polygon([(-112.2, 40.5), (-111.8, 40.5), (-112.0, 40.9)])
+      ...: inv.clip(geom=triangle).data.sizes
+   Out[4]: Frozen({'time': 53, 'lat': 3, 'lon': 4})
 
 .. _inventory-totals:
 
@@ -122,12 +145,13 @@ A flux in each cell: ``total_emissions``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``total_emissions`` sums the sectors in each cell. Its ``units`` attribute shows
-that it is still a flux, in kilograms per square meter per second:
+that it is still a flux, in kilograms per square meter per second (a spelling
+pint reads the same as ``kg m-2 s-1``: :ref:`unit spellings <unit-spellings>`):
 
 .. code-block:: ipython
 
-   In [4]: slv.total_emissions.attrs["units"]
-   Out[4]: 'kg/m**2/s'
+   In [5]: slv.total_emissions.attrs["units"]
+   Out[5]: 'kg/m**2/s'
 
 Do not add it up over the cells: the cells differ in area, so a sum of fluxes is
 not a mass.
@@ -145,21 +169,22 @@ does the work. That took a minute or two here.
 
 .. code-block:: ipython
 
-   In [5]: total = slv.integrate().compute()
+   In [6]: total = slv.integrate().compute()
       ...: total.attrs
-   Out[5]: {'long_name': 'Total Emissions', 'units': 'kg'}
+   Out[6]: {'long_name': 'Total Emissions', 'units': 'kg'}
 
 .. code-block:: ipython
 
-   In [6]: total.sel(time=slice("2020", "2022")).to_series() / 1e6  # kg to kt
-   Out[6]:
+   In [7]: total.sel(time=slice("2020", "2022")).to_series() / 1e6  # kg to kt
+   Out[7]:
    time
    2020-01-01    22.129474
    2021-01-01    22.404489
    2022-01-01    22.629266
    Freq: YS-JAN, Name: emissions, dtype: float64
 
-So EDGAR puts 22.6 kt (thousand tonnes) of methane in this box in 2022.
+So EDGAR puts 22.6 kt of methane in this box in 2022. (``kt`` is only a label
+here: do not write it as a unit in code; see :doc:`units`.)
 
 The mass in each cell: ``absolute_emissions``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -172,7 +197,7 @@ km2) times the seconds in the year:
 
 .. code-block:: ipython
 
-   In [7]: from lair.inventories import sum_sectors
+   In [8]: from lair.inventories import sum_sectors
       ...:
       ...: cell = dict(lat=40.75, lon=-111.95, method="nearest")  # one 0.1 degree cell
       ...:
@@ -196,7 +221,7 @@ together, they are ``integrate()``'s total:
 
 .. code-block:: ipython
 
-   In [8]: by_sector = slv.absolute_emissions.sel(time="2022-01-01").sum(["lat", "lon"]).compute()
+   In [9]: by_sector = slv.absolute_emissions.sel(time="2022-01-01").sum(["lat", "lon"]).compute()
       ...: kt = by_sector.to_pandas() / 1e6  # kg to kt
       ...: print(kt.sort_values(ascending=False).head().round(3).to_string())
       ...: print(f"all sectors: {kt.sum():.3f} kt")
@@ -220,7 +245,7 @@ Other units
 ^^^^^^^^^^^
 
 ``integrate()`` keeps the inventory's mass unit, so divide the result: kg /
-1e6 is kt (thousand tonnes), as above, which is also Gg. Converting the flux
+1e6 is kt, as above. Converting the flux
 first gives the same total. An inventory's ``convert_units`` gives a flux per
 year (``Gg/km**2/yr``) the length of each year, 366 days in 2020 and 365 in
 2022, and ``integrate()`` takes each value as that year's worth (the details
@@ -228,11 +253,11 @@ are under :meth:`~lair.inventories.Inventory.convert_units`):
 
 .. code-block:: ipython
 
-   In [9]: kg = total.sel(time=["2020-01-01", "2022-01-01"])
-      ...: gg = slv.convert_units("Gg/km**2/yr").integrate().sel(time=["2020-01-01", "2022-01-01"]).compute()
-      ...:
-      ...: (100 * (gg / (kg / 1e6) - 1)).to_series().round(6)  # percent
-   Out[9]:
+   In [10]: kg = total.sel(time=["2020-01-01", "2022-01-01"])
+       ...: gg = slv.convert_units("Gg/km**2/yr").integrate().sel(time=["2020-01-01", "2022-01-01"]).compute()
+       ...:
+       ...: (100 * (gg / (kg / 1e6) - 1)).to_series().round(6)  # percent
+   Out[10]:
    time
    2020-01-01    0.0
    2022-01-01    0.0
@@ -251,15 +276,15 @@ area, and with it the total, stays the same.
 
 .. code-block:: ipython
 
-   In [10]: fine = slv.resample(0.01)  # conservative by default
+   In [11]: fine = slv.resample(0.01)  # conservative by default
        ...: fine.data.sizes
-   Out[10]: Frozen({'time': 53, 'lat': 60, 'lon': 60})
+   Out[11]: Frozen({'time': 53, 'lat': 60, 'lon': 60})
 
 Now compare the 2022 total before and after:
 
 .. code-block:: ipython
 
-   In [11]: fine_total = fine.integrate().compute()
+   In [12]: fine_total = fine.integrate().compute()
        ...:
        ...: before = float(total.sel(time="2022-01-01"))
        ...: after = float(fine_total.sel(time="2022-01-01"))

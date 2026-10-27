@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="../_static/documentation_options.js?v=0e3453c6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Average a time series by local hour and by season" href="clock.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -568,6 +568,10 @@ writes the new unit back into the attribute:</p>
 <span class="go">    units:    kilogram / kilometer ** 2 / day</span>
 </pre></div>
 </div>
+<p id="unit-spellings">The same unit has more than one spelling, and pint reads them alike: <code class="docutils literal notranslate"><span class="pre">kg</span> <span class="pre">km-2</span>
+<span class="pre">d-1</span></code> and <code class="docutils literal notranslate"><span class="pre">kilogram</span> <span class="pre">/</span> <span class="pre">kilometer</span> <span class="pre">**</span> <span class="pre">2</span> <span class="pre">/</span> <span class="pre">day</span></code> (what <code class="docutils literal notranslate"><span class="pre">dequantify()</span></code> writes) are
+one unit, and so are <code class="docutils literal notranslate"><span class="pre">kg</span> <span class="pre">m-2</span> <span class="pre">s-1</span></code> and <code class="docutils literal notranslate"><span class="pre">kg/m**2/s</span></code> (the <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute of
+an inventory’s <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code>).</p>
 <p><a class="reference internal" href="../_autosummary/lair.inventories.convert_units.html#lair.inventories.convert_units" title="lair.inventories.convert_units"><code class="xref py py-func docutils literal notranslate"><span class="pre">lair.inventories.convert_units()</span></code></a> does the same for any array or dataset
 with a <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute, given the pollutant instead of <code class="docutils literal notranslate"><span class="pre">mw</span></code>:
 <code class="docutils literal notranslate"><span class="pre">convert_units(grid,</span> <span class="pre">&quot;CH4&quot;,</span> <span class="pre">&quot;kg</span> <span class="pre">km-2</span> <span class="pre">d-1&quot;)</span></code> returns a plain array with the new

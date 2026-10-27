@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="../_static/documentation_options.js?v=0e3453c6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.soundings.download_soundings" href="lair.soundings.download_soundings.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -827,8 +827,9 @@ when asked: see <a class="reference internal" href="../examples/soundings.html#s
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The 3-letter station identifier (e.g. <code class="docutils literal notranslate"><span class="pre">'SLC'</span></code>). Names the
 subdirectory of <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR</span></code> and the file prefix.</p></li>
-<li><p><strong>start</strong> (<em>datetime</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The start date and time (inclusive). Naive times are taken as UTC;
-tz-aware times are converted.</p></li>
+<li><p><strong>start</strong> (<em>datetime</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The start date and time (inclusive). A time without a time zone follows
+<a class="reference internal" href="../examples/clock.html#utc-rule"><span class="std std-ref">the UTC rule</span></a>; one with a time zone is converted to
+UTC.</p></li>
 <li><p><strong>end</strong> (<em>datetime</em><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The end date and time (inclusive).</p></li>
 <li><p><strong>sounding_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The directory containing the station’s sounding files. Defaults to
 <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDING_DIR/&lt;station&gt;</span></code>.</p></li>
@@ -836,9 +837,7 @@ tz-aware times are converted.</p></li>
 those).</p></li>
 <li><p><strong>driver</strong> (<em>{'xarray'</em><em>, </em><em>'pandas'}</em><em>, </em><em>optional</em>) – Return interpolated profiles as an xarray Dataset (default), or the
 merged raw soundings as a pandas DataFrame. The profiles share one set
-of heights, every 10 m from the station’s ground (its <code class="docutils literal notranslate"><span class="pre">elevation</span></code>,
-the lowest among the files if they differ; see
-<a class="reference internal" href="lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate" title="lair.soundings.Sounding.interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Sounding.interpolate()</span></code></a>) up to 5000 m, not included.</p></li>
+of heights (<a class="reference internal" href="../examples/soundings.html#soundings-heights"><span class="std std-ref">Read many soundings</span></a> says which).</p></li>
 <li><p><strong>download</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Download the soundings the folder lacks, from <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code>,
 before reading them. The default, False, downloads nothing.</p></li>
 </ul>

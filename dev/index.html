@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="_static/documentation_options.js?v=0e3453c6"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="next" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -436,14 +436,16 @@ macOS and Windows, without the extras.</p>
 <p>Regridding (<code class="docutils literal notranslate"><span class="pre">geo.regrid</span></code>, <code class="docutils literal notranslate"><span class="pre">geo.resample</span></code>, and an inventory’s <code class="docutils literal notranslate"><span class="pre">regrid</span></code>
 and <code class="docutils literal notranslate"><span class="pre">resample</span></code>) needs ESMF, a compiled library that pip cannot install.
 Grid-cell areas and inventory totals (<code class="docutils literal notranslate"><span class="pre">geo.gridcell_area</span></code>,
-<code class="docutils literal notranslate"><span class="pre">Inventory.integrate()</span></code>, <code class="docutils literal notranslate"><span class="pre">Inventory.absolute_emissions</span></code>) do not.</p>
+<code class="docutils literal notranslate"><span class="pre">Inventory.integrate()</span></code>, <code class="docutils literal notranslate"><span class="pre">Inventory.absolute_emissions</span></code>) do not. With pip,
+<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">xesmf</span></code> fails with <code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'ESMF'</span></code>, and so do the
+functions that regrid.</p>
 <ul class="simple">
 <li><p>To regrid, use <strong>conda</strong>.</p></li>
 <li><p>For everything else, inventory totals included, <strong>pip</strong> is enough.</p></li>
 </ul>
 </section>
 <section id="conda-everything">
-<h3>conda (everything)<a class="headerlink" href="#conda-everything" title="Link to this heading">#</a></h3>
+<span id="conda-route"></span><h3>conda (everything)<a class="headerlink" href="#conda-everything" title="Link to this heading">#</a></h3>
 <p>conda is a package manager. It installs Python itself, and compiled libraries
 such as ESMF, into separate environments. <code class="docutils literal notranslate"><span class="pre">mamba</span></code> is a faster command with the
 same arguments. Both come with <a class="reference external" href="https://conda-forge.org/download/">Miniforge</a>.</p>
@@ -477,14 +479,15 @@ and can fetch the Python version for you:</p>
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[requests,formats,geo,science] @ git+https://github.com/jmineau/lair.git&quot;</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">lair[complete]</span></code> also installs with pip, but <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">xesmf</span></code> then fails with
-<code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'ESMF'</span></code>, and so do the functions listed above.</p>
+<p><code class="docutils literal notranslate"><span class="pre">lair[complete]</span></code> also installs with pip, but without ESMF.</p>
 </section>
 <section id="a-release-or-no-git">
 <h3>A release, or no git<a class="headerlink" href="#a-release-or-no-git" title="Link to this heading">#</a></h3>
 <p>To install a release instead of the newest code, add <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> and its tag to the
-address (the tags are on the <a class="reference external" href="https://github.com/jmineau/lair/releases">Releases</a> page):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[geo,science] @ git+https://github.com/jmineau/lair.git@v2026.12.8&quot;</span>
+address. The tags are on the <a class="reference external" href="https://github.com/jmineau/lair/releases">Releases</a>
+page, newest first, and look like <code class="docutils literal notranslate"><span class="pre">v2026.12.10</span></code>. That one still installs
+after newer releases come out:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[geo,science] @ git+https://github.com/jmineau/lair.git@v2026.12.10&quot;</span>
 </pre></div>
 </div>
 <p>If git is not installed, pip can install from a zip of the repository instead:</p>
@@ -540,7 +543,7 @@ rioxarray, shapely</p></td>
 </table>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">regridding</span></code> installs the <code class="docutils literal notranslate"><span class="pre">xesmf</span></code> package, which works only with ESMF in the
-same environment: see “conda” above.</p>
+same environment: see <a class="reference internal" href="#conda-route"><span class="std std-ref">conda (everything)</span></a>.</p>
 <p>A function whose package is missing raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> that names the
 extra and the command that installs it.</p>
 </section>
@@ -549,7 +552,7 @@ extra and the command that installs it.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import lair; print(lair.__version__)&quot;</span>
 </pre></div>
 </div>
-<p>This prints the version, for example <code class="docutils literal notranslate"><span class="pre">2026.12.8</span></code>. The first import in a new
+<p>This prints the version, such as <code class="docutils literal notranslate"><span class="pre">2026.12.10</span></code>. The first import in a new
 environment also downloads a file; the next section says which.</p>
 </section>
 <section id="the-first-import-downloads-a-file">
@@ -591,11 +594,9 @@ cp<span class="w"> </span>ccg_filter/ccg_filter.py<span class="w"> </span><span 
 <h3>On CHPC (University of Utah)<a class="headerlink" href="#on-chpc-university-of-utah" title="Link to this heading">#</a></h3>
 <p>The steps above work on CHPC’s general-environment clusters (tested on
 Notchpeak), on a login node or in a job: compute nodes can reach GitHub, PyPI and
-NOAA. Use conda, which CHPC provides as the <code class="docutils literal notranslate"><span class="pre">miniforge3</span></code> module:</p>
+NOAA. Use conda, which CHPC provides as the <code class="docutils literal notranslate"><span class="pre">miniforge3</span></code> module. Load it, then
+run the three commands of <a class="reference internal" href="#conda-route"><span class="std std-ref">the conda route</span></a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>load<span class="w"> </span>miniforge3
-mamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>lair<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12<span class="w"> </span>esmpy<span class="w"> </span><span class="s2">&quot;esmf=*=nompi*&quot;</span>
-conda<span class="w"> </span>activate<span class="w"> </span>lair
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[complete] @ git+https://github.com/jmineau/lair.git&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">

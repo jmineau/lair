@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="_static/documentation_options.js?v=0e3453c6"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="LAIR: Land-Air Interactions Research" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -455,8 +455,7 @@
 <section id="install">
 <h2>Install<a class="headerlink" href="#install" title="Link to this heading">#</a></h2>
 <p>lair is installed from GitHub, not from PyPI: <a class="reference internal" href="index.html#installation"><span class="std std-ref">Installation</span></a> has the
-commands. Use the conda route if you will regrid data (it needs ESMF). For
-everything else, pip is enough.</p>
+commands and says which route (conda or pip) your work needs.</p>
 </section>
 <section id="point-lair-at-your-data">
 <h2>Point lair at your data<a class="headerlink" href="#point-lair-at-your-data" title="Link to this heading">#</a></h2>
@@ -464,11 +463,7 @@ everything else, pip is enough.</p>
 <p>The modules that read files you keep on disk (<code class="docutils literal notranslate"><span class="pre">inventories</span></code>, <code class="docutils literal notranslate"><span class="pre">soundings</span></code>,
 and <code class="docutils literal notranslate"><span class="pre">noaa</span></code>’s <code class="docutils literal notranslate"><span class="pre">CarbonTracker</span></code> and <code class="docutils literal notranslate"><span class="pre">GMLData</span></code>) take the folder as an argument,
 or read it from a <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> environment variable. <a class="reference internal" href="data.html#data-locations"><span class="std std-ref">Data locations</span></a> lists
-the variables. Set the one you need before you start Python, for example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">LAIR_INVENTORY_DIR</span><span class="o">=</span>/path/to/inventories
-</pre></div>
-</div>
-<p>If a variable is missing, lair raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> that names it.</p>
+the variables, shows how to set one and says what happens when one is missing.</p>
 </section>
 <section id="a-first-calculation">
 <h2>A first calculation<a class="headerlink" href="#a-first-calculation" title="Link to this heading">#</a></h2>

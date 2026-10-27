@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="../_static/documentation_options.js?v=0e3453c6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.EDGARv7" href="lair.inventories.EDGARv7.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -864,12 +864,8 @@ groups <code class="docutils literal notranslate"><span class="pre">AGRICULTURE<
   <span class="n">WASTE</span><span class="o">/</span><span class="n">v8</span><span class="mf">.0</span><span class="n">_FT2022_GHG_CH4_2022_WASTE_flx</span><span class="o">.</span><span class="n">nc</span>
 </pre></div>
 </div>
-<p>Without arguments every year is read: the 53 years of annual CH4 are about
-1,300 files, and opening them takes 20 to 50 seconds. <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code>
-open only the files of those years (both included):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv8</span><span class="p">(</span><span class="s2">&quot;CH4&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">2015</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">2022</span><span class="p">)</span>  <span class="c1"># 8 steps, opened in 3 s</span>
-</pre></div>
-</div>
+<p>Without arguments every year is read. <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> open only the
+files of those years (both included); <a class="reference internal" href="../examples/inventory.html#inventory-load"><span class="std std-ref">the inventory example</span></a> says how long every year takes.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">

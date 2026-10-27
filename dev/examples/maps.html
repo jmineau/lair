@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="../_static/documentation_options.js?v=0e3453c6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Total an inventory over a region" href="inventory.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -477,8 +477,8 @@ axes with only the field on it. State lines and coastlines are cartopy
 features, and <a class="reference internal" href="../_autosummary/lair.geo.add_latlon_ticks.html#lair.geo.add_latlon_ticks" title="lair.geo.add_latlon_ticks"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_latlon_ticks()</span></code></a> writes the tick labels in
 degrees (see <a class="reference internal" href="#state-lines-and-tick-labels">State lines and tick labels</a>).</p></li>
 <li><p><strong>The map helpers take an extent</strong>, <code class="docutils literal notranslate"><span class="pre">[west,</span> <span class="pre">east,</span> <span class="pre">south,</span> <span class="pre">north]</span></code>. <code class="docutils literal notranslate"><span class="pre">clip</span></code>
-takes the same extent, or a bbox, <code class="docutils literal notranslate"><span class="pre">(west,</span> <span class="pre">south,</span> <span class="pre">east,</span> <span class="pre">north)</span></code>: the same
-four numbers in another order. <a class="reference internal" href="../_autosummary/lair.geo.bbox2extent.html#lair.geo.bbox2extent" title="lair.geo.bbox2extent"><code class="xref py py-func docutils literal notranslate"><span class="pre">bbox2extent()</span></code></a> converts.</p></li>
+takes one too, or a bbox (<a class="reference internal" href="inventory.html#inventory-clip"><span class="std std-ref">the inventory example</span></a> has
+its order). <a class="reference internal" href="../_autosummary/lair.geo.bbox2extent.html#lair.geo.bbox2extent" title="lair.geo.bbox2extent"><code class="xref py py-func docutils literal notranslate"><span class="pre">bbox2extent()</span></code></a> converts.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -576,8 +576,8 @@ cartopy transforms it, so any cartopy axes works.</p>
 <p><a class="reference internal" href="../_autosummary/lair.geo.plot_grid.html#lair.geo.plot_grid" title="lair.geo.plot_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_grid()</span></code></a> outlines the cells of a grid on the axes you give
 it. It draws with xarray’s plot, which adds a colorbar, and passes its other
 arguments on, so <code class="docutils literal notranslate"><span class="pre">add_colorbar=False</span></code> leaves the colorbar out. Here it
-outlines the Salt Lake Valley box of the <a class="reference internal" href="inventory.html"><span class="doc">inventory example</span></a>
-(there as a bbox), 6 by 6 cells of 0.1 degrees, over a map of its emissions. A
+outlines the Salt Lake Valley box of <a class="reference internal" href="inventory.html#inventory-clip"><span class="std std-ref">the inventory example</span></a>
+over a map of its emissions. A
 small map has many close ticks, so <code class="docutils literal notranslate"><span class="pre">x_rotation=45</span></code> tilts the longitude
 labels:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">slv_extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">112.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.7</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">]</span>

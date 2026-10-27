@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="_static/documentation_options.js?v=0e3453c6"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -578,8 +578,8 @@ cannot be made, the error names it and <code class="docutils literal notranslate
 folder you can write to, or pass <code class="docutils literal notranslate"><span class="pre">cache=False</span></code>, which saves nothing.</p>
 <p>The file holds how to open the files, not their values: 8 to 15 KB for each daily
 file, so 3.2 MB for the 366 days of a year, whose files add up to 13 GB. That
-needs one file for each day: <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> raises an error, and caches
-nothing, when two files cover one day (see <a class="reference internal" href="examples/carbontracker.html#carbontracker-data"><span class="std std-ref">The data</span></a>).</p>
+needs one file for each day (<a class="reference internal" href="examples/carbontracker.html#carbontracker-data"><span class="std std-ref">The data</span></a> says what happens when
+a day has two).</p>
 <p>The file is for one list of files. When the folder gains or loses a file, the next
 <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> adds an entry for the new list, as large as the first, to the
 same file, and the old entry stays. To start again, delete the version’s folder in

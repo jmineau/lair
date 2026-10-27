@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="../_static/documentation_options.js?v=0e3453c6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Convert a methane flux from moles to mass" href="units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -481,10 +481,11 @@ unit (here kg). Divide the result, or convert the flux first with
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This page does not run when the docs build. It needs ESMF, which the conda
-route of <a class="reference internal" href="../index.html#installation"><span class="std std-ref">Installation</span></a> installs, and EDGAR’s files, which are too large
-for the docs build. The output below was recorded from one run of this code,
-with ESMF, on 2026-10-26.</p>
+<p>This page does not run when the docs build. It needs EDGAR’s files, which are
+too large for the docs build, and, for <code class="docutils literal notranslate"><span class="pre">resample</span></code> and <code class="docutils literal notranslate"><span class="pre">regrid</span></code>, ESMF,
+which the conda route of <a class="reference internal" href="../index.html#installation"><span class="std std-ref">Installation</span></a> installs (<code class="docutils literal notranslate"><span class="pre">integrate()</span></code> works
+without it). The output below was recorded from one run of this code, with
+ESMF, on 2026-10-27.</p>
 </div>
 <section id="the-data">
 <span id="inventory-data"></span><h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
@@ -506,7 +507,7 @@ every CH4 sector, and unzip each sector into a folder of its own:</p>
 <a class="reference internal" href="../data.html#data-locations"><span class="std std-ref">Data locations</span></a>), or pass it to the class as <code class="docutils literal notranslate"><span class="pre">inventory_dir=</span></code>.</p>
 </section>
 <section id="load">
-<h2>Load<a class="headerlink" href="#load" title="Link to this heading">#</a></h2>
+<span id="inventory-load"></span><h2>Load<a class="headerlink" href="#load" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.inventories.EDGARv8.html#lair.inventories.EDGARv8" title="lair.inventories.EDGARv8"><code class="xref py py-class docutils literal notranslate"><span class="pre">EDGARv8</span></code></a> opens every year of every sector. Each sector
 is a variable, and each time step is labeled by the start of its year (January
 1). Opening is lazy: lair reads the values only when a result needs them. Opening
@@ -526,12 +527,27 @@ files of those years (both included). This page reads every year.</p>
 </div>
 </section>
 <section id="clip">
-<h2>Clip<a class="headerlink" href="#clip" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">clip</span></code> takes a bounding box as (west, south, east, north), in degrees. This
-box, 112.3 to 111.7 W and 40.4 to 41.0 N, holds 6 by 6 cells of 0.1 degrees.</p>
+<span id="inventory-clip"></span><h2>Clip<a class="headerlink" href="#clip" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">clip</span></code> takes a bounding box as (west, south, east, north), in degrees. “The
+Salt Lake Valley” on this page, and on <a class="reference internal" href="maps.html"><span class="doc">Draw a map of an inventory</span></a>, is the box in the code
+below, 112.3 to 111.7 W and 40.4 to 41.0 N: four numbers, not a boundary read
+from a file. Its edges fall on the edges of EDGAR’s cells, so it holds 6 by 6
+cells of 0.1 degrees.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="n">slv</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">bbox</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">112.3</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.7</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">))</span>  <span class="c1"># west, south, east, north</span>
 <span class="gp">   ...: </span><span class="n">slv</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span>
 <span class="gh">Out[3]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 6, &#39;lon&#39;: 6})</span>
+</pre></div>
+</div>
+<p>For a region that is not a rectangle, <code class="docutils literal notranslate"><span class="pre">clip(geom=)</span></code> takes a <a class="reference external" href="https://shapely.readthedocs.io">shapely</a> polygon, with its corners as (lon, lat). This
+triangle inside the box gives a smaller grid, 3 by 4 cells. Its cells outside the
+triangle stay in the grid, empty (NaN), so they add nothing to a total
+(<a class="reference internal" href="../_autosummary/lair.geo.BaseGrid.clip.html#lair.geo.BaseGrid.clip" title="lair.geo.BaseGrid.clip"><code class="xref py py-meth docutils literal notranslate"><span class="pre">clip()</span></code></a> says how a polygon and a box differ at the
+edges). The rest of this page uses the box.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">triangle</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">([(</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="mf">40.5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">111.8</span><span class="p">,</span> <span class="mf">40.5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">112.0</span><span class="p">,</span> <span class="mf">40.9</span><span class="p">)])</span>
+<span class="gp">   ...: </span><span class="n">inv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="n">triangle</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span>
+<span class="gh">Out[4]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 3, &#39;lon&#39;: 4})</span>
 </pre></div>
 </div>
 </section>
@@ -581,9 +597,10 @@ the calendar (366 days in a leap year).</p>
 <section id="a-flux-in-each-cell-total-emissions">
 <h3>A flux in each cell: <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code><a class="headerlink" href="#a-flux-in-each-cell-total-emissions" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">total_emissions</span></code> sums the sectors in each cell. Its <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute shows
-that it is still a flux, in kilograms per square meter per second:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">slv</span><span class="o">.</span><span class="n">total_emissions</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
-<span class="gh">Out[4]: </span><span class="go">&#39;kg/m**2/s&#39;</span>
+that it is still a flux, in kilograms per square meter per second (a spelling
+pint reads the same as <code class="docutils literal notranslate"><span class="pre">kg</span> <span class="pre">m-2</span> <span class="pre">s-1</span></code>: <a class="reference internal" href="units.html#unit-spellings"><span class="std std-ref">unit spellings</span></a>):</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">slv</span><span class="o">.</span><span class="n">total_emissions</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+<span class="gh">Out[5]: </span><span class="go">&#39;kg/m**2/s&#39;</span>
 </pre></div>
 </div>
 <p>Do not add it up over the cells: the cells differ in area, so a sum of fluxes is
@@ -597,13 +614,13 @@ sectors. The <code class="docutils literal notranslate"><span class="pre">units<
 over the whole region in one time step, here one year.</p>
 <p><code class="docutils literal notranslate"><span class="pre">integrate()</span></code> returns a lazy (dask) array: <code class="docutils literal notranslate"><span class="pre">compute()</span></code> reads the files and
 does the work. That took a minute or two here.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">total</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">total</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="gp">   ...: </span><span class="n">total</span><span class="o">.</span><span class="n">attrs</span>
-<span class="gh">Out[5]: </span><span class="go">{&#39;long_name&#39;: &#39;Total Emissions&#39;, &#39;units&#39;: &#39;kg&#39;}</span>
+<span class="gh">Out[6]: </span><span class="go">{&#39;long_name&#39;: &#39;Total Emissions&#39;, &#39;units&#39;: &#39;kg&#39;}</span>
 </pre></div>
 </div>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="s2">&quot;2020&quot;</span><span class="p">,</span> <span class="s2">&quot;2022&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># kg to kt</span>
-<span class="gh">Out[6]:</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="s2">&quot;2020&quot;</span><span class="p">,</span> <span class="s2">&quot;2022&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># kg to kt</span>
+<span class="gh">Out[7]:</span>
 <span class="go">time</span>
 <span class="go">2020-01-01    22.129474</span>
 <span class="go">2021-01-01    22.404489</span>
@@ -611,7 +628,8 @@ does the work. That took a minute or two here.</p>
 <span class="go">Freq: YS-JAN, Name: emissions, dtype: float64</span>
 </pre></div>
 </div>
-<p>So EDGAR puts 22.6 kt (thousand tonnes) of methane in this box in 2022.</p>
+<p>So EDGAR puts 22.6 kt of methane in this box in 2022. (<code class="docutils literal notranslate"><span class="pre">kt</span></code> is only a label
+here: do not write it as a unit in code; see <a class="reference internal" href="units.html"><span class="doc">Convert a methane flux from moles to mass</span></a>.)</p>
 </section>
 <section id="the-mass-in-each-cell-absolute-emissions">
 <h3>The mass in each cell: <code class="docutils literal notranslate"><span class="pre">absolute_emissions</span></code><a class="headerlink" href="#the-mass-in-each-cell-absolute-emissions" title="Link to this heading">#</a></h3>
@@ -620,7 +638,7 @@ sum: the mass each cell emitted in each year, one variable per sector. To check
 it by hand, take one cell in 2022 (not a leap year): its flux, summed over the
 sectors, times its area (<code class="docutils literal notranslate"><span class="pre">gridcell_area</span></code>, in
 km2) times the seconds in the year:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">sum_sectors</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">sum_sectors</span>
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="n">cell</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">40.75</span><span class="p">,</span> <span class="n">lon</span><span class="o">=-</span><span class="mf">111.95</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>  <span class="c1"># one 0.1 degree cell</span>
 <span class="gp">   ...:</span>
@@ -641,7 +659,7 @@ km2) times the seconds in the year:</p>
 with Python’s <code class="docutils literal notranslate"><span class="pre">+</span></code> or <code class="docutils literal notranslate"><span class="pre">sum</span></code> gives NaN.</p>
 <p>Summed over the cells, each sector gives its own total over the region. Added
 together, they are <code class="docutils literal notranslate"><span class="pre">integrate()</span></code>’s total:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">by_sector</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="n">by_sector</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="gp">   ...: </span><span class="n">kt</span> <span class="o">=</span> <span class="n">by_sector</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># kg to kt</span>
 <span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="n">kt</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
 <span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;all sectors: </span><span class="si">{</span><span class="n">kt</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> kt&quot;</span><span class="p">)</span>
@@ -664,16 +682,16 @@ them first with <code class="docutils literal notranslate"><span class="pre">con
 <section id="other-units">
 <h3>Other units<a class="headerlink" href="#other-units" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">integrate()</span></code> keeps the inventory’s mass unit, so divide the result: kg /
-1e6 is kt (thousand tonnes), as above, which is also Gg. Converting the flux
+1e6 is kt, as above. Converting the flux
 first gives the same total. An inventory’s <code class="docutils literal notranslate"><span class="pre">convert_units</span></code> gives a flux per
 year (<code class="docutils literal notranslate"><span class="pre">Gg/km**2/yr</span></code>) the length of each year, 366 days in 2020 and 365 in
 2022, and <code class="docutils literal notranslate"><span class="pre">integrate()</span></code> takes each value as that year’s worth (the details
 are under <a class="reference internal" href="../_autosummary/lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_units()</span></code></a>):</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="n">kg</span> <span class="o">=</span> <span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2022-01-01&quot;</span><span class="p">])</span>
-<span class="gp">   ...: </span><span class="n">gg</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">convert_units</span><span class="p">(</span><span class="s2">&quot;Gg/km**2/yr&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2022-01-01&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-<span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">gg</span> <span class="o">/</span> <span class="p">(</span><span class="n">kg</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>  <span class="c1"># percent</span>
-<span class="gh">Out[9]:</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="n">kg</span> <span class="o">=</span> <span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2022-01-01&quot;</span><span class="p">])</span>
+<span class="go">    ...: gg = slv.convert_units(&quot;Gg/km**2/yr&quot;).integrate().sel(time=[&quot;2020-01-01&quot;, &quot;2022-01-01&quot;]).compute()</span>
+<span class="go">    ...:</span>
+<span class="go">    ...: (100 * (gg / (kg / 1e6) - 1)).to_series().round(6)  # percent</span>
+<span class="gh">Out[10]:</span>
 <span class="go">time</span>
 <span class="go">2020-01-01    0.0</span>
 <span class="go">2022-01-01    0.0</span>
@@ -690,13 +708,13 @@ so it uses pint’s year of 365.25 days.</p>
 An inventory’s <code class="docutils literal notranslate"><span class="pre">resample</span></code> and <code class="docutils literal notranslate"><span class="pre">regrid</span></code> are conservative by default: each new
 cell gets the area-weighted flux of the old cells it overlaps, so flux times
 area, and with it the total, stays the same.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="n">fine</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># conservative by default</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="n">fine</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># conservative by default</span>
 <span class="go">    ...: fine.data.sizes</span>
-<span class="gh">Out[10]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 60, &#39;lon&#39;: 60})</span>
+<span class="gh">Out[11]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 60, &#39;lon&#39;: 60})</span>
 </pre></div>
 </div>
 <p>Now compare the 2022 total before and after:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="n">fine_total</span> <span class="o">=</span> <span class="n">fine</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="n">fine_total</span> <span class="o">=</span> <span class="n">fine</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="go">    ...:</span>
 <span class="go">    ...: before = float(total.sel(time=&quot;2022-01-01&quot;))</span>
 <span class="go">    ...: after = float(fine_total.sel(time=&quot;2022-01-01&quot;))</span>

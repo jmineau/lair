@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="../_static/documentation_options.js?v=0e3453c6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Draw a map of an inventory" href="maps.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -500,7 +500,7 @@ or use <code class="docutils literal notranslate"><span class="pre">$LAIR_SOUNDI
 <section id="download">
 <h2>Download<a class="headerlink" href="#download" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.soundings.download_soundings.html#lair.soundings.download_soundings" title="lair.soundings.download_soundings"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_soundings()</span></code></a> downloads every sounding from
-<code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code> (both included; times without a time zone are UTC). It
+<code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code> (both included; times follow <a class="reference internal" href="clock.html#utc-rule"><span class="std std-ref">the UTC rule</span></a>). It
 skips a file that is already in the folder, so you can run it again to add a
 period.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -559,7 +559,7 @@ also has <code class="docutils literal notranslate"><span class="pre">relative_h
 (precipitable water).</p>
 </section>
 <section id="read-many-soundings">
-<h2>Read many soundings<a class="headerlink" href="#read-many-soundings" title="Link to this heading">#</a></h2>
+<span id="soundings-heights"></span><h2>Read many soundings<a class="headerlink" href="#read-many-soundings" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.soundings.get_soundings.html#lair.soundings.get_soundings" title="lair.soundings.get_soundings"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_soundings()</span></code></a> reads every file in the folder from
 <code class="docutils literal notranslate"><span class="pre">start</span></code> to <code class="docutils literal notranslate"><span class="pre">end</span></code> (both included) and returns an xarray <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> with a
 <code class="docutils literal notranslate"><span class="pre">time</span></code> and a <code class="docutils literal notranslate"><span class="pre">height</span></code> dimension:</p>

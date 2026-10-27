@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=0ffd8502"></script>
+    <script src="../../_static/documentation_options.js?v=0e3453c6"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev1+gb53e93312" />
+  <meta name="docsearch:version" content="2026.12.11.dev2+g4c8ed942a" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -814,9 +814,10 @@
 <span class="sd">        The 3-letter station identifier (e.g. ``&#39;SLC&#39;``) passed to the Wyoming</span>
 <span class="sd">        service via siphon. Also used as the file-name prefix.</span>
 <span class="sd">    date : datetime</span>
-<span class="sd">        The date and time. Naive times are taken as UTC; tz-aware times are</span>
-<span class="sd">        converted to UTC. Wyoming reads the time as UTC, and the file is named</span>
-<span class="sd">        for the UTC hour (``SLC_2024011512.csv`` for 12 UTC).</span>
+<span class="sd">        The date and time. A time without a time zone follows :ref:`the UTC</span>
+<span class="sd">        rule &lt;utc-rule&gt;`; one with a time zone is converted to UTC. Wyoming</span>
+<span class="sd">        reads the time as UTC, and the file is named for the UTC hour</span>
+<span class="sd">        (``SLC_2024011512.csv`` for 12 UTC).</span>
 <span class="sd">    dst : str</span>
 <span class="sd">        The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
 
@@ -893,10 +894,11 @@
 <span class="sd">        The 3-letter station identifier (e.g. ``&#39;SLC&#39;``).</span>
 <span class="sd">    start : datetime</span>
 <span class="sd">        The start date and time. Soundings are at 00 and 12 UTC, so the first</span>
-<span class="sd">        one requested is the first of those at or after ``start``.</span>
+<span class="sd">        one requested is the first of those at or after ``start``. A time</span>
+<span class="sd">        without a time zone follows :ref:`the UTC rule &lt;utc-rule&gt;`; one with a</span>
+<span class="sd">        time zone is converted to UTC.</span>
 <span class="sd">    end : datetime</span>
-<span class="sd">        The end date and time (inclusive). Naive times are taken as UTC;</span>
-<span class="sd">        tz-aware times are converted.</span>
+<span class="sd">        The end date and time (inclusive), read like ``start``.</span>
 <span class="sd">    dst : str</span>
 <span class="sd">        The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
 <span class="sd">    months : list</span>
@@ -992,8 +994,9 @@
 <span class="sd">        The 3-letter station identifier (e.g. ``&#39;SLC&#39;``). Names the</span>
 <span class="sd">        subdirectory of ``$LAIR_SOUNDING_DIR`` and the file prefix.</span>
 <span class="sd">    start : datetime | str, optional</span>
-<span class="sd">        The start date and time (inclusive). Naive times are taken as UTC;</span>
-<span class="sd">        tz-aware times are converted.</span>
+<span class="sd">        The start date and time (inclusive). A time without a time zone follows</span>
+<span class="sd">        :ref:`the UTC rule &lt;utc-rule&gt;`; one with a time zone is converted to</span>
+<span class="sd">        UTC.</span>
 <span class="sd">    end : datetime | str, optional</span>
 <span class="sd">        The end date and time (inclusive).</span>
 <span class="sd">    sounding_dir : str</span>
@@ -1005,9 +1008,7 @@
 <span class="sd">    driver : {&#39;xarray&#39;, &#39;pandas&#39;}, optional</span>
 <span class="sd">        Return interpolated profiles as an xarray Dataset (default), or the</span>
 <span class="sd">        merged raw soundings as a pandas DataFrame. The profiles share one set</span>
-<span class="sd">        of heights, every 10 m from the station&#39;s ground (its ``elevation``,</span>
-<span class="sd">        the lowest among the files if they differ; see</span>
-<span class="sd">        :meth:`Sounding.interpolate`) up to 5000 m, not included.</span>
+<span class="sd">        of heights (:ref:`soundings-heights` says which).</span>
 <span class="sd">    download : bool, optional</span>
 <span class="sd">        Download the soundings the folder lacks, from ``start`` to ``end``,</span>
 <span class="sd">        before reading them. The default, False, downloads nothing.</span>

@@ -5,6 +5,8 @@ This example takes a year of hourly data stamped in UTC, moves it to local
 time, and averages it by hour of the day, over the afternoon, and by season.
 Three rules come out of it:
 
+.. _utc-rule:
+
 * **A time without a time zone is UTC** in lair's functions that take a time,
   such as :func:`~lair.soundings.get_soundings` and
   :func:`~lair.clock.dt2decimalDate`. The exception is
@@ -55,6 +57,17 @@ daylight saving time). ``driver="pandas"`` converts the index of a
 
    local = UTC2MST(data, driver="pandas")
    local.head(3)
+
+Without ``driver="pandas"`` the shortcuts take a list of times, so to convert
+one time, put it in a list:
+
+.. ipython:: python
+
+   import datetime as dt
+
+   from lair.clock import UTC2MTN
+
+   UTC2MTN([dt.datetime(2024, 7, 15, 18)])
 
 Standard time is the same offset from UTC all year, so every day is 24 hours
 long and noon is noon in January and in July. That is why the afternoon below
