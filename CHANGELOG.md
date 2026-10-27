@@ -10,6 +10,13 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Changed
 
+- Each fact in the docs is written on one page and the others link to it: the
+  UTC rule, the conda commands, the data variable, the CarbonTracker
+  two-files error, EDGAR v8's opening time, the valley box, `kt` and the
+  sounding heights. The front page's release example is a tag that stays
+  valid, the clock page converts one time, and the inventory page says what
+  "the Salt Lake Valley" box is, shows `clip(geom=)`, and says that only
+  `resample` and `regrid` need ESMF.
 - `help(lair.clock)`, `help(lair.geo)` and `help(lair.inventories)` list only
   lair's own names. Each module has an `__all__` now, so the typing names it
   imports (`Literal`, `ClassVar`, `Self`, `ArrayLike`, ...) no longer print

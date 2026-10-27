@@ -963,7 +963,7 @@ def convert_timezones(
 
     See Also
     --------
-    UTC2MTN : From UTC to Mountain time, the common case.
+    diurnal : Average by hour of the day, once the data is in local time.
     AFTERNOON : The hours to select once the data is in local time.
 
     Examples

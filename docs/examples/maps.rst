@@ -14,8 +14,8 @@ inventory. Three rules come out of it:
   features, and :func:`~lair.geo.add_latlon_ticks` writes the tick labels in
   degrees (see `State lines and tick labels`_).
 * **The map helpers take an extent**, ``[west, east, south, north]``. ``clip``
-  takes the same extent, or a bbox, ``(west, south, east, north)``: the same
-  four numbers in another order. :func:`~lair.geo.bbox2extent` converts.
+  takes one too, or a bbox (:ref:`the inventory example <inventory-clip>` has
+  its order). :func:`~lair.geo.bbox2extent` converts.
 
 .. note::
 
@@ -134,8 +134,8 @@ The grid
 :func:`~lair.geo.plot_grid` outlines the cells of a grid on the axes you give
 it. It draws with xarray's plot, which adds a colorbar, and passes its other
 arguments on, so ``add_colorbar=False`` leaves the colorbar out. Here it
-outlines the Salt Lake Valley box of the :doc:`inventory example <inventory>`
-(there as a bbox), 6 by 6 cells of 0.1 degrees, over a map of its emissions. A
+outlines the Salt Lake Valley box of :ref:`the inventory example <inventory-clip>`
+over a map of its emissions. A
 small map has many close ticks, so ``x_rotation=45`` tilts the longitude
 labels:
 

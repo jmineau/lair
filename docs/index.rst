@@ -44,10 +44,14 @@ Pick a route
 Regridding (``geo.regrid``, ``geo.resample``, and an inventory's ``regrid``
 and ``resample``) needs ESMF, a compiled library that pip cannot install.
 Grid-cell areas and inventory totals (``geo.gridcell_area``,
-``Inventory.integrate()``, ``Inventory.absolute_emissions``) do not.
+``Inventory.integrate()``, ``Inventory.absolute_emissions``) do not. With pip,
+``import xesmf`` fails with ``No module named 'ESMF'``, and so do the
+functions that regrid.
 
 * To regrid, use **conda**.
 * For everything else, inventory totals included, **pip** is enough.
+
+.. _conda-route:
 
 conda (everything)
 ^^^^^^^^^^^^^^^^^^
@@ -93,19 +97,19 @@ and can fetch the Python version for you:
    source lair-env/bin/activate
    uv pip install "lair[requests,formats,geo,science] @ git+https://github.com/jmineau/lair.git"
 
-``lair[complete]`` also installs with pip, but ``import xesmf`` then fails with
-``No module named 'ESMF'``, and so do the functions listed above.
+``lair[complete]`` also installs with pip, but without ESMF.
 
 A release, or no git
 ^^^^^^^^^^^^^^^^^^^^
 
 To install a release instead of the newest code, add ``@`` and its tag to the
-address (the tags are on the `Releases
-<https://github.com/jmineau/lair/releases>`_ page):
+address. The tags are on the `Releases <https://github.com/jmineau/lair/releases>`_
+page, newest first, and look like ``v2026.12.10``. That one still installs
+after newer releases come out:
 
 .. code-block:: bash
 
-   pip install "lair[geo,science] @ git+https://github.com/jmineau/lair.git@v2026.12.8"
+   pip install "lair[geo,science] @ git+https://github.com/jmineau/lair.git@v2026.12.10"
 
 If git is not installed, pip can install from a zip of the repository instead:
 
@@ -141,7 +145,7 @@ Extra          Packages                               Used by
 ============== ====================================== ===========================================
 
 ``regridding`` installs the ``xesmf`` package, which works only with ESMF in the
-same environment: see "conda" above.
+same environment: see :ref:`conda-route`.
 
 A function whose package is missing raises an ``ImportError`` that names the
 extra and the command that installs it.
@@ -153,7 +157,7 @@ Check the install
 
    python -c "import lair; print(lair.__version__)"
 
-This prints the version, for example ``2026.12.8``. The first import in a new
+This prints the version, such as ``2026.12.10``. The first import in a new
 environment also downloads a file; the next section says which.
 
 .. _first-import-download:
@@ -200,14 +204,12 @@ On CHPC (University of Utah)
 
 The steps above work on CHPC's general-environment clusters (tested on
 Notchpeak), on a login node or in a job: compute nodes can reach GitHub, PyPI and
-NOAA. Use conda, which CHPC provides as the ``miniforge3`` module:
+NOAA. Use conda, which CHPC provides as the ``miniforge3`` module. Load it, then
+run the three commands of :ref:`the conda route <conda-route>`:
 
 .. code-block:: bash
 
    module load miniforge3
-   mamba create -n lair -c conda-forge python=3.12 esmpy "esmf=*=nompi*"
-   conda activate lair
-   pip install "lair[complete] @ git+https://github.com/jmineau/lair.git"
 
 * ``python3`` on CHPC is Python 3.6, too old for lair. The environment brings
   its own Python.

@@ -43,7 +43,7 @@ Download
 --------
 
 :func:`~lair.soundings.download_soundings` downloads every sounding from
-``start`` to ``end`` (both included; times without a time zone are UTC). It
+``start`` to ``end`` (both included; times follow :ref:`the UTC rule <utc-rule>`). It
 skips a file that is already in the folder, so you can run it again to add a
 period.
 
@@ -109,6 +109,8 @@ height of the first level, the ground:
 The columns are otherwise whatever Wyoming sends, so a file downloaded today
 also has ``relative_humidity`` and ``mixing_ratio``, and no ``pw``
 (precipitable water).
+
+.. _soundings-heights:
 
 Read many soundings
 -------------------
