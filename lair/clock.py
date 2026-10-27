@@ -15,7 +15,6 @@ import time
 from collections.abc import Callable, Sequence
 from contextlib import ContextDecorator
 from dataclasses import dataclass, field
-from functools import partial
 from typing import Any, ClassVar, Literal, Union
 from zoneinfo import ZoneInfo
 
@@ -907,6 +906,13 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
 
 # ----- Time Zones ----- #
 
+# The ``ambiguous`` and ``nonexistent`` options of ``convert_timezones`` and its
+# shortcuts: pandas' ``tz_localize`` options.
+_Ambiguous = (
+    Literal["raise", "NaT", "infer"] | bool | Sequence[bool] | npt.NDArray[np.bool_]
+)
+_Nonexistent = Literal["raise", "NaT", "shift_forward", "shift_backward"] | dt.timedelta
+
 
 def convert_timezones(
     x,
@@ -914,22 +920,18 @@ def convert_timezones(
     fromtz=None,
     localize=False,
     driver=None,
-    ambiguous: Literal["raise", "NaT", "infer"]
-    | bool
-    | Sequence[bool]
-    | npt.NDArray[np.bool_] = "raise",
-    nonexistent: Literal["raise", "NaT", "shift_forward", "shift_backward"]
-    | dt.timedelta = "raise",
+    ambiguous: _Ambiguous = "raise",
+    nonexistent: _Nonexistent = "raise",
 ):
     """
     Convert the times from one timezone to another.
 
     Parameters
     ----------
-    x : list[dt.datetime] | pd.DataFrame | pd.Series
+    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
         The times to convert. With ``driver='pandas'``, the index of a
-        DataFrame or the values of a Series. Without it, a list: put a single
-        time in one (a bare datetime raises ``TypeError``).
+        DataFrame or the values of a Series. Without it, a single time or a
+        list (or other iterable) of them.
     totz : str
         The timezone to convert the times to.
     fromtz : str, optional
@@ -951,8 +953,12 @@ def convert_timezones(
 
     Returns
     -------
-    list[dt.datetime] | pd.DataFrame | pd.Series
-        The converted times.
+    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The converted times, in the shape of ``x``. A single time gives a single
+        time, converted the way each element of a list is: a ``datetime`` stays
+        a ``datetime`` and a ``pd.Timestamp`` stays a ``pd.Timestamp`` (``pd.NaT``
+        if ``ambiguous`` or ``nonexistent`` is ``'NaT'`` and the time is one of
+        those).
 
     Raises
     ------
@@ -963,6 +969,7 @@ def convert_timezones(
 
     See Also
     --------
+    UTC2MTN : This conversion from UTC to Salt Lake City time, ready-made.
     diurnal : Average by hour of the day, once the data is in local time.
     AFTERNOON : The hours to select once the data is in local time.
 
@@ -972,16 +979,15 @@ def convert_timezones(
 
     >>> import datetime as dt
     >>> from lair.clock import convert_timezones
+    >>> convert_timezones(dt.datetime(2024, 1, 15, 18), "America/Denver", fromtz="UTC")
+    datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))
+
+    A list gives a list, converted time by time:
+
     >>> convert_timezones(
     ...     [dt.datetime(2024, 1, 15, 18)], "America/Denver", fromtz="UTC"
     ... )
     [datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))]
-
-    The shortcuts take the same list; in July, 18:00 UTC is 12:00 daylight time:
-
-    >>> from lair.clock import UTC2MTN
-    >>> UTC2MTN([dt.datetime(2024, 7, 15, 18)])
-    [datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))]
 
     The index of a DataFrame, kept naive in local time with ``localize=True``:
 
@@ -996,6 +1002,12 @@ def convert_timezones(
     2024-07-15 12:00:00  2000.0
     """
     if driver is None:
+        # A single time: convert it as a list of one, and give back the one
+        if isinstance(x, dt.datetime):
+            return convert_timezones(
+                [x], totz, fromtz, localize, None, ambiguous, nonexistent
+            )[0]
+
         times = list(x)
 
         # Assign the fromtz timezone to the naive times (aware times keep theirs).
@@ -1070,17 +1082,382 @@ def convert_timezones(
         raise ValueError("Invalid driver")
 
 
-#: :func:`convert_timezones` with ``fromtz="UTC"``; give ``totz``.
-UTC2 = partial(convert_timezones, fromtz="UTC")
+# The shortcuts are functions, not ``functools.partial`` objects, so that each has
+# its own signature and its own ``help()`` text.
 
-#: :func:`convert_timezones` from UTC to ``"MST"``, standard time all year.
-UTC2MST = partial(UTC2, totz="MST")
 
-#: :func:`convert_timezones` from UTC to ``"America/Denver"``, with daylight saving.
-UTC2MTN = partial(UTC2, totz="America/Denver")
+def UTC2(
+    x,
+    totz,
+    *,
+    localize=False,
+    driver=None,
+    ambiguous: _Ambiguous = "raise",
+    nonexistent: _Nonexistent = "raise",
+):
+    """
+    Convert times from UTC to the time zone ``totz``.
 
-#: :func:`convert_timezones` from ``"MST"`` to UTC.
-MST2UTC = partial(convert_timezones, fromtz="MST", totz="UTC")
+    A time without a time zone is taken as UTC (the rule on the
+    :ref:`clock example <utc-rule>`), and a time with one is converted from its
+    own. :func:`UTC2MST` and :func:`UTC2MTN` are the two common cases.
 
-#: :func:`convert_timezones` from ``"America/Denver"`` to UTC.
-MTN2UTC = partial(convert_timezones, fromtz="America/Denver", totz="UTC")
+    Parameters
+    ----------
+    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The times: a single time, a list of them, or with ``driver='pandas'``
+        the index of a DataFrame or the values of a Series.
+    totz : str
+        The time zone to convert to, such as ``'America/Denver'``.
+    localize : bool, optional
+        If True, drop the time zone from the result and keep the clock time of
+        ``totz``. Default False.
+    driver : None | 'pandas', optional
+        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.
+    ambiguous, nonexistent : optional
+        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so
+        they never apply; every shortcut takes them.
+
+    Returns
+    -------
+    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The converted times, in the shape of ``x``: a single time gives a single
+        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a
+        ``pd.Timestamp``.
+
+    See Also
+    --------
+    convert_timezones : The general conversion, from any zone to any zone.
+    UTC2MTN : UTC to Salt Lake City time.
+    UTC2MST : UTC to Mountain Standard Time.
+
+    Examples
+    --------
+    18:00 UTC in Pacific time, in July:
+
+    >>> import datetime as dt
+    >>> from lair.clock import UTC2
+    >>> UTC2(dt.datetime(2024, 7, 15, 18), "America/Los_Angeles")
+    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Los_Angeles'))
+    """
+    return convert_timezones(
+        x,
+        totz,
+        fromtz="UTC",
+        localize=localize,
+        driver=driver,
+        ambiguous=ambiguous,
+        nonexistent=nonexistent,
+    )
+
+
+def UTC2MST(
+    x,
+    *,
+    localize=False,
+    driver=None,
+    ambiguous: _Ambiguous = "raise",
+    nonexistent: _Nonexistent = "raise",
+):
+    """
+    Convert times from UTC to Mountain Standard Time (``'MST'``).
+
+    MST is 7 hours behind UTC all year, with no daylight saving time, so every
+    day is 24 hours long. A time without a time zone is taken as UTC (the rule on
+    the :ref:`clock example <utc-rule>`), and a time with one is converted from
+    its own.
+
+    Parameters
+    ----------
+    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The times: a single time, a list of them, or with ``driver='pandas'``
+        the index of a DataFrame or the values of a Series.
+    localize : bool, optional
+        If True, drop the time zone from the result and keep the clock time in
+        MST. Default False.
+    driver : None | 'pandas', optional
+        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.
+    ambiguous, nonexistent : optional
+        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so
+        they never apply; every shortcut takes them.
+
+    Returns
+    -------
+    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The converted times, in the shape of ``x``: a single time gives a single
+        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a
+        ``pd.Timestamp``.
+
+    See Also
+    --------
+    UTC2MTN : UTC to Salt Lake City time, which follows daylight saving time.
+    MST2UTC : The way back, from MST to UTC.
+    convert_timezones : The general conversion, from any zone to any zone.
+
+    Examples
+    --------
+    18:00 UTC is 11:00 MST, in January and in July:
+
+    >>> import datetime as dt
+    >>> from lair.clock import UTC2MST
+    >>> UTC2MST(dt.datetime(2024, 7, 15, 18))
+    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='MST'))
+
+    The index of a DataFrame, kept naive in MST with ``localize=True``:
+
+    >>> import pandas as pd
+    >>> data = pd.DataFrame(
+    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 18:00"])
+    ... )
+    >>> UTC2MST(data, localize=True, driver="pandas")
+                            ch4
+    2024-07-15 11:00:00  2000.0
+    """
+    return UTC2(
+        x,
+        "MST",
+        localize=localize,
+        driver=driver,
+        ambiguous=ambiguous,
+        nonexistent=nonexistent,
+    )
+
+
+def UTC2MTN(
+    x,
+    *,
+    localize=False,
+    driver=None,
+    ambiguous: _Ambiguous = "raise",
+    nonexistent: _Nonexistent = "raise",
+):
+    """
+    Convert times from UTC to Salt Lake City time (``'America/Denver'``).
+
+    The result follows daylight saving time: 6 hours behind UTC in summer, 7 in
+    winter. A time without a time zone is taken as UTC (the rule on the
+    :ref:`clock example <utc-rule>`), and a time with one is converted from its
+    own.
+
+    Parameters
+    ----------
+    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The times: a single time, a list of them, or with ``driver='pandas'``
+        the index of a DataFrame or the values of a Series.
+    localize : bool, optional
+        If True, drop the time zone from the result and keep the clock time in
+        Salt Lake City. Default False.
+    driver : None | 'pandas', optional
+        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.
+    ambiguous, nonexistent : optional
+        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so
+        they never apply; every shortcut takes them.
+
+    Returns
+    -------
+    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The converted times, in the shape of ``x``: a single time gives a single
+        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a
+        ``pd.Timestamp``.
+
+    See Also
+    --------
+    UTC2MST : UTC to Mountain Standard Time, with no daylight saving time.
+    MTN2UTC : The way back, from Salt Lake City time to UTC.
+    convert_timezones : The general conversion, from any zone to any zone.
+
+    Examples
+    --------
+    18:00 UTC in July is 12:00 daylight time:
+
+    >>> import datetime as dt
+    >>> from lair.clock import UTC2MTN
+    >>> UTC2MTN(dt.datetime(2024, 7, 15, 18))
+    datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))
+
+    A ``pd.Timestamp`` gives a ``pd.Timestamp``:
+
+    >>> import pandas as pd
+    >>> UTC2MTN(pd.Timestamp("2024-07-15 18:00"))
+    Timestamp('2024-07-15 12:00:00-0600', tz='America/Denver')
+
+    The index of a DataFrame, kept naive in local time with ``localize=True``:
+
+    >>> data = pd.DataFrame(
+    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 18:00"])
+    ... )
+    >>> UTC2MTN(data, localize=True, driver="pandas")
+                            ch4
+    2024-07-15 12:00:00  2000.0
+    """
+    return UTC2(
+        x,
+        "America/Denver",
+        localize=localize,
+        driver=driver,
+        ambiguous=ambiguous,
+        nonexistent=nonexistent,
+    )
+
+
+def MST2UTC(
+    x,
+    *,
+    localize=False,
+    driver=None,
+    ambiguous: _Ambiguous = "raise",
+    nonexistent: _Nonexistent = "raise",
+):
+    """
+    Convert times from Mountain Standard Time (``'MST'``) to UTC.
+
+    Use it for a file whose times are standard time all year (its manual or
+    settings say so): MST has no daylight saving time, so no time is repeated or
+    skipped. A time without a time zone is taken as MST, and a time with one is
+    converted from its own.
+
+    Parameters
+    ----------
+    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The times: a single time, a list of them, or with ``driver='pandas'``
+        the index of a DataFrame or the values of a Series.
+    localize : bool, optional
+        If True, drop the time zone from the result and keep the UTC clock time.
+        Default False.
+    driver : None | 'pandas', optional
+        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.
+    ambiguous, nonexistent : optional
+        As in :func:`convert_timezones`. MST has no repeated or skipped hours, so
+        they never apply; every shortcut takes them.
+
+    Returns
+    -------
+    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The converted times, in the shape of ``x``: a single time gives a single
+        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a
+        ``pd.Timestamp``.
+
+    See Also
+    --------
+    MTN2UTC : The same from Salt Lake City time, which follows daylight saving time.
+    UTC2MST : The way back, from UTC to MST.
+    convert_timezones : The general conversion, from any zone to any zone.
+
+    Examples
+    --------
+    11:00 MST is 18:00 UTC:
+
+    >>> import datetime as dt
+    >>> from lair.clock import MST2UTC
+    >>> MST2UTC(dt.datetime(2024, 7, 15, 11))
+    datetime.datetime(2024, 7, 15, 18, 0, tzinfo=zoneinfo.ZoneInfo(key='UTC'))
+
+    The index of a DataFrame, kept naive in UTC with ``localize=True``:
+
+    >>> import pandas as pd
+    >>> data = pd.DataFrame(
+    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 11:00"])
+    ... )
+    >>> MST2UTC(data, localize=True, driver="pandas")
+                            ch4
+    2024-07-15 18:00:00  2000.0
+    """
+    return convert_timezones(
+        x,
+        "UTC",
+        fromtz="MST",
+        localize=localize,
+        driver=driver,
+        ambiguous=ambiguous,
+        nonexistent=nonexistent,
+    )
+
+
+def MTN2UTC(
+    x,
+    *,
+    localize=False,
+    driver=None,
+    ambiguous: _Ambiguous = "raise",
+    nonexistent: _Nonexistent = "raise",
+):
+    """
+    Convert times from Salt Lake City time (``'America/Denver'``) to UTC.
+
+    A time without a time zone is taken as Salt Lake City clock time, and a time
+    with one is converted from its own. Daylight saving time repeats one hour in
+    November and skips one in March, so a clock-time file can hold a time that
+    cannot be converted without a choice: ``ambiguous`` and ``nonexistent`` make
+    it (the :ref:`clock example <dst-errors>` shows both).
+
+    Parameters
+    ----------
+    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The times: a single time, a list of them, or with ``driver='pandas'``
+        the index of a DataFrame or the values of a Series.
+    localize : bool, optional
+        If True, drop the time zone from the result and keep the UTC clock time.
+        Default False.
+    driver : None | 'pandas', optional
+        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.
+    ambiguous : 'raise' | 'NaT' | 'infer' | bool | array of bool, optional
+        What to do with a time that happens twice (the clocks go back): True is
+        the first (daylight time), False the second (standard time). The default
+        'raise' raises a ``ValueError``. As in :func:`convert_timezones`.
+    nonexistent : 'raise' | 'NaT' | 'shift_forward' | 'shift_backward' | timedelta, optional
+        What to do with a time that never happens (the clocks go forward). The
+        default 'raise' raises a ``ValueError``. As in :func:`convert_timezones`.
+
+    Returns
+    -------
+    dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series
+        The converted times, in the shape of ``x``: a single time gives a single
+        time, a ``datetime`` a ``datetime`` and a ``pd.Timestamp`` a
+        ``pd.Timestamp``.
+
+    Raises
+    ------
+    ValueError
+        If a time is ambiguous or nonexistent and the option for it is 'raise'.
+
+    See Also
+    --------
+    MST2UTC : The same from standard time, where nothing is repeated or skipped.
+    UTC2MTN : The way back, from UTC to Salt Lake City time.
+    convert_timezones : The general conversion, from any zone to any zone.
+
+    Examples
+    --------
+    12:00 in Salt Lake City in July is 18:00 UTC:
+
+    >>> import datetime as dt
+    >>> from lair.clock import MTN2UTC
+    >>> MTN2UTC(dt.datetime(2024, 7, 15, 12))
+    datetime.datetime(2024, 7, 15, 18, 0, tzinfo=zoneinfo.ZoneInfo(key='UTC'))
+
+    The clocks went back on 2024-11-03, so 01:30 happened twice; say which:
+
+    >>> MTN2UTC(dt.datetime(2024, 11, 3, 1, 30), ambiguous=True)
+    datetime.datetime(2024, 11, 3, 7, 30, tzinfo=zoneinfo.ZoneInfo(key='UTC'))
+    >>> MTN2UTC(dt.datetime(2024, 11, 3, 1, 30), ambiguous=False)
+    datetime.datetime(2024, 11, 3, 8, 30, tzinfo=zoneinfo.ZoneInfo(key='UTC'))
+
+    The index of a DataFrame, kept naive in UTC with ``localize=True``:
+
+    >>> import pandas as pd
+    >>> data = pd.DataFrame(
+    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 12:00"])
+    ... )
+    >>> MTN2UTC(data, localize=True, driver="pandas")
+                            ch4
+    2024-07-15 18:00:00  2000.0
+    """
+    return convert_timezones(
+        x,
+        "UTC",
+        fromtz="America/Denver",
+        localize=localize,
+        driver=driver,
+        ambiguous=ambiguous,
+        nonexistent=nonexistent,
+    )
