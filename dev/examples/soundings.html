@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=ebadb10f"></script>
+    <script src="../_static/documentation_options.js?v=a9c59496"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Draw a map of an inventory" href="maps.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev23+g235588cb3" />
+  <meta name="docsearch:version" content="2026.12.10.dev24+gc3a35fab6" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -631,8 +631,8 @@ lowest 210 m: a surface inversion.</p>
 <code class="docutils literal notranslate"><span class="pre">end</span></code> that the folder does not have (only those in <code class="docutils literal notranslate"><span class="pre">months</span></code>, if you give
 <code class="docutils literal notranslate"><span class="pre">months</span></code>), then reads them. It is <code class="docutils literal notranslate"><span class="pre">download_soundings</span></code> followed by the read,
 so <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> are required and the folder must be one you can write
-to. A file already there is not downloaded again, but a sounding that Wyoming
-does not have is asked for again on every call, so give the period you need.</p>
+to. A sounding that Wyoming does not have is asked for again on every call, so
+give the period you need.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="n">ds</span> <span class="o">=</span> <span class="n">get_soundings</span><span class="p">(</span><span class="s2">&quot;SLC&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2024-02-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2024-02-02&quot;</span><span class="p">,</span> <span class="n">sounding_dir</span><span class="o">=</span><span class="s2">&quot;soundings/SLC&quot;</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;soundings/SLC&quot;</span><span class="p">))</span>
 <span class="gh">Out[9]: </span><span class="go">[&#39;SLC_2024011500.csv&#39;, &#39;SLC_2024011512.csv&#39;, &#39;SLC_2024020100.csv&#39;, &#39;SLC_2024020112.csv&#39;, &#39;SLC_2024020200.csv&#39;]</span>
