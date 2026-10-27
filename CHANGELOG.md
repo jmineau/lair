@@ -8,6 +8,8 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+## [2026.12.10] - 2026-10-27
+
 ### Added
 
 - The inventory example sets `total_emissions` (a flux in each cell),
