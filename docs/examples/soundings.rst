@@ -196,8 +196,8 @@ With ``download=True`` it first downloads every sounding from ``start`` to
 ``end`` that the folder does not have (only those in ``months``, if you give
 ``months``), then reads them. It is ``download_soundings`` followed by the read,
 so ``start`` and ``end`` are required and the folder must be one you can write
-to. A file already there is not downloaded again, but a sounding that Wyoming
-does not have is asked for again on every call, so give the period you need.
+to. A sounding that Wyoming does not have is asked for again on every call, so
+give the period you need.
 
 .. code-block:: ipython
 

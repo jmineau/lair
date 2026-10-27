@@ -527,8 +527,8 @@ def get_soundings(
     """
     Get upper air soundings from the Wyoming archive.
 
-    Reads the soundings that are in the station's folder. It downloads only when
-    asked (``download=True``).
+    Reads the soundings that are in the station's folder. It downloads only
+    when asked: see :ref:`soundings-download`.
 
     Parameters
     ----------
@@ -553,12 +553,8 @@ def get_soundings(
         the lowest among the files if they differ; see
         :meth:`Sounding.interpolate`) up to 5000 m, not included.
     download : bool, optional
-        Download the soundings from ``start`` to ``end`` that the folder does
-        not have from the Wyoming archive, into the folder, before reading
-        (needs the network and a folder you can write to). The default, False,
-        reads what is on disk and downloads nothing. A file already in the
-        folder is not downloaded again; a sounding Wyoming does not have is
-        asked for on every call.
+        Download the soundings the folder lacks, from ``start`` to ``end``,
+        before reading them. The default, False, downloads nothing.
 
     Returns
     -------
