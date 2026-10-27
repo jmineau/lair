@@ -322,8 +322,8 @@ class CarbonTracker(metaclass=ABCMeta):
         Nothing is read until the data is used:
 
         >>> from lair.noaa import CarbonTracker
-        >>> CarbonTracker.from_version("CT2019B", "carbontracker")
-        CarbonTrackerCO2(version=CT2019B, directory=carbontracker/co2/CT2019B)
+        >>> print(CarbonTracker.from_version("CT2019B", "carbontracker"))
+        CarbonTrackerCO2(CT2019B)
         """
         specie = CarbonTracker.get_specie_from_version(version)
         if specie == "co2":
@@ -670,8 +670,8 @@ class CarbonTrackerCH4(CarbonTracker):
     Nothing is read until the data is used:
 
     >>> from lair.noaa import CarbonTrackerCH4
-    >>> CarbonTrackerCH4(carbon_tracker_directory="carbontracker")
-    CarbonTrackerCH4(version=CT-CH4-2025, directory=carbontracker/ch4/CT-CH4-2025)
+    >>> print(CarbonTrackerCH4(carbon_tracker_directory="carbontracker"))
+    CarbonTrackerCH4(CT-CH4-2025)
     """
 
     specie = "ch4"
