@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a9c59496"></script>
+    <script src="../_static/documentation_options.js?v=016bc1f4"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Sample CarbonTracker at points" href="carbontracker.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev24+gc3a35fab6" />
+  <meta name="docsearch:version" content="2026.12.10.dev25+g3828f1f41" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -553,7 +553,7 @@ six days in January 2023 a winter inversion holds the city’s methane in all da
 <span class="gp">   ...: </span><span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2023-12-31 23:00&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">)</span>  <span class="c1"># UTC</span>
 <span class="gp">   ...: </span><span class="n">years</span> <span class="o">=</span> <span class="p">(</span><span class="n">times</span> <span class="o">-</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">days</span> <span class="o">/</span> <span class="mi">365</span>
 <span class="gp">   ...: </span><span class="n">true</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
-<span class="gp">   ...: </span>    <span class="mf">1.95</span> <span class="o">+</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">years</span> <span class="o">+</span> <span class="mf">0.008</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">dayofyear</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span> <span class="o">/</span> <span class="mi">365</span><span class="p">),</span>
+<span class="gp">   ...: </span>    <span class="mf">1.95</span> <span class="o">+</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">years</span> <span class="o">+</span> <span class="mf">0.008</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">day_of_year</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span> <span class="o">/</span> <span class="mi">365</span><span class="p">),</span>
 <span class="gp">   ...: </span>    <span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">,</span>
 <span class="gp">   ...: </span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">hour</span> <span class="o">=</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">hour</span> <span class="o">-</span> <span class="mi">7</span><span class="p">)</span> <span class="o">%</span> <span class="mi">24</span>  <span class="c1"># Mountain Standard Time</span>

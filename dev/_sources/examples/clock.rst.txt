@@ -36,7 +36,7 @@ seasonal cycle that peaks in January, and noise.
    rng = np.random.default_rng(0)
    times = pd.date_range("2023-12-01", "2024-11-30 23:00", freq="1h")  # UTC
    daily = 0.05 * np.cos(2 * np.pi * (times.hour - 12) / 24)
-   yearly = 0.02 * np.cos(2 * np.pi * (times.dayofyear - 15) / 366)
+   yearly = 0.02 * np.cos(2 * np.pi * (times.day_of_year - 15) / 366)
    data = pd.DataFrame({"ch4": 2.0 + daily + yearly + rng.normal(0, 0.01, times.size)}, index=times)
    data.head(3)
 

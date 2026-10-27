@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a9c59496"></script>
+    <script src="../../_static/documentation_options.js?v=016bc1f4"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10.dev24+gc3a35fab6" />
+  <meta name="docsearch:version" content="2026.12.10.dev25+g3828f1f41" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -820,7 +820,9 @@
 <span class="sd">       &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
 <span class="sd">       &gt;&gt;&gt; time = pd.date_range(&quot;2021-01-01&quot;, &quot;2023-12-31&quot;, freq=&quot;1D&quot;)</span>
 <span class="sd">       &gt;&gt;&gt; trend = 1.9 + 0.00004 * np.arange(len(time))</span>
-<span class="sd">       &gt;&gt;&gt; annual = 0.06 * np.cos(2 * np.pi * (time.dayofyear.to_numpy() - 20) / 365.25)</span>
+<span class="sd">       &gt;&gt;&gt; annual = 0.06 * np.cos(</span>
+<span class="sd">       ...     2 * np.pi * (time.day_of_year.to_numpy() - 20) / 365.25</span>
+<span class="sd">       ... )</span>
 <span class="sd">       &gt;&gt;&gt; data = pd.DataFrame(</span>
 <span class="sd">       ...     {&quot;CH4&quot;: trend + annual + rng.normal(0, 0.02, len(time))}, index=time</span>
 <span class="sd">       ... )</span>
