@@ -8,8 +8,21 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ## [Unreleased]
 
+### Added
+
+- `UTC2MTN` and the other time-zone shortcuts of `lair.clock` (`UTC2`,
+  `UTC2MST`, `MST2UTC`, `MTN2UTC`), and `convert_timezones` without
+  `driver="pandas"`, take a single `datetime` or `pd.Timestamp` and give a single
+  time back, of the same type; they raised `TypeError` ("object is not
+  iterable") before. Lists, DataFrames, Series and indexes work as they did.
+
 ### Changed
 
+- Each time-zone shortcut of `lair.clock` is a function with its own
+  `help()` text and API page (parameters, See Also, examples), not a
+  `functools.partial` that shows the generic partial text. The names are the
+  same; the zones are fixed, so the shortcuts no longer take `fromtz` or `totz`
+  (except `UTC2`, which takes `totz`), and everything after `x` is a keyword.
 - Each fact in the docs is written on one page and the others link to it: the
   UTC rule, the conda commands, the data variable, the CarbonTracker
   two-files error, EDGAR v8's opening time, the valley box, `kt` and the

@@ -297,6 +297,144 @@ class TestTimezones:
         assert out == [dt.datetime(2024, 11, 3, 7, 30), dt.datetime(2024, 11, 3, 8, 30)]
 
 
+SHORTCUTS = [
+    # name, naive-time zone in, zone out
+    ("UTC2MST", "UTC", "MST"),
+    ("UTC2MTN", "UTC", "America/Denver"),
+    ("MST2UTC", "MST", "UTC"),
+    ("MTN2UTC", "America/Denver", "UTC"),
+]
+
+
+def _expected(t, fromtz, totz):
+    """What convert_timezones gives for one naive time, as a one-element list."""
+    return clock.convert_timezones([t], totz, fromtz=fromtz)
+
+
+@pytest.mark.parametrize("name, fromtz, totz", SHORTCUTS)
+class TestShortcuts:
+    """Each shortcut is convert_timezones with its two zones filled in."""
+
+    def test_single_datetime_gives_a_datetime(self, name, fromtz, totz):
+        t = dt.datetime(2024, 7, 15, 18)
+        out = getattr(clock, name)(t)
+        assert type(out) is dt.datetime
+        assert out == _expected(t, fromtz, totz)[0]
+        assert str(out.tzinfo) == totz
+
+    def test_single_timestamp_gives_a_timestamp(self, name, fromtz, totz):
+        t = pd.Timestamp("2024-07-15 18:00")
+        out = getattr(clock, name)(t)
+        assert isinstance(out, pd.Timestamp)
+        assert out == _expected(t, fromtz, totz)[0]
+        assert str(out.tz) == totz
+
+    def test_single_aware_time_converts_from_its_own_zone(self, name, fromtz, totz):
+        t = dt.datetime(2024, 7, 15, 18, tzinfo=dt.UTC)
+        out = getattr(clock, name)(t)
+        assert out == t
+        assert str(out.tzinfo) == totz
+
+    def test_single_time_localize(self, name, fromtz, totz):
+        t = dt.datetime(2024, 7, 15, 18)
+        out = getattr(clock, name)(t, localize=True)
+        assert out.tzinfo is None
+        assert out == _expected(t, fromtz, totz)[0].replace(tzinfo=None)
+
+    def test_list_still_gives_a_list(self, name, fromtz, totz):
+        times = [dt.datetime(2024, 7, 15, 18), dt.datetime(2024, 1, 15, 18)]
+        out = getattr(clock, name)(times)
+        assert isinstance(out, list)
+        assert out == [_expected(t, fromtz, totz)[0] for t in times]
+
+    def test_datetime_index_still_gives_a_list(self, name, fromtz, totz):
+        index = pd.date_range("2024-07-15 18:00", periods=2, freq="1h")
+        out = getattr(clock, name)(index)
+        assert isinstance(out, list)
+        assert out == clock.convert_timezones(list(index), totz, fromtz=fromtz)
+
+    def test_dataframe_still_converts_its_index(self, name, fromtz, totz):
+        df = pd.DataFrame(
+            {"v": [1, 2]},
+            index=pd.to_datetime(["2024-07-15 18:00", "2024-01-15 18:00"]),
+        )
+        out = getattr(clock, name)(df, driver="pandas")
+        expected = clock.convert_timezones(df, totz, fromtz=fromtz, driver="pandas")
+        pd.testing.assert_frame_equal(out, expected)
+        assert str(out.index.tz) == totz
+
+    def test_series_still_converts_its_values(self, name, fromtz, totz):
+        s = pd.Series(pd.to_datetime(["2024-07-15 18:00", "2024-01-15 18:00"]))
+        out = getattr(clock, name)(s, driver="pandas")
+        pd.testing.assert_series_equal(
+            out, clock.convert_timezones(s, totz, fromtz=fromtz, driver="pandas")
+        )
+
+    def test_single_time_with_pandas_driver_raises(self, name, fromtz, totz):
+        with pytest.raises(ValueError, match="DataFrame or Series"):
+            getattr(clock, name)(dt.datetime(2024, 7, 15, 18), driver="pandas")
+
+    def test_has_its_own_docstring(self, name, fromtz, totz):
+        doc = getattr(clock, name).__doc__
+        assert doc is not None and doc.lstrip().startswith("Convert times from")
+        assert "Examples" in doc
+
+
+class TestUTC2:
+    def test_totz_is_the_second_argument(self):
+        t = dt.datetime(2024, 7, 15, 18)
+        out = clock.UTC2(t, "America/Los_Angeles")
+        assert out.hour == 11
+        assert out == clock.UTC2(t, totz="America/Los_Angeles")
+
+    def test_single_time_and_list_and_frame(self):
+        t = pd.Timestamp("2024-07-15 18:00")
+        assert isinstance(clock.UTC2(t, "MST"), pd.Timestamp)
+        assert clock.UTC2([t], "MST") == [clock.UTC2(t, "MST")]
+        df = pd.DataFrame({"v": [1]}, index=[t])
+        assert str(clock.UTC2(df, "MST", driver="pandas").index.tz) == "MST"
+
+    def test_totz_is_required(self):
+        with pytest.raises(TypeError):
+            clock.UTC2(dt.datetime(2024, 7, 15, 18))  # pyrefly: ignore[missing-argument]
+
+
+class TestSingleTimeDST:
+    """A single time meets the DST errors and options of the list form."""
+
+    fall_back = dt.datetime(2024, 11, 3, 1, 30)  # happens twice
+    spring_forward = dt.datetime(2024, 3, 10, 2, 30)  # never happens
+
+    def test_ambiguous_raises_by_default(self):
+        with pytest.raises(ValueError, match="ambiguous"):
+            clock.MTN2UTC(self.fall_back)
+
+    @pytest.mark.parametrize("ambiguous, hour", [(True, 7), (False, 8)])
+    def test_ambiguous_flag_picks_the_instant(self, ambiguous, hour):
+        out = clock.MTN2UTC(self.fall_back, ambiguous=ambiguous)
+        assert out == dt.datetime(2024, 11, 3, hour, 30, tzinfo=dt.UTC)
+
+    def test_ambiguous_nat_gives_nat(self):
+        assert clock.MTN2UTC(self.fall_back, ambiguous="NaT") is pd.NaT
+
+    def test_nonexistent_raises_by_default(self):
+        with pytest.raises(ValueError, match="nonexistent"):
+            clock.MTN2UTC(self.spring_forward)
+
+    def test_nonexistent_shift_forward(self):
+        out = clock.MTN2UTC(self.spring_forward, nonexistent="shift_forward")
+        assert out == dt.datetime(2024, 3, 10, 9, tzinfo=dt.UTC)
+
+    def test_timestamp_keeps_its_type(self):
+        out = clock.MTN2UTC(pd.Timestamp(self.fall_back), ambiguous=False)
+        assert isinstance(out, pd.Timestamp)
+        assert out == pd.Timestamp("2024-11-03 08:30", tz="UTC")
+
+    def test_convert_timezones_takes_a_single_time_without_fromtz_raises(self):
+        with pytest.raises(ValueError, match="fromtz"):
+            clock.convert_timezones(dt.datetime(2024, 7, 15, 18), "MST")
+
+
 def _mtn2utc(times, driver, **kwargs):
     """Run MTN2UTC with either driver and return naive UTC times as a list."""
     if driver == "pandas":
