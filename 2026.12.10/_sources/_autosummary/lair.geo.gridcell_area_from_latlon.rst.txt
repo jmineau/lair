@@ -1,0 +1,6 @@
+lair.geo.gridcell\_area\_from\_latlon
+=====================================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: gridcell_area_from_latlon

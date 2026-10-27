@@ -1,0 +1,34 @@
+lair.noaa.CarbonTracker
+=======================
+
+.. currentmodule:: lair.noaa
+
+.. autoclass:: CarbonTracker
+   :no-members:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~CarbonTracker.molefractions_dir
+   ~CarbonTracker.units
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~CarbonTracker.background
+   ~CarbonTracker.download
+   ~CarbonTracker.from_version
+   ~CarbonTracker.get_specie_from_version
+   ~CarbonTracker.sample
+
+
+

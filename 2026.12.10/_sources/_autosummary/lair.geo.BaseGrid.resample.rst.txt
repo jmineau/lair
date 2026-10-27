@@ -1,0 +1,6 @@
+lair.geo.BaseGrid.resample
+==========================
+
+.. currentmodule:: lair.geo
+
+.. automethod:: BaseGrid.resample

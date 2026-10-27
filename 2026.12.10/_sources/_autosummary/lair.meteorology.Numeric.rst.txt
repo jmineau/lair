@@ -1,0 +1,15 @@
+lair.meteorology.Numeric
+========================
+
+.. currentmodule:: lair.meteorology
+
+.. autoclass:: Numeric
+   :no-members:
+
+
+
+
+
+
+
+

@@ -1,0 +1,26 @@
+﻿lair.config
+===========
+
+.. automodule:: lair.config
+   :no-members:
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   get_cache_dir
+   get_data_dir
+
+
+
+
+
+
+
+
+

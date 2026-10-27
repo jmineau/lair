@@ -1,0 +1,6 @@
+lair.transects.snap\_to\_route
+==============================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: snap_to_route

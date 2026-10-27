@@ -1,0 +1,6 @@
+lair.constants.kb
+=================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: kb

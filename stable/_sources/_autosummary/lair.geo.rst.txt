@@ -5,6 +5,14 @@
    :no-members:
 
 
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   PC
+
 
 
 .. rubric:: Functions
@@ -13,9 +21,9 @@
    :toctree:
    :nosignatures:
 
-   add_extent_map
    add_lat_ticks
    add_latlon_ticks
+   add_locator_map
    add_lon_ticks
    bbox2extent
    bearing

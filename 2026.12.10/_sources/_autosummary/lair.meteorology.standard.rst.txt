@@ -1,0 +1,6 @@
+lair.meteorology.standard
+=========================
+
+.. currentmodule:: lair.meteorology
+
+.. autodata:: standard

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.parallel &#8212; lair 2026.12.9</title>
+    <title>lair.parallel &#8212; lair 2026.12.10</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.parallel</span></li>
   </ul>
 </nav>
@@ -432,7 +435,11 @@
                   
   <h1>Source code for lair.parallel</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Parallelization utilities.</span>
+<span class="sd">Run a function over many inputs in worker processes.</span>
+
+<span class="sd">:func:`parallelize` wraps a function so that it maps over an iterable with a</span>
+<span class="sd">``multiprocessing`` pool. It counts only the CPUs this process may use (a</span>
+<span class="sd">Slurm job&#39;s, not the whole node&#39;s).</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>

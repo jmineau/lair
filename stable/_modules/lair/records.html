@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.records &#8212; lair 2026.12.9</title>
+    <title>lair.records &#8212; lair 2026.12.10</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.records</span></li>
   </ul>
 </nav>
@@ -432,7 +435,11 @@
                   
   <h1>Source code for lair.records</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Utilities for working with files and directories.</span>
+<span class="sd">Files, downloads and caching.</span>
+
+<span class="sd">Download by FTP (:func:`ftp_download`) or with ``wget``, unzip, list the files</span>
+<span class="sd">in a folder that match a pattern, read a KML file, and cache a function&#39;s</span>
+<span class="sd">results in a pickle file (:class:`Cacher`).</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
@@ -776,35 +783,26 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class that caches function results to a file for future use.</span>
 
-<span class="sd">    Attributes</span>
+<span class="sd">    Each parameter is also an attribute of the same name.</span>
+
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    func : function</span>
 <span class="sd">        The function to be cached.</span>
 <span class="sd">    cache_file : str</span>
-<span class="sd">        The name of the file to cache results to.</span>
-<span class="sd">    reload : bool</span>
+<span class="sd">        The name of the file to cache results to; it must end in ``.pkl``.</span>
+<span class="sd">    reload : bool, optional</span>
 <span class="sd">        Whether to re-run the function instead of returning cached results.</span>
+<span class="sd">        Each set of arguments is re-run once per Cacher; the fresh result</span>
+<span class="sd">        replaces the old one in the index and every other cached entry is</span>
+<span class="sd">        kept. (The old result stays in ``cache_file`` but is no longer</span>
+<span class="sd">        referenced.) Defaults to False.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pkl</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">cache_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize a Cacher object.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        func : function</span>
-<span class="sd">            The function to be cached.</span>
-<span class="sd">        cache_file : str</span>
-<span class="sd">            The name of the file to cache results to.</span>
-<span class="sd">        reload : bool, optional</span>
-<span class="sd">            Whether to re-run the function instead of returning cached results.</span>
-<span class="sd">            Each set of arguments is re-run once per Cacher; the fresh result</span>
-<span class="sd">            replaces the old one in the index and every other cached entry is</span>
-<span class="sd">            kept. (The old result stays in ``cache_file`` but is no longer</span>
-<span class="sd">            referenced.) Defaults to False.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a Cacher; the class docstring describes the parameters.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.pkl&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cache_file must end in .pkl: </span><span class="si">{</span><span class="n">cache_file</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 

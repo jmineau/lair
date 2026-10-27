@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.transects &#8212; lair 2026.12.9</title>
+    <title>lair.transects &#8212; lair 2026.12.10</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.transects</span></li>
   </ul>
 </nav>
@@ -489,7 +492,40 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Enhancement above each transit&#39;s own ``baseline_q``-th percentile along the route.</span>
 
-<span class="sd">    Transits with no finite values return NaN throughout.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obs : np.ndarray</span>
+<span class="sd">        Transect matrix ``obs[transit, point]``.</span>
+<span class="sd">    baseline_q : float, optional</span>
+<span class="sd">        Percentile (0 to 100) of each transit&#39;s values taken as its baseline.</span>
+<span class="sd">        Default 5.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        ``obs`` minus each transit&#39;s baseline, the same shape. Transits with no</span>
+<span class="sd">        finite values are NaN throughout.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    robust_z : The enhancement as a score against its own transit.</span>
+<span class="sd">    detection_frequency : How often each point is enhanced.</span>
+<span class="sd">    magnitude : How much each point is enhanced.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Three transits over four points; with ``baseline_q=0`` each transit&#39;s</span>
+<span class="sd">    lowest value is its baseline:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import enhancement</span>
+<span class="sd">    &gt;&gt;&gt; obs = np.array(</span>
+<span class="sd">    ...     [[2.0, 2.1, 2.6, 2.0], [2.2, 2.2, 2.3, 2.9], [2.0, np.nan, 2.5, 2.0]]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; enhancement(obs, baseline_q=0).round(2)</span>
+<span class="sd">    array([[0. , 0.1, 0.6, 0. ],</span>
+<span class="sd">           [0. , 0. , 0.1, 0.7],</span>
+<span class="sd">           [0. , nan, 0.5, 0. ]])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">ok</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -509,8 +545,24 @@
 <span class="sd">    along each transit&#39;s route points.</span>
 
 <span class="sd">    A point is then judged against the rest of *its own transit*, so a night with the whole</span>
-<span class="sd">    route elevated does not read as detections everywhere. Transits with fewer than</span>
-<span class="sd">    ``min_points`` finite points, or zero MAD, return NaN.</span>
+<span class="sd">    route elevated does not read as detections everywhere.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    enh : np.ndarray</span>
+<span class="sd">        Enhancement matrix ``enh[transit, point]``, as from :func:`enhancement`.</span>
+<span class="sd">    min_points : int, optional</span>
+<span class="sd">        Fewest finite points a transit needs for a score. Default 20.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The scores, the same shape as ``enh``. Transits with fewer than</span>
+<span class="sd">        ``min_points`` finite points, or zero MAD, are NaN.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    enhancement : The enhancement matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">enh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">enh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
@@ -535,7 +587,38 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Fraction of transits (with data at the point) whose enhancement exceeds ``threshold``.</span>
 
-<span class="sd">    Points sampled by fewer than ``min_transits`` transits return NaN.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    enh : np.ndarray</span>
+<span class="sd">        Enhancement matrix ``enh[transit, point]``, as from :func:`enhancement`.</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Enhancement above which a transit counts as a detection.</span>
+<span class="sd">    min_transits : int, optional</span>
+<span class="sd">        Fewest transits with data a point needs. Default 10.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The fraction per point. Points sampled by fewer than ``min_transits``</span>
+<span class="sd">        transits are NaN.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    magnitude : The enhancement of the detected transits.</span>
+<span class="sd">    profile : Both, binned by hour, weekday or month.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    With the enhancement of the example in :func:`enhancement`, the third point</span>
+<span class="sd">    is enhanced by more than 0.2 in two of three transits:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import detection_frequency</span>
+<span class="sd">    &gt;&gt;&gt; enh = np.array(</span>
+<span class="sd">    ...     [[0.0, 0.1, 0.6, 0.0], [0.0, 0.0, 0.1, 0.7], [0.0, np.nan, 0.5, 0.0]]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; detection_frequency(enh, threshold=0.2, min_transits=2).round(3)</span>
+<span class="sd">    array([0.   , 0.   , 0.667, 0.333])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">enh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">enh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">enh</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -558,11 +641,40 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Per-point enhancement magnitude.</span>
 
-<span class="sd">    It is ``stat`` (&quot;median&quot; | &quot;mean&quot;) over detected transits (``enh &gt; threshold``) or</span>
-<span class="sd">    over all transits with data (``threshold=None``).</span>
+<span class="sd">    It is ``stat`` over detected transits (``enh &gt; threshold``) or over all</span>
+<span class="sd">    transits with data (``threshold=None``).</span>
 
-<span class="sd">    Points sampled by fewer than ``min_transits`` transits (with data, before thresholding)</span>
-<span class="sd">    return NaN; so do points with no detection at all.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    enh : np.ndarray</span>
+<span class="sd">        Enhancement matrix ``enh[transit, point]``, as from :func:`enhancement`.</span>
+<span class="sd">    threshold : float or None, optional</span>
+<span class="sd">        Enhancement above which a transit counts as a detection; None (the</span>
+<span class="sd">        default) uses every transit with data.</span>
+<span class="sd">    stat : str, optional</span>
+<span class="sd">        ``&quot;median&quot;`` (the default) or ``&quot;mean&quot;``.</span>
+<span class="sd">    min_transits : int, optional</span>
+<span class="sd">        Fewest transits with data (before thresholding) a point needs. Default 10.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The magnitude per point. Points sampled by fewer than ``min_transits``</span>
+<span class="sd">        transits are NaN; so are points with no detection at all.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    detection_frequency : How often each point is enhanced.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import magnitude</span>
+<span class="sd">    &gt;&gt;&gt; enh = np.array(</span>
+<span class="sd">    ...     [[0.0, 0.1, 0.6, 0.0], [0.0, 0.0, 0.1, 0.7], [0.0, np.nan, 0.5, 0.0]]</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; magnitude(enh, threshold=0.2, min_transits=2)</span>
+<span class="sd">    array([ nan,  nan, 0.55, 0.7 ])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">enh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">enh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">enh</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -585,7 +697,23 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    One timestamp per transit from a ``time[transit, point]`` matrix.</span>
 
-<span class="sd">    The matrix holds POSIX seconds or datetime64; transits with no data get NaT.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time : np.ndarray</span>
+<span class="sd">        Time matrix ``time[transit, point]``, in POSIX seconds or datetime64, as</span>
+<span class="sd">        from :func:`transect_matrix`.</span>
+<span class="sd">    stat : str, optional</span>
+<span class="sd">        How to reduce each transit&#39;s times: ``&quot;median&quot;`` (the default), ``&quot;min&quot;``</span>
+<span class="sd">        or ``&quot;max&quot;``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DatetimeIndex</span>
+<span class="sd">        One naive (UTC) time per transit; transits with no data get NaT.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    profile : Bins the metrics by these times.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
@@ -614,11 +742,32 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the detection frequency and median magnitude per point, binned by time.</span>
 
-<span class="sd">    ``by`` is the &quot;hour&quot;, &quot;weekday&quot; or &quot;month&quot; of the transit time. Returns ``(bins, freq[bin, point], mag[bin, point])``. ``tz_offset_hours`` shifts the</span>
-<span class="sd">    (UTC) transit times to local time before binning (e.g. -7 for MST).</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    enh : np.ndarray</span>
+<span class="sd">        Enhancement matrix ``enh[transit, point]``, as from :func:`enhancement`.</span>
+<span class="sd">    times : pd.DatetimeIndex</span>
+<span class="sd">        One UTC time per transit, as from :func:`transit_times`.</span>
+<span class="sd">    by : str, optional</span>
+<span class="sd">        The bins: ``&quot;hour&quot;`` (the default), ``&quot;weekday&quot;`` or ``&quot;month&quot;`` of the</span>
+<span class="sd">        transit time.</span>
+<span class="sd">    threshold : float, optional</span>
+<span class="sd">        Enhancement above which a transit counts as a detection. Default 0.</span>
+<span class="sd">    min_transits : int, optional</span>
+<span class="sd">        Fewest transits with data a point needs in a bin. Default 10.</span>
+<span class="sd">    tz_offset_hours : float, optional</span>
+<span class="sd">        Hours added to the UTC times before binning, to bin by local time (e.g.</span>
+<span class="sd">        -7 for MST). Default 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple[np.ndarray, np.ndarray, np.ndarray]</span>
+<span class="sd">        ``(bins, freq, mag)``: the bin values, and ``freq[bin, point]`` and</span>
+<span class="sd">        ``mag[bin, point]`` from :func:`detection_frequency` and :func:`magnitude`</span>
+<span class="sd">        (median) on the transits of each bin.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">times</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">tz_offset_hours</span><span class="p">)</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="s2">&quot;weekday&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">weekday</span><span class="p">,</span> <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">month</span><span class="p">}[</span><span class="n">by</span><span class="p">]</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="s2">&quot;weekday&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">day_of_week</span><span class="p">,</span> <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">month</span><span class="p">}[</span><span class="n">by</span><span class="p">]</span>
     <span class="n">bins</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">),</span> <span class="s2">&quot;weekday&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span> <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)}[</span>
         <span class="n">by</span>
     <span class="p">]</span>
@@ -638,7 +787,19 @@
 <div class="viewcode-block" id="along_route_distance">
 <a class="viewcode-back" href="../../_autosummary/lair.transects.along_route_distance.html#lair.transects.along_route_distance">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">along_route_distance</span><span class="p">(</span><span class="n">lon</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cumulative geodesic distance [km] along the ordered route points (WGS84).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cumulative geodesic distance along the ordered route points.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lon, lat : np.ndarray</span>
+<span class="sd">        Longitude and latitude of the route points, in order along the route.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Distance from the first point on the WGS84 ellipsoid (km), starting at 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">pyproj</span><span class="w"> </span><span class="kn">import</span> <span class="n">Geod</span>
 
     <span class="n">seg</span> <span class="o">=</span> <span class="n">Geod</span><span class="p">(</span><span class="n">ellps</span><span class="o">=</span><span class="s2">&quot;WGS84&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">line_lengths</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
@@ -654,11 +815,26 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Merge the fixed points of several routes into one network point set.</span>
 
-<span class="sd">    ``routes_xy`` are ``(n_i, 2)`` arrays of projected coordinates (meters). Points of the</span>
-<span class="sd">    first route are kept; a point of a later route is added only if it is farther than</span>
-<span class="sd">    ``tol`` from every point already in the set, otherwise it is snapped to the nearest</span>
-<span class="sd">    existing one. Returns ``(network_xy, index)`` where ``index[i][k]`` is the network</span>
-<span class="sd">    point of route ``i``&#39;s point ``k``. Shared track thus maps to shared network points.</span>
+<span class="sd">    Points of the first route are kept; a point of a later route is added only if it is</span>
+<span class="sd">    farther than ``tol`` from every point already in the set, otherwise it is snapped to</span>
+<span class="sd">    the nearest existing one. Shared track thus maps to shared network points.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    routes_xy : list[np.ndarray]</span>
+<span class="sd">        One ``(n_i, 2)`` array of projected coordinates (meters) per route.</span>
+<span class="sd">    tol : float</span>
+<span class="sd">        Distance (meters) within which a point joins an existing network point.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple[np.ndarray, list[np.ndarray]]</span>
+<span class="sd">        ``(network_xy, index)``: the network points, and per route the network</span>
+<span class="sd">        point of each of its points (``index[i][k]`` for route ``i``&#39;s point ``k``).</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    pool_routes : Stacks the routes&#39; matrices onto the network points.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">cKDTree</span>
 
@@ -684,9 +860,24 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stack per-route ``[transit, point]`` matrices onto the network points.</span>
 
-<span class="sd">    Returns a ``[sum of transits, n_network]`` matrix, NaN where a route has no point</span>
-<span class="sd">    (or no data) at a network point. Where two route points of one route snap to the</span>
-<span class="sd">    same network point, the last one wins.</span>
+<span class="sd">    Where two route points of one route snap to the same network point, the last one</span>
+<span class="sd">    wins.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    matrices : list[np.ndarray]</span>
+<span class="sd">        One ``[transit, point]`` matrix per route.</span>
+<span class="sd">    index : list[np.ndarray]</span>
+<span class="sd">        Per route, the network point of each of its points, from</span>
+<span class="sd">        :func:`merge_route_points`.</span>
+<span class="sd">    n_network : int</span>
+<span class="sd">        Number of network points.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        A ``[sum of transits, n_network]`` matrix, NaN where a route has no point</span>
+<span class="sd">        (or no data) at a network point.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matrices</span><span class="p">)</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">n_network</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
@@ -735,16 +926,35 @@
 
 <span class="sd">    A sample logged at time *t* is air that entered the inlet ``lag_s`` seconds earlier, so</span>
 <span class="sd">    it belongs at the platform&#39;s position at ``t - lag``. Positions are interpolated</span>
-<span class="sd">    linearly in time along ``xy`` (``(n, 2)``, planar or lon/lat; ``time`` sorted).</span>
-<span class="sd">    ``lag_s`` is a scalar or one value per sample (the lag differs by instrument epoch).</span>
+<span class="sd">    linearly in time along ``xy``.</span>
 
 <span class="sd">    The record is cut into runs at gaps longer than ``max_gap_s``, and ``t - lag`` is not</span>
 <span class="sd">    allowed to reach back before the start of the sample&#39;s own run: the first seconds of a</span>
 <span class="sd">    run keep its first position instead of being interpolated across the gap to wherever</span>
 <span class="sd">    the previous run ended.</span>
 
-<span class="sd">    Samples without a time (NaN / NaT) get a NaN position and are left out of the</span>
-<span class="sd">    interpolation for the others.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time : array-like</span>
+<span class="sd">        Sample times, sorted: POSIX seconds or datetime-like (see the module</span>
+<span class="sd">        docstring).</span>
+<span class="sd">    xy : np.ndarray</span>
+<span class="sd">        Logged positions, ``(n, 2)``, planar or lon/lat.</span>
+<span class="sd">    lag_s : float or array-like</span>
+<span class="sd">        Inlet lag (seconds), a scalar or one value per sample (the lag differs by</span>
+<span class="sd">        instrument epoch).</span>
+<span class="sd">    max_gap_s : float, optional</span>
+<span class="sd">        Time gap (seconds) that starts a new run. Default 600.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The positions, ``(n, 2)``. Samples without a time (NaN / NaT) get a NaN</span>
+<span class="sd">        position and are left out of the interpolation for the others.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    snap_to_route : The next step, the route point of each position.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">_time_seconds</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
     <span class="n">xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -769,10 +979,27 @@
     <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">route_xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Nearest route point of each sample: ``(index, distance)``, index -1 beyond ``max_dist``.</span>
+<span class="sd">    Find the nearest route point of each sample, within ``max_dist``.</span>
 
-<span class="sd">    Both arrays are ``(n, 2)`` in the same projected meters. A sample with a NaN position</span>
-<span class="sd">    (e.g. no time in :func:`lag_positions`) gets index -1 and distance NaN.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xy : np.ndarray</span>
+<span class="sd">        Sample positions, ``(n, 2)``, in projected meters.</span>
+<span class="sd">    route_xy : np.ndarray</span>
+<span class="sd">        Route points, ``(m, 2)``, in the same projected meters.</span>
+<span class="sd">    max_dist : float</span>
+<span class="sd">        Distance (meters) beyond which a sample is off the route.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple[np.ndarray, np.ndarray]</span>
+<span class="sd">        ``(index, distance)``: the route point of each sample (-1 beyond</span>
+<span class="sd">        ``max_dist``) and its distance. A sample with a NaN position (e.g. no time</span>
+<span class="sd">        in :func:`lag_positions`) gets index -1 and distance NaN.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    transect_matrix : Averages the samples onto ``[transit, point]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">cKDTree</span>
 
@@ -804,8 +1031,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Cut a platform&#39;s along-route coordinate into one-way transits.</span>
 
-<span class="sd">    ``s`` is the along-route position of each sample (meters; NaN where the sample is not</span>
-<span class="sd">    on this route) and ``time`` is sorted. A transit ends</span>
+<span class="sd">    A transit ends</span>
 
 <span class="sd">    - at a time gap longer than ``max_gap_s`` (overnight, or the record stops), or</span>
 <span class="sd">    - at a reversal of the direction of travel: a turning point of ``s`` with prominence</span>
@@ -817,10 +1043,32 @@
 <span class="sd">    Transits covering less than ``min_span_m`` of route are discarded. Samples without a</span>
 <span class="sd">    time (NaN / NaT) are skipped like samples off the route.</span>
 
-<span class="sd">    Returns ``(transit, table)``: ``transit`` is the transit index per sample (-1 for</span>
-<span class="sd">    samples not in a kept transit) and ``table`` has one row per transit, indexed by</span>
-<span class="sd">    that number: ``direction`` (+1 with increasing ``s``, -1 against it), ``t_start``,</span>
-<span class="sd">    ``t_end`` (POSIX s), ``s_min``, ``s_max`` and ``n`` samples.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time : array-like</span>
+<span class="sd">        Sample times, sorted: POSIX seconds or datetime-like (see the module</span>
+<span class="sd">        docstring).</span>
+<span class="sd">    s : np.ndarray</span>
+<span class="sd">        Along-route position of each sample (meters); NaN where the sample is not</span>
+<span class="sd">        on this route.</span>
+<span class="sd">    max_gap_s : float, optional</span>
+<span class="sd">        Time gap (seconds) that ends a transit. Default 600.</span>
+<span class="sd">    reversal_m : float, optional</span>
+<span class="sd">        Prominence (meters) of a turning point that ends a transit. Default 500.</span>
+<span class="sd">    min_span_m : float, optional</span>
+<span class="sd">        Shortest stretch of route (meters) a transit must cover. Default 1000.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple[np.ndarray, pd.DataFrame]</span>
+<span class="sd">        ``(transit, table)``: ``transit`` is the transit index per sample (-1 for</span>
+<span class="sd">        samples not in a kept transit) and ``table`` has one row per transit, indexed by</span>
+<span class="sd">        that number: ``direction`` (+1 with increasing ``s``, -1 against it), ``t_start``,</span>
+<span class="sd">        ``t_end`` (POSIX s), ``s_min``, ``s_max`` and ``n`` samples.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    transect_matrix : Averages the samples onto ``[transit, point]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_peaks</span>
 
@@ -884,14 +1132,38 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Average samples onto a ``[transit, point]`` matrix.</span>
 
-<span class="sd">    ``transit`` comes from :func:`split_transits` and ``point`` from :func:`snap_to_route`</span>
-<span class="sd">    (-1 in either skips the sample); ``obs`` and ``time`` are per sample. With</span>
-<span class="sd">    ``max_dwell_s``, samples at a point taken more than that long after the transit first</span>
-<span class="sd">    reached the point are dropped, so a platform sitting at a stop contributes a pass, not</span>
-<span class="sd">    a long time-average, to that point. Samples without a time (NaN / NaT) are skipped.</span>
+<span class="sd">    With ``max_dwell_s``, samples at a point taken more than that long after the transit</span>
+<span class="sd">    first reached the point are dropped, so a platform sitting at a stop contributes a</span>
+<span class="sd">    pass, not a long time-average, to that point. Samples without a time (NaN / NaT) are</span>
+<span class="sd">    skipped.</span>
 
-<span class="sd">    Returns ``(obs, time, n)``: the mean observation, the mean POSIX time and the number of</span>
-<span class="sd">    samples per cell, NaN where a transit has no sample at a point.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    transit : np.ndarray</span>
+<span class="sd">        Transit index per sample, from :func:`split_transits` (-1 skips the sample).</span>
+<span class="sd">    point : np.ndarray</span>
+<span class="sd">        Route point per sample, from :func:`snap_to_route` (-1 skips the sample).</span>
+<span class="sd">    obs : np.ndarray</span>
+<span class="sd">        Observation per sample.</span>
+<span class="sd">    time : array-like</span>
+<span class="sd">        Time per sample: POSIX seconds or datetime-like.</span>
+<span class="sd">    n_transits : int</span>
+<span class="sd">        Number of transits (rows).</span>
+<span class="sd">    n_points : int</span>
+<span class="sd">        Number of route points (columns).</span>
+<span class="sd">    max_dwell_s : float or None, optional</span>
+<span class="sd">        Longest time (seconds) after a transit first reaches a point that its</span>
+<span class="sd">        samples there still count. Default None: all count.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple[np.ndarray, np.ndarray, np.ndarray]</span>
+<span class="sd">        ``(obs, time, n)``: the mean observation, the mean POSIX time and the number of</span>
+<span class="sd">        samples per cell, NaN where a transit has no sample at a point.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    enhancement : The first metric on the matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">_time_seconds</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
     <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>

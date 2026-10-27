@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Draw a map of an inventory &#8212; lair 2026.12.9</title>
+    <title>Draw a map of an inventory &#8212; lair 2026.12.10</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Total an inventory over a region" href="inventory.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -465,9 +465,9 @@
   <section id="draw-a-map-of-an-inventory">
 <h1>Draw a map of an inventory<a class="headerlink" href="#draw-a-map-of-an-inventory" title="Link to this heading">#</a></h1>
 <p>This example draws a map of EDGAR’s methane emissions over Utah in 2022, adds
-state lines and tick labels, outlines the grid cells, and puts a small map of
-where it is in a corner. It ends with a field that is not an inventory. Three
-rules come out of it:</p>
+state lines and tick labels, outlines the grid cells, and puts a locator map, a
+small map of where it is, in a corner. It ends with a field that is not an
+inventory. Three rules come out of it:</p>
 <ul class="simple">
 <li><p><strong>Inventory.plot averages every time step, and reads all of them.</strong> For
 EDGAR v8’s 53 years that takes about a minute. Pass <code class="docutils literal notranslate"><span class="pre">time=</span></code> to draw one (see
@@ -618,23 +618,24 @@ west, around a point in the Salt Lake Valley:</p>
 <span class="gh">Out[7]: </span><span class="go">Frozen({&#39;lon&#39;: 70, &#39;lat&#39;: 60})</span>
 </pre></div>
 </div>
-<p><a class="reference internal" href="../_autosummary/lair.geo.add_extent_map.html#lair.geo.add_extent_map" title="lair.geo.add_extent_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_extent_map()</span></code></a> adds a small map of where the main map is, in
-the corner of the figure. It takes the main map’s extent and projection, the
-inset’s position in the figure as <code class="docutils literal notranslate"><span class="pre">(left,</span> <span class="pre">bottom,</span> <span class="pre">width,</span> <span class="pre">height)</span></code>, fractions
-of the figure’s size, its own extent and projection, and the color and width of
-the outline it draws around the main extent:</p>
+<p><a class="reference internal" href="../_autosummary/lair.geo.add_locator_map.html#lair.geo.add_locator_map" title="lair.geo.add_locator_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_locator_map()</span></code></a> adds a locator map, a small map of where the
+main map is, in the corner of the figure. It takes the main map’s extent and
+projection, the position of the locator map in the figure as
+<code class="docutils literal notranslate"><span class="pre">(left,</span> <span class="pre">bottom,</span> <span class="pre">width,</span> <span class="pre">height)</span></code>, fractions of the figure’s size, its own
+extent and projection, and the color and width of the outline it draws around
+the main extent:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;projection&quot;</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()})</span>
 <span class="gp">   ...: </span><span class="n">footprint</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span> <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">))</span>
 <span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;A made-up footprint&quot;</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">main_extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.5</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">]</span>
 <span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_latlon_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">main_extent</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_extent_map</span><span class="p">(</span>
+<span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_locator_map</span><span class="p">(</span>
 <span class="gp">   ...: </span>    <span class="n">fig</span><span class="p">,</span>
 <span class="gp">   ...: </span>    <span class="n">main_extent</span><span class="o">=</span><span class="n">main_extent</span><span class="p">,</span>
 <span class="gp">   ...: </span>    <span class="n">main_extent_crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
-<span class="gp">   ...: </span>    <span class="n">extent_map_rect</span><span class="o">=</span><span class="p">(</span><span class="mf">0.14</span><span class="p">,</span> <span class="mf">0.58</span><span class="p">,</span> <span class="mf">0.24</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">),</span>
-<span class="gp">   ...: </span>    <span class="n">extent_map_extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">117</span><span class="p">,</span> <span class="o">-</span><span class="mi">106</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">43</span><span class="p">],</span>
-<span class="gp">   ...: </span>    <span class="n">extent_map_crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
+<span class="gp">   ...: </span>    <span class="n">locator_rect</span><span class="o">=</span><span class="p">(</span><span class="mf">0.14</span><span class="p">,</span> <span class="mf">0.58</span><span class="p">,</span> <span class="mf">0.24</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">),</span>
+<span class="gp">   ...: </span>    <span class="n">locator_extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">117</span><span class="p">,</span> <span class="o">-</span><span class="mi">106</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">43</span><span class="p">],</span>
+<span class="gp">   ...: </span>    <span class="n">locator_crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
 <span class="gp">   ...: </span>    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
 <span class="gp">   ...: </span>    <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
 <span class="gp">   ...: </span><span class="p">)</span>

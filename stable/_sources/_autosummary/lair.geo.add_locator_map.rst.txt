@@ -1,0 +1,6 @@
+lair.geo.add\_locator\_map
+==========================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: add_locator_map

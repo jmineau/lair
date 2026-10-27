@@ -1,0 +1,6 @@
+lair.clock.MST2UTC
+==================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: MST2UTC

@@ -1,0 +1,6 @@
+lair.pcaps.build\_pcap\_mask
+============================
+
+.. currentmodule:: lair.pcaps
+
+.. autofunction:: build_pcap_mask

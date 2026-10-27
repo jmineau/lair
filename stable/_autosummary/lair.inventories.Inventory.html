@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lair.inventories.Inventory &#8212; lair 2026.12.9</title>
+    <title>lair.inventories.Inventory &#8212; lair 2026.12.10</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.GFEIv2" href="lair.inventories.GFEIv2.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -394,6 +394,14 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="lair.html">lair</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.units.html">lair.units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.mass_flux.html">lair.mass_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.setup_ccg_filter.html">lair.setup_ccg_filter</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.air.html">lair.air</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.bin_polar.html">lair.air.bin_polar</a></li>
@@ -405,7 +413,6 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.background.html">lair.background</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.background.get_well_mixed.html">lair.background.get_well_mixed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.phase_shift_corrected_baseline.html">lair.background.phase_shift_corrected_baseline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.rolling_baseline.html">lair.background.rolling_baseline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.thoning.html">lair.background.thoning</a></li>
@@ -469,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -591,9 +599,10 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.geo.add_extent_map.html">lair.geo.add_extent_map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.PC.html">lair.geo.PC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.add_locator_map.html">lair.geo.add_locator_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lon_ticks.html">lair.geo.add_lon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bbox2extent.html">lair.geo.bbox2extent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bearing.html">lair.geo.bearing</a></li>
@@ -656,12 +665,18 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.clock.html">lair.clock</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.diurnal.html">lair.clock.diurnal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.dt2decimalDate.html">lair.clock.dt2decimalDate</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.periodindex_to_binedges.html">lair.clock.periodindex_to_binedges</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.regular_times_to_intervals.html">lair.clock.regular_times_to_intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.seasonal.html">lair.clock.seasonal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.time_decay_matrix.html">lair.clock.time_decay_matrix</a></li>
@@ -806,30 +821,86 @@
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lair.inventories.</span></span><span class="sig-name descname"><span class="pre">Inventory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pollutant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'annual'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'EPSG:4326'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardize_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/inventories.html#Inventory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.inventories.Inventory" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="lair.geo.BaseGrid.html#lair.geo.BaseGrid" title="lair.geo.BaseGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseGrid</span></code></a></p>
 <p>Base class for inventories.</p>
+<p>An inventory holds a flux on a grid, one variable per sector, with pint
+units. The subclasses (<a class="reference internal" href="lair.inventories.EDGARv8.html#lair.inventories.EDGARv8" title="lair.inventories.EDGARv8"><code class="xref py py-class docutils literal notranslate"><span class="pre">EDGARv8</span></code></a> and the others) read a product’s
+files; this class also takes a dataset of your own.</p>
 <p>Time labels mark the <strong>start</strong> of each time step, whatever the provider
 uses: Jan 1 for annual data, the 1st of the month for monthly, 00:00 for
 daily and the top of the hour for hourly. So <code class="docutils literal notranslate"><span class="pre">sel(time=&quot;2020-01-01&quot;)</span></code>
 selects January 2020 in every monthly inventory.</p>
+<p>Each parameter but <code class="docutils literal notranslate"><span class="pre">data</span></code> and <code class="docutils literal notranslate"><span class="pre">standardize_units</span></code> is also an attribute
+of the same name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>Path</em><em> | </em><em>Dataset</em>)</p></li>
-<li><p><strong>pollutant</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>src_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><a class="reference external" href="https://pint.readthedocs.io/en/stable/api/base.html#pint.Unit" title="(in pint v0.1.dev50+gaf817a609)"><em>Unit</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>crs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>)</p></li>
-<li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>standardize_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>)</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> | </em><em>Path</em><em> | </em><em>xr.Dataset</em>) – The inventory data. If a string or Path, the path to the data. If an xr.Dataset, the data itself.
+Data should have dimensions of time, lat, lon and each variable should be a different emissions sector.
+If the source data is not in the correct format, the <cite>_process</cite> method should be overridden.</p></li>
+<li><p><strong>pollutant</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The pollutant, as a chemical formula (<code class="docutils literal notranslate"><span class="pre">'CH4'</span></code>). An all-lowercase name
+is upper-cased (<code class="docutils literal notranslate"><span class="pre">'ch4'</span></code>); a mixed-case one is kept (<code class="docutils literal notranslate"><span class="pre">'NOx'</span></code>).</p></li>
+<li><p><strong>src_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The source units of the data, by default None. If given, every variable
+is taken to be in these units. If None, each variable’s own <code class="docutils literal notranslate"><span class="pre">units</span></code>
+attribute is used (and every variable must have one). Variables in
+different units are kept as they are, but the totals
+(<a class="reference internal" href="lair.inventories.Inventory.total_emissions.html#lair.inventories.Inventory.total_emissions" title="lair.inventories.Inventory.total_emissions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">total_emissions</span></code></a>, <a class="reference internal" href="lair.inventories.Inventory.integrate.html#lair.inventories.Inventory.integrate" title="lair.inventories.Inventory.integrate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">integrate()</span></code></a>) raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>
+until they are converted to one unit: <code class="docutils literal notranslate"><span class="pre">standardize_units=True</span></code>, or
+<a class="reference internal" href="lair.inventories.convert_units.html#lair.inventories.convert_units" title="lair.inventories.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_units()</span></code></a>.</p></li>
+<li><p><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The time step of the data, by default ‘annual’: <code class="docutils literal notranslate"><span class="pre">'annual'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'monthly'</span></code>, <code class="docutils literal notranslate"><span class="pre">'quarterly'</span></code>, <code class="docutils literal notranslate"><span class="pre">'biweekly'</span></code>, <code class="docutils literal notranslate"><span class="pre">'daily'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">'hourly'</span></code>. <a class="reference internal" href="lair.inventories.Inventory.absolute_emissions.html#lair.inventories.Inventory.absolute_emissions" title="lair.inventories.Inventory.absolute_emissions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">absolute_emissions</span></code></a> multiplies by its length.</p></li>
+<li><p><strong>crs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The CRS of the data, by default ‘EPSG:4326’.</p></li>
+<li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The version of the inventory, by default None.</p></li>
+<li><p><strong>standardize_units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to standardize the units of all variables to the same units, by default False.
+If True, all variables are assumed to be emissions and are converted to
+<a class="reference internal" href="lair.inventories.DST_UNITS.html#lair.inventories.DST_UNITS" title="lair.inventories.DST_UNITS"><code class="xref py py-data docutils literal notranslate"><span class="pre">DST_UNITS</span></code></a> (<code class="docutils literal notranslate"><span class="pre">kg</span> <span class="pre">km-2</span> <span class="pre">d-1</span></code>) as <a class="reference internal" href="lair.inventories.convert_units.html#lair.inventories.convert_units" title="lair.inventories.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_units()</span></code></a> converts them.
+If False, the units of each variable are retained as-is.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError" title="(in Python v3.15)"><strong>FileNotFoundError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code> is a path with no files.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">data</span></code> is neither a path nor a Dataset, or a variable has no units.</p></li>
 </ul>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.inventories.EDGARv8.html#lair.inventories.EDGARv8" title="lair.inventories.EDGARv8"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EDGARv8</span></code></a></dt><dd><p>An inventory read from EDGAR’s files.</p>
+</dd>
+<dt><a class="reference internal" href="lair.inventories.sum_sectors.html#lair.inventories.sum_sectors" title="lair.inventories.sum_sectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum_sectors</span></code></a></dt><dd><p>The sum of the sectors.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>An inventory of your own: one sector, a flux of 1e-9 kg m-2 s-1 on four
+cells of 0.1 degree, in 2019 and 2020:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">Inventory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="p">((</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">1e-9</span><span class="p">))},</span>
+<span class="gp">... </span>    <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+<span class="gp">... </span>        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2019-01-01&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;YS&quot;</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">40.05</span><span class="p">,</span> <span class="mf">40.15</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">111.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.85</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inv</span> <span class="o">=</span> <span class="n">Inventory</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">pollutant</span><span class="o">=</span><span class="s2">&quot;CH4&quot;</span><span class="p">,</span> <span class="n">src_units</span><span class="o">=</span><span class="s2">&quot;kg m-2 s-1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inv</span><span class="o">.</span><span class="n">get_units</span><span class="p">()</span>
+<span class="go">(&#39;kg&#39;, &#39;m**2&#39;, &#39;s&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">inv</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>  <span class="c1"># tonnes; 2020 has a day more</span>
+<span class="go">array([11943., 11976.])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="lair.inventories.Inventory.absolute_emissions.html#lair.inventories.Inventory.absolute_emissions" title="lair.inventories.Inventory.absolute_emissions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">absolute_emissions</span></code></a></p></td>
-<td><p>Calculate the absolute emissions (total per gridcell for time step by variable).</p></td>
+<td><p>The mass emitted in each grid cell in each time step, sector by sector.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="lair.inventories.Inventory.collapsed.html#lair.inventories.Inventory.collapsed" title="lair.inventories.Inventory.collapsed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collapsed</span></code></a></p></td>
 <td><p>Collapse the inventory data to a single variable.</p></td>
@@ -838,7 +909,7 @@ selects January 2020 in every monthly inventory.</p>
 <td><p>The inventory data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="lair.inventories.Inventory.total_emissions.html#lair.inventories.Inventory.total_emissions" title="lair.inventories.Inventory.total_emissions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_emissions</span></code></a></p></td>
-<td><p>Calculate the total emissions by summation over all variables.</p></td>
+<td><p>The flux in each grid cell, summed over the sectors.</p></td>
 </tr>
 </tbody>
 </table>
@@ -859,7 +930,7 @@ selects January 2020 in every monthly inventory.</p>
 <td><p>Get the quantity, area, and time units of the inventory data.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="lair.inventories.Inventory.integrate.html#lair.inventories.Inventory.integrate" title="lair.inventories.Inventory.integrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate</span></code></a>()</p></td>
-<td><p>Integrate the data over the spatial dimensions: total emissions per time step.</p></td>
+<td><p>Return the total mass emitted over the whole grid in each time step.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="lair.inventories.Inventory.plot.html#lair.inventories.Inventory.plot" title="lair.inventories.Inventory.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([ax, time, sector])</p></td>
 <td><p>Plot the inventory data.</p></td>

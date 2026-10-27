@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Estimate a background &#8212; lair 2026.12.9</title>
+    <title>Estimate a background &#8212; lair 2026.12.10</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Sample CarbonTracker at points" href="carbontracker.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -477,8 +477,9 @@ clean, such as afternoon means or a clean site’s record.</p></li>
 <li><p><strong>A rolling window must be longer than the longest stretch without clean
 air.</strong> Over a pollution episode of several days, the low quantile of a day is
 the episode, not the background.</p></li>
-<li><p><a class="reference internal" href="../_autosummary/lair.background.get_well_mixed.html#lair.background.get_well_mixed" title="lair.background.get_well_mixed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_well_mixed()</span></code></a> <strong>reads the hours in local standard
-time.</strong> Convert UTC data first (see the <a class="reference internal" href="clock.html"><span class="doc">clock page</span></a>).</p></li>
+<li><p><strong>Select the afternoon in local time.</strong> The hours of a UTC series are not the
+hours of the day at the site: put the data in local time first (see the
+<a class="reference internal" href="clock.html"><span class="doc">clock page</span></a>).</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -486,7 +487,7 @@ time.</strong> Convert UTC data first (see the <a class="reference internal" hre
 CCG filter, which lair downloads the first time it is imported (see
 <a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a>), and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>, from the <code class="docutils literal notranslate"><span class="pre">science</span></code> extra
 (see <a class="reference internal" href="../index.html#optional-dependencies"><span class="std std-ref">Optional dependencies</span></a>). The output below was recorded from one
-run of this code on 2026-10-14.</p>
+run of this code on 2026-10-23.</p>
 </div>
 <section id="the-methods">
 <h2>The methods<a class="headerlink" href="#the-methods" title="Link to this heading">#</a></h2>
@@ -515,18 +516,12 @@ window, at the times of the data</p></td>
 <tr class="row-odd"><td><p><a class="reference internal" href="../_autosummary/lair.background.phase_shift_corrected_baseline.html#lair.background.phase_shift_corrected_baseline" title="lair.background.phase_shift_corrected_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">phase_shift_corrected_baseline()</span></code></a></p></td>
 <td><p>a <code class="docutils literal notranslate"><span class="pre">Series</span></code> of one-second data; the window <code class="docutils literal notranslate"><span class="pre">n</span></code> in seconds (3600) and
 <code class="docutils literal notranslate"><span class="pre">q</span></code> (0.01); each calendar day of the index is done on its own</p></td>
-<td><p>a low quantile from windows ahead of and behind each time, smoothed</p></td>
+<td><p>a low quantile from windows ahead of and behind each time, smoothed, at
+the times of the data</p></td>
 <td><p>one-second data from a moving platform, whose background changes within
 the hour</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../_autosummary/lair.background.get_well_mixed.html#lair.background.get_well_mixed" title="lair.background.get_well_mixed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_well_mixed()</span></code></a></p></td>
-<td><p>a <code class="docutils literal notranslate"><span class="pre">Series</span></code> or <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> indexed in local standard time, and the
-hours to keep (12 to 16 by default, <code class="docutils literal notranslate"><span class="pre">lair.clock.AFTERNOON</span></code>)</p></td>
-<td><p>one mean per day over those hours</p></td>
-<td><p>the afternoon, when the boundary layer is deep and a site sees regional
-air</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../_autosummary/lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning()</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../_autosummary/lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning()</span></code></a></p></td>
 <td><p>a <code class="docutils literal notranslate"><span class="pre">Series</span></code> with a time index (NaN values are dropped), and the times
 to evaluate at, <code class="docutils literal notranslate"><span class="pre">smooth_time</span></code></p></td>
 <td><p>NOAA’s smooth curve (a polynomial trend and yearly harmonics, plus the
@@ -535,7 +530,7 @@ data</p></td>
 <td><p>a record that is already background: afternoon means, flasks, a clean
 site</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../_autosummary/lair.noaa.CarbonTracker.background.html#lair.noaa.CarbonTracker.background" title="lair.noaa.CarbonTracker.background"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CarbonTracker.background</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_autosummary/lair.noaa.CarbonTracker.background.html#lair.noaa.CarbonTracker.background" title="lair.noaa.CarbonTracker.background"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CarbonTracker.background</span></code></a></p></td>
 <td><p>CarbonTracker’s files and a set of points, such as the ends of STILT
 back trajectories</p></td>
 <td><p>the mean mole fraction at the points, in ppm</p></td>
@@ -558,7 +553,7 @@ six days in January 2023 a winter inversion holds the city’s methane in all da
 <span class="gp">   ...: </span><span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2023-12-31 23:00&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">)</span>  <span class="c1"># UTC</span>
 <span class="gp">   ...: </span><span class="n">years</span> <span class="o">=</span> <span class="p">(</span><span class="n">times</span> <span class="o">-</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">days</span> <span class="o">/</span> <span class="mi">365</span>
 <span class="gp">   ...: </span><span class="n">true</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
-<span class="gp">   ...: </span>    <span class="mf">1.95</span> <span class="o">+</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">years</span> <span class="o">+</span> <span class="mf">0.008</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">dayofyear</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span> <span class="o">/</span> <span class="mi">365</span><span class="p">),</span>
+<span class="gp">   ...: </span>    <span class="mf">1.95</span> <span class="o">+</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">years</span> <span class="o">+</span> <span class="mf">0.008</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">day_of_year</span> <span class="o">-</span> <span class="mi">30</span><span class="p">)</span> <span class="o">/</span> <span class="mi">365</span><span class="p">),</span>
 <span class="gp">   ...: </span>    <span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">,</span>
 <span class="gp">   ...: </span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">hour</span> <span class="o">=</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">hour</span> <span class="o">-</span> <span class="mi">7</span><span class="p">)</span> <span class="o">%</span> <span class="mi">24</span>  <span class="c1"># Mountain Standard Time</span>
@@ -617,13 +612,12 @@ on either side.</p>
 given. Given every hour, it follows the mean of the data, enhancements
 included. Given afternoon means, it follows the afternoon, when the city’s
 methane is mixed through a deep boundary layer.
-<a class="reference internal" href="../_autosummary/lair.background.get_well_mixed.html#lair.background.get_well_mixed" title="lair.background.get_well_mixed"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_well_mixed()</span></code></a> takes those means, from a series in
-local standard time:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.background</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_well_mixed</span><span class="p">,</span> <span class="n">thoning</span>
-<span class="gp">   ...: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC2MST</span>
+The data are in UTC, so put them in local time first, as the <a class="reference internal" href="clock.html"><span class="doc">clock page</span></a> does, then keep the afternoon hours and average each day:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.background</span><span class="w"> </span><span class="kn">import</span> <span class="n">thoning</span>
+<span class="gp">   ...: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFTERNOON</span><span class="p">,</span> <span class="n">UTC2MST</span>
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="n">local</span> <span class="o">=</span> <span class="n">UTC2MST</span><span class="p">(</span><span class="n">ch4</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)[</span><span class="s2">&quot;ch4&quot;</span><span class="p">]</span>
-<span class="gp">   ...: </span><span class="n">afternoon</span> <span class="o">=</span> <span class="n">get_well_mixed</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">afternoon</span> <span class="o">=</span> <span class="n">local</span><span class="p">[</span><span class="n">local</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">hour</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">AFTERNOON</span><span class="p">)]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 <span class="gp">   ...: </span><span class="n">afternoon</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gh">Out[3]:</span>
 <span class="go">2022-01-01 00:00:00-07:00    1.965</span>
@@ -632,10 +626,10 @@ local standard time:</p>
 <span class="go">Freq: D, Name: ch4, dtype: float64</span>
 </pre></div>
 </div>
-<p>Each day is labeled at its local midnight. Given the UTC series instead, it
+<p>Each day is labeled at its local midnight. On the UTC series the same lines
 would average 12:00 to 16:59 UTC, which is 5 to 9 in the morning in Utah, under
-the night-time inversion. <code class="docutils literal notranslate"><span class="pre">smooth_time</span></code> evaluates the curve
-at the hourly times, to put it beside the others:</p>
+the night-time inversion. <code class="docutils literal notranslate"><span class="pre">smooth_time</span></code> evaluates the curve at the hourly
+times, to put it beside the others:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">every_hour</span> <span class="o">=</span> <span class="n">thoning</span><span class="p">(</span><span class="n">ch4</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">afternoons</span> <span class="o">=</span> <span class="n">thoning</span><span class="p">(</span><span class="n">afternoon</span><span class="p">,</span> <span class="n">smooth_time</span><span class="o">=</span><span class="n">ch4</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="nb">int</span><span class="p">(</span><span class="n">afternoons</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>

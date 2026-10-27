@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.noaa &#8212; lair 2026.12.9</title>
+    <title>lair.noaa &#8212; lair 2026.12.10</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.noaa</span></li>
   </ul>
 </nav>
@@ -432,10 +435,20 @@
                   
   <h1>Source code for lair.noaa</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">NOAA greenhouse gas data.</span>
+<span class="sd">NOAA greenhouse gas data: CarbonTracker and NOAA GML&#39;s measurement records.</span>
+
+<span class="sd">:class:`CarbonTrackerCH4` and :class:`CarbonTrackerCO2` download and read the</span>
+<span class="sd">mole fractions of NOAA&#39;s CarbonTracker model, and sample them at points, such as</span>
+<span class="sd">the ends of STILT trajectories, for a background</span>
+<span class="sd">(:meth:`~CarbonTracker.background`). :class:`GMLData` downloads and reads NOAA</span>
+<span class="sd">GML&#39;s records of one gas at one site, event by event or as monthly means. The</span>
+<span class="sd">data roots are ``$LAIR_CARBONTRACKER_DIR`` and ``$LAIR_GML_DIR`` (see</span>
+<span class="sd">:ref:`data-locations`), and the cache is in ``$LAIR_CACHE_DIR``.</span>
+<span class="sd">:doc:`/examples/carbontracker` samples CarbonTracker at four points.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures.process</span><span class="w"> </span><span class="kn">import</span> <span class="n">BrokenProcessPool</span>
@@ -455,9 +468,15 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.records</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cacher</span><span class="p">,</span> <span class="n">ftp_download</span><span class="p">,</span> <span class="n">list_files</span>
 
 <span class="c1">#: Environment variable holding the CarbonTracker data root</span>
+<span class="c1">#:</span>
+<span class="c1">#: .. seealso:: :ref:`data-locations`, which lists every variable;</span>
+<span class="c1">#:    :ref:`carbontracker-data` shows the folder.</span>
 <span class="n">CARBONTRACKER_DIR_ENV</span> <span class="o">=</span> <span class="s2">&quot;LAIR_CARBONTRACKER_DIR&quot;</span>
 
 <span class="c1">#: Environment variable holding the NOAA GML data root</span>
+<span class="c1">#:</span>
+<span class="c1">#: .. seealso:: :ref:`data-locations`, which lists every variable;</span>
+<span class="c1">#:    :class:`GMLData`&#39;s Notes show the folder.</span>
 <span class="n">GML_DIR_ENV</span> <span class="o">=</span> <span class="s2">&quot;LAIR_GML_DIR&quot;</span>
 
 
@@ -515,6 +534,46 @@
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
 
+<span class="c1">#: The day a CarbonTracker file covers: the date its name ends with</span>
+<span class="n">_DAY_IN_NAME</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d</span><span class="si">{4}</span><span class="s2">-\d</span><span class="si">{2}</span><span class="s2">-\d</span><span class="si">{2}</span><span class="s2">)\.nc$&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_one_file_per_day</span><span class="p">(</span><span class="n">files</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Raise if two of the daily molefraction ``files`` cover the same day.</span>
+
+<span class="sd">    The day is the date a file name ends with (``..._2015-01-01.nc``), so no</span>
+<span class="sd">    file is opened. A name that does not end with a date is not checked.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        Names the first day with more than one file, two of its files, and how</span>
+<span class="sd">        many days have more than one.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">by_day</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">_DAY_IN_NAME</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">by_day</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">repeated</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">day</span> <span class="k">for</span> <span class="n">day</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="n">by_day</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">repeated</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">day</span> <span class="o">=</span> <span class="n">repeated</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">first</span><span class="p">,</span> <span class="n">second</span> <span class="o">=</span> <span class="n">by_day</span><span class="p">[</span><span class="n">day</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Two molefraction files cover </span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">first</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">second</span><span class="si">}</span><span class="s2">. Reading &quot;</span>
+        <span class="s2">&quot;both would read every value twice. Keep one file for each day in the &quot;</span>
+        <span class="s2">&quot;folder, for example by moving the files of an older release out of it.&quot;</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">repeated</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">repeated</span><span class="p">)</span><span class="si">}</span><span class="s2"> days in all have more than one file, from &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">repeated</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_cache_file</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Path of a file in the lair cache, with its folder made.</span>
@@ -562,6 +621,27 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NOAA CarbonTracker</span>
 
+<span class="sd">    The base of :class:`CarbonTrackerCH4` and :class:`CarbonTrackerCO2`, which</span>
+<span class="sd">    are the classes to make (or :meth:`from_version`).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    version : str</span>
+<span class="sd">        The version of CarbonTracker data to download.</span>
+<span class="sd">        Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.</span>
+<span class="sd">    carbon_tracker_directory : str, optional</span>
+<span class="sd">        The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.</span>
+<span class="sd">    cache : bool, optional</span>
+<span class="sd">        Whether to cache the data, by default True. The cache is a file in</span>
+<span class="sd">        ``LAIR_CACHE_DIR`` (default ``~/.cache/lair``), and the folder is</span>
+<span class="sd">        made the first time the data is read, so ``cache=False`` needs no</span>
+<span class="sd">        writable folder.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If made as ``CarbonTracker`` itself, which has no gas.</span>
+
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    specie : Literal[&#39;ch4&#39;, &#39;co2&#39;]</span>
@@ -569,7 +649,7 @@
 <span class="sd">    version : str</span>
 <span class="sd">        The CarbonTracker version.</span>
 <span class="sd">    directory : str</span>
-<span class="sd">        The directory for the version.</span>
+<span class="sd">        The directory for the version: ``&lt;root&gt;/&lt;specie&gt;/&lt;version&gt;``.</span>
 <span class="sd">    cache : bool</span>
 <span class="sd">        Whether to cache the data (in ``LAIR_CACHE_DIR``).</span>
 
@@ -581,10 +661,18 @@
 <span class="sd">        Create a CarbonTracker object from the version.</span>
 <span class="sd">    download(sub_dirs=[&#39;fluxes&#39;, &#39;molefractions&#39;], pattern=None)</span>
 <span class="sd">        Download CarbonTracker data from the NOAA GML FTP server.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    CarbonTrackerCH4 : CarbonTracker-CH4.</span>
+<span class="sd">    CarbonTrackerCO2 : CarbonTracker for CO2.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">specie</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ch4&quot;</span><span class="p">,</span> <span class="s2">&quot;co2&quot;</span><span class="p">]</span>
     <span class="c1">#: Units of the molefraction field (&#39;ppb&#39; for CH4, &#39;ppm&#39; for CO2)</span>
+    <span class="c1">#:</span>
+    <span class="c1">#: .. seealso:: :meth:`CarbonTracker.sample`, whose ``ct_&lt;specie&gt;_&lt;units&gt;``</span>
+    <span class="c1">#:    column is in them.</span>
     <span class="n">units</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ppb&quot;</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -593,22 +681,7 @@
         <span class="n">carbon_tracker_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize a CarbonTracker object.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        version : str</span>
-<span class="sd">            The version of CarbonTracker data to download.</span>
-<span class="sd">            Visit https://gml.noaa.gov/aftp/products/carbontracker/ to see available versions.</span>
-<span class="sd">        carbon_tracker_directory : str, optional</span>
-<span class="sd">            The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.</span>
-<span class="sd">        cache : bool, optional</span>
-<span class="sd">            Whether to cache the data, by default True. The cache is a file in</span>
-<span class="sd">            ``LAIR_CACHE_DIR`` (default ``~/.cache/lair``), and the folder is</span>
-<span class="sd">            made the first time the data is read, so ``cache=False`` needs no</span>
-<span class="sd">            writable folder.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a CarbonTracker; the class docstring describes the parameters.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;specie&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="s2">&quot;Use CarbonTrackerCH4 / CarbonTrackerCO2, or &quot;</span>
@@ -644,7 +717,20 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Literal[&#39;ch4&#39;, &#39;co2&#39;]</span>
-<span class="sd">            The specie.</span>
+<span class="sd">            The specie: ``&#39;ch4&#39;`` if the version&#39;s name has &quot;ch4&quot; in it (in any</span>
+<span class="sd">            case), else ``&#39;co2&#39;``.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTracker.from_version : Makes the class of that gas.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from lair.noaa import CarbonTracker</span>
+<span class="sd">        &gt;&gt;&gt; CarbonTracker.get_specie_from_version(&quot;CT-CH4-2025&quot;)</span>
+<span class="sd">        &#39;ch4&#39;</span>
+<span class="sd">        &gt;&gt;&gt; CarbonTracker.get_specie_from_version(&quot;CT2019B&quot;)</span>
+<span class="sd">        &#39;co2&#39;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;ch4&quot;</span> <span class="k">if</span> <span class="s2">&quot;ch4&quot;</span> <span class="ow">in</span> <span class="n">version</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;co2&quot;</span></div>
 
@@ -667,7 +753,20 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        CarbonTracker</span>
-<span class="sd">            The CarbonTracker object.</span>
+<span class="sd">            The CarbonTracker object: a :class:`CarbonTrackerCH4` or a</span>
+<span class="sd">            :class:`CarbonTrackerCO2`, with the other arguments at their defaults.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTracker.get_specie_from_version : How the gas is told.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Nothing is read until the data is used:</span>
+
+<span class="sd">        &gt;&gt;&gt; from lair.noaa import CarbonTracker</span>
+<span class="sd">        &gt;&gt;&gt; CarbonTracker.from_version(&quot;CT2019B&quot;, &quot;carbontracker&quot;)</span>
+<span class="sd">        CarbonTrackerCO2(version=CT2019B, directory=carbontracker/co2/CT2019B)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">specie</span> <span class="o">=</span> <span class="n">CarbonTracker</span><span class="o">.</span><span class="n">get_specie_from_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">specie</span> <span class="o">==</span> <span class="s2">&quot;co2&quot;</span><span class="p">:</span>
@@ -696,6 +795,28 @@
 <span class="sd">        pattern : str, optional</span>
 <span class="sd">            Only download matching files: a glob against the remote path if it</span>
 <span class="sd">            has wildcards (e.g. ``&#39;*2015-06*&#39;``), else a substring. By default None.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        lair.records.ftp_download : Does the download.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The files go into ``directory``, in the server&#39;s folder layout below the</span>
+<span class="sd">        version. Without ``pattern`` every file of the folders is downloaded:</span>
+<span class="sd">        the CT-CH4-2025 mole fractions of 2015 to 2023 alone are 127 GB.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        One day of mole fractions, as :doc:`/examples/carbontracker` downloads</span>
+<span class="sd">        it. It needs the network (about five minutes), so it is not run when the</span>
+<span class="sd">        docs build:</span>
+
+<span class="sd">        &gt;&gt;&gt; from lair.noaa import CarbonTrackerCH4</span>
+<span class="sd">        &gt;&gt;&gt; ct = CarbonTrackerCH4(carbon_tracker_directory=&quot;carbontracker&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; ct.download(  # doctest: +SKIP</span>
+<span class="sd">        ...     sub_dirs=[&quot;molefractions&quot;], pattern=&quot;*2020-01-15*&quot;</span>
+<span class="sd">        ... )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;ftp.gml.noaa.gov&quot;</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="s2">&quot;/products/carbontracker&quot;</span>
@@ -716,7 +837,20 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">molefractions_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Directory of the molefraction (concentration-field) files.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Directory of the molefraction (concentration-field) files.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTrackerCH4.molefractions : Reads them.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from lair.noaa import CarbonTrackerCH4</span>
+<span class="sd">        &gt;&gt;&gt; ct = CarbonTrackerCH4(carbon_tracker_directory=&quot;carbontracker&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; ct.molefractions_dir.as_posix()</span>
+<span class="sd">        &#39;carbontracker/ch4/CT-CH4-2025/molefractions&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">&quot;molefractions&quot;</span>
 
     <span class="nd">@staticmethod</span>
@@ -837,6 +971,40 @@
 <span class="sd">        3-hour means labeled by their centers (``ct_time``: 01:30, 04:30, ...</span>
 <span class="sd">        UTC), so a point takes the mean of the period it is in, and a point on</span>
 <span class="sd">        the boundary of two periods (03:00) takes the later one.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points : pd.DataFrame</span>
+<span class="sd">            The points, with the columns ``datetime`` (UTC), ``lati`` and</span>
+<span class="sd">            ``long`` (degrees) and ``zagl`` (meters above ground).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            The points, with ``ct_&lt;specie&gt;_&lt;units&gt;`` (``ct_ch4_ppb``) and the</span>
+<span class="sd">            cell, time and level it came from (``ct_latitude``,</span>
+<span class="sd">            ``ct_longitude``, ``ct_time``, ``ct_level``). A point outside the</span>
+<span class="sd">            grid gets NaN.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTracker.background : Their mean.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        :ref:`The CarbonTracker example &lt;carbontracker-data&gt;` samples four</span>
+<span class="sd">        points west of Salt Lake City; it reads the folder of one downloaded</span>
+<span class="sd">        day::</span>
+
+<span class="sd">            points = pd.DataFrame(</span>
+<span class="sd">                {</span>
+<span class="sd">                    &quot;datetime&quot;: pd.to_datetime([&quot;2020-01-15 17:00&quot;] * 2),  # UTC</span>
+<span class="sd">                    &quot;lati&quot;: [41.5, 39.5],</span>
+<span class="sd">                    &quot;long&quot;: [-114.5, -114.5],</span>
+<span class="sd">                    &quot;zagl&quot;: [100.0, 100.0],</span>
+<span class="sd">                }</span>
+<span class="sd">            )</span>
+<span class="sd">            ct.sample(points)[[&quot;lati&quot;, &quot;ct_ch4_ppb&quot;, &quot;ct_time&quot;, &quot;ct_level&quot;]]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
@@ -864,6 +1032,33 @@
 <span class="sd">        over them. With ``by`` (e.g. ``&#39;receptor&#39;``) the mean and 1-sigma spread</span>
 <span class="sd">        are returned per group; otherwise a single-row summary. Output is ppm</span>
 <span class="sd">        (CT-CH4 mole fractions are stored in ppb, CO2 in ppm).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points : pd.DataFrame</span>
+<span class="sd">            The points, as :meth:`sample` takes them.</span>
+<span class="sd">        by : str, optional</span>
+<span class="sd">            A column of ``points`` to group by, such as ``&#39;receptor&#39;``. By</span>
+<span class="sd">            default None: one row for all the points.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            ``background_ppm``, ``sigma_ppm`` (the standard deviation over the</span>
+<span class="sd">            points) and ``n_endpoints`` (the points that had a value), one row</span>
+<span class="sd">            per group.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTracker.sample : The value at each point.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        With the points of :meth:`sample`, as :ref:`the CarbonTracker example</span>
+<span class="sd">        &lt;carbontracker-background&gt;` shows::</span>
+
+<span class="sd">            ct.background(points)  # one row</span>
+<span class="sd">            ct.background(points, by=&quot;receptor&quot;)  # one row per receptor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sampled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
         <span class="n">col</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ct_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -898,11 +1093,20 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NOAA CarbonTracker-CH4</span>
 
-<span class="sd">    Attributes</span>
+<span class="sd">    Mole fractions are in ppb. :ref:`The CarbonTracker example</span>
+<span class="sd">    &lt;carbontracker-data&gt;` shows the folder.</span>
+
+<span class="sd">    Each parameter is also an attribute of the same name.</span>
+
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    molefractions : xr.Dataset</span>
-<span class="sd">        The molefractions Dataset.</span>
-<span class="sd">    parallel_parse : bool</span>
+<span class="sd">    version : str, optional</span>
+<span class="sd">        The version, by default ``&#39;CT-CH4-2025&#39;``.</span>
+<span class="sd">    carbon_tracker_directory : str, optional</span>
+<span class="sd">        The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.</span>
+<span class="sd">    cache : bool, optional</span>
+<span class="sd">        Whether to cache the data, by default True (see :class:`CarbonTracker`).</span>
+<span class="sd">    parallel_parse : bool, optional</span>
 <span class="sd">        Whether ``molefractions`` opens the files in worker processes, one for</span>
 <span class="sd">        each CPU this process may use (default True), or one at a time. The</span>
 <span class="sd">        workers import the calling script again, so a script that reads</span>
@@ -912,6 +1116,18 @@
 <span class="sd">    -------</span>
 <span class="sd">    calc_molefractions_pressure(molefractions)</span>
 <span class="sd">        Calculate the pressure at each level in the molefractions Dataset.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    CarbonTrackerCO2 : The same for CO2.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Nothing is read until the data is used:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.noaa import CarbonTrackerCH4</span>
+<span class="sd">    &gt;&gt;&gt; CarbonTrackerCH4(carbon_tracker_directory=&quot;carbontracker&quot;)</span>
+<span class="sd">    CarbonTrackerCH4(version=CT-CH4-2025, directory=carbontracker/ch4/CT-CH4-2025)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">specie</span> <span class="o">=</span> <span class="s2">&quot;ch4&quot;</span>
@@ -931,10 +1147,33 @@
 <a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCH4.molefractions.html#lair.noaa.CarbonTrackerCH4.molefractions">[docs]</a>
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">molefractions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Molefractions Dataset. Cached property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Molefractions Dataset of every file of the version. Cached property.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If two files cover one day, such as the same day from two</span>
+<span class="sd">            releases (their names end with the same ``YYYY-MM-DD.nc``). The</span>
+<span class="sd">            message names the day and both files. The files are not opened,</span>
+<span class="sd">            and nothing is cached.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTracker.sample : Reads only the days of the points.</span>
+<span class="sd">        CarbonTrackerCH4.calc_molefractions_pressure : Adds the pressure of</span>
+<span class="sd">            each level.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Each time step is labeled by the center of its 3-hour period (01:30,</span>
+<span class="sd">        04:30, ... UTC). It opens every file of the version; with</span>
+<span class="sd">        ``cache=True`` a later read loads the cache instead.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">&quot;molefractions&quot;</span>
 
         <span class="n">files</span> <span class="o">=</span> <span class="n">list_files</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">&quot;*nc&quot;</span><span class="p">,</span> <span class="n">full_names</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">_check_one_file_per_day</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
             <span class="n">cache_file</span> <span class="o">=</span> <span class="n">_cache_file</span><span class="p">(</span>
@@ -966,7 +1205,30 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        xr.Dataset</span>
-<span class="sd">            The molefractions Dataset with the pressure calculated.</span>
+<span class="sd">            The molefractions Dataset with the pressure calculated: a variable</span>
+<span class="sd">            ``P``, in hPa, from the hybrid coefficients ``at`` and ``bt`` and the</span>
+<span class="sd">            surface pressure (``at + bt * surf_pressure``). The Dataset passed is</span>
+<span class="sd">            changed too.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTrackerCH4.molefractions : The Dataset it takes.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Two levels over one cell, with a surface pressure of 850 hPa:</span>
+
+<span class="sd">        &gt;&gt;&gt; import xarray as xr</span>
+<span class="sd">        &gt;&gt;&gt; from lair.noaa import CarbonTrackerCH4</span>
+<span class="sd">        &gt;&gt;&gt; mf = xr.Dataset(</span>
+<span class="sd">        ...     {</span>
+<span class="sd">        ...         &quot;at&quot;: (&quot;boundary&quot;, [0.0, 5000.0]),</span>
+<span class="sd">        ...         &quot;bt&quot;: (&quot;boundary&quot;, [1.0, 0.5]),</span>
+<span class="sd">        ...         &quot;surf_pressure&quot;: 85000.0,</span>
+<span class="sd">        ...     }</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; CarbonTrackerCH4.calc_molefractions_pressure(mf)[&quot;P&quot;].values</span>
+<span class="sd">        array([850., 475.])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">molefractions</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">molefractions</span><span class="o">.</span><span class="n">at</span> <span class="o">+</span> <span class="n">molefractions</span><span class="o">.</span><span class="n">bt</span> <span class="o">*</span> <span class="n">molefractions</span><span class="o">.</span><span class="n">surf_pressure</span>
@@ -992,19 +1254,38 @@
 <span class="sd">    the daily molefraction files flat in ``molefractions/co2_total/``, one file</span>
 <span class="sd">    per grid (``CT2019B.molefrac_nam1x1_2015-06-01.nc``, ``..._glb3x2_...``).</span>
 
-<span class="sd">    Attributes</span>
+<span class="sd">    Each parameter is also an attribute of the same name.</span>
+
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    grid : str</span>
+<span class="sd">    version : str</span>
+<span class="sd">        The version, such as ``&#39;CT2019B&#39;``.</span>
+<span class="sd">    carbon_tracker_directory : str, optional</span>
+<span class="sd">        The CarbonTracker data root, by default ``$LAIR_CARBONTRACKER_DIR``.</span>
+<span class="sd">    cache : bool, optional</span>
+<span class="sd">        Whether to cache the data, by default True (see :class:`CarbonTracker`).</span>
+<span class="sd">    grid : str, optional</span>
 <span class="sd">        The molefraction grid to read, e.g. ``&#39;nam1x1&#39;`` (North America,</span>
-<span class="sd">        1x1 deg) or ``&#39;glb3x2&#39;`` (global, 3x2 deg). Points outside the grid</span>
-<span class="sd">        sample as NaN.</span>
-<span class="sd">    molefractions : xr.Dataset</span>
-<span class="sd">        The molefractions Dataset.</span>
-<span class="sd">    parallel_parse : bool</span>
+<span class="sd">        1x1 deg, the default) or ``&#39;glb3x2&#39;`` (global, 3x2 deg). Points outside</span>
+<span class="sd">        the grid sample as NaN.</span>
+<span class="sd">    parallel_parse : bool, optional</span>
 <span class="sd">        Whether ``molefractions`` opens the files in worker processes, one for</span>
 <span class="sd">        each CPU this process may use (default True), or one at a time. The</span>
 <span class="sd">        workers import the calling script again, so a script that reads</span>
 <span class="sd">        ``molefractions`` needs the ``if __name__ == &quot;__main__&quot;:`` guard.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    CarbonTrackerCH4 : The same for methane.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Nothing is read until the data is used:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.noaa import CarbonTrackerCO2</span>
+<span class="sd">    &gt;&gt;&gt; ct = CarbonTrackerCO2(&quot;CT2019B&quot;, &quot;carbontracker&quot;, grid=&quot;glb3x2&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; ct.molefractions_dir.as_posix()</span>
+<span class="sd">    &#39;carbontracker/co2/CT2019B/molefractions/co2_total&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">specie</span> <span class="o">=</span> <span class="s2">&quot;co2&quot;</span>
@@ -1024,7 +1305,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">molefractions_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Directory of the total-CO2 molefraction files.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Directory of the total-CO2 molefraction files.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTrackerCO2.molefractions : Reads them.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="s2">&quot;molefractions&quot;</span> <span class="o">/</span> <span class="s2">&quot;co2_total&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_molefraction_file_for_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -1039,7 +1326,24 @@
 <a class="viewcode-back" href="../../_autosummary/lair.noaa.CarbonTrackerCO2.molefractions.html#lair.noaa.CarbonTrackerCO2.molefractions">[docs]</a>
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">molefractions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Molefractions Dataset on ``self.grid`` (lazy). Cached property.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Molefractions Dataset on ``self.grid`` (lazy). Cached property.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            If the folder has no file on ``self.grid``.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If two files on ``self.grid`` cover one day, such as the same day</span>
+<span class="sd">            from two releases (their names end with the same</span>
+<span class="sd">            ``YYYY-MM-DD.nc``). The message names the day and both files. The</span>
+<span class="sd">            files are not opened, and nothing is cached.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        CarbonTracker.sample : Reads only the days of the points.</span>
+<span class="sd">        CarbonTrackerCH4.molefractions : The same for methane.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
             <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molefractions_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;*molefrac_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2">_*.nc&quot;</span><span class="p">)</span>
         <span class="p">)</span>
@@ -1047,6 +1351,7 @@
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="si">}</span><span class="s2"> molefraction files in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">molefractions_dir</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
+        <span class="n">_check_one_file_per_day</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">:</span>
             <span class="n">cache_file</span> <span class="o">=</span> <span class="n">_cache_file</span><span class="p">(</span>
@@ -1079,14 +1384,24 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NOAA GML Data</span>
 
-<span class="sd">    Attributes</span>
+<span class="sd">    One file of NOAA GML&#39;s measurements of one gas at one site: every sample</span>
+<span class="sd">    (``frequency=&#39;event&#39;``) or monthly means (``&#39;month&#39;``).</span>
+
+<span class="sd">    Each parameter is also an attribute of the same name.</span>
+
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    specie : str</span>
-<span class="sd">        The greenhouse gas specie.</span>
+<span class="sd">        The greenhouse gas specie, in lower case as in NOAA&#39;s file names</span>
+<span class="sd">        (``&#39;ch4&#39;``).</span>
 <span class="sd">    site : str</span>
-<span class="sd">        The site where the flask samples were collected.</span>
+<span class="sd">        The site where the flask samples were collected, its code in lower</span>
+<span class="sd">        case (``&#39;uta&#39;``).</span>
 <span class="sd">    platform : str, optional</span>
 <span class="sd">        The platform where the flask samples were collected, by default &#39;surface&#39;.</span>
+<span class="sd">    sample_type : str, optional</span>
+<span class="sd">        The sample type, by default &#39;flask&#39;. Use &#39;pfp&#39; for Portable Flask</span>
+<span class="sd">        Package data.</span>
 <span class="sd">    lab_id : int, optional</span>
 <span class="sd">        The lab ID, by default 1.</span>
 <span class="sd">    measurement_group : str, optional</span>
@@ -1094,9 +1409,13 @@
 <span class="sd">    frequency : str, optional</span>
 <span class="sd">        The frequency of the measurements, by default &#39;event&#39;.</span>
 <span class="sd">    driver : str, optional</span>
-<span class="sd">        The driver to use to read the data, by default &#39;pandas&#39;.</span>
+<span class="sd">        The driver to use to read the data, by default &#39;pandas&#39;: a DataFrame</span>
+<span class="sd">        from the ``.txt`` file, or ``&#39;xarray&#39;``: a Dataset from the ``.nc`` file.</span>
 <span class="sd">    gml_dir : str, optional</span>
 <span class="sd">        The NOAA GML data root, by default ``$LAIR_GML_DIR``.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
 <span class="sd">    directory : str</span>
 <span class="sd">        The directory for the data.</span>
 <span class="sd">    filename : str</span>
@@ -1129,6 +1448,22 @@
 <span class="sd">    and ``.txt`` for ``driver=&#39;pandas&#39;`` or ``.nc`` for ``driver=&#39;xarray&#39;``.</span>
 <span class="sd">    ``download()`` copies the file of that name from NOAA GML&#39;s FTP server</span>
 <span class="sd">    (``/data/trace_gases/{specie}/{sample_type}/{platform}/{ext}/``).</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    GMLData.apply_qaqc : Keeps the samples with good flags.</span>
+<span class="sd">    CarbonTracker : NOAA&#39;s model, for a background.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Making one reads nothing; it names the file:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.noaa import GMLData</span>
+<span class="sd">    &gt;&gt;&gt; uta = GMLData(&quot;ch4&quot;, &quot;uta&quot;, gml_dir=&quot;gml&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; uta.filepath.as_posix()</span>
+<span class="sd">    &#39;gml/ch4/flask/ch4_uta_surface-flask_1_ccgg_event.txt&#39;</span>
+
+<span class="sd">    Then ``uta.download()`` fetches it and ``uta.data`` reads it.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">file_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{specie}</span><span class="s2">_</span><span class="si">{site}</span><span class="s2">_</span><span class="si">{platform}</span><span class="s2">-</span><span class="si">{sample_type}</span><span class="s2">_</span><span class="si">{lab_id}</span><span class="s2">_</span><span class="si">{measurement_group}</span><span class="s2">_</span><span class="si">{frequency}</span><span class="s2">.</span><span class="si">{ext}</span><span class="s2">&quot;</span>
@@ -1147,31 +1482,7 @@
         <span class="n">driver</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="s2">&quot;xarray&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;pandas&quot;</span><span class="p">,</span>
         <span class="n">gml_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize a GMLData object.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        specie : str</span>
-<span class="sd">            The greenhouse gas specie.</span>
-<span class="sd">        site : str</span>
-<span class="sd">            The site where the flask samples were collected.</span>
-<span class="sd">        platform : str, optional</span>
-<span class="sd">            The platform where the flask samples were collected, by default &#39;surface&#39;.</span>
-<span class="sd">        sample_type : str, optional</span>
-<span class="sd">            The sample type, by default &#39;flask&#39;. Use &#39;pfp&#39; for Portable Flask</span>
-<span class="sd">            Package data.</span>
-<span class="sd">        lab_id : int, optional</span>
-<span class="sd">            The lab ID, by default 1.</span>
-<span class="sd">        measurement_group : str, optional</span>
-<span class="sd">            The measurement group, by default &#39;ccgg&#39;.</span>
-<span class="sd">        frequency : str, optional</span>
-<span class="sd">            The frequency of the measurements, by default &#39;event&#39;.</span>
-<span class="sd">        driver : str, optional</span>
-<span class="sd">            The driver to use to read the data, by default &#39;pandas&#39;.</span>
-<span class="sd">        gml_dir : str, optional</span>
-<span class="sd">            The NOAA GML data root, by default ``$LAIR_GML_DIR``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a GMLData; the class docstring describes the parameters.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">specie</span> <span class="o">=</span> <span class="n">specie</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">site</span> <span class="o">=</span> <span class="n">site</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="n">platform</span>
@@ -1195,7 +1506,21 @@
 <div class="viewcode-block" id="GMLData.download">
 <a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.download.html#lair.noaa.GMLData.download">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download the file from NOAA GML&#39;s FTP server and return its path.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download the file from NOAA GML&#39;s FTP server and return its path.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        GMLData.data : Reads the file.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        It needs the network, so it is not run when the docs build:</span>
+
+<span class="sd">        &gt;&gt;&gt; from lair.noaa import GMLData</span>
+<span class="sd">        &gt;&gt;&gt; GMLData(&quot;ch4&quot;, &quot;uta&quot;, gml_dir=&quot;gml&quot;).download()  # doctest: +SKIP</span>
+<span class="sd">        &#39;gml/ch4/flask/ch4_uta_surface-flask_1_ccgg_event.txt&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;ftp.gml.noaa.gov&quot;</span>
         <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/data/trace_gases/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">specie</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_type</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ext</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">ftp_download</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">))</span>
@@ -1206,7 +1531,19 @@
 <a class="viewcode-back" href="../../_autosummary/lair.noaa.GMLData.data.html#lair.noaa.GMLData.data">[docs]</a>
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The file&#39;s data, read once.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The file&#39;s data, read once.</span>
+
+<span class="sd">        With ``driver=&#39;pandas&#39;``, a DataFrame indexed by ``datetime``, sorted:</span>
+<span class="sd">        the sample times of an event file (naive, as NOAA writes them in UTC),</span>
+<span class="sd">        or the first of each month for a monthly file. With ``&#39;xarray&#39;``, the</span>
+<span class="sd">        NetCDF file&#39;s Dataset, with ``time`` along ``obs``.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        GMLData.apply_qaqc : Keeps the samples with good flags.</span>
+<span class="sd">        GMLData.download : Fetches the file first.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;pandas&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency</span> <span class="o">==</span> <span class="s2">&quot;month&quot;</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_monthly</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;pandas&quot;</span><span class="p">:</span>
@@ -1278,6 +1615,25 @@
 <span class="sd">        -------</span>
 <span class="sd">        pd.DataFrame | xr.Dataset</span>
 <span class="sd">            The filtered data.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        GMLData.data : The data to filter.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        NOAA marks a good sample ``...``; a sample with a flag is kept only</span>
+<span class="sd">        when that flag is allowed:</span>
+
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; from lair.noaa import GMLData</span>
+<span class="sd">        &gt;&gt;&gt; samples = pd.DataFrame(</span>
+<span class="sd">        ...     {&quot;value&quot;: [1900.0, 2400.0], &quot;qcflag&quot;: [&quot;...&quot;, &quot;..P&quot;]}</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; GMLData.apply_qaqc(samples)[&quot;value&quot;].tolist()</span>
+<span class="sd">        [1900.0]</span>
+<span class="sd">        &gt;&gt;&gt; GMLData.apply_qaqc(samples, flags=&quot;..P&quot;)[&quot;value&quot;].tolist()</span>
+<span class="sd">        [1900.0, 2400.0]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">allowed_flags</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;...&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">flags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

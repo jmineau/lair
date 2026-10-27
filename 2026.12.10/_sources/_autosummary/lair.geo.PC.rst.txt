@@ -1,0 +1,6 @@
+lair.geo.PC
+===========
+
+.. currentmodule:: lair.geo
+
+.. autodata:: PC

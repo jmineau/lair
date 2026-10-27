@@ -1,0 +1,6 @@
+lair.plotter.windvectorPlot
+===========================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: windvectorPlot

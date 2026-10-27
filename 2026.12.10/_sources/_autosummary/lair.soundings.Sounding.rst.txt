@@ -1,0 +1,23 @@
+lair.soundings.Sounding
+=======================
+
+.. currentmodule:: lair.soundings
+
+.. autoclass:: Sounding
+   :no-members:
+
+
+
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~Sounding.interpolate
+   ~Sounding.plot
+
+
+

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lair.inventories.INVENTORY_DIR_ENV &#8212; lair 2026.12.9</title>
+    <title>lair.inventories.INVENTORY_DIR_ENV &#8212; lair 2026.12.10</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories" href="lair.inventories.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -394,6 +394,14 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="lair.html">lair</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.units.html">lair.units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.mass_flux.html">lair.mass_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.setup_ccg_filter.html">lair.setup_ccg_filter</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.air.html">lair.air</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.bin_polar.html">lair.air.bin_polar</a></li>
@@ -405,7 +413,6 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.background.html">lair.background</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.background.get_well_mixed.html">lair.background.get_well_mixed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.phase_shift_corrected_baseline.html">lair.background.phase_shift_corrected_baseline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.rolling_baseline.html">lair.background.rolling_baseline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.thoning.html">lair.background.thoning</a></li>
@@ -469,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -591,9 +599,10 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.geo.add_extent_map.html">lair.geo.add_extent_map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.PC.html">lair.geo.PC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.add_locator_map.html">lair.geo.add_locator_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lon_ticks.html">lair.geo.add_lon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bbox2extent.html">lair.geo.bbox2extent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bearing.html">lair.geo.bearing</a></li>
@@ -656,12 +665,18 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.clock.html">lair.clock</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.diurnal.html">lair.clock.diurnal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.dt2decimalDate.html">lair.clock.dt2decimalDate</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.periodindex_to_binedges.html">lair.clock.periodindex_to_binedges</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.regular_times_to_intervals.html">lair.clock.regular_times_to_intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.seasonal.html">lair.clock.seasonal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.time_decay_matrix.html">lair.clock.time_decay_matrix</a></li>
@@ -806,6 +821,11 @@
 <span class="sig-prename descclassname"><span class="pre">lair.inventories.</span></span><span class="sig-name descname"><span class="pre">INVENTORY_DIR_ENV</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LAIR_INVENTORY_DIR'</span></span><a class="headerlink" href="#lair.inventories.INVENTORY_DIR_ENV" title="Link to this definition">#</a></dt>
 <dd><p>Environment variable holding the inventory archive root
 (with EDGAR/, EPA/, GFEI/, vulcan/ and WetCHARTs/ subdirectories)</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../data.html#data-locations"><span class="std std-ref">Data locations</span></a>, which lists every variable; each
+inventory’s Notes show its folder.</p>
+</div>
 </dd></dl>
 
 </section>

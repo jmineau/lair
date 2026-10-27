@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.meteorology &#8212; lair 2026.12.9</title>
+    <title>lair.meteorology &#8212; lair 2026.12.10</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.meteorology</span></li>
   </ul>
 </nav>
@@ -464,7 +467,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">constants</span>
 
-<span class="c1">#: Inputs/outputs: scalars, numpy arrays or xarray DataArrays in SI units</span>
+<span class="c1">#: Scalars, numpy arrays or xarray DataArrays in SI units, as inputs and results</span>
 <span class="n">Numeric</span> <span class="o">=</span> <span class="n">Any</span>
 
 <span class="c1"># Physical constants as plain SI floats</span>
@@ -536,33 +539,68 @@
     <span class="n">R</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Ideal gas law equation solver.</span>
+<span class="sd">    Solve the ideal gas law for one variable.</span>
 
-<span class="sd">    Solver attempts to solve for the specified variable using the following</span>
-<span class="sd">    forms of the ideal gas law:</span>
+<span class="sd">    The solver uses one of these forms of the law, where R* is the universal</span>
+<span class="sd">    gas constant and kb Boltzmann&#39;s constant::</span>
 
-<span class="sd">    pV = nR*T</span>
-<span class="sd">    pV = mRT</span>
-<span class="sd">    pV = NkbT</span>
-<span class="sd">    p = ρRT</span>
-<span class="sd">    pα = RT</span>
+<span class="sd">        pV = nR * T</span>
+<span class="sd">        pV = mRT</span>
+<span class="sd">        pV = NkbT</span>
+<span class="sd">        p = ρRT</span>
+<span class="sd">        pα = RT</span>
 
-<span class="sd">    Input variables must be able to solve for the desired variable using the</span>
-<span class="sd">    above equations without intermediate steps. Inputs and the result are in</span>
-<span class="sd">    SI (pint Quantities are converted to SI first; see the module docstring).</span>
+<span class="sd">    Give the inputs one form needs to solve for the variable directly, with no</span>
+<span class="sd">    intermediate step. Inputs and the result are in SI (pint Quantities are</span>
+<span class="sd">    converted to SI first; see the module docstring).</span>
 
-<span class="sd">    p : pressure (Pa)</span>
-<span class="sd">    V : volume (m^3)</span>
-<span class="sd">    T : temperature (K)</span>
-<span class="sd">    m : mass (kg)</span>
-<span class="sd">    n : moles (mol)</span>
-<span class="sd">    N : number of molecules (#)</span>
-<span class="sd">    ρ : density (kg/m^3)</span>
-<span class="sd">    α : specific volume (m^3/kg)</span>
-<span class="sd">    R : specific gas constant (J/kg/K)</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    solve_for : str</span>
+<span class="sd">        The variable to solve for: ``&#39;p&#39;`` (or ``&#39;pressure&#39;``, ``&#39;pres&#39;``),</span>
+<span class="sd">        ``&#39;V&#39;`` (``&#39;volume&#39;``, ``&#39;vol&#39;``), ``&#39;T&#39;`` (``&#39;temperature&#39;``,</span>
+<span class="sd">        ``&#39;temp&#39;``), ``&#39;rho&#39;`` (``&#39;density&#39;``), ``&#39;m&#39;`` (``&#39;mass&#39;``), ``&#39;n&#39;``</span>
+<span class="sd">        (``&#39;moles&#39;``) or ``&#39;N&#39;`` (``&#39;number&#39;``).</span>
+<span class="sd">    p : Numeric, optional</span>
+<span class="sd">        Pressure (Pa).</span>
+<span class="sd">    V : Numeric, optional</span>
+<span class="sd">        Volume (m^3).</span>
+<span class="sd">    T : Numeric, optional</span>
+<span class="sd">        Temperature (K).</span>
+<span class="sd">    m : Numeric, optional</span>
+<span class="sd">        Mass (kg).</span>
+<span class="sd">    n : Numeric, optional</span>
+<span class="sd">        Amount of substance (mol).</span>
+<span class="sd">    N : Numeric, optional</span>
+<span class="sd">        Number of molecules.</span>
+<span class="sd">    rho : Numeric, optional</span>
+<span class="sd">        Density (kg/m^3).</span>
+<span class="sd">    alpha : Numeric, optional</span>
+<span class="sd">        Specific volume (m^3/kg).</span>
+<span class="sd">    R : Numeric, optional</span>
+<span class="sd">        Specific gas constant (J/kg/K): 287.05 for dry air.</span>
 
-<span class="sd">    Can be used to solve for pressure, volume, temperature, density, mass,</span>
-<span class="sd">    moles, or number of molecules.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Numeric</span>
+<span class="sd">        The variable asked for, in SI.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``solve_for`` is not one of the names above.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    hypsometric : Thickness of a layer between two pressures.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The density of dry air at sea level in the standard atmosphere:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.meteorology import ideal_gas_law</span>
+<span class="sd">    &gt;&gt;&gt; round(float(ideal_gas_law(&quot;rho&quot;, p=101325.0, T=288.15, R=287.05)), 3)</span>
+<span class="sd">    1.225</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Compare against None (not truthiness) so array inputs and zero values</span>
     <span class="c1"># (e.g. n=0) work</span>
@@ -624,22 +662,53 @@
     <span class="n">deltaz</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Hyposometric equation solver.</span>
+<span class="sd">    Solve the hypsometric equation for one variable.</span>
 
-<span class="sd">    Z2 - Z1 = Rd * Tv * ln(p1/p2) / g</span>
+<span class="sd">    The equation is ``Z2 - Z1 = Rd * Tv * ln(p1 / p2) / g``. Give all but one</span>
+<span class="sd">    of its variables (``deltaz`` stands for ``Z2 - Z1``) and the missing one is</span>
+<span class="sd">    returned: the thickness when neither height nor ``deltaz`` is given. Inputs</span>
+<span class="sd">    and the result are in SI (pint Quantities are converted to SI first; see</span>
+<span class="sd">    the module docstring).</span>
 
-<span class="sd">    Input variables must be able to solve for the desired variable using the</span>
-<span class="sd">    above equation without intermediate steps. Inputs and the result are in</span>
-<span class="sd">    SI (pint Quantities are converted to SI first; see the module docstring).</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Tv : Numeric, optional</span>
+<span class="sd">        Mean virtual temperature of the layer (K).</span>
+<span class="sd">    p1 : Numeric, optional</span>
+<span class="sd">        Pressure at the bottom of the layer (Pa).</span>
+<span class="sd">    p2 : Numeric, optional</span>
+<span class="sd">        Pressure at the top of the layer (Pa).</span>
+<span class="sd">    Z1 : Numeric, optional</span>
+<span class="sd">        Geopotential height of the bottom of the layer (m).</span>
+<span class="sd">    Z2 : Numeric, optional</span>
+<span class="sd">        Geopotential height of the top of the layer (m).</span>
+<span class="sd">    deltaz : Numeric, optional</span>
+<span class="sd">        Thickness of the layer (m).</span>
 
-<span class="sd">    Tv : mean virtual temperature of layer (K)</span>
-<span class="sd">    p1 : pressure at bottom of layer (Pa)</span>
-<span class="sd">    p2 : pressure at top of layer (Pa)</span>
-<span class="sd">    Z1 : geopotential height at bottom of layer (m)</span>
-<span class="sd">    Z2 : geopotential height at top of layer (m)</span>
-<span class="sd">    deltaz : thickness of layer (m)</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Numeric</span>
+<span class="sd">        The missing variable, in SI.</span>
 
-<span class="sd">    Can be used to solve for any of the variables in the equation or deltaz.</span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the inputs do not determine one variable.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    virt_T : The virtual temperature ``Tv``.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The thickness of the 1000 to 850 hPa layer at a mean virtual temperature</span>
+<span class="sd">    of 280 K, and the pressure 1300 m above the 1000 hPa level:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.meteorology import hypsometric</span>
+<span class="sd">    &gt;&gt;&gt; round(float(hypsometric(Tv=280.0, p1=100000.0, p2=85000.0)), 1)</span>
+<span class="sd">    1331.5</span>
+<span class="sd">    &gt;&gt;&gt; round(float(hypsometric(Tv=280.0, p1=100000.0, deltaz=1300.0)))</span>
+<span class="sd">    85328</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Compare against None (not truthiness) so a surface height of 0 m and</span>
     <span class="c1"># array inputs work</span>
@@ -683,6 +752,16 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        Virtual temperature in Kelvin.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    hypsometric : Uses the mean virtual temperature of a layer.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from lair.meteorology import virt_T</span>
+<span class="sd">    &gt;&gt;&gt; round(float(virt_T(293.15, 0.01)), 2)</span>
+<span class="sd">    294.94</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">T</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">0.61</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span></div>
 
@@ -693,7 +772,7 @@
 <span class="nd">@_si_inputs</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">poisson</span><span class="p">(</span><span class="n">T</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">p0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mf">1e5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculate the potential temperature. (Poission&#39;s equation)</span>
+<span class="sd">    Calculate the potential temperature (Poisson&#39;s equation).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -708,6 +787,22 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        Potential temperature in Kelvin.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    inv_poisson : The temperature from the potential temperature.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Air at 0 degrees Celsius and 850 hPa, in SI or as pint quantities (the</span>
+<span class="sd">    result is in kelvin either way):</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair import units</span>
+<span class="sd">    &gt;&gt;&gt; from lair.meteorology import poisson</span>
+<span class="sd">    &gt;&gt;&gt; round(float(poisson(T=273.15, p=85000.0)), 2)</span>
+<span class="sd">    286.13</span>
+<span class="sd">    &gt;&gt;&gt; round(float(poisson(T=0 * units.degC, p=850 * units.hPa)), 2)</span>
+<span class="sd">    286.13</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">T</span> <span class="o">*</span> <span class="p">(</span><span class="n">p0</span> <span class="o">/</span> <span class="n">p</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">Rd</span> <span class="o">/</span> <span class="n">cp</span><span class="p">)</span></div>
 
@@ -718,7 +813,9 @@
 <span class="nd">@_si_inputs</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">inv_poisson</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">p0</span><span class="p">:</span> <span class="n">Numeric</span> <span class="o">=</span> <span class="mf">1e5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Numeric</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculate the temperature from potential temperature. (Inverse Poission&#39;s equation)</span>
+<span class="sd">    Calculate the temperature from the potential temperature.</span>
+
+<span class="sd">    This is Poisson&#39;s equation solved for the temperature.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -733,6 +830,16 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        Temperature in Kelvin.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    poisson : The potential temperature from the temperature.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from lair.meteorology import inv_poisson</span>
+<span class="sd">    &gt;&gt;&gt; round(float(inv_poisson(p=85000.0, theta=286.67)), 2)</span>
+<span class="sd">    273.67</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="n">p0</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">Rd</span> <span class="o">/</span> <span class="n">cp</span><span class="p">)</span></div>
 
@@ -754,6 +861,18 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        Saturation vapor pressure in Pascals.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    T_from_e : Its inverse, the temperature at a vapor pressure.</span>
+<span class="sd">    sat_vapor_pres_ice : The same over ice.</span>
+<span class="sd">    mixing_ratio : The mixing ratio at a vapor pressure.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from lair.meteorology import sat_vapor_pres</span>
+<span class="sd">    &gt;&gt;&gt; round(float(sat_vapor_pres(293.15)), 1)</span>
+<span class="sd">    2363.3</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="mf">2.53e11</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">5420</span> <span class="o">/</span> <span class="n">T</span><span class="p">)</span></div>
 
@@ -775,6 +894,10 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        Saturation vapor pressure over ice in Pascals.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    sat_vapor_pres : The same over liquid water.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Petty: e_si = 3.41e12 Pa exp(-6130 K / T); ~611 Pa at the triple point</span>
     <span class="k">return</span> <span class="mf">3.41e12</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">6130</span> <span class="o">/</span> <span class="n">T</span><span class="p">)</span></div>
@@ -802,6 +925,18 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        Mixing ratio in kg/kg.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    sat_vapor_pres : The vapor pressure at saturation.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The saturation mixing ratio at 20 degrees Celsius and sea-level pressure:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.meteorology import mixing_ratio, sat_vapor_pres</span>
+<span class="sd">    &gt;&gt;&gt; round(float(mixing_ratio(sat_vapor_pres(293.15), 101325.0)), 5)</span>
+<span class="sd">    0.01485</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">e</span> <span class="o">/</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">e</span><span class="p">)</span></div>
 
@@ -823,6 +958,10 @@
 <span class="sd">    -------</span>
 <span class="sd">    float</span>
 <span class="sd">        Temperature in Kelvin.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    sat_vapor_pres : Its inverse.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="o">-</span><span class="mi">5420</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">e</span> <span class="o">/</span> <span class="mf">2.53e11</span><span class="p">)</span>  <span class="c1"># K</span></div>
 

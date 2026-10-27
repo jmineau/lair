@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Convert a methane flux from moles to mass &#8212; lair 2026.12.9</title>
+    <title>Convert a methane flux from moles to mass &#8212; lair 2026.12.10</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Average a time series by local hour and by season" href="clock.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -568,8 +568,13 @@ writes the new unit back into the attribute:</p>
 <span class="go">    units:    kilogram / kilometer ** 2 / day</span>
 </pre></div>
 </div>
-<p>An <a class="reference internal" href="../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory" title="lair.inventories.Inventory"><code class="xref py py-class docutils literal notranslate"><span class="pre">Inventory</span></code></a> does this with the molecular weight of
-its own pollutant: <a class="reference internal" href="../_autosummary/lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_units()</span></code></a>.</p>
+<p><a class="reference internal" href="../_autosummary/lair.inventories.convert_units.html#lair.inventories.convert_units" title="lair.inventories.convert_units"><code class="xref py py-func docutils literal notranslate"><span class="pre">lair.inventories.convert_units()</span></code></a> does the same for any array or dataset
+with a <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute, given the pollutant instead of <code class="docutils literal notranslate"><span class="pre">mw</span></code>:
+<code class="docutils literal notranslate"><span class="pre">convert_units(grid,</span> <span class="pre">&quot;CH4&quot;,</span> <span class="pre">&quot;kg</span> <span class="pre">km-2</span> <span class="pre">d-1&quot;)</span></code> returns a plain array with the new
+values and <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute. It needs the <code class="docutils literal notranslate"><span class="pre">geo</span></code> and <code class="docutils literal notranslate"><span class="pre">science</span></code> extras (see
+<a class="reference internal" href="../index.html#optional-dependencies"><span class="std std-ref">Optional dependencies</span></a>). An <a class="reference internal" href="../_autosummary/lair.inventories.Inventory.html#lair.inventories.Inventory" title="lair.inventories.Inventory"><code class="xref py py-class docutils literal notranslate"><span class="pre">Inventory</span></code></a> has the
+same conversion for its data, with its own pollutant:
+<a class="reference internal" href="../_autosummary/lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_units()</span></code></a>.</p>
 </section>
 <section id="the-molecular-weight">
 <h2>The molecular weight<a class="headerlink" href="#the-molecular-weight" title="Link to this heading">#</a></h2>

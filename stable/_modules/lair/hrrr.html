@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.hrrr &#8212; lair 2026.12.9</title>
+    <title>lair.hrrr &#8212; lair 2026.12.10</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.hrrr</span></li>
   </ul>
 </nav>
@@ -434,7 +437,15 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">HRRR winds at a point.</span>
 
-<span class="sd">Documentation: https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.html</span>
+<span class="sd">:class:`Winds` downloads the 10 m winds of the HRRR analyses at the grid point</span>
+<span class="sd">nearest a latitude and longitude, from the University of Utah&#39;s HRRR-Zarr</span>
+<span class="sd">archive on Amazon S3, and rotates them to earth-relative u and v. The other</span>
+<span class="sd">functions are the steps it takes: build the S3 keys of a model run</span>
+<span class="sd">(:class:`ZarrId`), find the grid point, read and decompress its chunk.</span>
+<span class="sd">:doc:`/examples/hrrr_winds` shows it at one point.</span>
+
+<span class="sd">The archive&#39;s documentation:</span>
+<span class="sd">https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.html</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
@@ -476,7 +487,9 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to store information about a HRRR zarr file.</span>
 
-<span class="sd">    Attributes</span>
+<span class="sd">    Each parameter is also an attribute of the same name.</span>
+
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    run_hour : dt.datetime</span>
 <span class="sd">        run hour of the model. A naive time is taken as UTC; a tz-aware time</span>
@@ -564,7 +577,12 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to download HRRR winds at a point.</span>
 
-<span class="sd">    Attributes</span>
+<span class="sd">    Making one downloads the winds: the 10 m u and v analyses of each hour,</span>
+<span class="sd">    at the HRRR grid point nearest to ``lat`` and ``lon``, from the public</span>
+<span class="sd">    HRRR-Zarr archive on Amazon S3. :doc:`/examples/hrrr_winds` shows it.</span>
+<span class="sd">    Each parameter is also an attribute of the same name.</span>
+
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    lat : float</span>
 <span class="sd">        latitude of point</span>
@@ -574,6 +592,9 @@
 <span class="sd">        Hours of the analyses to download. A naive time is taken as UTC. A</span>
 <span class="sd">        tz-aware time is converted to UTC to choose the analysis, so 05:00 in</span>
 <span class="sd">        ``America/Denver`` in January reads the 12 UTC analysis.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
 <span class="sd">    nearest_point : xr.Dataset</span>
 <span class="sd">        nearest point to lat, lon</span>
 <span class="sd">    chunk_id : numpy.ndarray</span>

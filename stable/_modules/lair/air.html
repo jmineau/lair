@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.air &#8212; lair 2026.12.9</title>
+    <title>lair.air &#8212; lair 2026.12.10</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -413,6 +413,9 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
     
+    
+    <li class="breadcrumb-item"><a href="../lair.html" class="nav-link">lair</a></li>
+    
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair.air</span></li>
   </ul>
 </nav>
@@ -432,7 +435,14 @@
                   
   <h1>Source code for lair.air</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Miscellaneous functions for atmospheric data.</span>
+<span class="sd">Winds and polar binning.</span>
+
+<span class="sd">:func:`wind_components` and :func:`wind_direction` convert between a wind&#39;s</span>
+<span class="sd">speed and direction (the direction it blows from, in degrees clockwise from</span>
+<span class="sd">north) and its u and v components; :func:`rotate_winds` turns HRRR&#39;s</span>
+<span class="sd">grid-relative components to earth-relative ones. :func:`bin_polar` and its</span>
+<span class="sd">helpers bin data by wind direction into the 16 compass sectors of</span>
+<span class="sd">:data:`WIND_SECTORS`, for the polar plots of :mod:`lair.plotter`.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
@@ -596,6 +606,20 @@
 <span class="sd">    -------</span>
 <span class="sd">    tuple[float, float]</span>
 <span class="sd">        u and v components of the wind.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    wind_direction : The direction from the components.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    A west wind (blowing from 270 degrees) at 10 m/s blows toward the east,</span>
+<span class="sd">    so u is positive:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.air import wind_components</span>
+<span class="sd">    &gt;&gt;&gt; u, v = wind_components(10.0, 270.0)</span>
+<span class="sd">    &gt;&gt;&gt; round(float(u), 6), round(float(v), 6)</span>
+<span class="sd">    (10.0, 0.0)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">u</span> <span class="o">=</span> <span class="o">-</span><span class="n">speed</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">wind_direction</span><span class="p">))</span>
     <span class="n">v</span> <span class="o">=</span> <span class="o">-</span><span class="n">speed</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">wind_direction</span><span class="p">))</span>
@@ -624,6 +648,18 @@
 <span class="sd">        vector has no direction, and arctan2(0, 0) = 0 would report 270 (west).</span>
 <span class="sd">        This matters for vector-mean winds, where a dead-calm period averages</span>
 <span class="sd">        to exactly zero.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    wind_components : The components from a speed and a direction.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from lair.air import wind_direction</span>
+<span class="sd">    &gt;&gt;&gt; float(wind_direction(10.0, 0.0))  # blowing toward the east</span>
+<span class="sd">    270.0</span>
+<span class="sd">    &gt;&gt;&gt; float(wind_direction(0.0, 0.0))  # calm</span>
+<span class="sd">    nan</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">direction</span> <span class="o">=</span> <span class="p">(</span><span class="mi">270</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">)))</span> <span class="o">%</span> <span class="mi">360</span>
     <span class="n">calm</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
@@ -655,6 +691,10 @@
 <span class="sd">    -------</span>
 <span class="sd">    tuple[np.array, np.array]</span>
 <span class="sd">        u and v components of wind in earth coordinates</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    lair.hrrr.winds_frame : HRRR winds at a point, rotated with this.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Parameters</span>
     <span class="n">rotcon_p</span> <span class="o">=</span> <span class="mf">0.622515</span>

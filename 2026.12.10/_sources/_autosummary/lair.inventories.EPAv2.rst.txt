@@ -1,0 +1,34 @@
+lair.inventories.EPAv2
+======================
+
+.. currentmodule:: lair.inventories
+
+.. autoclass:: EPAv2
+   :no-members:
+   :show-inheritance:
+
+
+
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~EPAv2.get_monthly_scale_factors
+
+
+
+
+.. rubric:: Inherited
+
+
+From :class:`~.Inventory`: :py:obj:`~.Inventory.absolute_emissions`, :py:obj:`~.Inventory.collapsed`, :py:obj:`~.Inventory.convert_units`, :py:obj:`~.Inventory.data`, :py:obj:`~.Inventory.get_files`, :py:obj:`~.Inventory.get_standard_name`, :py:obj:`~.Inventory.get_units`, :py:obj:`~.Inventory.integrate`, :py:obj:`~.Inventory.plot`, :py:obj:`~.Inventory.quantify`, :py:obj:`~.Inventory.regrid`, :py:obj:`~.Inventory.reproject`, :py:obj:`~.Inventory.resample`, :py:obj:`~.Inventory.total_emissions`
+
+
+
+From :class:`~.BaseGrid`: :py:obj:`~.BaseGrid.clip`, :py:obj:`~.BaseGrid.copy`, :py:obj:`~.BaseGrid.gridcell_area`
+
+

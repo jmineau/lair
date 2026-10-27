@@ -1,0 +1,33 @@
+﻿lair.utils
+==========
+
+.. automodule:: lair.utils
+   :no-members:
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   updating_print
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   DotDict
+
+
+
+
+
+
+

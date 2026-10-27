@@ -1,0 +1,6 @@
+lair.transects.profile
+======================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: profile

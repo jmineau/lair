@@ -1,0 +1,37 @@
+lair.noaa.CarbonTrackerCH4
+==========================
+
+.. currentmodule:: lair.noaa
+
+.. autoclass:: CarbonTrackerCH4
+   :no-members:
+   :show-inheritance:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~CarbonTrackerCH4.molefractions
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~CarbonTrackerCH4.calc_molefractions_pressure
+
+
+
+
+.. rubric:: Inherited
+
+
+From :class:`~.CarbonTracker`: :py:obj:`~.CarbonTracker.background`, :py:obj:`~.CarbonTracker.download`, :py:obj:`~.CarbonTracker.from_version`, :py:obj:`~.CarbonTracker.get_specie_from_version`, :py:obj:`~.CarbonTracker.molefractions_dir`, :py:obj:`~.CarbonTracker.sample`, :py:obj:`~.CarbonTracker.units`
+
+

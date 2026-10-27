@@ -1,0 +1,6 @@
+lair.clock.seasonal
+===================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: seasonal

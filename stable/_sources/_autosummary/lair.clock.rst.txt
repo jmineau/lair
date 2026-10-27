@@ -5,6 +5,20 @@
    :no-members:
 
 
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   AFTERNOON
+   SEASONS
+   UTC2
+   UTC2MST
+   UTC2MTN
+   MST2UTC
+   MTN2UTC
+
 
 
 .. rubric:: Functions
@@ -18,7 +32,6 @@
    decimalDate2dt
    diurnal
    dt2decimalDate
-   periodindex_to_binedges
    regular_times_to_intervals
    seasonal
    time_decay_matrix

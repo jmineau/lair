@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Total an inventory over a region &#8212; lair 2026.12.9</title>
+    <title>Total an inventory over a region &#8212; lair 2026.12.10</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="Convert a methane flux from moles to mass" href="units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -465,12 +465,17 @@
   <section id="total-an-inventory-over-a-region">
 <h1>Total an inventory over a region<a class="headerlink" href="#total-an-inventory-over-a-region" title="Link to this heading">#</a></h1>
 <p>This example totals EDGAR’s methane emissions over the Salt Lake Valley, moves
-them to a finer grid, and checks that the total did not change. Two rules come
-out of it:</p>
+them to a finer grid, and checks that the total did not change. Three rules
+come out of it:</p>
 <ul class="simple">
-<li><p><strong>The regional total is</strong> <code class="docutils literal notranslate"><span class="pre">integrate()</span></code>. <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code> is not a total
-over the region: it sums the sectors in each grid cell, and is still a flux
-per area and time.</p></li>
+<li><p><strong>The regional total is</strong> <code class="docutils literal notranslate"><span class="pre">integrate()</span></code>: the mass emitted over the region
+in each time step, in kilograms per year here. <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code> is not a
+total over the region: it sums the sectors in each grid cell, and is still a
+flux per area and time. <code class="docutils literal notranslate"><span class="pre">absolute_emissions</span></code> is the mass in each cell,
+sector by sector (see <a class="reference internal" href="#three-sums">Three sums</a>).</p></li>
+<li><p><strong>The unit does not matter.</strong> <code class="docutils literal notranslate"><span class="pre">integrate()</span></code> gives the inventory’s own mass
+unit (here kg). Divide the result, or convert the flux first with
+<code class="docutils literal notranslate"><span class="pre">convert_units</span></code>: the total is the same (see <a class="reference internal" href="#other-units">Other units</a>).</p></li>
 <li><p><strong>To change the grid of an inventory, use its own</strong> <code class="docutils literal notranslate"><span class="pre">regrid</span></code> <strong>or</strong>
 <code class="docutils literal notranslate"><span class="pre">resample</span></code>. They are conservative by default, so the total stays the same.</p></li>
 </ul>
@@ -479,7 +484,7 @@ per area and time.</p></li>
 <p>This page does not run when the docs build. It needs ESMF, which the conda
 route of <a class="reference internal" href="../index.html#installation"><span class="std std-ref">Installation</span></a> installs, and EDGAR’s files, which are too large
 for the docs build. The output below was recorded from one run of this code,
-with ESMF, on 2026-10-12.</p>
+with ESMF, on 2026-10-26.</p>
 </div>
 <section id="the-data">
 <span id="inventory-data"></span><h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
@@ -504,7 +509,10 @@ every CH4 sector, and unzip each sector into a folder of its own:</p>
 <h2>Load<a class="headerlink" href="#load" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.inventories.EDGARv8.html#lair.inventories.EDGARv8" title="lair.inventories.EDGARv8"><code class="xref py py-class docutils literal notranslate"><span class="pre">EDGARv8</span></code></a> opens every year of every sector. Each sector
 is a variable, and each time step is labeled by the start of its year (January
-1). Opening is lazy: lair reads the values only when a result needs them.</p>
+1). Opening is lazy: lair reads the values only when a result needs them. Opening
+all 53 years takes 20 to 50 seconds: when a calculation needs only some, pass
+them, as in <code class="docutils literal notranslate"><span class="pre">EDGARv8(&quot;CH4&quot;,</span> <span class="pre">start=2015,</span> <span class="pre">end=2022)</span></code>, and lair opens only the
+files of those years (both included). This page reads every year.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">EDGARv8</span>
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv8</span><span class="p">(</span><span class="s2">&quot;CH4&quot;</span><span class="p">)</span>
@@ -527,37 +535,154 @@ box, 112.3 to 111.7 W and 40.4 to 41.0 N, holds 6 by 6 cells of 0.1 degrees.</p>
 </pre></div>
 </div>
 </section>
-<section id="total">
-<h2>Total<a class="headerlink" href="#total" title="Link to this heading">#</a></h2>
+<section id="three-sums">
+<span id="inventory-totals"></span><h2>Three sums<a class="headerlink" href="#three-sums" title="Link to this heading">#</a></h2>
+<p>An inventory adds up in three ways, and only one of them is the total over the
+region:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 30.0%" />
+<col style="width: 22.0%" />
+<col style="width: 26.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>What it is</p></th>
+<th class="head"><p>Units here</p></th>
+<th class="head"><p>Use it for</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">total_emissions</span></code></p></td>
+<td><p>the sectors added in each cell: a flux, on <code class="docutils literal notranslate"><span class="pre">time</span></code>, <code class="docutils literal notranslate"><span class="pre">lat</span></code>, <code class="docutils literal notranslate"><span class="pre">lon</span></code></p></td>
+<td><p>kg m-2 s-1</p></td>
+<td><p>a map; the flux at a place</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">absolute_emissions</span></code></p></td>
+<td><p>each cell’s flux times its area and the length of the time step: a mass,
+one variable per sector, on <code class="docutils literal notranslate"><span class="pre">time</span></code>, <code class="docutils literal notranslate"><span class="pre">lat</span></code>, <code class="docutils literal notranslate"><span class="pre">lon</span></code></p></td>
+<td><p>kg per cell per year</p></td>
+<td><p>the mass in a cell; one sector’s total</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">integrate()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">absolute_emissions</span></code> added over the cells and the sectors: a mass, on
+<code class="docutils literal notranslate"><span class="pre">time</span></code> only</p></td>
+<td><p>kg per year</p></td>
+<td><p><strong>the total over the region</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The kilograms are the mass unit of the inventory’s flux: the area and the time
+cancel. “Per year” is because <code class="docutils literal notranslate"><span class="pre">EDGARv8</span></code> loads annual data, one value per year;
+with monthly data each value is one month’s mass. The length of a year follows
+the calendar (366 days in a leap year).</p>
+<section id="a-flux-in-each-cell-total-emissions">
+<h3>A flux in each cell: <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code><a class="headerlink" href="#a-flux-in-each-cell-total-emissions" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">total_emissions</span></code> sums the sectors in each cell. Its <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute shows
 that it is still a flux, in kilograms per square meter per second:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">slv</span><span class="o">.</span><span class="n">total_emissions</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
 <span class="gh">Out[4]: </span><span class="go">&#39;kg/m**2/s&#39;</span>
 </pre></div>
 </div>
-<p><a class="reference internal" href="../_autosummary/lair.inventories.Inventory.integrate.html#lair.inventories.Inventory.integrate" title="lair.inventories.Inventory.integrate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">integrate()</span></code></a> gives the total. It multiplies
-each cell’s flux by the cell’s area and by the length of the time step, then
-sums the cells and the sectors. The <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute of the result is just
-<code class="docutils literal notranslate"><span class="pre">kg</span></code>: the mass emitted over the whole region in one time step. <code class="docutils literal notranslate"><span class="pre">EDGARv8</span></code>
-loads annual data by default, so here that is kilograms per year. The length of a year
-follows the calendar (366 days in a leap year).</p>
+<p>Do not add it up over the cells: the cells differ in area, so a sum of fluxes is
+not a mass.</p>
+</section>
+<section id="the-total-integrate">
+<h3>The total: <code class="docutils literal notranslate"><span class="pre">integrate()</span></code><a class="headerlink" href="#the-total-integrate" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../_autosummary/lair.inventories.Inventory.integrate.html#lair.inventories.Inventory.integrate" title="lair.inventories.Inventory.integrate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">integrate()</span></code></a> multiplies each cell’s flux by the
+cell’s area and by the length of the time step, then sums the cells and the
+sectors. The <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute of the result is just <code class="docutils literal notranslate"><span class="pre">kg</span></code>: the mass emitted
+over the whole region in one time step, here one year.</p>
 <p><code class="docutils literal notranslate"><span class="pre">integrate()</span></code> returns a lazy (dask) array: <code class="docutils literal notranslate"><span class="pre">compute()</span></code> reads the files and
 does the work. That took a minute or two here.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">total</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-<span class="gp">   ...: </span><span class="n">total</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
-<span class="gh">Out[5]: </span><span class="go">&#39;kg&#39;</span>
+<span class="gp">   ...: </span><span class="n">total</span><span class="o">.</span><span class="n">attrs</span>
+<span class="gh">Out[5]: </span><span class="go">{&#39;long_name&#39;: &#39;Total Emissions&#39;, &#39;units&#39;: &#39;kg&#39;}</span>
 </pre></div>
 </div>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="s2">&quot;2020&quot;</span><span class="p">,</span> <span class="s2">&quot;2022&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># kg to kt</span>
 <span class="gh">Out[6]:</span>
 <span class="go">time</span>
-<span class="go">2020-01-01    22.089165</span>
-<span class="go">2021-01-01    22.363681</span>
-<span class="go">2022-01-01    22.588048</span>
+<span class="go">2020-01-01    22.129474</span>
+<span class="go">2021-01-01    22.404489</span>
+<span class="go">2022-01-01    22.629266</span>
 <span class="go">Freq: YS-JAN, Name: emissions, dtype: float64</span>
 </pre></div>
 </div>
 <p>So EDGAR puts 22.6 kt (thousand tonnes) of methane in this box in 2022.</p>
+</section>
+<section id="the-mass-in-each-cell-absolute-emissions">
+<h3>The mass in each cell: <code class="docutils literal notranslate"><span class="pre">absolute_emissions</span></code><a class="headerlink" href="#the-mass-in-each-cell-absolute-emissions" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../_autosummary/lair.inventories.Inventory.absolute_emissions.html#lair.inventories.Inventory.absolute_emissions" title="lair.inventories.Inventory.absolute_emissions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">absolute_emissions</span></code></a> is the step before the
+sum: the mass each cell emitted in each year, one variable per sector. To check
+it by hand, take one cell in 2022 (not a leap year): its flux, summed over the
+sectors, times its area (<code class="docutils literal notranslate"><span class="pre">gridcell_area</span></code>, in
+km2) times the seconds in the year:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">sum_sectors</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">cell</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">40.75</span><span class="p">,</span> <span class="n">lon</span><span class="o">=-</span><span class="mf">111.95</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>  <span class="c1"># one 0.1 degree cell</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="n">flux</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">slv</span><span class="o">.</span><span class="n">total_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">cell</span><span class="p">))</span>  <span class="c1"># kg m-2 s-1</span>
+<span class="gp">   ...: </span><span class="n">area</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">slv</span><span class="o">.</span><span class="n">gridcell_area</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">cell</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e6</span>  <span class="c1"># km2 to m2</span>
+<span class="gp">   ...: </span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span>
+<span class="gp">   ...: </span><span class="n">mass</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;by hand:            </span><span class="si">{</span><span class="n">flux</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">area</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">seconds</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2"> kg&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;absolute_emissions: </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">sum_sectors</span><span class="p">(</span><span class="n">mass</span><span class="p">))</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2"> kg&quot;</span><span class="p">)</span>
+<span class="go">by hand:            8,582,388 kg</span>
+<span class="go">absolute_emissions: 8,582,388 kg</span>
+</pre></div>
+</div>
+<p>EDGAR leaves a sector’s cell empty (NaN) where that sector emits nothing.
+<a class="reference internal" href="../_autosummary/lair.inventories.sum_sectors.html#lair.inventories.sum_sectors" title="lair.inventories.sum_sectors"><code class="xref py py-func docutils literal notranslate"><span class="pre">sum_sectors()</span></code></a>, which <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code> and
+<code class="docutils literal notranslate"><span class="pre">integrate()</span></code> use, skips those, as xarray’s <code class="docutils literal notranslate"><span class="pre">sum</span></code> does; adding the sectors
+with Python’s <code class="docutils literal notranslate"><span class="pre">+</span></code> or <code class="docutils literal notranslate"><span class="pre">sum</span></code> gives NaN.</p>
+<p>Summed over the cells, each sector gives its own total over the region. Added
+together, they are <code class="docutils literal notranslate"><span class="pre">integrate()</span></code>’s total:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">by_sector</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="gp">   ...: </span><span class="n">kt</span> <span class="o">=</span> <span class="n">by_sector</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># kg to kt</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="n">kt</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;all sectors: </span><span class="si">{</span><span class="n">kt</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> kt&quot;</span><span class="p">)</span>
+<span class="go">Solid_waste_landfills       12.429</span>
+<span class="go">Waste_water_handling         5.204</span>
+<span class="go">Energy_for_buildings         1.604</span>
+<span class="go">Fuel_exploitation_GAS        1.271</span>
+<span class="go">Solid_waste_incineration     0.650</span>
+<span class="go">all sectors: 22.629 kt</span>
+</pre></div>
+</div>
+<p>To leave a sector out of a total, pass it to
+<a class="reference internal" href="../_autosummary/lair.inventories.sum_sectors.html#lair.inventories.sum_sectors" title="lair.inventories.sum_sectors"><code class="xref py py-func docutils literal notranslate"><span class="pre">sum_sectors()</span></code></a> as <code class="docutils literal notranslate"><span class="pre">exclude=</span></code>.</p>
+<p>A total adds the sectors as numbers, so they must be in the same unit. EDGAR’s
+are. An inventory built from sectors in different units (a dataset whose
+variables carry their own <code class="docutils literal notranslate"><span class="pre">units</span></code>) raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> from
+<code class="docutils literal notranslate"><span class="pre">total_emissions</span></code> and <code class="docutils literal notranslate"><span class="pre">integrate()</span></code> that names each sector’s units; convert
+them first with <code class="docutils literal notranslate"><span class="pre">convert_units</span></code>.</p>
+</section>
+<section id="other-units">
+<h3>Other units<a class="headerlink" href="#other-units" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">integrate()</span></code> keeps the inventory’s mass unit, so divide the result: kg /
+1e6 is kt (thousand tonnes), as above, which is also Gg. Converting the flux
+first gives the same total. An inventory’s <code class="docutils literal notranslate"><span class="pre">convert_units</span></code> gives a flux per
+year (<code class="docutils literal notranslate"><span class="pre">Gg/km**2/yr</span></code>) the length of each year, 366 days in 2020 and 365 in
+2022, and <code class="docutils literal notranslate"><span class="pre">integrate()</span></code> takes each value as that year’s worth (the details
+are under <a class="reference internal" href="../_autosummary/lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_units()</span></code></a>):</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="n">kg</span> <span class="o">=</span> <span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2022-01-01&quot;</span><span class="p">])</span>
+<span class="gp">   ...: </span><span class="n">gg</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">convert_units</span><span class="p">(</span><span class="s2">&quot;Gg/km**2/yr&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2022-01-01&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="gp">   ...:</span>
+<span class="gp">   ...: </span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">gg</span> <span class="o">/</span> <span class="p">(</span><span class="n">kg</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>  <span class="c1"># percent</span>
+<span class="gh">Out[9]:</span>
+<span class="go">time</span>
+<span class="go">2020-01-01    0.0</span>
+<span class="go">2022-01-01    0.0</span>
+<span class="go">Name: emissions, dtype: float64</span>
+</pre></div>
+</div>
+<p>The plain-array <a class="reference internal" href="../_autosummary/lair.inventories.convert_units.html#lair.inventories.convert_units" title="lair.inventories.convert_units"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_units()</span></code></a> has no years to go by,
+so it uses pint’s year of 365.25 days.</p>
+</section>
 </section>
 <section id="regrid-and-check-the-total">
 <h2>Regrid, and check the total<a class="headerlink" href="#regrid-and-check-the-total" title="Link to this heading">#</a></h2>
@@ -565,25 +690,29 @@ does the work. That took a minute or two here.</p>
 An inventory’s <code class="docutils literal notranslate"><span class="pre">resample</span></code> and <code class="docutils literal notranslate"><span class="pre">regrid</span></code> are conservative by default: each new
 cell gets the area-weighted flux of the old cells it overlaps, so flux times
 area, and with it the total, stays the same.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="n">fine</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># conservative by default</span>
-<span class="gp">   ...: </span><span class="n">fine</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span>
-<span class="gh">Out[7]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 60, &#39;lon&#39;: 60})</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="n">fine</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># conservative by default</span>
+<span class="go">    ...: fine.data.sizes</span>
+<span class="gh">Out[10]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 60, &#39;lon&#39;: 60})</span>
 </pre></div>
 </div>
 <p>Now compare the 2022 total before and after:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">fine_total</span> <span class="o">=</span> <span class="n">fine</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-<span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="n">before</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">))</span>
-<span class="gp">   ...: </span><span class="n">after</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fine_total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">))</span>
-<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;before: </span><span class="si">{</span><span class="n">before</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> kt&quot;</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;after:  </span><span class="si">{</span><span class="n">after</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> kt&quot;</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;change: </span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">after</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">before</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">before</span><span class="si">:</span><span class="s2">+.4f</span><span class="si">}</span><span class="s2"> %&quot;</span><span class="p">)</span>
-<span class="go">before: 22.588 kt</span>
-<span class="go">after:  22.588 kt</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="n">fine_total</span> <span class="o">=</span> <span class="n">fine</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="go">    ...:</span>
+<span class="go">    ...: before = float(total.sel(time=&quot;2022-01-01&quot;))</span>
+<span class="go">    ...: after = float(fine_total.sel(time=&quot;2022-01-01&quot;))</span>
+<span class="go">    ...: print(f&quot;before: {before / 1e6:.3f} kt&quot;)</span>
+<span class="go">    ...: print(f&quot;after:  {after / 1e6:.3f} kt&quot;)</span>
+<span class="go">    ...: print(f&quot;change: {100 * (after - before) / before:+.4f} %&quot;)</span>
+<span class="go">before: 22.629 kt</span>
+<span class="go">after:  22.629 kt</span>
 <span class="go">change: -0.0005 %</span>
 </pre></div>
 </div>
 <p>The total changed by 0.0005% (5 parts per million): the mass is kept.</p>
+<p>A resolution that does not divide the box still keeps the total. The new grid
+covers the whole box: <code class="docutils literal notranslate"><span class="pre">resample(0.25)</span></code> gives 3 by 3 cells, 0.75 degrees wide,
+and the last row and column reach past the box’s edge. They hold only the
+emissions that were inside it, so the total is still kept.</p>
 </section>
 <section id="why-not-lair-geo-resample">
 <h2>Why not <code class="docutils literal notranslate"><span class="pre">lair.geo.resample</span></code>?<a class="headerlink" href="#why-not-lair-geo-resample" title="Link to this heading">#</a></h2>
@@ -659,7 +788,13 @@ WetCHARTs) and what each one’s total includes.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-data">The data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load">Load</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clip">Clip</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#total">Total</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#three-sums">Three sums</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-flux-in-each-cell-total-emissions">A flux in each cell: <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-total-integrate">The total: <code class="docutils literal notranslate"><span class="pre">integrate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mass-in-each-cell-absolute-emissions">The mass in each cell: <code class="docutils literal notranslate"><span class="pre">absolute_emissions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#other-units">Other units</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#regrid-and-check-the-total">Regrid, and check the total</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-not-lair-geo-resample">Why not <code class="docutils literal notranslate"><span class="pre">lair.geo.resample</span></code>?</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next">Next</a></li>

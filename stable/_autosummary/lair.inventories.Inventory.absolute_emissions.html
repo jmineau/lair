@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lair.inventories.Inventory.absolute_emissions &#8212; lair 2026.12.9</title>
+    <title>lair.inventories.Inventory.absolute_emissions &#8212; lair 2026.12.10</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=a5f60a5f"></script>
+    <script src="../_static/documentation_options.js?v=10d37c90"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.9';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -59,7 +59,7 @@
     <link rel="prev" title="lair.inventories.Inventory" href="lair.inventories.Inventory.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.9" />
+  <meta name="docsearch:version" content="2026.12.10" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -394,6 +394,14 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="lair.html">lair</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.units.html">lair.units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.mass_flux.html">lair.mass_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.setup_ccg_filter.html">lair.setup_ccg_filter</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.air.html">lair.air</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.WIND_SECTORS.html">lair.air.WIND_SECTORS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.air.bin_polar.html">lair.air.bin_polar</a></li>
@@ -405,7 +413,6 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.background.html">lair.background</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.background.get_well_mixed.html">lair.background.get_well_mixed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.phase_shift_corrected_baseline.html">lair.background.phase_shift_corrected_baseline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.rolling_baseline.html">lair.background.rolling_baseline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.background.thoning.html">lair.background.thoning</a></li>
@@ -469,6 +476,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="lair.inventories.html">lair.inventories</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.INVENTORY_DIR_ENV.html">lair.inventories.INVENTORY_DIR_ENV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.DST_UNITS.html">lair.inventories.DST_UNITS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.inventories.DEFAULT_PINT_FMT.html">lair.inventories.DEFAULT_PINT_FMT</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.convert_units.html">lair.inventories.convert_units</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.molecular_weight.html">lair.inventories.molecular_weight</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.inventories.sum_sectors.html">lair.inventories.sum_sectors</a></li>
@@ -591,9 +599,10 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.geo.html">lair.geo</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="lair.geo.add_extent_map.html">lair.geo.add_extent_map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.PC.html">lair.geo.PC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lat_ticks.html">lair.geo.add_lat_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_latlon_ticks.html">lair.geo.add_latlon_ticks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.geo.add_locator_map.html">lair.geo.add_locator_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.add_lon_ticks.html">lair.geo.add_lon_ticks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bbox2extent.html">lair.geo.bbox2extent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.geo.bearing.html">lair.geo.bearing</a></li>
@@ -656,12 +665,18 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="lair.clock.html">lair.clock</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.AFTERNOON.html">lair.clock.AFTERNOON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.SEASONS.html">lair.clock.SEASONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2.html">lair.clock.UTC2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MST.html">lair.clock.UTC2MST</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.UTC2MTN.html">lair.clock.UTC2MTN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MST2UTC.html">lair.clock.MST2UTC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lair.clock.MTN2UTC.html">lair.clock.MTN2UTC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.convert_timezones.html">lair.clock.convert_timezones</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.datetime_accessor.html">lair.clock.datetime_accessor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.decimalDate2dt.html">lair.clock.decimalDate2dt</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.diurnal.html">lair.clock.diurnal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.dt2decimalDate.html">lair.clock.dt2decimalDate</a></li>
-<li class="toctree-l2"><a class="reference internal" href="lair.clock.periodindex_to_binedges.html">lair.clock.periodindex_to_binedges</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.regular_times_to_intervals.html">lair.clock.regular_times_to_intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.seasonal.html">lair.clock.seasonal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.time_decay_matrix.html">lair.clock.time_decay_matrix</a></li>
@@ -807,9 +822,19 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="lair.inventories.Inventory.absolute_emissions">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">Inventory.</span></span><span class="sig-name descname"><span class="pre">absolute_emissions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.9.0)"><span class="pre">Dataset</span></a></span><a class="headerlink" href="#lair.inventories.Inventory.absolute_emissions" title="Link to this definition">#</a></dt>
-<dd><p>Calculate the absolute emissions (total per gridcell for time step by variable).</p>
-<p>Fluxes are multiplied by the gridcell area and by the length of each
-time step:</p>
+<dd><p>The mass emitted in each grid cell in each time step, sector by sector.</p>
+<p>Each sector’s flux is multiplied by the area of its grid cell and by the
+length of the time step. The area and time units cancel, so the values
+are in the inventory’s own mass (or amount) unit: <code class="docutils literal notranslate"><span class="pre">kg</span></code> for a flux in
+<code class="docutils literal notranslate"><span class="pre">kg/m**2/s</span></code>, <code class="docutils literal notranslate"><span class="pre">Mg</span></code> for one in <code class="docutils literal notranslate"><span class="pre">Mg/km**2/yr</span></code>. With annual data, each
+value is the mass the cell emitted in that year; with monthly data, in
+that month.</p>
+<p>Use it for the mass in one cell, or a sector’s total over a region
+(<code class="docutils literal notranslate"><span class="pre">absolute_emissions.sum([&quot;lat&quot;,</span> <span class="pre">&quot;lon&quot;])</span></code>). For the total of every
+sector over the region, use <a class="reference internal" href="lair.inventories.Inventory.integrate.html#lair.inventories.Inventory.integrate" title="lair.inventories.Inventory.integrate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Inventory.integrate()</span></code></a>, which is that sum
+added over the sectors. <a class="reference internal" href="../examples/inventory.html#inventory-totals"><span class="std std-ref">The inventory example</span></a>
+shows the three sums side by side.</p>
+<p>The length of a time step:</p>
 <ul class="simple">
 <li><p>When the flux is a rate per time step (<code class="docutils literal notranslate"><span class="pre">a-1</span></code> with annual data,
 <code class="docutils literal notranslate"><span class="pre">month-1</span></code> with monthly, <code class="docutils literal notranslate"><span class="pre">d-1</span></code> with daily, <code class="docutils literal notranslate"><span class="pre">hr-1</span></code> with hourly
@@ -821,11 +846,24 @@ length of each step: 366 days in leap years, the actual days in each
 month. This matches EDGAR, whose leap-year files state
 <code class="docutils literal notranslate"><span class="pre">interval:</span> <span class="pre">1</span> <span class="pre">year,</span> <span class="pre">366</span> <span class="pre">days</span></code>.</p></li>
 </ul>
+<p>So the unit of the flux does not matter. <a class="reference internal" href="lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Inventory.convert_units()</span></code></a>
+gives a rate per time step the same calendar length, so converting
+<code class="docutils literal notranslate"><span class="pre">kg/m**2/s</span></code> to <code class="docutils literal notranslate"><span class="pre">Gg/km**2/yr</span></code> first gives the same masses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>xr.DataArray</em> – The absolute emissions.</p>
+<dd class="field-odd"><p><em>xr.Dataset</em> – One variable per sector, on the inventory’s grid and time steps, each
+with its mass unit in its <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute.</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.inventories.Inventory.integrate.html#lair.inventories.Inventory.integrate" title="lair.inventories.Inventory.integrate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Inventory.integrate</span></code></a></dt><dd><p>The total over the grid, every sector added.</p>
+</dd>
+<dt><a class="reference internal" href="lair.inventories.Inventory.total_emissions.html#lair.inventories.Inventory.total_emissions" title="lair.inventories.Inventory.total_emissions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Inventory.total_emissions</span></code></a></dt><dd><p>The flux in each cell, every sector added.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 </section>

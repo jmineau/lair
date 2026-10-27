@@ -1,0 +1,6 @@
+lair.constants.cv
+=================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: cv
