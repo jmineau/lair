@@ -60,6 +60,9 @@ are calendar-based (`YYYY.MM.PATCH`, with `MM` = 05, 08 or 12). Releases up to
 
 ### Changed
 
+- The `get_soundings` docstring no longer describes the download itself (what it
+  skips, what it asks for again): "When get_soundings downloads" in the soundings
+  example does, and the docstring links to it, as the Data locations page does.
 - `CarbonTrackerCH4.molefractions` and `CarbonTrackerCO2.molefractions` raise a
   `ValueError` when two files cover one day, naming the day and both files. They
   read every file of the folder, and two files for a day (the same day from two
