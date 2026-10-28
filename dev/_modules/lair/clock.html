@@ -25,27 +25,27 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=0020b67e"></script>
+    <script src="../../_static/documentation_options.js?v=0f76ad26"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/clock';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -55,8 +55,9 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev7+g9d3066682" />
+  <meta name="docsearch:version" content="2026.12.11.dev8+gc0ee29d06" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -434,7 +435,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for lair.clock</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Times, time zones and time ranges.</span>
 
 <span class="sd">:func:`convert_timezones` moves times between zones (a time without a zone</span>
@@ -443,7 +444,7 @@
 <span class="sd">remaining functions turn times into decimal years (:func:`dt2decimalDate`),</span>
 <span class="sd">intervals, time-difference matrices, and diurnal and seasonal aggregates.</span>
 <span class="sd">:doc:`/examples/clock` shows the time-zone rules and the afternoon mean.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
@@ -459,24 +460,24 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;AFTERNOON&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SEASONS&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TimeRange&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Timer&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;datetime_accessor&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;regular_times_to_intervals&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;time_difference_matrix&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;time_decay_matrix&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;diurnal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;seasonal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;dt2decimalDate&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;decimalDate2dt&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;convert_timezones&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;UTC2&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;UTC2MST&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;UTC2MTN&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;MST2UTC&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;MTN2UTC&quot;</span><span class="p">,</span>
+    <span class="s2">"AFTERNOON"</span><span class="p">,</span>
+    <span class="s2">"SEASONS"</span><span class="p">,</span>
+    <span class="s2">"TimeRange"</span><span class="p">,</span>
+    <span class="s2">"Timer"</span><span class="p">,</span>
+    <span class="s2">"datetime_accessor"</span><span class="p">,</span>
+    <span class="s2">"regular_times_to_intervals"</span><span class="p">,</span>
+    <span class="s2">"time_difference_matrix"</span><span class="p">,</span>
+    <span class="s2">"time_decay_matrix"</span><span class="p">,</span>
+    <span class="s2">"diurnal"</span><span class="p">,</span>
+    <span class="s2">"seasonal"</span><span class="p">,</span>
+    <span class="s2">"dt2decimalDate"</span><span class="p">,</span>
+    <span class="s2">"decimalDate2dt"</span><span class="p">,</span>
+    <span class="s2">"convert_timezones"</span><span class="p">,</span>
+    <span class="s2">"UTC2"</span><span class="p">,</span>
+    <span class="s2">"UTC2MST"</span><span class="p">,</span>
+    <span class="s2">"UTC2MTN"</span><span class="p">,</span>
+    <span class="s2">"MST2UTC"</span><span class="p">,</span>
+    <span class="s2">"MTN2UTC"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="c1">#: The afternoon hours, 12 to 16 local standard time, when the boundary layer is</span>
@@ -488,43 +489,43 @@
 <span class="c1">#: .. seealso:: :func:`convert_timezones`, which puts the data in local time.</span>
 <span class="n">AFTERNOON</span> <span class="o">=</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
 
-<span class="c1">#: The meteorological season of each month (1 to 12), as ``&#39;DJF&#39;``, ``&#39;MAM&#39;``,</span>
-<span class="c1">#: ``&#39;JJA&#39;`` or ``&#39;SON&#39;``.</span>
+<span class="c1">#: The meteorological season of each month (1 to 12), as ``'DJF'``, ``'MAM'``,</span>
+<span class="c1">#: ``'JJA'`` or ``'SON'``.</span>
 <span class="c1">#:</span>
 <span class="c1">#: :func:`seasonal` labels its groups with these.</span>
 <span class="c1">#:</span>
 <span class="c1">#: .. seealso:: :func:`seasonal`, which groups data by these seasons.</span>
 <span class="n">SEASONS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
-    <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
-    <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span>
-    <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span>
-    <span class="mi">5</span><span class="p">:</span> <span class="s2">&quot;MAM&quot;</span><span class="p">,</span>
-    <span class="mi">6</span><span class="p">:</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span>
-    <span class="mi">7</span><span class="p">:</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span>
-    <span class="mi">8</span><span class="p">:</span> <span class="s2">&quot;JJA&quot;</span><span class="p">,</span>
-    <span class="mi">9</span><span class="p">:</span> <span class="s2">&quot;SON&quot;</span><span class="p">,</span>
-    <span class="mi">10</span><span class="p">:</span> <span class="s2">&quot;SON&quot;</span><span class="p">,</span>
-    <span class="mi">11</span><span class="p">:</span> <span class="s2">&quot;SON&quot;</span><span class="p">,</span>
-    <span class="mi">12</span><span class="p">:</span> <span class="s2">&quot;DJF&quot;</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="s2">"DJF"</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="s2">"DJF"</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="s2">"MAM"</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="s2">"MAM"</span><span class="p">,</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="s2">"MAM"</span><span class="p">,</span>
+    <span class="mi">6</span><span class="p">:</span> <span class="s2">"JJA"</span><span class="p">,</span>
+    <span class="mi">7</span><span class="p">:</span> <span class="s2">"JJA"</span><span class="p">,</span>
+    <span class="mi">8</span><span class="p">:</span> <span class="s2">"JJA"</span><span class="p">,</span>
+    <span class="mi">9</span><span class="p">:</span> <span class="s2">"SON"</span><span class="p">,</span>
+    <span class="mi">10</span><span class="p">:</span> <span class="s2">"SON"</span><span class="p">,</span>
+    <span class="mi">11</span><span class="p">:</span> <span class="s2">"SON"</span><span class="p">,</span>
+    <span class="mi">12</span><span class="p">:</span> <span class="s2">"DJF"</span><span class="p">,</span>
 <span class="p">}</span>
 
 
 <div class="viewcode-block" id="TimeRange">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.TimeRange.html#lair.clock.TimeRange">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeRange</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    TimeRange class to represent a time range with start and stop times.</span>
 
-<span class="sd">    The range includes its start and not its stop, so ``TimeRange(&quot;2024&quot;)``</span>
+<span class="sd">    The range includes its start and not its stop, so ``TimeRange("2024")``</span>
 <span class="sd">    covers 2024 and stops at 2025-01-01 00:00.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    time_range : TimeRange | str | list | tuple | slice | None, optional</span>
 <span class="sd">        The whole range in one argument: another ``TimeRange``; an ISO 8601</span>
-<span class="sd">        string, which covers the period it names (``&quot;2024&quot;`` is all of</span>
-<span class="sd">        2024, ``&quot;2024-07-04&quot;`` that day); a ``(start, stop)`` pair; or a</span>
+<span class="sd">        string, which covers the period it names (``"2024"`` is all of</span>
+<span class="sd">        2024, ``"2024-07-04"`` that day); a ``(start, stop)`` pair; or a</span>
 <span class="sd">        slice. With no ``start`` or ``stop`` either, the default (None) is a</span>
 <span class="sd">        range open at both ends.</span>
 <span class="sd">    start : str | dt.datetime | numpy.datetime64 | None, optional</span>
@@ -534,7 +535,7 @@
 <span class="sd">    stop : str | dt.datetime | numpy.datetime64 | None, optional</span>
 <span class="sd">        The stop, when ``time_range`` is not given. It is not part of the</span>
 <span class="sd">        range. A string stands for the end of the period it names:</span>
-<span class="sd">        ``&quot;2024&quot;`` stops at 2025-01-01 00:00. None leaves the range open at</span>
+<span class="sd">        ``"2024"`` stops at 2025-01-01 00:00. None leaves the range open at</span>
 <span class="sd">        the end.</span>
 
 <span class="sd">    Raises</span>
@@ -565,18 +566,18 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">    &gt;&gt;&gt; july = TimeRange(&quot;2024-07&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; july = TimeRange("2024-07")</span>
 <span class="sd">    &gt;&gt;&gt; july.start, july.stop</span>
 <span class="sd">    (datetime.datetime(2024, 7, 1, 0, 0), datetime.datetime(2024, 8, 1, 0, 0))</span>
 <span class="sd">    &gt;&gt;&gt; dt.datetime(2024, 7, 31, 23) in july</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; TimeRange(start=&quot;2024-07-04&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; TimeRange(start="2024-07-04")</span>
 <span class="sd">    TimeRange(start=2024-07-04 00:00:00, stop=None)</span>
 <span class="sd">    &gt;&gt;&gt; str(TimeRange())</span>
-<span class="sd">    &#39;Entire Observation Period&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    'Entire Observation Period'</span>
+<span class="sd">    """</span>
 
-    <span class="c1"># typing.Union, not X | Y: the annotation below adds the &quot;TimeRange&quot; forward</span>
+    <span class="c1"># typing.Union, not X | Y: the annotation below adds the "TimeRange" forward</span>
     <span class="c1"># reference to it at runtime, which only typing.Union accepts.</span>
     <span class="n">_input_types</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>  <span class="c1"># noqa: UP007</span>
         <span class="nb">str</span><span class="p">,</span>
@@ -588,13 +589,13 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">time_range</span><span class="p">:</span> <span class="s2">&quot;TimeRange&quot;</span> <span class="o">|</span> <span class="n">_input_types</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">time_range</span><span class="p">:</span> <span class="s2">"TimeRange"</span> <span class="o">|</span> <span class="n">_input_types</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">start</span><span class="p">:</span> <span class="n">_input_types</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">stop</span><span class="p">:</span> <span class="n">_input_types</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a TimeRange; the class docstring describes the parameters.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize a TimeRange; the class docstring describes the parameters."""</span>
         <span class="k">if</span> <span class="n">time_range</span> <span class="ow">and</span> <span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="n">stop</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot specify both time_range and start/stop&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both time_range and start/stop"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="kc">None</span>
@@ -617,23 +618,23 @@
                 <span class="c1"># Handle the case when time_range is a slice</span>
                 <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">time_range</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">time_range</span><span class="o">.</span><span class="n">stop</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid time_range format&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid time_range format"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;TimeRange(start=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">, stop=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"TimeRange(start=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">, stop=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">)"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">]):</span>
-            <span class="k">return</span> <span class="s2">&quot;Entire Observation Period&quot;</span>
+            <span class="k">return</span> <span class="s2">"Entire Observation Period"</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Before </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"Before </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;After </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"After </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">])</span>
@@ -642,7 +643,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">]):</span>
             <span class="c1"># Entire Period - True</span>
             <span class="k">return</span> <span class="kc">True</span>
-        <span class="c1"># stop is exclusive: TimeRange(&#39;2024&#39;) stops at 2025-01-01 00:00,</span>
+        <span class="c1"># stop is exclusive: TimeRange('2024') stops at 2025-01-01 00:00,</span>
         <span class="c1"># which belongs to the next period</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
             <span class="c1"># Before stop - True if item &lt; stop</span>
@@ -654,7 +655,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The start of the range, or None if it is open at the start.</span>
 
 <span class="sd">        Setting it takes a datetime, a ``numpy.datetime64``, None, or an ISO</span>
@@ -667,9 +668,9 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange(&quot;2024-07&quot;).start</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange("2024-07").start</span>
 <span class="sd">        datetime.datetime(2024, 7, 1, 0, 0)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span>
 
     <span class="nd">@start</span><span class="o">.</span><span class="n">setter</span>
@@ -681,11 +682,11 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid start time format&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid start time format"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The end of the range, or None if it is open at the end.</span>
 
 <span class="sd">        The stop itself is not in the range. Setting it takes a datetime, a</span>
@@ -699,9 +700,9 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange(&quot;2024-07&quot;).stop</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange("2024-07").stop</span>
 <span class="sd">        datetime.datetime(2024, 8, 1, 0, 0)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span>
 
     <span class="nd">@stop</span><span class="o">.</span><span class="n">setter</span>
@@ -713,11 +714,11 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid stop time format&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid stop time format"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">total_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The length of the range in seconds; both ends must be set.</span>
 
 <span class="sd">        Raises</span>
@@ -732,19 +733,19 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange(&quot;2024-07&quot;).total_seconds / 86400  # days in July</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange("2024-07").total_seconds / 86400  # days in July</span>
 <span class="sd">        31.0</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both start and stop times must be specified&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Both start and stop times must be specified"</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
 
 <div class="viewcode-block" id="TimeRange.parse_iso">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.TimeRange.parse_iso.html#lair.clock.TimeRange.parse_iso">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_iso</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">inclusive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Parse an ISO 8601 time string, such as ``&quot;2024-07&quot;``, into a datetime.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Parse an ISO 8601 time string, such as ``"2024-07"``, into a datetime.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -754,7 +755,7 @@
 <span class="sd">        inclusive : bool, optional</span>
 <span class="sd">            If False (the default), return the start of the period the string</span>
 <span class="sd">            names. If True, return its end, which is the start of the next</span>
-<span class="sd">            period: ``&quot;2024-07&quot;`` gives 2024-08-01 00:00.</span>
+<span class="sd">            period: ``"2024-07"`` gives 2024-08-01 00:00.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -773,66 +774,66 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso(&quot;2024-07&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso("2024-07")</span>
 <span class="sd">        datetime.datetime(2024, 7, 1, 0, 0)</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso(&quot;2024-07&quot;, inclusive=True)</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso("2024-07", inclusive=True)</span>
 <span class="sd">        datetime.datetime(2024, 8, 1, 0, 0)</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso(&quot;2024-07-04T12Z&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso("2024-07-04T12Z")</span>
 <span class="sd">        datetime.datetime(2024, 7, 4, 12, 0)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Parse time_range string using regex assuming ISO8601 format.</span>
         <span class="c1"># Each component is only allowed after the one before it, and the</span>
-        <span class="c1"># whole string must match, so e.g. &#39;2024-1&#39; is rejected instead of</span>
+        <span class="c1"># whole string must match, so e.g. '2024-1' is rejected instead of</span>
         <span class="c1"># being read as hour 1 of 2024.</span>
         <span class="n">iso8601</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">r</span><span class="s2">&quot;(?P&lt;year&gt;\d</span><span class="si">{4}</span><span class="s2">)&quot;</span>
-            <span class="sa">r</span><span class="s2">&quot;(?:-?(?P&lt;month&gt;\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
-            <span class="sa">r</span><span class="s2">&quot;(?:-?(?P&lt;day&gt;\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
-            <span class="sa">r</span><span class="s2">&quot;(?:[T\s]?(?P&lt;hour&gt;\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
-            <span class="sa">r</span><span class="s2">&quot;(?::?(?P&lt;minute&gt;\d</span><span class="si">{2}</span><span class="s2">)&quot;</span>
-            <span class="sa">r</span><span class="s2">&quot;(?::?(?P&lt;second&gt;\d</span><span class="si">{2}</span><span class="s2">(?:\.\d{1,6})?))?)?)?)?)?&quot;</span>
-            <span class="sa">r</span><span class="s2">&quot;Z?&quot;</span>  <span class="c1"># UTC designator; times are naive (UTC by convention)</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;year&gt;\d</span><span class="si">{4}</span><span class="s2">)"</span>
+            <span class="sa">r</span><span class="s2">"(?:-?(?P&lt;month&gt;\d</span><span class="si">{2}</span><span class="s2">)"</span>
+            <span class="sa">r</span><span class="s2">"(?:-?(?P&lt;day&gt;\d</span><span class="si">{2}</span><span class="s2">)"</span>
+            <span class="sa">r</span><span class="s2">"(?:[T\s]?(?P&lt;hour&gt;\d</span><span class="si">{2}</span><span class="s2">)"</span>
+            <span class="sa">r</span><span class="s2">"(?::?(?P&lt;minute&gt;\d</span><span class="si">{2}</span><span class="s2">)"</span>
+            <span class="sa">r</span><span class="s2">"(?::?(?P&lt;second&gt;\d</span><span class="si">{2}</span><span class="s2">(?:\.\d{1,6})?))?)?)?)?)?"</span>
+            <span class="sa">r</span><span class="s2">"Z?"</span>  <span class="c1"># UTC designator; times are naive (UTC by convention)</span>
         <span class="p">)</span>
         <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">iso8601</span><span class="p">,</span> <span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid time string format: </span><span class="si">{</span><span class="n">string</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid time string format: </span><span class="si">{</span><span class="n">string</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">components</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
-        <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
-        <span class="n">month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">hour</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;hour&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">minute</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;minute&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">second</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">fraction</span> <span class="o">=</span> <span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;second&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
-        <span class="n">microsecond</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fraction</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="n">fraction</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"year"</span><span class="p">])</span>
+        <span class="n">month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"month"</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"day"</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">hour</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"hour"</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">minute</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"minute"</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">second</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">fraction</span> <span class="o">=</span> <span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"second"</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"0"</span><span class="p">)</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
+        <span class="n">microsecond</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fraction</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">"0"</span><span class="p">))</span> <span class="k">if</span> <span class="n">fraction</span> <span class="k">else</span> <span class="mi">0</span>
 
         <span class="n">start</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">second</span><span class="p">),</span> <span class="n">microsecond</span><span class="p">)</span>
 
         <span class="c1"># Determine the stop time based on the inclusive flag</span>
         <span class="k">if</span> <span class="n">inclusive</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]:</span>
-                <span class="s2">&quot;YYYY&quot;</span>
+            <span class="k">if</span> <span class="n">components</span><span class="p">[</span><span class="s2">"year"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"month"</span><span class="p">]:</span>
+                <span class="s2">"YYYY"</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]:</span>
-                <span class="s2">&quot;YYYY-MM&quot;</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"month"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"day"</span><span class="p">]:</span>
+                <span class="s2">"YYYY-MM"</span>
                 <span class="n">mm</span> <span class="o">=</span> <span class="n">month</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">month</span> <span class="o">&lt;</span> <span class="mi">12</span> <span class="k">else</span> <span class="mi">1</span>
                 <span class="n">yyyy</span> <span class="o">=</span> <span class="n">year</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">month</span> <span class="o">==</span> <span class="mi">12</span> <span class="k">else</span> <span class="n">year</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">yyyy</span><span class="p">,</span> <span class="n">mm</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;hour&quot;</span><span class="p">]:</span>
-                <span class="s2">&quot;YYYY-MM-DD&quot;</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"day"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"hour"</span><span class="p">]:</span>
+                <span class="s2">"YYYY-MM-DD"</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;hour&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;minute&quot;</span><span class="p">]:</span>
-                <span class="s2">&quot;YYYY-MM-DDTHH&quot;</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"hour"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"minute"</span><span class="p">]:</span>
+                <span class="s2">"YYYY-MM-DDTHH"</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;minute&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;second&quot;</span><span class="p">]:</span>
-                <span class="s2">&quot;YYYY-MM-DDTHH:MM&quot;</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"minute"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"second"</span><span class="p">]:</span>
+                <span class="s2">"YYYY-MM-DDTHH:MM"</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">&quot;second&quot;</span><span class="p">]:</span>
-                <span class="s2">&quot;YYYY-MM-DDTHH:MM:SS&quot;</span>
+            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"second"</span><span class="p">]:</span>
+                <span class="s2">"YYYY-MM-DDTHH:MM:SS"</span>
                 <span class="c1"># one unit of the finest digit given, e.g. 12:30:45.5 -&gt; +0.1 s</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mf">10.0</span> <span class="o">**</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">fraction</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid time string format&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid time string format"</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">stop</span>
         <span class="k">else</span><span class="p">:</span>
@@ -845,7 +846,7 @@
 <a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.html#lair.clock.Timer">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Timer</span><span class="p">(</span><span class="n">ContextDecorator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Time your code using a class, context manager, or decorator</span>
 
 <span class="sd">    https://realpython.com/python-timer</span>
@@ -853,11 +854,11 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name : str, optional</span>
-<span class="sd">        A name to add the elapsed times up under, in the class&#39;s ``timers``</span>
+<span class="sd">        A name to add the elapsed times up under, in the class's ``timers``</span>
 <span class="sd">        dict (shared by every Timer). By default None: not recorded.</span>
 <span class="sd">    text : str, optional</span>
 <span class="sd">        The message reported when the timer stops, formatted with the elapsed</span>
-<span class="sd">        seconds. By default ``&quot;Elapsed time: {:0.4f} seconds&quot;``.</span>
+<span class="sd">        seconds. By default ``"Elapsed time: {:0.4f} seconds"``.</span>
 <span class="sd">    logger : Callable[[str], None] | None, optional</span>
 <span class="sd">        The function that reports the message, by default ``print``. None</span>
 <span class="sd">        reports nothing.</span>
@@ -872,7 +873,7 @@
 <span class="sd">    As a context manager:</span>
 
 <span class="sd">    &gt;&gt;&gt; from lair.clock import Timer</span>
-<span class="sd">    &gt;&gt;&gt; with Timer(text=&quot;took {:.0f} s&quot;):</span>
+<span class="sd">    &gt;&gt;&gt; with Timer(text="took {:.0f} s"):</span>
 <span class="sd">    ...     total = sum(range(1000))</span>
 <span class="sd">    took 0 s</span>
 
@@ -883,28 +884,28 @@
 <span class="sd">    &gt;&gt;&gt; elapsed = timer.stop()</span>
 <span class="sd">    &gt;&gt;&gt; elapsed &gt;= 0</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">timers</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Elapsed time: </span><span class="si">{:0.4f}</span><span class="s2"> seconds&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Elapsed time: </span><span class="si">{:0.4f}</span><span class="s2"> seconds"</span>
     <span class="n">logger</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="nb">print</span>
     <span class="n">_start_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">TimerError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A custom exception used to report errors in use of Timer class&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""A custom exception used to report errors in use of Timer class"""</span>
 
         <span class="k">pass</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add the timer to the dict of timers.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Add the timer to the dict of timers."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">timers</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Timer.start">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.start.html#lair.clock.Timer.start">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Start a new timer</span>
 
 <span class="sd">        Raises</span>
@@ -915,9 +916,9 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        Timer.stop : Stop it and report the time.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">Timer</span><span class="o">.</span><span class="n">TimerError</span><span class="p">(</span><span class="s2">&quot;Timer is running. Use .stop() to stop it&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">Timer</span><span class="o">.</span><span class="n">TimerError</span><span class="p">(</span><span class="s2">"Timer is running. Use .stop() to stop it"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span></div>
 
@@ -925,14 +926,14 @@
 <div class="viewcode-block" id="Timer.stop">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.stop.html#lair.clock.Timer.stop">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Stop the timer, and report the elapsed time</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        float</span>
 <span class="sd">            The elapsed time, in seconds. It is also added to ``timers`` under</span>
-<span class="sd">            the timer&#39;s ``name``, if it has one.</span>
+<span class="sd">            the timer's ``name``, if it has one.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -942,9 +943,9 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        Timer.start : Start it.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">Timer</span><span class="o">.</span><span class="n">TimerError</span><span class="p">(</span><span class="s2">&quot;Timer is not running. Use .start() to start it&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">Timer</span><span class="o">.</span><span class="n">TimerError</span><span class="p">(</span><span class="s2">"Timer is not running. Use .start() to start it"</span><span class="p">)</span>
 
         <span class="c1"># Calculate elapsed time</span>
         <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
@@ -962,7 +963,7 @@
 <div class="viewcode-block" id="Timer.reset_timers">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.Timer.reset_timers.html#lair.clock.Timer.reset_timers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_timers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Reset class timers</span>
 
 <span class="sd">        Empties ``timers``, the elapsed times of every named Timer.</span>
@@ -970,26 +971,26 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        Timer.stop : Adds to them.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Clear in place: existing Timer instances share this dict</span>
         <span class="n">Timer</span><span class="o">.</span><span class="n">timers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Timer&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start a new timer as a context manager&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Timer"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Start a new timer as a context manager"""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">exc_info</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the context manager timer&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Stop the context manager timer"""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
 
 
 
 <div class="viewcode-block" id="datetime_accessor">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.datetime_accessor.html#lair.clock.datetime_accessor">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">datetime_accessor</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="o">=</span><span class="s2">&quot;dt&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">datetime_accessor</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="o">=</span><span class="s2">"dt"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the datetime accessor of the object.</span>
 
 <span class="sd">    A Series of times has its datetime methods under ``.dt``; a DatetimeIndex</span>
@@ -1001,7 +1002,7 @@
 <span class="sd">    obj : pd.Series | pd.DatetimeIndex | Any</span>
 <span class="sd">        The times.</span>
 <span class="sd">    accessor : str, optional</span>
-<span class="sd">        The name of the accessor, by default ``&#39;dt&#39;``.</span>
+<span class="sd">        The name of the accessor, by default ``'dt'``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1016,12 +1017,12 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import datetime_accessor</span>
-<span class="sd">    &gt;&gt;&gt; times = pd.Series(pd.date_range(&quot;2024-01-01&quot;, periods=2, freq=&quot;h&quot;))</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.Series(pd.date_range("2024-01-01", periods=2, freq="h"))</span>
 <span class="sd">    &gt;&gt;&gt; type(datetime_accessor(times)).__name__</span>
-<span class="sd">    &#39;DatetimeProperties&#39;</span>
+<span class="sd">    'DatetimeProperties'</span>
 <span class="sd">    &gt;&gt;&gt; type(datetime_accessor(pd.DatetimeIndex(times))).__name__</span>
-<span class="sd">    &#39;DatetimeIndex&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    'DatetimeIndex'</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">accessor</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">obj</span></div>
@@ -1032,10 +1033,10 @@
 <a class="viewcode-back" href="../../_autosummary/lair.clock.regular_times_to_intervals.html#lair.clock.regular_times_to_intervals">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">regular_times_to_intervals</span><span class="p">(</span>
     <span class="n">times</span><span class="p">,</span>
-    <span class="n">time_step</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">,</span>
-    <span class="n">closed</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="s2">&quot;neither&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">time_step</span><span class="o">=</span><span class="s2">"monthly"</span><span class="p">,</span>
+    <span class="n">closed</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">,</span> <span class="s2">"both"</span><span class="p">,</span> <span class="s2">"neither"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"left"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">IntervalIndex</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert an array of regular times to intervals of the specified length.</span>
 
 <span class="sd">    Parameters</span>
@@ -1043,10 +1044,10 @@
 <span class="sd">    times : np.array</span>
 <span class="sd">        A numpy array of datetime64 values indicating the start of each interval.</span>
 <span class="sd">    time_step : str, optional</span>
-<span class="sd">        The interval step (&#39;hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;, &#39;annual&#39;).</span>
-<span class="sd">        Determines the length of each interval. Default is &#39;monthly&#39;.</span>
+<span class="sd">        The interval step ('hourly', 'daily', 'monthly', 'annual').</span>
+<span class="sd">        Determines the length of each interval. Default is 'monthly'.</span>
 <span class="sd">    closed : str, optional</span>
-<span class="sd">        Defines if the interval is closed on the &#39;left&#39;, &#39;right&#39;, &#39;both&#39;, or &#39;neither&#39;. Default is &#39;left&#39;.</span>
+<span class="sd">        Defines if the interval is closed on the 'left', 'right', 'both', or 'neither'. Default is 'left'.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1056,7 +1057,7 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `time_step` is not one of &#39;hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;, or &#39;annual&#39;.</span>
+<span class="sd">        If `time_step` is not one of 'hourly', 'daily', 'monthly', or 'annual'.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -1066,25 +1067,25 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import regular_times_to_intervals</span>
-<span class="sd">    &gt;&gt;&gt; months = pd.date_range(&quot;2024-01-01&quot;, periods=2, freq=&quot;MS&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; months = pd.date_range("2024-01-01", periods=2, freq="MS")</span>
 <span class="sd">    &gt;&gt;&gt; intervals = regular_times_to_intervals(months)</span>
 <span class="sd">    &gt;&gt;&gt; [str(interval) for interval in intervals]</span>
-<span class="sd">    [&#39;[2024-01-01 00:00:00, 2024-02-01 00:00:00)&#39;, &#39;[2024-02-01 00:00:00, 2024-03-01 00:00:00)&#39;]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    ['[2024-01-01 00:00:00, 2024-02-01 00:00:00)', '[2024-02-01 00:00:00, 2024-03-01 00:00:00)']</span>
+<span class="sd">    """</span>
     <span class="c1"># Convert the numpy array to pandas DatetimeIndex</span>
     <span class="n">start_times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
 
     <span class="c1"># Define a dictionary mapping time_step to DateOffset</span>
     <span class="n">offsets</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;hourly&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-        <span class="s2">&quot;daily&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-        <span class="s2">&quot;monthly&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-        <span class="s2">&quot;annual&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s2">"hourly"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s2">"daily"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s2">"monthly"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s2">"annual"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
     <span class="p">}</span>
 
     <span class="c1"># Get the offset from the dictionary or raise an error if the time_step is invalid</span>
     <span class="k">if</span> <span class="n">time_step</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">offsets</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time_step must be &#39;hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;, or &#39;annual&#39;&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"time_step must be 'hourly', 'daily', 'monthly', or 'annual'"</span><span class="p">)</span>
     <span class="n">offset</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">time_step</span><span class="p">]</span>
 
     <span class="c1"># Calculate the end times for each interval</span>
@@ -1099,7 +1100,7 @@
 <div class="viewcode-block" id="time_difference_matrix">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.time_difference_matrix.html#lair.clock.time_difference_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">time_difference_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">absolute</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the time differences between each pair of times.</span>
 
 <span class="sd">    Parameters</span>
@@ -1124,16 +1125,16 @@
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import time_difference_matrix</span>
 <span class="sd">    &gt;&gt;&gt; times = pd.to_datetime(</span>
-<span class="sd">    ...     [&quot;2024-01-01 00:00&quot;, &quot;2024-01-01 06:00&quot;, &quot;2024-01-02 00:00&quot;]</span>
+<span class="sd">    ...     ["2024-01-01 00:00", "2024-01-01 06:00", "2024-01-02 00:00"]</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; time_difference_matrix(times) / pd.Timedelta(&quot;1h&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; time_difference_matrix(times) / pd.Timedelta("1h")</span>
 <span class="sd">    array([[ 0.,  6., 24.],</span>
 <span class="sd">           [ 6.,  0., 18.],</span>
 <span class="sd">           [24., 18.,  0.]])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span>
         <span class="n">times</span>
-    <span class="p">)</span>  <span class="c1"># wrap in pandas DatetimeIndex as np.subtract.outer doesn&#39;t like pd.Series</span>
+    <span class="p">)</span>  <span class="c1"># wrap in pandas DatetimeIndex as np.subtract.outer doesn't like pd.Series</span>
     <span class="n">diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">absolute</span><span class="p">:</span>
         <span class="n">diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
@@ -1144,7 +1145,7 @@
 <div class="viewcode-block" id="time_decay_matrix">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.time_decay_matrix.html#lair.clock.time_decay_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">time_decay_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">decay</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the time decay matrix for the specified times and decay.</span>
 
 <span class="sd">    Parameters</span>
@@ -1170,13 +1171,13 @@
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import time_decay_matrix</span>
 <span class="sd">    &gt;&gt;&gt; times = pd.to_datetime(</span>
-<span class="sd">    ...     [&quot;2024-01-01 00:00&quot;, &quot;2024-01-01 06:00&quot;, &quot;2024-01-02 00:00&quot;]</span>
+<span class="sd">    ...     ["2024-01-01 00:00", "2024-01-01 06:00", "2024-01-02 00:00"]</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; time_decay_matrix(times, &quot;1D&quot;).round(3)</span>
+<span class="sd">    &gt;&gt;&gt; time_decay_matrix(times, "1D").round(3)</span>
 <span class="sd">    array([[1.   , 0.779, 0.368],</span>
 <span class="sd">           [0.779, 1.   , 0.472],</span>
 <span class="sd">           [0.368, 0.472, 1.   ]])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Time differences (timedelta64) over the decay time scale -&gt; exponential decay</span>
     <span class="n">diffs</span> <span class="o">=</span> <span class="n">time_difference_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">diffs</span> <span class="o">/</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">decay</span><span class="p">)</span><span class="o">.</span><span class="n">to_timedelta64</span><span class="p">()))</span></div>
@@ -1190,11 +1191,11 @@
 <a class="viewcode-back" href="../../_autosummary/lair.clock.diurnal.html#lair.clock.diurnal">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">diurnal</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1h&quot;</span><span class="p">,</span>
-    <span class="n">statistic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
-    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;floor&quot;</span><span class="p">,</span> <span class="s2">&quot;ceil&quot;</span><span class="p">,</span> <span class="s2">&quot;round&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;floor&quot;</span><span class="p">,</span>
+    <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"1h"</span><span class="p">,</span>
+    <span class="n">statistic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"mean"</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"floor"</span><span class="p">,</span> <span class="s2">"ceil"</span><span class="p">,</span> <span class="s2">"round"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"floor"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Aggregate the data to the specified frequency and compute the statistic for each group.</span>
 
 <span class="sd">    Parameters</span>
@@ -1204,8 +1205,8 @@
 <span class="sd">    freq : str</span>
 <span class="sd">        The frequency to aggregate the data to. Sub-Daily.</span>
 <span class="sd">    statistic : str or list of str, optional</span>
-<span class="sd">        The statistic to compute for each group. Default is &#39;mean&#39;.</span>
-<span class="sd">    method : one of &#39;floor&#39;, &#39;ceil&#39;, &#39;round&#39;</span>
+<span class="sd">        The statistic to compute for each group. Default is 'mean'.</span>
+<span class="sd">    method : one of 'floor', 'ceil', 'round'</span>
 <span class="sd">        The method to use to round the index to the nearest freq.</span>
 
 <span class="sd">    Returns</span>
@@ -1224,13 +1225,13 @@
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import diurnal</span>
-<span class="sd">    &gt;&gt;&gt; times = pd.date_range(&quot;2024-01-01&quot;, periods=48, freq=&quot;h&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; data = pd.DataFrame({&quot;ch4&quot;: np.arange(48.0)}, index=times)</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.date_range("2024-01-01", periods=48, freq="h")</span>
+<span class="sd">    &gt;&gt;&gt; data = pd.DataFrame({"ch4": np.arange(48.0)}, index=times)</span>
 <span class="sd">    &gt;&gt;&gt; diurnal(data).head(2)</span>
 <span class="sd">               ch4</span>
 <span class="sd">    00:00:00  12.0</span>
 <span class="sd">    01:00:00  13.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">resolution</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">method</span><span class="p">)(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">time</span>
     <span class="n">agg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>
 
@@ -1240,8 +1241,8 @@
 
 <div class="viewcode-block" id="seasonal">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.seasonal.html#lair.clock.seasonal">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">seasonal</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">statistic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">seasonal</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">statistic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"mean"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Aggregate data by season and year.</span>
 
 <span class="sd">    Seasons are DJF, MAM, JJA and SON. DJF is labeled by the year of its</span>
@@ -1258,7 +1259,7 @@
 <span class="sd">    data : pd.DataFrame</span>
 <span class="sd">        The data to aggregate. Panda DataFrame with a DateTimeIndex.</span>
 <span class="sd">    statistic : str, optional</span>
-<span class="sd">        The statistic to compute for each group. Default is &#39;mean&#39;.</span>
+<span class="sd">        The statistic to compute for each group. Default is 'mean'.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1272,27 +1273,27 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    Monthly data for 2024, where each month&#39;s value is its number minus one:</span>
+<span class="sd">    Monthly data for 2024, where each month's value is its number minus one:</span>
 
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import seasonal</span>
-<span class="sd">    &gt;&gt;&gt; months = pd.date_range(&quot;2024-01-01&quot;, periods=12, freq=&quot;MS&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; seasons = seasonal(pd.DataFrame({&quot;value&quot;: np.arange(12.0)}, index=months))</span>
-<span class="sd">    &gt;&gt;&gt; [f&quot;{season} {year}&quot; for season, year in seasons.index]</span>
-<span class="sd">    [&#39;DJF 2024&#39;, &#39;MAM 2024&#39;, &#39;JJA 2024&#39;, &#39;SON 2024&#39;, &#39;DJF 2025&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; seasons[&quot;value&quot;].tolist()</span>
+<span class="sd">    &gt;&gt;&gt; months = pd.date_range("2024-01-01", periods=12, freq="MS")</span>
+<span class="sd">    &gt;&gt;&gt; seasons = seasonal(pd.DataFrame({"value": np.arange(12.0)}, index=months))</span>
+<span class="sd">    &gt;&gt;&gt; [f"{season} {year}" for season, year in seasons.index]</span>
+<span class="sd">    ['DJF 2024', 'MAM 2024', 'JJA 2024', 'SON 2024', 'DJF 2025']</span>
+<span class="sd">    &gt;&gt;&gt; seasons["value"].tolist()</span>
 <span class="sd">    [0.5, 3.0, 6.0, 9.0, 11.0]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Quarters starting in Dec/Mar/Jun/Sep line up with DJF/MAM/JJA/SON</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;QS-DEC&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>  <span class="c1"># pyrefly: ignore[no-matching-overload]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">"QS-DEC"</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>  <span class="c1"># pyrefly: ignore[no-matching-overload]</span>
     <span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
     <span class="n">season</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">SEASONS</span><span class="p">)</span>
 
     <span class="c1"># A DJF bin starts on Dec 1, so its label is the following (Jan/Feb) year</span>
     <span class="n">year</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">12</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">set_axis</span><span class="p">(</span>
-        <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">([</span><span class="n">season</span><span class="p">,</span> <span class="n">year</span><span class="p">],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;season&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">])</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">([</span><span class="n">season</span><span class="p">,</span> <span class="n">year</span><span class="p">],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"season"</span><span class="p">,</span> <span class="s2">"year"</span><span class="p">])</span>
     <span class="p">)</span></div>
 
 
@@ -1303,7 +1304,7 @@
 <div class="viewcode-block" id="dt2decimalDate">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dt2decimalDate</span><span class="p">(</span><span class="n">datetime</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a datetime object to a decimal date.</span>
 
 <span class="sd">    Naive datetimes are used as-is (by convention they are UTC). Timezone-aware</span>
@@ -1332,7 +1333,7 @@
 <span class="sd">    &gt;&gt;&gt; from lair.clock import dt2decimalDate</span>
 <span class="sd">    &gt;&gt;&gt; round(dt2decimalDate(dt.datetime(2024, 7, 1)), 4)  # 182 of 366 days</span>
 <span class="sd">    2024.4973</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcoffset</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
@@ -1346,7 +1347,7 @@
 <div class="viewcode-block" id="decimalDate2dt">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.decimalDate2dt.html#lair.clock.decimalDate2dt">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">decimalDate2dt</span><span class="p">(</span><span class="n">decimalDate</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a decimal date to a datetime object.</span>
 
 <span class="sd">    Parameters</span>
@@ -1369,7 +1370,7 @@
 <span class="sd">    &gt;&gt;&gt; from lair.clock import decimalDate2dt</span>
 <span class="sd">    &gt;&gt;&gt; decimalDate2dt(2024.5)  # half of 366 days</span>
 <span class="sd">    datetime.datetime(2024, 7, 2, 0, 0)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">decimalDate</span><span class="p">)</span>
     <span class="n">rem</span> <span class="o">=</span> <span class="n">decimalDate</span> <span class="o">-</span> <span class="n">year</span>
 
@@ -1385,11 +1386,11 @@
 <span class="c1"># ----- Time Zones ----- #</span>
 
 <span class="c1"># The ``ambiguous`` and ``nonexistent`` options of ``convert_timezones`` and its</span>
-<span class="c1"># shortcuts: pandas&#39; ``tz_localize`` options.</span>
+<span class="c1"># shortcuts: pandas' ``tz_localize`` options.</span>
 <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;NaT&quot;</span><span class="p">,</span> <span class="s2">&quot;infer&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span>
+    <span class="n">Literal</span><span class="p">[</span><span class="s2">"raise"</span><span class="p">,</span> <span class="s2">"NaT"</span><span class="p">,</span> <span class="s2">"infer"</span><span class="p">]</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span>
 <span class="p">)</span>
-<span class="n">_Nonexistent</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;NaT&quot;</span><span class="p">,</span> <span class="s2">&quot;shift_forward&quot;</span><span class="p">,</span> <span class="s2">&quot;shift_backward&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span>
+<span class="n">_Nonexistent</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"raise"</span><span class="p">,</span> <span class="s2">"NaT"</span><span class="p">,</span> <span class="s2">"shift_forward"</span><span class="p">,</span> <span class="s2">"shift_backward"</span><span class="p">]</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span>
 
 
 <div class="viewcode-block" id="convert_timezones">
@@ -1400,16 +1401,16 @@
     <span class="n">fromtz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
-    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert the times from one timezone to another.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
-<span class="sd">        The times to convert. With ``driver=&#39;pandas&#39;``, the index of a</span>
+<span class="sd">        The times to convert. With ``driver='pandas'``, the index of a</span>
 <span class="sd">        DataFrame or the values of a Series. Without it, a single time or a</span>
 <span class="sd">        list (or other iterable) of them.</span>
 <span class="sd">    totz : str</span>
@@ -1419,17 +1420,17 @@
 <span class="sd">        naive (tz-aware times are converted from their own timezone).</span>
 <span class="sd">    localize : bool, optional</span>
 <span class="sd">        If True, the times will be localized to the totz timezone, by default False</span>
-<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
-<span class="sd">        None for a list of datetimes, &#39;pandas&#39; for a DataFrame or Series.</span>
-<span class="sd">    ambiguous : &#39;raise&#39; | &#39;NaT&#39; | &#39;infer&#39; | bool | array of bool, optional</span>
+<span class="sd">    driver : None | 'pandas', optional</span>
+<span class="sd">        None for a list of datetimes, 'pandas' for a DataFrame or Series.</span>
+<span class="sd">    ambiguous : 'raise' | 'NaT' | 'infer' | bool | array of bool, optional</span>
 <span class="sd">        How to localize naive times that happen twice in ``fromtz`` (DST</span>
 <span class="sd">        fall-back), with pandas ``tz_localize`` semantics: True is the DST</span>
-<span class="sd">        (first) instant, False the standard-time (second) one, &#39;NaT&#39; gives NaT,</span>
-<span class="sd">        and &#39;raise&#39; (the default) raises a ValueError. An array gives one flag</span>
-<span class="sd">        per input time (for a list, aware elements&#39; flags are ignored).</span>
-<span class="sd">    nonexistent : &#39;raise&#39; | &#39;NaT&#39; | &#39;shift_forward&#39; | &#39;shift_backward&#39; | timedelta, optional</span>
-<span class="sd">        How to localize naive times that don&#39;t exist in ``fromtz`` (DST</span>
-<span class="sd">        spring-forward), with pandas ``tz_localize`` semantics. Default &#39;raise&#39;.</span>
+<span class="sd">        (first) instant, False the standard-time (second) one, 'NaT' gives NaT,</span>
+<span class="sd">        and 'raise' (the default) raises a ValueError. An array gives one flag</span>
+<span class="sd">        per input time (for a list, aware elements' flags are ignored).</span>
+<span class="sd">    nonexistent : 'raise' | 'NaT' | 'shift_forward' | 'shift_backward' | timedelta, optional</span>
+<span class="sd">        How to localize naive times that don't exist in ``fromtz`` (DST</span>
+<span class="sd">        spring-forward), with pandas ``tz_localize`` semantics. Default 'raise'.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1437,15 +1438,15 @@
 <span class="sd">        The converted times, in the shape of ``x``. A single time gives a single</span>
 <span class="sd">        time, converted the way each element of a list is: a ``datetime`` stays</span>
 <span class="sd">        a ``datetime`` and a ``pd.Timestamp`` stays a ``pd.Timestamp`` (``pd.NaT``</span>
-<span class="sd">        if ``ambiguous`` or ``nonexistent`` is ``&#39;NaT&#39;`` and the time is one of</span>
+<span class="sd">        if ``ambiguous`` or ``nonexistent`` is ``'NaT'`` and the time is one of</span>
 <span class="sd">        those).</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If there are naive times and no ``fromtz``, or a naive time is ambiguous</span>
-<span class="sd">        or nonexistent in ``fromtz`` and ``ambiguous``/``nonexistent`` is &#39;raise&#39;,</span>
-<span class="sd">        or ``driver=&#39;pandas&#39;`` and ``x`` is not a DataFrame or Series.</span>
+<span class="sd">        or nonexistent in ``fromtz`` and ``ambiguous``/``nonexistent`` is 'raise',</span>
+<span class="sd">        or ``driver='pandas'`` and ``x`` is not a DataFrame or Series.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -1459,28 +1460,28 @@
 
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import convert_timezones</span>
-<span class="sd">    &gt;&gt;&gt; convert_timezones(dt.datetime(2024, 1, 15, 18), &quot;America/Denver&quot;, fromtz=&quot;UTC&quot;)</span>
-<span class="sd">    datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))</span>
+<span class="sd">    &gt;&gt;&gt; convert_timezones(dt.datetime(2024, 1, 15, 18), "America/Denver", fromtz="UTC")</span>
+<span class="sd">    datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))</span>
 
 <span class="sd">    A list gives a list, converted time by time:</span>
 
 <span class="sd">    &gt;&gt;&gt; convert_timezones(</span>
-<span class="sd">    ...     [dt.datetime(2024, 1, 15, 18)], &quot;America/Denver&quot;, fromtz=&quot;UTC&quot;</span>
+<span class="sd">    ...     [dt.datetime(2024, 1, 15, 18)], "America/Denver", fromtz="UTC"</span>
 <span class="sd">    ... )</span>
-<span class="sd">    [datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))]</span>
+<span class="sd">    [datetime.datetime(2024, 1, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))]</span>
 
 <span class="sd">    The index of a DataFrame, kept naive in local time with ``localize=True``:</span>
 
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
-<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 18:00&quot;])</span>
+<span class="sd">    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 18:00"])</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; convert_timezones(</span>
-<span class="sd">    ...     data, &quot;America/Denver&quot;, fromtz=&quot;UTC&quot;, localize=True, driver=&quot;pandas&quot;</span>
+<span class="sd">    ...     data, "America/Denver", fromtz="UTC", localize=True, driver="pandas"</span>
 <span class="sd">    ... )</span>
 <span class="sd">                            ch4</span>
 <span class="sd">    2024-07-15 12:00:00  2000.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">driver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># A single time: convert it as a list of one, and give back the one</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
@@ -1495,7 +1496,7 @@
         <span class="n">naive</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">naive</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">fromtz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Naive times need fromtz: the timezone they are in&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Naive times need fromtz: the timezone they are in"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">ambiguous</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># one flag per input time -&gt; keep the naive ones</span>
                 <span class="n">ambiguous</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ambiguous</span><span class="p">)[</span><span class="n">naive</span><span class="p">]</span>
@@ -1523,10 +1524,10 @@
             <span class="p">]</span>
 
         <span class="k">return</span> <span class="n">converted_times</span>
-    <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">&quot;pandas&quot;</span><span class="p">:</span>
-        <span class="c1"># Check the type before copying: a list&#39;s copy() takes no &#39;deep&#39;</span>
+    <span class="k">elif</span> <span class="n">driver</span> <span class="o">==</span> <span class="s2">"pandas"</span><span class="p">:</span>
+        <span class="c1"># Check the type before copying: a list's copy() takes no 'deep'</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;x is not a DataFrame or Series&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"x is not a DataFrame or Series"</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># If x is a DataFrame, convert DateTimeIndex</span>
@@ -1541,7 +1542,7 @@
         <span class="c1"># If the times are not tz-aware, assign them the fromtz timezone.</span>
         <span class="k">if</span> <span class="n">datetime_accessor</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">.</span><span class="n">tz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">fromtz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Naive times need fromtz: the timezone they are in&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Naive times need fromtz: the timezone they are in"</span><span class="p">)</span>
             <span class="n">times</span> <span class="o">=</span> <span class="n">datetime_accessor</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span>
                 <span class="n">fromtz</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span> <span class="n">nonexistent</span><span class="o">=</span><span class="n">nonexistent</span>
             <span class="p">)</span>
@@ -1559,7 +1560,7 @@
             <span class="n">data</span> <span class="o">=</span> <span class="n">times</span>
         <span class="k">return</span> <span class="n">data</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid driver&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid driver"</span><span class="p">)</span></div>
 
 
 
@@ -1575,10 +1576,10 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
-    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert times from UTC to the time zone ``totz``.</span>
 
 <span class="sd">    A time without a time zone is taken as UTC (the rule on the</span>
@@ -1588,15 +1589,15 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
-<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver='pandas'``</span>
 <span class="sd">        the index of a DataFrame or the values of a Series.</span>
 <span class="sd">    totz : str</span>
-<span class="sd">        The time zone to convert to, such as ``&#39;America/Denver&#39;``.</span>
+<span class="sd">        The time zone to convert to, such as ``'America/Denver'``.</span>
 <span class="sd">    localize : bool, optional</span>
 <span class="sd">        If True, drop the time zone from the result and keep the clock time of</span>
 <span class="sd">        ``totz``. Default False.</span>
-<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
-<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    driver : None | 'pandas', optional</span>
+<span class="sd">        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.</span>
 <span class="sd">    ambiguous, nonexistent : optional</span>
 <span class="sd">        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so</span>
 <span class="sd">        they never apply; every shortcut takes them.</span>
@@ -1620,13 +1621,13 @@
 
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import UTC2</span>
-<span class="sd">    &gt;&gt;&gt; UTC2(dt.datetime(2024, 7, 15, 18), &quot;America/Los_Angeles&quot;)</span>
-<span class="sd">    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Los_Angeles&#39;))</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; UTC2(dt.datetime(2024, 7, 15, 18), "America/Los_Angeles")</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Los_Angeles'))</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">convert_timezones</span><span class="p">(</span>
         <span class="n">x</span><span class="p">,</span>
         <span class="n">totz</span><span class="p">,</span>
-        <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span>
+        <span class="n">fromtz</span><span class="o">=</span><span class="s2">"UTC"</span><span class="p">,</span>
         <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
         <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
         <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
@@ -1642,11 +1643,11 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
-    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert times from UTC to Mountain Standard Time (``&#39;MST&#39;``).</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert times from UTC to Mountain Standard Time (``'MST'``).</span>
 
 <span class="sd">    MST is 7 hours behind UTC all year, with no daylight saving time, so every</span>
 <span class="sd">    day is 24 hours long. A time without a time zone is taken as UTC (the rule on</span>
@@ -1656,13 +1657,13 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
-<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver='pandas'``</span>
 <span class="sd">        the index of a DataFrame or the values of a Series.</span>
 <span class="sd">    localize : bool, optional</span>
 <span class="sd">        If True, drop the time zone from the result and keep the clock time in</span>
 <span class="sd">        MST. Default False.</span>
-<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
-<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    driver : None | 'pandas', optional</span>
+<span class="sd">        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.</span>
 <span class="sd">    ambiguous, nonexistent : optional</span>
 <span class="sd">        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so</span>
 <span class="sd">        they never apply; every shortcut takes them.</span>
@@ -1687,21 +1688,21 @@
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import UTC2MST</span>
 <span class="sd">    &gt;&gt;&gt; UTC2MST(dt.datetime(2024, 7, 15, 18))</span>
-<span class="sd">    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;MST&#39;))</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='MST'))</span>
 
 <span class="sd">    The index of a DataFrame, kept naive in MST with ``localize=True``:</span>
 
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
-<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 18:00&quot;])</span>
+<span class="sd">    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 18:00"])</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; UTC2MST(data, localize=True, driver=&quot;pandas&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MST(data, localize=True, driver="pandas")</span>
 <span class="sd">                            ch4</span>
 <span class="sd">    2024-07-15 11:00:00  2000.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">UTC2</span><span class="p">(</span>
         <span class="n">x</span><span class="p">,</span>
-        <span class="s2">&quot;MST&quot;</span><span class="p">,</span>
+        <span class="s2">"MST"</span><span class="p">,</span>
         <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
         <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
         <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
@@ -1717,11 +1718,11 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
-    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert times from UTC to Salt Lake City time (``&#39;America/Denver&#39;``).</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert times from UTC to Salt Lake City time (``'America/Denver'``).</span>
 
 <span class="sd">    The result follows daylight saving time: 6 hours behind UTC in summer, 7 in</span>
 <span class="sd">    winter. A time without a time zone is taken as UTC (the rule on the</span>
@@ -1731,13 +1732,13 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
-<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver='pandas'``</span>
 <span class="sd">        the index of a DataFrame or the values of a Series.</span>
 <span class="sd">    localize : bool, optional</span>
 <span class="sd">        If True, drop the time zone from the result and keep the clock time in</span>
 <span class="sd">        Salt Lake City. Default False.</span>
-<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
-<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    driver : None | 'pandas', optional</span>
+<span class="sd">        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.</span>
 <span class="sd">    ambiguous, nonexistent : optional</span>
 <span class="sd">        As in :func:`convert_timezones`. UTC has no repeated or skipped hours, so</span>
 <span class="sd">        they never apply; every shortcut takes them.</span>
@@ -1762,26 +1763,26 @@
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import UTC2MTN</span>
 <span class="sd">    &gt;&gt;&gt; UTC2MTN(dt.datetime(2024, 7, 15, 18))</span>
-<span class="sd">    datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;America/Denver&#39;))</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))</span>
 
 <span class="sd">    A ``pd.Timestamp`` gives a ``pd.Timestamp``:</span>
 
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; UTC2MTN(pd.Timestamp(&quot;2024-07-15 18:00&quot;))</span>
-<span class="sd">    Timestamp(&#39;2024-07-15 12:00:00-0600&#39;, tz=&#39;America/Denver&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MTN(pd.Timestamp("2024-07-15 18:00"))</span>
+<span class="sd">    Timestamp('2024-07-15 12:00:00-0600', tz='America/Denver')</span>
 
 <span class="sd">    The index of a DataFrame, kept naive in local time with ``localize=True``:</span>
 
 <span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
-<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 18:00&quot;])</span>
+<span class="sd">    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 18:00"])</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; UTC2MTN(data, localize=True, driver=&quot;pandas&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; UTC2MTN(data, localize=True, driver="pandas")</span>
 <span class="sd">                            ch4</span>
 <span class="sd">    2024-07-15 12:00:00  2000.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">UTC2</span><span class="p">(</span>
         <span class="n">x</span><span class="p">,</span>
-        <span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span>
+        <span class="s2">"America/Denver"</span><span class="p">,</span>
         <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
         <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
         <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
@@ -1797,11 +1798,11 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
-    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert times from Mountain Standard Time (``&#39;MST&#39;``) to UTC.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert times from Mountain Standard Time (``'MST'``) to UTC.</span>
 
 <span class="sd">    Use it for a file whose times are standard time all year (its manual or</span>
 <span class="sd">    settings say so): MST has no daylight saving time, so no time is repeated or</span>
@@ -1811,13 +1812,13 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
-<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver='pandas'``</span>
 <span class="sd">        the index of a DataFrame or the values of a Series.</span>
 <span class="sd">    localize : bool, optional</span>
 <span class="sd">        If True, drop the time zone from the result and keep the UTC clock time.</span>
 <span class="sd">        Default False.</span>
-<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
-<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    driver : None | 'pandas', optional</span>
+<span class="sd">        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.</span>
 <span class="sd">    ambiguous, nonexistent : optional</span>
 <span class="sd">        As in :func:`convert_timezones`. MST has no repeated or skipped hours, so</span>
 <span class="sd">        they never apply; every shortcut takes them.</span>
@@ -1842,22 +1843,22 @@
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import MST2UTC</span>
 <span class="sd">    &gt;&gt;&gt; MST2UTC(dt.datetime(2024, 7, 15, 11))</span>
-<span class="sd">    datetime.datetime(2024, 7, 15, 18, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;UTC&#39;))</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 18, 0, tzinfo=zoneinfo.ZoneInfo(key='UTC'))</span>
 
 <span class="sd">    The index of a DataFrame, kept naive in UTC with ``localize=True``:</span>
 
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
-<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 11:00&quot;])</span>
+<span class="sd">    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 11:00"])</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; MST2UTC(data, localize=True, driver=&quot;pandas&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; MST2UTC(data, localize=True, driver="pandas")</span>
 <span class="sd">                            ch4</span>
 <span class="sd">    2024-07-15 18:00:00  2000.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">convert_timezones</span><span class="p">(</span>
         <span class="n">x</span><span class="p">,</span>
-        <span class="s2">&quot;UTC&quot;</span><span class="p">,</span>
-        <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;MST&quot;</span><span class="p">,</span>
+        <span class="s2">"UTC"</span><span class="p">,</span>
+        <span class="n">fromtz</span><span class="o">=</span><span class="s2">"MST"</span><span class="p">,</span>
         <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
         <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
         <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
@@ -1873,11 +1874,11 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">localize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">driver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
-    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+    <span class="n">ambiguous</span><span class="p">:</span> <span class="n">_Ambiguous</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
+    <span class="n">nonexistent</span><span class="p">:</span> <span class="n">_Nonexistent</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert times from Salt Lake City time (``&#39;America/Denver&#39;``) to UTC.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert times from Salt Lake City time (``'America/Denver'``) to UTC.</span>
 
 <span class="sd">    A time without a time zone is taken as Salt Lake City clock time, and a time</span>
 <span class="sd">    with one is converted from its own. Daylight saving time repeats one hour in</span>
@@ -1888,20 +1889,20 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : dt.datetime | pd.Timestamp | list[dt.datetime] | pd.DataFrame | pd.Series</span>
-<span class="sd">        The times: a single time, a list of them, or with ``driver=&#39;pandas&#39;``</span>
+<span class="sd">        The times: a single time, a list of them, or with ``driver='pandas'``</span>
 <span class="sd">        the index of a DataFrame or the values of a Series.</span>
 <span class="sd">    localize : bool, optional</span>
 <span class="sd">        If True, drop the time zone from the result and keep the UTC clock time.</span>
 <span class="sd">        Default False.</span>
-<span class="sd">    driver : None | &#39;pandas&#39;, optional</span>
-<span class="sd">        ``&#39;pandas&#39;`` for a DataFrame or Series; None for a single time or a list.</span>
-<span class="sd">    ambiguous : &#39;raise&#39; | &#39;NaT&#39; | &#39;infer&#39; | bool | array of bool, optional</span>
+<span class="sd">    driver : None | 'pandas', optional</span>
+<span class="sd">        ``'pandas'`` for a DataFrame or Series; None for a single time or a list.</span>
+<span class="sd">    ambiguous : 'raise' | 'NaT' | 'infer' | bool | array of bool, optional</span>
 <span class="sd">        What to do with a time that happens twice (the clocks go back): True is</span>
 <span class="sd">        the first (daylight time), False the second (standard time). The default</span>
-<span class="sd">        &#39;raise&#39; raises a ``ValueError``. As in :func:`convert_timezones`.</span>
-<span class="sd">    nonexistent : &#39;raise&#39; | &#39;NaT&#39; | &#39;shift_forward&#39; | &#39;shift_backward&#39; | timedelta, optional</span>
+<span class="sd">        'raise' raises a ``ValueError``. As in :func:`convert_timezones`.</span>
+<span class="sd">    nonexistent : 'raise' | 'NaT' | 'shift_forward' | 'shift_backward' | timedelta, optional</span>
 <span class="sd">        What to do with a time that never happens (the clocks go forward). The</span>
-<span class="sd">        default &#39;raise&#39; raises a ``ValueError``. As in :func:`convert_timezones`.</span>
+<span class="sd">        default 'raise' raises a ``ValueError``. As in :func:`convert_timezones`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1913,7 +1914,7 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If a time is ambiguous or nonexistent and the option for it is &#39;raise&#39;.</span>
+<span class="sd">        If a time is ambiguous or nonexistent and the option for it is 'raise'.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -1928,29 +1929,29 @@
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import MTN2UTC</span>
 <span class="sd">    &gt;&gt;&gt; MTN2UTC(dt.datetime(2024, 7, 15, 12))</span>
-<span class="sd">    datetime.datetime(2024, 7, 15, 18, 0, tzinfo=zoneinfo.ZoneInfo(key=&#39;UTC&#39;))</span>
+<span class="sd">    datetime.datetime(2024, 7, 15, 18, 0, tzinfo=zoneinfo.ZoneInfo(key='UTC'))</span>
 
 <span class="sd">    The clocks went back on 2024-11-03, so 01:30 happened twice; say which:</span>
 
 <span class="sd">    &gt;&gt;&gt; MTN2UTC(dt.datetime(2024, 11, 3, 1, 30), ambiguous=True)</span>
-<span class="sd">    datetime.datetime(2024, 11, 3, 7, 30, tzinfo=zoneinfo.ZoneInfo(key=&#39;UTC&#39;))</span>
+<span class="sd">    datetime.datetime(2024, 11, 3, 7, 30, tzinfo=zoneinfo.ZoneInfo(key='UTC'))</span>
 <span class="sd">    &gt;&gt;&gt; MTN2UTC(dt.datetime(2024, 11, 3, 1, 30), ambiguous=False)</span>
-<span class="sd">    datetime.datetime(2024, 11, 3, 8, 30, tzinfo=zoneinfo.ZoneInfo(key=&#39;UTC&#39;))</span>
+<span class="sd">    datetime.datetime(2024, 11, 3, 8, 30, tzinfo=zoneinfo.ZoneInfo(key='UTC'))</span>
 
 <span class="sd">    The index of a DataFrame, kept naive in UTC with ``localize=True``:</span>
 
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; data = pd.DataFrame(</span>
-<span class="sd">    ...     {&quot;ch4&quot;: [2000.0]}, index=pd.to_datetime([&quot;2024-07-15 12:00&quot;])</span>
+<span class="sd">    ...     {"ch4": [2000.0]}, index=pd.to_datetime(["2024-07-15 12:00"])</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; MTN2UTC(data, localize=True, driver=&quot;pandas&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; MTN2UTC(data, localize=True, driver="pandas")</span>
 <span class="sd">                            ch4</span>
 <span class="sd">    2024-07-15 18:00:00  2000.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">convert_timezones</span><span class="p">(</span>
         <span class="n">x</span><span class="p">,</span>
-        <span class="s2">&quot;UTC&quot;</span><span class="p">,</span>
-        <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span>
+        <span class="s2">"UTC"</span><span class="p">,</span>
+        <span class="n">fromtz</span><span class="o">=</span><span class="s2">"America/Denver"</span><span class="p">,</span>
         <span class="n">localize</span><span class="o">=</span><span class="n">localize</span><span class="p">,</span>
         <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
         <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">,</span>
@@ -1986,8 +1987,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -2007,7 +2008,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -2020,7 +2021,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

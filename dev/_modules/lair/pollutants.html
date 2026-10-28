@@ -25,27 +25,27 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=0020b67e"></script>
+    <script src="../../_static/documentation_options.js?v=0f76ad26"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/pollutants';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -55,8 +55,9 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev7+g9d3066682" />
+  <meta name="docsearch:version" content="2026.12.11.dev8+gc0ee29d06" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -434,22 +435,22 @@
                 <article class="bd-article">
                   
   <h1>Source code for lair.pollutants</h1><div class="highlight"><pre>
-<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">Metadata for common trace gases and aerosols: names, LaTeX labels, units.</span>
 
 <span class="sd">A small registry of :class:`Pollutant` records for labeling plots and sanity</span>
 <span class="sd">checking values. It knows nothing about any instrument or archive; how a</span>
-<span class="sd">data source names its columns (e.g. UATAQ&#39;s ``CO2d_ppm_cal``) belongs with</span>
+<span class="sd">data source names its columns (e.g. UATAQ's ``CO2d_ppm_cal``) belongs with</span>
 <span class="sd">that data source.</span>
 
 <span class="sd">Examples</span>
 <span class="sd">--------</span>
 <span class="sd">&gt;&gt;&gt; from lair.pollutants import get_pollutant</span>
-<span class="sd">&gt;&gt;&gt; ch4 = get_pollutant(&quot;ch4&quot;)</span>
+<span class="sd">&gt;&gt;&gt; ch4 = get_pollutant("ch4")</span>
 <span class="sd">&gt;&gt;&gt; print(ch4.label())</span>
 <span class="sd">$\mathrm{CH_4}$ [ppm]</span>
-<span class="sd">&gt;&gt;&gt; ax.set_ylabel(get_pollutant(&quot;PM25&quot;).label())  # doctest: +SKIP</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&gt;&gt;&gt; ax.set_ylabel(get_pollutant("PM25").label())  # doctest: +SKIP</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
@@ -458,15 +459,15 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">ureg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair._optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional_dependency</span>
 
-<span class="n">_UG_M3</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;$\mu$g m$^{-3}$&quot;</span>
-<span class="n">_NG_M3</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;ng m$^{-3}$&quot;</span>
+<span class="n">_UG_M3</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"$\mu$g m$^{-3}$"</span>
+<span class="n">_NG_M3</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"ng m$^{-3}$"</span>
 
 
 <div class="viewcode-block" id="Pollutant">
 <a class="viewcode-back" href="../../_autosummary/lair.pollutants.Pollutant.html#lair.pollutants.Pollutant">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Pollutant</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Metadata for one pollutant.</span>
 
 <span class="sd">    Each field is also an attribute of the same name.</span>
@@ -474,14 +475,14 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name : str</span>
-<span class="sd">        Canonical short name, e.g. ``&#39;CH4&#39;``, ``&#39;NOx&#39;``, ``&#39;PM2.5&#39;``.</span>
+<span class="sd">        Canonical short name, e.g. ``'CH4'``, ``'NOx'``, ``'PM2.5'``.</span>
 <span class="sd">    long_name : str</span>
-<span class="sd">        Plain-language name, e.g. ``&#39;methane&#39;``.</span>
+<span class="sd">        Plain-language name, e.g. ``'methane'``.</span>
 <span class="sd">    latex : str</span>
-<span class="sd">        Matplotlib mathtext for the name, e.g. ``r&#39;$\mathrm{CH_4}$&#39;``.</span>
+<span class="sd">        Matplotlib mathtext for the name, e.g. ``r'$\mathrm{CH_4}$'``.</span>
 <span class="sd">    units : str</span>
-<span class="sd">        Usual units for ambient values, as plain text (``&#39;ppm&#39;``, ``&#39;ppb&#39;``,</span>
-<span class="sd">        ``&#39;ug/m3&#39;``, ``&#39;ng/m3&#39;``). Gases are dry-air mole fractions.</span>
+<span class="sd">        Usual units for ambient values, as plain text (``'ppm'``, ``'ppb'``,</span>
+<span class="sd">        ``'ug/m3'``, ``'ng/m3'``). Gases are dry-air mole fractions.</span>
 <span class="sd">    latex_units : str</span>
 <span class="sd">        ``units`` as matplotlib mathtext.</span>
 <span class="sd">    expected_range : tuple[float, float]</span>
@@ -492,7 +493,7 @@
 <span class="sd">    formula : str | None</span>
 <span class="sd">        Chemical formula used for the molar mass; None for aerosols. NOx is</span>
 <span class="sd">        given as NO2, the usual reporting basis for NOx mass.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">long_name</span><span class="p">:</span> <span class="nb">str</span>
@@ -504,41 +505,41 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">molar_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Molar mass in g/mol. Needs the optional ``molmass`` dependency.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If the pollutant has no chemical formula (an aerosol).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">formula</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> has no chemical formula.&quot;</span><span class="p">)</span>
-        <span class="n">molmass</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;molmass&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">molmass</span><span class="o">.</span><span class="n">Formula</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="p">)</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="n">ureg</span><span class="p">(</span><span class="s2">&quot;g/mol&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> has no chemical formula."</span><span class="p">)</span>
+        <span class="n">molmass</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"molmass"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">molmass</span><span class="o">.</span><span class="n">Formula</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="p">)</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="n">ureg</span><span class="p">(</span><span class="s2">"g/mol"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Pollutant.label">
 <a class="viewcode-back" href="../../_autosummary/lair.pollutants.Pollutant.label.html#lair.pollutants.Pollutant.label">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">latex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Build an axis label, e.g. ``&#39;$\mathrm{CH_4}$ [ppm]&#39;``.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Build an axis label, e.g. ``'$\mathrm{CH_4}$ [ppm]'``.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        units : bool</span>
 <span class="sd">            Append the units in brackets. Default True.</span>
 <span class="sd">        latex : bool</span>
-<span class="sd">            Use the mathtext forms. Default True; False gives ``&#39;CH4 [ppm]&#39;``.</span>
+<span class="sd">            Use the mathtext forms. Default True; False gives ``'CH4 [ppm]'``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
 <span class="sd">            The label.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latex</span> <span class="k">if</span> <span class="n">latex</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">units</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">name</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">latex_units</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">latex</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">]&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">latex_units</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">latex</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">]"</span></div>
 </div>
 
 
@@ -551,7 +552,7 @@
     <span class="n">expected_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
     <span class="n">formula</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pollutant</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a gas: its units need no mathtext, and its formula defaults to its name.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Make a gas: its units need no mathtext, and its formula defaults to its name."""</span>
     <span class="k">return</span> <span class="n">Pollutant</span><span class="p">(</span>
         <span class="n">name</span><span class="p">,</span> <span class="n">long_name</span><span class="p">,</span> <span class="n">latex</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">expected_range</span><span class="p">,</span> <span class="n">formula</span> <span class="ow">or</span> <span class="n">name</span>
     <span class="p">)</span>
@@ -561,37 +562,37 @@
 <span class="n">POLLUTANTS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Pollutant</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">p</span>
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span>
-        <span class="n">_gas</span><span class="p">(</span><span class="s2">&quot;CO2&quot;</span><span class="p">,</span> <span class="s2">&quot;carbon dioxide&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{CO_2}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">350</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)),</span>
-        <span class="n">_gas</span><span class="p">(</span><span class="s2">&quot;CH4&quot;</span><span class="p">,</span> <span class="s2">&quot;methane&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{CH_4}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.7</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)),</span>
-        <span class="n">_gas</span><span class="p">(</span><span class="s2">&quot;CO&quot;</span><span class="p">,</span> <span class="s2">&quot;carbon monoxide&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{CO}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ppb&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5000</span><span class="p">)),</span>
-        <span class="n">_gas</span><span class="p">(</span><span class="s2">&quot;H2O&quot;</span><span class="p">,</span> <span class="s2">&quot;water vapor&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{H_2O}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ppm&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40000</span><span class="p">)),</span>
-        <span class="n">_gas</span><span class="p">(</span><span class="s2">&quot;O3&quot;</span><span class="p">,</span> <span class="s2">&quot;ozone&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{O_3}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ppb&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)),</span>
-        <span class="n">_gas</span><span class="p">(</span><span class="s2">&quot;NO&quot;</span><span class="p">,</span> <span class="s2">&quot;nitric oxide&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{NO}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ppb&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">)),</span>
-        <span class="n">_gas</span><span class="p">(</span><span class="s2">&quot;NO2&quot;</span><span class="p">,</span> <span class="s2">&quot;nitrogen dioxide&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{NO_2}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ppb&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)),</span>
-        <span class="n">_gas</span><span class="p">(</span><span class="s2">&quot;NOx&quot;</span><span class="p">,</span> <span class="s2">&quot;nitrogen oxides&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{NO_x}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ppb&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">700</span><span class="p">),</span> <span class="s2">&quot;NO2&quot;</span><span class="p">),</span>
-        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">&quot;PM1&quot;</span><span class="p">,</span> <span class="s2">&quot;PM1&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm{PM_</span><span class="si">{1}</span><span class="s2">}$&quot;</span><span class="p">,</span> <span class="s2">&quot;ug/m3&quot;</span><span class="p">,</span> <span class="n">_UG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">)),</span>
-        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">&quot;PM2.5&quot;</span><span class="p">,</span> <span class="s2">&quot;PM2.5&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm{PM_</span><span class="si">{2.5}</span><span class="s2">}$&quot;</span><span class="p">,</span> <span class="s2">&quot;ug/m3&quot;</span><span class="p">,</span> <span class="n">_UG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">)),</span>
-        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">&quot;PM4&quot;</span><span class="p">,</span> <span class="s2">&quot;PM4&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm{PM_</span><span class="si">{4}</span><span class="s2">}$&quot;</span><span class="p">,</span> <span class="s2">&quot;ug/m3&quot;</span><span class="p">,</span> <span class="n">_UG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">700</span><span class="p">)),</span>
-        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">&quot;PM10&quot;</span><span class="p">,</span> <span class="s2">&quot;PM10&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm{PM_</span><span class="si">{10}</span><span class="s2">}$&quot;</span><span class="p">,</span> <span class="s2">&quot;ug/m3&quot;</span><span class="p">,</span> <span class="n">_UG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)),</span>
-        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">&quot;BC&quot;</span><span class="p">,</span> <span class="s2">&quot;black carbon&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm</span><span class="si">{BC}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="s2">&quot;ng/m3&quot;</span><span class="p">,</span> <span class="n">_NG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30000</span><span class="p">)),</span>
+        <span class="n">_gas</span><span class="p">(</span><span class="s2">"CO2"</span><span class="p">,</span> <span class="s2">"carbon dioxide"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{CO_2}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ppm"</span><span class="p">,</span> <span class="p">(</span><span class="mi">350</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)),</span>
+        <span class="n">_gas</span><span class="p">(</span><span class="s2">"CH4"</span><span class="p">,</span> <span class="s2">"methane"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{CH_4}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ppm"</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.7</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)),</span>
+        <span class="n">_gas</span><span class="p">(</span><span class="s2">"CO"</span><span class="p">,</span> <span class="s2">"carbon monoxide"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{CO}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ppb"</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5000</span><span class="p">)),</span>
+        <span class="n">_gas</span><span class="p">(</span><span class="s2">"H2O"</span><span class="p">,</span> <span class="s2">"water vapor"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{H_2O}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ppm"</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40000</span><span class="p">)),</span>
+        <span class="n">_gas</span><span class="p">(</span><span class="s2">"O3"</span><span class="p">,</span> <span class="s2">"ozone"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{O_3}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ppb"</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)),</span>
+        <span class="n">_gas</span><span class="p">(</span><span class="s2">"NO"</span><span class="p">,</span> <span class="s2">"nitric oxide"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{NO}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ppb"</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">)),</span>
+        <span class="n">_gas</span><span class="p">(</span><span class="s2">"NO2"</span><span class="p">,</span> <span class="s2">"nitrogen dioxide"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{NO_2}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ppb"</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)),</span>
+        <span class="n">_gas</span><span class="p">(</span><span class="s2">"NOx"</span><span class="p">,</span> <span class="s2">"nitrogen oxides"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{NO_x}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ppb"</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">700</span><span class="p">),</span> <span class="s2">"NO2"</span><span class="p">),</span>
+        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">"PM1"</span><span class="p">,</span> <span class="s2">"PM1"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm{PM_</span><span class="si">{1}</span><span class="s2">}$"</span><span class="p">,</span> <span class="s2">"ug/m3"</span><span class="p">,</span> <span class="n">_UG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">)),</span>
+        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">"PM2.5"</span><span class="p">,</span> <span class="s2">"PM2.5"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm{PM_</span><span class="si">{2.5}</span><span class="s2">}$"</span><span class="p">,</span> <span class="s2">"ug/m3"</span><span class="p">,</span> <span class="n">_UG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">)),</span>
+        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">"PM4"</span><span class="p">,</span> <span class="s2">"PM4"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm{PM_</span><span class="si">{4}</span><span class="s2">}$"</span><span class="p">,</span> <span class="s2">"ug/m3"</span><span class="p">,</span> <span class="n">_UG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">700</span><span class="p">)),</span>
+        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">"PM10"</span><span class="p">,</span> <span class="s2">"PM10"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm{PM_</span><span class="si">{10}</span><span class="s2">}$"</span><span class="p">,</span> <span class="s2">"ug/m3"</span><span class="p">,</span> <span class="n">_UG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)),</span>
+        <span class="n">Pollutant</span><span class="p">(</span><span class="s2">"BC"</span><span class="p">,</span> <span class="s2">"black carbon"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"$\mathrm</span><span class="si">{BC}</span><span class="s2">$"</span><span class="p">,</span> <span class="s2">"ng/m3"</span><span class="p">,</span> <span class="n">_NG_M3</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30000</span><span class="p">)),</span>
     <span class="p">]</span>
 <span class="p">}</span>
 
-<span class="c1"># Spellings that don&#39;t survive upper-casing to a canonical name</span>
-<span class="n">_ALIASES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;PM25&quot;</span><span class="p">:</span> <span class="s2">&quot;PM2.5&quot;</span><span class="p">,</span> <span class="s2">&quot;PM2_5&quot;</span><span class="p">:</span> <span class="s2">&quot;PM2.5&quot;</span><span class="p">}</span>
+<span class="c1"># Spellings that don't survive upper-casing to a canonical name</span>
+<span class="n">_ALIASES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"PM25"</span><span class="p">:</span> <span class="s2">"PM2.5"</span><span class="p">,</span> <span class="s2">"PM2_5"</span><span class="p">:</span> <span class="s2">"PM2.5"</span><span class="p">}</span>
 <span class="n">_LOOKUP</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">POLLUTANTS</span><span class="p">}</span> <span class="o">|</span> <span class="n">_ALIASES</span>
 
 
 <div class="viewcode-block" id="get_pollutant">
 <a class="viewcode-back" href="../../_autosummary/lair.pollutants.get_pollutant.html#lair.pollutants.get_pollutant">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pollutant</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pollutant</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Look up a pollutant by name, case-insensitively.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name : str</span>
-<span class="sd">        The pollutant, e.g. ``&#39;CH4&#39;``, ``&#39;nox&#39;``, ``&#39;PM25&#39;``.</span>
+<span class="sd">        The pollutant, e.g. ``'CH4'``, ``'nox'``, ``'PM25'``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -602,10 +603,10 @@
 <span class="sd">    ------</span>
 <span class="sd">    KeyError</span>
 <span class="sd">        If the pollutant is not in :data:`POLLUTANTS`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">canonical</span> <span class="o">=</span> <span class="n">_LOOKUP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
     <span class="k">if</span> <span class="n">canonical</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown pollutant &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;. Known: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">POLLUTANTS</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown pollutant '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'. Known: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">POLLUTANTS</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">POLLUTANTS</span><span class="p">[</span><span class="n">canonical</span><span class="p">]</span></div>
 
 </pre></div>
@@ -637,8 +638,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -658,7 +659,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -671,7 +672,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

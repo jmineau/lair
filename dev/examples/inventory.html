@@ -26,27 +26,27 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=0020b67e"></script>
+    <script src="../_static/documentation_options.js?v=0f76ad26"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'examples/inventory';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -58,8 +58,9 @@
     <link rel="next" title="Draw a map of an inventory" href="maps.html" />
     <link rel="prev" title="Convert a methane flux from moles to mass" href="units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev7+g9d3066682" />
+  <meta name="docsearch:version" content="2026.12.11.dev8+gc0ee29d06" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -516,13 +517,13 @@ them, as in <code class="docutils literal notranslate"><span class="pre">EDGARv8
 files of those years (both included). This page reads every year.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">EDGARv8</span>
 <span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv8</span><span class="p">(</span><span class="s2">&quot;CH4&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv8</span><span class="p">(</span><span class="s2">"CH4"</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">inv</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span>
-<span class="gh">Out[1]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 1800, &#39;lon&#39;: 3600})</span>
+<span class="gh">Out[1]: </span><span class="go">Frozen({'time': 53, 'lat': 1800, 'lon': 3600})</span>
 </pre></div>
 </div>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="nb">list</span><span class="p">(</span><span class="n">inv</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)[:</span><span class="mi">4</span><span class="p">]</span>
-<span class="gh">Out[2]: </span><span class="go">[&#39;Solid_waste_landfills&#39;, &#39;Agricultural_soils&#39;, &#39;Agricultural_waste_burning&#39;, &#39;Chemical_processes&#39;]</span>
+<span class="gh">Out[2]: </span><span class="go">['Solid_waste_landfills', 'Agricultural_soils', 'Agricultural_waste_burning', 'Chemical_processes']</span>
 </pre></div>
 </div>
 </section>
@@ -535,7 +536,7 @@ from a file. Its edges fall on the edges of EDGAR’s cells, so it holds 6 by 6
 cells of 0.1 degrees.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="n">slv</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">bbox</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">112.3</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.7</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">))</span>  <span class="c1"># west, south, east, north</span>
 <span class="gp">   ...: </span><span class="n">slv</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span>
-<span class="gh">Out[3]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 6, &#39;lon&#39;: 6})</span>
+<span class="gh">Out[3]: </span><span class="go">Frozen({'time': 53, 'lat': 6, 'lon': 6})</span>
 </pre></div>
 </div>
 <p>For a region that is not a rectangle, <code class="docutils literal notranslate"><span class="pre">clip(geom=)</span></code> takes a <a class="reference external" href="https://shapely.readthedocs.io">shapely</a> polygon, with its corners as (lon, lat). This
@@ -547,7 +548,7 @@ edges). The rest of this page uses the box.</p>
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="n">triangle</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">([(</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="mf">40.5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">111.8</span><span class="p">,</span> <span class="mf">40.5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">112.0</span><span class="p">,</span> <span class="mf">40.9</span><span class="p">)])</span>
 <span class="gp">   ...: </span><span class="n">inv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="n">triangle</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span>
-<span class="gh">Out[4]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 3, &#39;lon&#39;: 4})</span>
+<span class="gh">Out[4]: </span><span class="go">Frozen({'time': 53, 'lat': 3, 'lon': 4})</span>
 </pre></div>
 </div>
 </section>
@@ -599,8 +600,8 @@ the calendar (366 days in a leap year).</p>
 <p><code class="docutils literal notranslate"><span class="pre">total_emissions</span></code> sums the sectors in each cell. Its <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute shows
 that it is still a flux, in kilograms per square meter per second (a spelling
 pint reads the same as <code class="docutils literal notranslate"><span class="pre">kg</span> <span class="pre">m-2</span> <span class="pre">s-1</span></code>: <a class="reference internal" href="units.html#unit-spellings"><span class="std std-ref">unit spellings</span></a>):</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">slv</span><span class="o">.</span><span class="n">total_emissions</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
-<span class="gh">Out[5]: </span><span class="go">&#39;kg/m**2/s&#39;</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">slv</span><span class="o">.</span><span class="n">total_emissions</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span>
+<span class="gh">Out[5]: </span><span class="go">'kg/m**2/s'</span>
 </pre></div>
 </div>
 <p>Do not add it up over the cells: the cells differ in area, so a sum of fluxes is
@@ -616,10 +617,10 @@ over the whole region in one time step, here one year.</p>
 does the work. That took a minute or two here.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">total</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="gp">   ...: </span><span class="n">total</span><span class="o">.</span><span class="n">attrs</span>
-<span class="gh">Out[6]: </span><span class="go">{&#39;long_name&#39;: &#39;Total Emissions&#39;, &#39;units&#39;: &#39;kg&#39;}</span>
+<span class="gh">Out[6]: </span><span class="go">{'long_name': 'Total Emissions', 'units': 'kg'}</span>
 </pre></div>
 </div>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="s2">&quot;2020&quot;</span><span class="p">,</span> <span class="s2">&quot;2022&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># kg to kt</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="s2">"2020"</span><span class="p">,</span> <span class="s2">"2022"</span><span class="p">))</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># kg to kt</span>
 <span class="gh">Out[7]:</span>
 <span class="go">time</span>
 <span class="go">2020-01-01    22.129474</span>
@@ -640,15 +641,15 @@ sectors, times its area (<code class="docutils literal notranslate"><span class=
 km2) times the seconds in the year:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">sum_sectors</span>
 <span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="n">cell</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">40.75</span><span class="p">,</span> <span class="n">lon</span><span class="o">=-</span><span class="mf">111.95</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>  <span class="c1"># one 0.1 degree cell</span>
+<span class="gp">   ...: </span><span class="n">cell</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">40.75</span><span class="p">,</span> <span class="n">lon</span><span class="o">=-</span><span class="mf">111.95</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"nearest"</span><span class="p">)</span>  <span class="c1"># one 0.1 degree cell</span>
 <span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="n">flux</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">slv</span><span class="o">.</span><span class="n">total_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">cell</span><span class="p">))</span>  <span class="c1"># kg m-2 s-1</span>
+<span class="gp">   ...: </span><span class="n">flux</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">slv</span><span class="o">.</span><span class="n">total_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">"2022-01-01"</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">cell</span><span class="p">))</span>  <span class="c1"># kg m-2 s-1</span>
 <span class="gp">   ...: </span><span class="n">area</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">slv</span><span class="o">.</span><span class="n">gridcell_area</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">cell</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e6</span>  <span class="c1"># km2 to m2</span>
 <span class="gp">   ...: </span><span class="n">seconds</span> <span class="o">=</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span>
-<span class="gp">   ...: </span><span class="n">mass</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="gp">   ...: </span><span class="n">mass</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">"2022-01-01"</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;by hand:            </span><span class="si">{</span><span class="n">flux</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">area</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">seconds</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2"> kg&quot;</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;absolute_emissions: </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">sum_sectors</span><span class="p">(</span><span class="n">mass</span><span class="p">))</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2"> kg&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"by hand:            </span><span class="si">{</span><span class="n">flux</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">area</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">seconds</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2"> kg"</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"absolute_emissions: </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">sum_sectors</span><span class="p">(</span><span class="n">mass</span><span class="p">))</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2"> kg"</span><span class="p">)</span>
 <span class="go">by hand:            8,582,388 kg</span>
 <span class="go">absolute_emissions: 8,582,388 kg</span>
 </pre></div>
@@ -659,10 +660,10 @@ km2) times the seconds in the year:</p>
 with Python’s <code class="docutils literal notranslate"><span class="pre">+</span></code> or <code class="docutils literal notranslate"><span class="pre">sum</span></code> gives NaN.</p>
 <p>Summed over the cells, each sector gives its own total over the region. Added
 together, they are <code class="docutils literal notranslate"><span class="pre">integrate()</span></code>’s total:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="n">by_sector</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="n">by_sector</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">absolute_emissions</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">"2022-01-01"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="s2">"lat"</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">])</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="gp">   ...: </span><span class="n">kt</span> <span class="o">=</span> <span class="n">by_sector</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># kg to kt</span>
 <span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="n">kt</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
-<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;all sectors: </span><span class="si">{</span><span class="n">kt</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> kt&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"all sectors: </span><span class="si">{</span><span class="n">kt</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> kt"</span><span class="p">)</span>
 <span class="go">Solid_waste_landfills       12.429</span>
 <span class="go">Waste_water_handling         5.204</span>
 <span class="go">Energy_for_buildings         1.604</span>
@@ -687,8 +688,8 @@ first gives the same total. An inventory’s <code class="docutils literal notra
 year (<code class="docutils literal notranslate"><span class="pre">Gg/km**2/yr</span></code>) the length of each year, 366 days in 2020 and 365 in
 2022, and <code class="docutils literal notranslate"><span class="pre">integrate()</span></code> takes each value as that year’s worth (the details
 are under <a class="reference internal" href="../_autosummary/lair.inventories.Inventory.convert_units.html#lair.inventories.Inventory.convert_units" title="lair.inventories.Inventory.convert_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_units()</span></code></a>):</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="n">kg</span> <span class="o">=</span> <span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2022-01-01&quot;</span><span class="p">])</span>
-<span class="go">    ...: gg = slv.convert_units(&quot;Gg/km**2/yr&quot;).integrate().sel(time=[&quot;2020-01-01&quot;, &quot;2022-01-01&quot;]).compute()</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [10]: </span><span class="n">kg</span> <span class="o">=</span> <span class="n">total</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">"2020-01-01"</span><span class="p">,</span> <span class="s2">"2022-01-01"</span><span class="p">])</span>
+<span class="go">    ...: gg = slv.convert_units("Gg/km**2/yr").integrate().sel(time=["2020-01-01", "2022-01-01"]).compute()</span>
 <span class="go">    ...:</span>
 <span class="go">    ...: (100 * (gg / (kg / 1e6) - 1)).to_series().round(6)  # percent</span>
 <span class="gh">Out[10]:</span>
@@ -710,17 +711,17 @@ cell gets the area-weighted flux of the old cells it overlaps, so flux times
 area, and with it the total, stays the same.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="n">fine</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># conservative by default</span>
 <span class="go">    ...: fine.data.sizes</span>
-<span class="gh">Out[11]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 60, &#39;lon&#39;: 60})</span>
+<span class="gh">Out[11]: </span><span class="go">Frozen({'time': 53, 'lat': 60, 'lon': 60})</span>
 </pre></div>
 </div>
 <p>Now compare the 2022 total before and after:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="n">fine_total</span> <span class="o">=</span> <span class="n">fine</span><span class="o">.</span><span class="n">integrate</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 <span class="go">    ...:</span>
-<span class="go">    ...: before = float(total.sel(time=&quot;2022-01-01&quot;))</span>
-<span class="go">    ...: after = float(fine_total.sel(time=&quot;2022-01-01&quot;))</span>
-<span class="go">    ...: print(f&quot;before: {before / 1e6:.3f} kt&quot;)</span>
-<span class="go">    ...: print(f&quot;after:  {after / 1e6:.3f} kt&quot;)</span>
-<span class="go">    ...: print(f&quot;change: {100 * (after - before) / before:+.4f} %&quot;)</span>
+<span class="go">    ...: before = float(total.sel(time="2022-01-01"))</span>
+<span class="go">    ...: after = float(fine_total.sel(time="2022-01-01"))</span>
+<span class="go">    ...: print(f"before: {before / 1e6:.3f} kt")</span>
+<span class="go">    ...: print(f"after:  {after / 1e6:.3f} kt")</span>
+<span class="go">    ...: print(f"change: {100 * (after - before) / before:+.4f} %")</span>
 <span class="go">before: 22.629 kt</span>
 <span class="go">after:  22.629 kt</span>
 <span class="go">change: -0.0005 %</span>
@@ -841,8 +842,8 @@ WetCHARTs) and what each one’s total includes.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -862,7 +863,7 @@ WetCHARTs) and what each one’s total includes.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -875,7 +876,7 @@ WetCHARTs) and what each one’s total includes.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>
