@@ -1,21 +1,19 @@
 """
-Times, time zones and time ranges.
+Times and time zones.
 
 :func:`convert_timezones` moves times between zones (a time without a zone
 needs ``fromtz``), and :func:`UTC2MTN` and its siblings are its common cases.
-:class:`TimeRange` is a start and an end parsed from ISO strings; the
-remaining functions turn times into decimal years (:func:`dt2decimalDate`),
+The remaining functions turn times into decimal years (:func:`dt2decimalDate`),
 intervals, time-difference matrices, and diurnal and seasonal aggregates.
 :doc:`/examples/clock` shows the time-zone rules and the afternoon mean.
 """
 
 import datetime as dt
-import re
 import time
 from collections.abc import Callable, Sequence
 from contextlib import ContextDecorator
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Literal, Union
+from typing import Any, ClassVar, Literal
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -25,7 +23,6 @@ import pandas as pd
 __all__ = [
     "AFTERNOON",
     "SEASONS",
-    "TimeRange",
     "Timer",
     "datetime_accessor",
     "regular_times_to_intervals",
@@ -72,331 +69,6 @@ SEASONS = {
     11: "SON",
     12: "DJF",
 }
-
-
-class TimeRange:
-    """
-    TimeRange class to represent a time range with start and stop times.
-
-    The range includes its start and not its stop, so ``TimeRange("2024")``
-    covers 2024 and stops at 2025-01-01 00:00.
-
-    Parameters
-    ----------
-    time_range : TimeRange | str | list | tuple | slice | None, optional
-        The whole range in one argument: another ``TimeRange``; an ISO 8601
-        string, which covers the period it names (``"2024"`` is all of
-        2024, ``"2024-07-04"`` that day); a ``(start, stop)`` pair; or a
-        slice. With no ``start`` or ``stop`` either, the default (None) is a
-        range open at both ends.
-    start : str | dt.datetime | numpy.datetime64 | None, optional
-        The start, when ``time_range`` is not given. A string stands for
-        the start of the period it names. None leaves the range open at the
-        start.
-    stop : str | dt.datetime | numpy.datetime64 | None, optional
-        The stop, when ``time_range`` is not given. It is not part of the
-        range. A string stands for the end of the period it names:
-        ``"2024"`` stops at 2025-01-01 00:00. None leaves the range open at
-        the end.
-
-    Raises
-    ------
-    ValueError
-        If ``time_range`` is given together with ``start`` or ``stop``, or
-        if any of them has an unrecognized format.
-
-    Attributes
-    ----------
-    start : dt.datetime | None
-        The start time of the time range.
-    stop : dt.datetime | None
-        The stop time of the time range.
-    total_seconds : float
-        The total number of seconds in the time range.
-
-    Methods
-    -------
-    parse_iso(string: str, inclusive: bool = False) -> dt.datetime
-        Parse the ISO8601 formatted time string and return a datetime object.
-
-    See Also
-    --------
-    TimeRange.parse_iso : How a string becomes a start or a stop.
-
-    Examples
-    --------
-    >>> import datetime as dt
-    >>> from lair.clock import TimeRange
-    >>> july = TimeRange("2024-07")
-    >>> july.start, july.stop
-    (datetime.datetime(2024, 7, 1, 0, 0), datetime.datetime(2024, 8, 1, 0, 0))
-    >>> dt.datetime(2024, 7, 31, 23) in july
-    True
-    >>> TimeRange(start="2024-07-04")
-    TimeRange(start=2024-07-04 00:00:00, stop=None)
-    >>> str(TimeRange())
-    'Entire Observation Period'
-    """
-
-    # typing.Union, not X | Y: the annotation below adds the "TimeRange" forward
-    # reference to it at runtime, which only typing.Union accepts.
-    _input_types = Union[  # noqa: UP007
-        str,
-        list[str | dt.datetime | None],
-        tuple[str | dt.datetime | None, str | dt.datetime | None],
-        slice,
-        None,
-    ]
-
-    def __init__(
-        self,
-        time_range: "TimeRange" | _input_types = None,
-        start: _input_types | dt.datetime = None,
-        stop: _input_types | dt.datetime = None,
-    ):
-        """Initialize a TimeRange; the class docstring describes the parameters."""
-        if time_range and (start or stop):
-            raise ValueError("Cannot specify both time_range and start/stop")
-
-        self._start = None
-        self._stop = None
-
-        if isinstance(time_range, TimeRange):
-            start, stop = time_range.start, time_range.stop
-        elif not any([time_range, start, stop]):
-            start = None
-            stop = None
-        elif time_range:
-            if isinstance(time_range, str):
-                # Handle the case when time_range is a string
-                start = TimeRange.parse_iso(time_range)
-                stop = TimeRange.parse_iso(time_range, inclusive=True)
-            elif isinstance(time_range, (list, tuple)) and len(time_range) == 2:
-                # Handle the case when time_range is a list/tuple
-                #   representing start and stop
-                start, stop = time_range
-            elif isinstance(time_range, slice):
-                # Handle the case when time_range is a slice
-                start, stop = time_range.start, time_range.stop
-            else:
-                raise ValueError("Invalid time_range format")
-
-        self.start = start
-        self.stop = stop
-
-    def __repr__(self):
-        return f"TimeRange(start={self.start}, stop={self.stop})"
-
-    def __str__(self):
-        if not any([self.start, self.stop]):
-            return "Entire Observation Period"
-        elif not self.start:
-            return f"Before {self.stop}"
-        elif not self.stop:
-            return f"After {self.start}"
-        else:
-            return f"{self.start} to {self.stop}"
-
-    def __iter__(self):
-        return iter([self.start, self.stop])
-
-    def __contains__(self, item):
-        if not any([self.start, self.stop]):
-            # Entire Period - True
-            return True
-        # stop is exclusive: TimeRange('2024') stops at 2025-01-01 00:00,
-        # which belongs to the next period
-        if not self.start:
-            # Before stop - True if item < stop
-            return item < self.stop
-        if not self.stop:
-            # After start - True if start <= item
-            return self.start <= item
-        return self.start <= item < self.stop
-
-    @property
-    def start(self) -> dt.datetime | None:
-        """
-        The start of the range, or None if it is open at the start.
-
-        Setting it takes a datetime, a ``numpy.datetime64``, None, or an ISO
-        8601 string, which stands for the start of the period it names.
-
-        See Also
-        --------
-        TimeRange.stop : The end of the range.
-
-        Examples
-        --------
-        >>> from lair.clock import TimeRange
-        >>> TimeRange("2024-07").start
-        datetime.datetime(2024, 7, 1, 0, 0)
-        """
-        return self._start
-
-    @start.setter
-    def start(self, start):
-        if start is None or isinstance(start, dt.datetime):
-            self._start = start
-        elif isinstance(start, str):
-            self._start = TimeRange.parse_iso(start)
-        elif isinstance(start, np.datetime64):
-            self._start = pd.to_datetime(start).to_pydatetime()
-        else:
-            raise ValueError("Invalid start time format")
-
-    @property
-    def stop(self) -> dt.datetime | None:
-        """
-        The end of the range, or None if it is open at the end.
-
-        The stop itself is not in the range. Setting it takes a datetime, a
-        ``numpy.datetime64``, None, or an ISO 8601 string, which stands for the
-        end of the period it names.
-
-        See Also
-        --------
-        TimeRange.start : The start of the range.
-
-        Examples
-        --------
-        >>> from lair.clock import TimeRange
-        >>> TimeRange("2024-07").stop
-        datetime.datetime(2024, 8, 1, 0, 0)
-        """
-        return self._stop
-
-    @stop.setter
-    def stop(self, stop):
-        if stop is None or isinstance(stop, dt.datetime):
-            self._stop = stop
-        elif isinstance(stop, str):
-            self._stop = TimeRange.parse_iso(stop, inclusive=True)
-        elif isinstance(stop, np.datetime64):
-            self._stop = pd.to_datetime(stop).to_pydatetime()
-        else:
-            raise ValueError("Invalid stop time format")
-
-    @property
-    def total_seconds(self) -> float:
-        """
-        The length of the range in seconds; both ends must be set.
-
-        Raises
-        ------
-        ValueError
-            If the range is open at either end.
-
-        See Also
-        --------
-        dt2decimalDate : Uses the length of a year from it.
-
-        Examples
-        --------
-        >>> from lair.clock import TimeRange
-        >>> TimeRange("2024-07").total_seconds / 86400  # days in July
-        31.0
-        """
-        if self.start is None or self.stop is None:
-            raise ValueError("Both start and stop times must be specified")
-        return (self.stop - self.start).total_seconds()
-
-    @staticmethod
-    def parse_iso(string: str, inclusive: bool = False) -> dt.datetime:
-        """
-        Parse an ISO 8601 time string, such as ``"2024-07"``, into a datetime.
-
-        Parameters
-        ----------
-        string : str
-            The ISO 8601 time string, from a year down to fractions of a second.
-            A trailing ``Z`` is accepted; the result has no time zone.
-        inclusive : bool, optional
-            If False (the default), return the start of the period the string
-            names. If True, return its end, which is the start of the next
-            period: ``"2024-07"`` gives 2024-08-01 00:00.
-
-        Returns
-        -------
-        dt.datetime
-            The parsed datetime object.
-
-        Raises
-        ------
-        ValueError
-            If the time_str format is invalid.
-
-        See Also
-        --------
-        TimeRange : A range made from such strings.
-
-        Examples
-        --------
-        >>> from lair.clock import TimeRange
-        >>> TimeRange.parse_iso("2024-07")
-        datetime.datetime(2024, 7, 1, 0, 0)
-        >>> TimeRange.parse_iso("2024-07", inclusive=True)
-        datetime.datetime(2024, 8, 1, 0, 0)
-        >>> TimeRange.parse_iso("2024-07-04T12Z")
-        datetime.datetime(2024, 7, 4, 12, 0)
-        """
-        # Parse time_range string using regex assuming ISO8601 format.
-        # Each component is only allowed after the one before it, and the
-        # whole string must match, so e.g. '2024-1' is rejected instead of
-        # being read as hour 1 of 2024.
-        iso8601 = (
-            r"(?P<year>\d{4})"
-            r"(?:-?(?P<month>\d{2})"
-            r"(?:-?(?P<day>\d{2})"
-            r"(?:[T\s]?(?P<hour>\d{2})"
-            r"(?::?(?P<minute>\d{2})"
-            r"(?::?(?P<second>\d{2}(?:\.\d{1,6})?))?)?)?)?)?"
-            r"Z?"  # UTC designator; times are naive (UTC by convention)
-        )
-        match = re.fullmatch(iso8601, string.strip())
-        if not match:
-            raise ValueError(f"Invalid time string format: {string!r}")
-
-        components = match.groupdict()
-        year = int(components["year"])
-        month = int(components["month"] or 1)
-        day = int(components["day"] or 1)
-        hour = int(components["hour"] or 0)
-        minute = int(components["minute"] or 0)
-        second, _, fraction = (components["second"] or "0").partition(".")
-        microsecond = int(fraction.ljust(6, "0")) if fraction else 0
-
-        start = dt.datetime(year, month, day, hour, minute, int(second), microsecond)
-
-        # Determine the stop time based on the inclusive flag
-        if inclusive:
-            if components["year"] and not components["month"]:
-                "YYYY"
-                stop = dt.datetime(year + 1, 1, 1)
-            elif components["month"] and not components["day"]:
-                "YYYY-MM"
-                mm = month + 1 if month < 12 else 1
-                yyyy = year + 1 if month == 12 else year
-                stop = dt.datetime(yyyy, mm, 1)
-            elif components["day"] and not components["hour"]:
-                "YYYY-MM-DD"
-                stop = start + dt.timedelta(days=1)
-            elif components["hour"] and not components["minute"]:
-                "YYYY-MM-DDTHH"
-                stop = start + dt.timedelta(hours=1)
-            elif components["minute"] and not components["second"]:
-                "YYYY-MM-DDTHH:MM"
-                stop = start + dt.timedelta(minutes=1)
-            elif components["second"]:
-                "YYYY-MM-DDTHH:MM:SS"
-                # one unit of the finest digit given, e.g. 12:30:45.5 -> +0.1 s
-                stop = start + dt.timedelta(seconds=10.0 ** -len(fraction))
-            else:
-                raise ValueError("Invalid time string format")
-
-            return stop
-        else:
-            return start
 
 
 @dataclass
@@ -601,7 +273,7 @@ def regular_times_to_intervals(
 
     See Also
     --------
-    TimeRange : One interval, from ISO strings.
+    pandas.interval_range : Intervals of one length between a start and an end.
 
     Examples
     --------
@@ -828,6 +500,11 @@ def seasonal(data: pd.DataFrame, statistic: str | list[str] = "mean") -> pd.Data
 # ----- Decimal Time ----- #
 
 
+def _seconds_in_year(year: int) -> float:
+    """Return the number of seconds in the calendar year (366 days in a leap year)."""
+    return (dt.datetime(year + 1, 1, 1) - dt.datetime(year, 1, 1)).total_seconds()
+
+
 def dt2decimalDate(datetime: dt.datetime) -> float:
     """
     Convert a datetime object to a decimal date.
@@ -864,7 +541,7 @@ def dt2decimalDate(datetime: dt.datetime) -> float:
 
     this_year = dt.datetime(datetime.year, 1, 1)
     total_seconds = (datetime - this_year).total_seconds()
-    total_seconds_year = TimeRange(str(datetime.year)).total_seconds
+    total_seconds_year = _seconds_in_year(datetime.year)
     return datetime.year + (total_seconds / total_seconds_year)
 
 
@@ -897,7 +574,7 @@ def decimalDate2dt(decimalDate: float) -> dt.datetime:
     rem = decimalDate - year
 
     this_year = dt.datetime(year, 1, 1)
-    total_seconds_year = TimeRange(str(year)).total_seconds
+    total_seconds_year = _seconds_in_year(year)
     # Round to the millisecond: the float year term only carries ~1e-5 s of
     # precision, and without rounding midnight comes back as 23:59:59.999998
     # of the day before
