@@ -10,159 +10,12 @@ import pytest
 from lair import clock
 
 
-class TestTimeRangeParsing:
-    def test_year_string_expands_to_full_year(self):
-        tr = clock.TimeRange("2024")
-        assert tr.start == dt.datetime(2024, 1, 1)
-        assert tr.stop == dt.datetime(2025, 1, 1)
-
-    def test_year_month_string(self):
-        tr = clock.TimeRange("2024-07")
-        assert tr.start == dt.datetime(2024, 7, 1)
-        assert tr.stop == dt.datetime(2024, 8, 1)
-
-    def test_parse_iso_inclusive_adds_one_day(self):
-        # The stop setter parses date strings inclusively (end of that day).
-        assert clock.TimeRange.parse_iso("2024-01-02") == dt.datetime(2024, 1, 2)
-        assert clock.TimeRange.parse_iso("2024-01-02", inclusive=True) == dt.datetime(
-            2024, 1, 3
-        )
-
-    def test_invalid_string_raises(self):
-        with pytest.raises(ValueError):
-            clock.TimeRange.parse_iso("not-a-date")
-
-    @pytest.mark.parametrize("bad", ["2024-1", "2024-1-5", "20241", "2024-01-15junk"])
-    def test_unpadded_or_trailing_input_raises(self, bad):
-        # These used to parse as hour 1 of 2024 (or silently drop the tail)
-        with pytest.raises(ValueError):
-            clock.TimeRange.parse_iso(bad)
-
-    @pytest.mark.parametrize(
-        "string, start, stop",
-        [
-            ("2024-01-15T12", (2024, 1, 15, 12), (2024, 1, 15, 13)),
-            ("2024011512", (2024, 1, 15, 12), (2024, 1, 15, 13)),
-            ("2024-01-15T12:30", (2024, 1, 15, 12, 30), (2024, 1, 15, 12, 31)),
-            ("2024-01-15 12:30:05", (2024, 1, 15, 12, 30, 5), (2024, 1, 15, 12, 30, 6)),
-            (
-                "2024-01-15T12:30:05Z",
-                (2024, 1, 15, 12, 30, 5),
-                (2024, 1, 15, 12, 30, 6),
-            ),
-            (
-                "2024-01-15T12:30:05.5",
-                (2024, 1, 15, 12, 30, 5, 500000),
-                (2024, 1, 15, 12, 30, 5, 600000),
-            ),
-        ],
-    )
-    def test_sub_day_precision(self, string, start, stop):
-        assert clock.TimeRange.parse_iso(string) == dt.datetime(*start)
-        assert clock.TimeRange.parse_iso(string, inclusive=True) == dt.datetime(*stop)
-
-
-class TestTimeRangeMembership:
-    def test_contains_within_bounds(self):
-        tr = clock.TimeRange(
-            start=dt.datetime(2024, 1, 1), stop=dt.datetime(2024, 1, 3)
-        )
-        assert dt.datetime(2024, 1, 2) in tr
-        assert dt.datetime(2024, 2, 1) not in tr
-
-    def test_stop_is_exclusive(self):
-        # The stop of a string range is the start of the next period
-        assert dt.datetime(2024, 12, 31, 23, 59) in clock.TimeRange("2024")
-        assert dt.datetime(2025, 1, 1) not in clock.TimeRange("2024")
-        assert dt.datetime(2024, 1, 16) not in clock.TimeRange("2024-01-15")
-        assert dt.datetime(2024, 1, 1) not in clock.TimeRange(stop="2023")
-
-    def test_open_ended_ranges(self):
-        after = clock.TimeRange(start=dt.datetime(2024, 1, 1))
-        assert dt.datetime(2030, 1, 1) in after
-        assert dt.datetime(2000, 1, 1) not in after
-
-    def test_empty_range_contains_everything(self):
-        tr = clock.TimeRange()
-        assert dt.datetime(1900, 1, 1) in tr
-
-    def test_total_seconds_requires_both_ends(self):
-        with pytest.raises(ValueError):
-            _ = clock.TimeRange(start=dt.datetime(2024, 1, 1)).total_seconds
-
-    def test_iter_yields_start_stop(self):
-        start, stop = dt.datetime(2024, 1, 1), dt.datetime(2024, 1, 2)
-        assert list(clock.TimeRange(start=start, stop=stop)) == [start, stop]
-
-    @pytest.mark.parametrize(
-        "kwargs", [{"start": "2024-01-01"}, {"stop": "2024-02-01"}]
-    )
-    def test_time_range_with_start_or_stop_raises(self, kwargs):
-        # A ValueError, not an assert (asserts vanish under python -O)
-        with pytest.raises(ValueError, match="time_range"):
-            clock.TimeRange("2024", **kwargs)
-
-
-class TestTimeRangeInputs:
-    def test_copy_of_a_time_range(self):
-        original = clock.TimeRange("2024-03")
-        copy = clock.TimeRange(original)
-        assert (copy.start, copy.stop) == (original.start, original.stop)
-
-    @pytest.mark.parametrize(
-        "time_range",
-        [["2024-01", "2024-02"], ("2024-01", "2024-02"), slice("2024-01", "2024-02")],
-        ids=["list", "tuple", "slice"],
-    )
-    def test_pair_of_strings_includes_the_stop_period(self, time_range):
-        tr = clock.TimeRange(time_range)
-        assert tr.start == dt.datetime(2024, 1, 1)
-        assert tr.stop == dt.datetime(2024, 3, 1)  # all of February
-
-    def test_datetime64_bounds(self):
-        tr = clock.TimeRange(
-            start=np.datetime64("2024-01-01T06:00"), stop=np.datetime64("2024-01-02")
-        )
-        assert tr.start == dt.datetime(2024, 1, 1, 6)
-        assert tr.stop == dt.datetime(2024, 1, 2)
-        assert isinstance(tr.start, dt.datetime)
-        assert tr.total_seconds == 18 * 3600
-
-    @pytest.mark.parametrize(
-        "kwargs, match",
-        [
-            ({"time_range": 2024}, "time_range"),
-            ({"time_range": ["2024", "2025", "2026"]}, "time_range"),
-            ({"start": 2024}, "start"),
-            ({"stop": 2024.5}, "stop"),
-        ],
-    )
-    def test_unrecognized_formats_raise(self, kwargs, match):
-        with pytest.raises(ValueError, match=match):
-            clock.TimeRange(**kwargs)
-
-    @pytest.mark.parametrize(
-        "kwargs, text",
-        [
-            ({}, "Entire Observation Period"),
-            ({"stop": "2023"}, "Before 2024-01-01 00:00:00"),
-            ({"start": "2024"}, "After 2024-01-01 00:00:00"),
-            (
-                {"time_range": "2024-02"},
-                "2024-02-01 00:00:00 to 2024-03-01 00:00:00",
-            ),
-        ],
-    )
-    def test_str(self, kwargs, text):
-        assert str(clock.TimeRange(**kwargs)) == text
-
-
 class TestLeapYearSeconds:
     def test_leap_year(self):
-        assert clock.TimeRange("2024").total_seconds == 366 * 86400
+        assert clock._seconds_in_year(2024) == 366 * 86400
 
     def test_common_year(self):
-        assert clock.TimeRange("2023").total_seconds == 365 * 86400
+        assert clock._seconds_in_year(2023) == 365 * 86400
 
 
 class TestDecimalDate:
@@ -214,7 +67,7 @@ class TestDecimalDate:
         # 01:30 happens twice on 2024-11-03 in Denver (fold=0 MDT, fold=1 MST)
         first = dt.datetime(2024, 11, 3, 1, 30, tzinfo=ZoneInfo("America/Denver"))
         second = first.replace(fold=1)
-        hour = 3600 / clock.TimeRange("2024").total_seconds
+        hour = 3600 / (366 * 86400)
         assert clock.dt2decimalDate(second) - clock.dt2decimalDate(first) == (
             pytest.approx(hour, rel=1e-6)
         )

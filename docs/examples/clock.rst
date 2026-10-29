@@ -234,5 +234,5 @@ nothing is ambiguous:
 Next
 ----
 
-:mod:`lair.clock` lists the rest, including ``TimeRange`` (a start and stop
-parsed from strings such as ``"2024-07"``).
+:mod:`lair.clock` lists the rest, including the decimal-year conversions
+(``dt2decimalDate`` and ``decimalDate2dt``).
