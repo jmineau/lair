@@ -172,7 +172,7 @@ kind:
 
 | Fact | Its page | The others |
 |---|---|---|
-| Install routes, extras, the first-import download, CHPC | front page, "Installation" | link by `installation` or `optional-dependencies`; the README keeps a short copy, as GitHub's front page |
+| Install routes, extras, the first-import download, CHPC | front page, "Installation" | link by `installation` or `optional-dependencies`; the README keeps the one install command and a link to it |
 | `LAIR_*` variables, what needs which data, the pollutant spelling, the cache | `data`, "Data locations" | link by `data-locations` |
 | A dataset's folder layout and where to get it | its example, "The data"; no example: its class docstring | "Data locations" links to it |
 | A time without a zone is UTC; time zones; seasons | `examples/clock` | a clause and a link |
