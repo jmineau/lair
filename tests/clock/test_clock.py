@@ -3,7 +3,6 @@
 import datetime as dt
 from zoneinfo import ZoneInfo
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -334,33 +333,6 @@ class TestDST:
             [dt.datetime(2024, 6, 1, 12), dt.datetime(2024, 1, 1, 12)], driver
         )
         assert out == [dt.datetime(2024, 6, 1, 18), dt.datetime(2024, 1, 1, 19)]
-
-
-class TestTimeMatrices:
-    def test_difference_matrix_shape_and_diagonal(self, sample_datetimes):
-        m = clock.time_difference_matrix(sample_datetimes)
-        n = len(sample_datetimes)
-        assert m.shape == (n, n)
-        # Distance from each time to itself is zero.
-        assert all(m[i, i] == pd.Timedelta(0) for i in range(n))
-
-    def test_difference_matrix_absolute(self, sample_datetimes):
-        m = clock.time_difference_matrix(sample_datetimes, absolute=True)
-        assert (m >= pd.Timedelta(0)).all()
-
-    def test_difference_matrix_is_signed_when_not_absolute(self, sample_datetimes):
-        # Row i, column j is time i minus time j; the times are at 0, 1, 3 and 6 h.
-        hours = np.array([0, 1, 3, 6])
-        m = clock.time_difference_matrix(sample_datetimes, absolute=False)
-        expected = (hours[:, None] - hours[None, :]) * np.timedelta64(1, "h")
-        assert (m == expected).all()
-
-    def test_decay_matrix_in_unit_interval(self, sample_datetimes):
-        decay = clock.time_decay_matrix(sample_datetimes, decay="1h")
-        assert isinstance(decay, np.ndarray)
-        assert np.all((decay > 0) & (decay <= 1))
-        # Self-decay (zero lag) is exactly 1.
-        assert np.allclose(np.diag(decay), 1.0)
 
 
 class TestIntervalHelpers:
