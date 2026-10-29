@@ -556,6 +556,9 @@ def polarFreq(
     """
     Plot the contoured frequency of the data.
 
+    The colorbar is the percent of all the samples that fall in each bin of
+    direction and ``x``, so the bins add up to 100; empty bins are blank.
+
     Parameters
     ----------
     data : pd.DataFrame
@@ -610,11 +613,14 @@ def polarFreq(
     # spaced and circularize_radial_data closes it at N, not mid-circle
     counts = counts.reindex(sector_radians(), fill_value=0)
 
-    theta, r, c = circularize_radial_data(counts)
+    # Convert to percent of all the samples before circularize_radial_data repeats
+    # the north row to close the circle, so north is counted once. nansum guards
+    # against a NaN in the grid, which would make a plain sum NaN.
+    percent = counts / np.nansum(counts.to_numpy()) * 100
 
-    # Convert to percent and set empty bins (0) to nan. nansum guards against a
-    # NaN in the grid, which would make a plain c.sum() NaN and blank the plot.
-    c = c / np.nansum(c) * 100
+    theta, r, c = circularize_radial_data(percent)
+
+    # Set empty bins (0) to nan
     c[c == 0] = np.nan
 
     ax = create_polar_ax()

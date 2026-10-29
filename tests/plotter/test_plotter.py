@@ -327,7 +327,8 @@ class TestPlots:
         expected = np.zeros((16, 4))
         expected[0] = [1, 0, 1, 1]  # N
         expected[4] = [2, 0, 1, 0]  # E
-        np.testing.assert_array_equal(agg.to_numpy(dtype=float), expected)
+        # The grid is in percent of the 6 samples by the time it is circularized
+        np.testing.assert_allclose(agg.to_numpy(dtype=float), expected / 6 * 100)
 
     @pytest.mark.parametrize("plot", ["polarPlot", "polarFreq"])
     def test_polar_grid_wraps_at_north_with_empty_sectors(self, monkeypatch, plot):
@@ -345,6 +346,16 @@ class TestPlots:
         np.testing.assert_array_equal(c[-1], c[0])  # closes back onto N
         assert np.isfinite(c[[0, 4]]).any(axis=1).all()  # N and E have data
         assert np.isnan(np.delete(c[:-1], [0, 4], axis=0)).all()  # others empty
+
+    def test_polar_freq_percent_of_all_samples(self, monkeypatch):
+        # The closing row repeats N; the percentages must count N once, so the
+        # 16 sectors add up to 100 (#178). Here 3 of the 6 samples are from N.
+        captured = self._spy_contourf(monkeypatch)
+        plotter.polarFreq(pd.DataFrame(self._sparse), xbins=[0, 1, 2, 3, 4])
+        c = captured["c"]
+        assert np.nansum(c[:-1]) == pytest.approx(100.0)
+        np.testing.assert_allclose(c[0], [100 / 6, np.nan, 100 / 6, 100 / 6])  # N
+        np.testing.assert_allclose(c[4], [200 / 6, np.nan, 100 / 6, np.nan])  # E
 
     def test_windvector_plot(self, rng):
         df = pd.DataFrame(
