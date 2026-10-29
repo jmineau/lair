@@ -23,14 +23,30 @@ logger = logging.getLogger(__name__)
 
 def unzip(zf: str, dir_path: str | None = None):
     """
-    Unzip file into dir_path if given
+    Unzip a file into a folder.
 
     Parameters
     ----------
     zf : str
         Path to zip file
     dir_path : str, optional
-        Path to directory to unzip to, by default None
+        Folder to unzip into; by default the folder that holds the zip file.
+
+    See Also
+    --------
+    wget_download : Downloads files and unzips them.
+
+    Examples
+    --------
+    >>> import tempfile, zipfile
+    >>> from pathlib import Path
+    >>> from lair.records import unzip
+    >>> folder = Path(tempfile.mkdtemp())
+    >>> with zipfile.ZipFile(folder / "data.zip", "w") as z:
+    ...     z.writestr("a.txt", "hello")
+    >>> unzip(str(folder / "data.zip"))
+    >>> (folder / "a.txt").read_text()
+    'hello'
     """
     import zipfile
 
@@ -71,6 +87,25 @@ def list_files(
     -------
     List[str]
         A list of file names or full paths that match the specified pattern.
+
+    See Also
+    --------
+    glob.glob : Matches a pattern in a path, which can hold wildcards.
+
+    Examples
+    --------
+    >>> import tempfile
+    >>> from pathlib import Path
+    >>> from lair.records import list_files
+    >>> folder = Path(tempfile.mkdtemp())
+    >>> for name in ["a.nc", "b.nc", "Notes.txt", ".hidden.nc"]:
+    ...     (folder / name).touch()
+    >>> sorted(list_files(folder, "*.nc"))
+    ['a.nc', 'b.nc']
+    >>> sorted(list_files(folder, "*.TXT", ignore_case=True))
+    ['Notes.txt']
+    >>> sorted(list_files(folder, "*.nc", all_files=True))
+    ['.hidden.nc', 'a.nc', 'b.nc']
     """
     result = []
     if recursive:
@@ -108,6 +143,19 @@ def read_kml(path: str) -> "KML":
     -------
     KML
         The KML object.
+
+    See Also
+    --------
+    lair.transects : Metrics along a route, such as one read from a KML file.
+
+    Notes
+    -----
+    Needs the ``formats`` extra (fastkml).
+
+    Examples
+    --------
+    >>> from lair.records import read_kml
+    >>> kml = read_kml("route.kml")  # doctest: +SKIP
     """
     # Optional dependency for KML file support
     import_optional_dependency("fastkml")
@@ -145,9 +193,26 @@ def wget_download(
         If None, the files will be downloaded directly into the download_dir.
         If an empty string, the entire structure will be recreated.
     num_threads : int, optional
-        Maximum number of threads to use for downloading, by default 4.
+        Maximum number of threads to use for downloading. Defaults to 1.
     unzip : bool, optional
         Whether to unzip the downloaded files if they are ZIP files. Defaults to True.
+
+    See Also
+    --------
+    ftp_download : The same for an FTP server.
+    unzip : Unzips one file.
+
+    Notes
+    -----
+    Needs ``wget`` (and ``unzip``, to unzip) on the PATH. A URL that fails is
+    logged as a warning and skipped.
+
+    Examples
+    --------
+    >>> from lair.records import wget_download
+    >>> wget_download(
+    ...     "https://example.com/data/file.zip", "downloads"
+    ... )  # doctest: +SKIP
     """
     import subprocess
     from concurrent.futures import ThreadPoolExecutor
@@ -236,6 +301,10 @@ def ftp_download(
         The password to use for the FTP server. Defaults to ''.
     prefix : str, optional
         The common prefix to use for the local directory structure. Defaults to None.
+        With None, each path is saved under its own name in ``download_dir`` (a
+        folder keeps its name and what is below it). With a prefix, the remote
+        folders below the prefix are kept. With an empty string, the whole
+        remote path is recreated.
     pattern : str, optional
         Only download files whose remote path matches. With wildcards (``*``,
         ``?``, ``[``) it is a glob against the full remote path (e.g.
@@ -245,7 +314,21 @@ def ftp_download(
     Returns
     -------
     bool
-        True if the download was successful, False otherwise.
+        True when the download finishes. A failed transfer raises.
+
+    See Also
+    --------
+    wget_download : The same for URLs.
+    lair.noaa.CarbonTracker.download : Calls it with NOAA's CarbonTracker folders.
+    lair.noaa.GMLData.download : Calls it with NOAA GML's data folders.
+
+    Examples
+    --------
+    >>> from lair.records import ftp_download
+    >>> ftp_download(
+    ...     "ftp.gml.noaa.gov", "user/thoning/ccgcrv/ccg_filter.zip", "downloads"
+    ... )  # doctest: +SKIP
+    True
     """
     import ftplib
 

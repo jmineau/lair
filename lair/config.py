@@ -42,6 +42,30 @@ def get_data_dir(env_var: str, path: str | os.PathLike | None = None) -> Path:
     ------
     ValueError
         If neither ``path`` nor the environment variable is set.
+
+    See Also
+    --------
+    get_cache_dir : The cache folder, which has a default.
+
+    Examples
+    --------
+    An explicit folder wins over the variable:
+
+    >>> import os
+    >>> from lair.config import get_data_dir
+    >>> os.environ["LAIR_INVENTORY_DIR"] = "/data/inventories"
+    >>> get_data_dir("LAIR_INVENTORY_DIR").as_posix()
+    '/data/inventories'
+    >>> get_data_dir("LAIR_INVENTORY_DIR", "/elsewhere").as_posix()
+    '/elsewhere'
+
+    With neither, the error names the variable:
+
+    >>> del os.environ["LAIR_INVENTORY_DIR"]
+    >>> get_data_dir("LAIR_INVENTORY_DIR")
+    Traceback (most recent call last):
+        ...
+    ValueError: No data directory given: pass it explicitly or set the LAIR_INVENTORY_DIR environment variable.
     """
     if path is None:
         path = os.environ.get(env_var)
@@ -68,6 +92,22 @@ def get_cache_dir() -> Path:
     Path
         ``$LAIR_CACHE_DIR``, or ``.cache/lair`` in the home directory when
         the variable is unset or empty.
+
+    See Also
+    --------
+    get_data_dir : The folder of a data archive, which has no default.
+    lair.records.Cacher : Writes the cache files.
+
+    Examples
+    --------
+    >>> import os
+    >>> from lair.config import get_cache_dir
+    >>> os.environ["LAIR_CACHE_DIR"] = "/scratch/lair_cache"
+    >>> get_cache_dir().as_posix()
+    '/scratch/lair_cache'
+    >>> del os.environ["LAIR_CACHE_DIR"]
+    >>> get_cache_dir().parts[-2:]
+    ('.cache', 'lair')
     """
     path = os.environ.get("LAIR_CACHE_DIR")
     if path:

@@ -63,6 +63,28 @@ def parallelize(func: Callable, num_processes: int | Literal["max"] = 1) -> Call
     by its module-level name, so it then no longer pickles. ``func`` must be
     defined at module level (no lambdas or nested functions) for the same
     reason.
+
+    See Also
+    --------
+    lair.noaa.CarbonTracker.molefractions : Opens its files in worker processes
+        of its own; see the CarbonTracker example for the ``__main__`` guard a
+        script needs.
+
+    Examples
+    --------
+    ``func`` takes one item and is given each item of the iterable in turn; other
+    arguments are passed to the returned function by keyword:
+
+    >>> from lair.parallel import parallelize
+    >>> def add(x, b=0):
+    ...     return x + b
+    >>> run = parallelize(add, num_processes=1)
+    >>> run([1, 2, 3], b=10)
+    [11, 12, 13]
+
+    With ``num_processes=4``, a script puts ``func`` at module level and the call
+    under ``if __name__ == "__main__":``, so that each worker can import the
+    script without running the call again.
     """
     func_name = func.__name__
 
