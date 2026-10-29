@@ -1569,3 +1569,302 @@ class TestTimeLabels:
                 provider.absolute_emissions[var].values,
                 inv.absolute_emissions[var].values,
             )
+
+
+# --- Reading files with the base class -------------------------------------
+
+
+def _write_flux_file(path, name, value):
+    """A (time, lat, lon) flux of ``value`` in one variable, for 2020 and 2021."""
+    import pandas as pd
+
+    xr.Dataset(
+        {name: (("time", "lat", "lon"), np.full((2, 2, 2), value))},
+        coords={
+            "time": pd.date_range("2020-01-01", periods=2, freq="YS"),
+            "lat": [40.05, 40.15],
+            "lon": [-111.95, -111.85],
+        },
+    ).to_netcdf(path)
+
+
+class TestInventoryFromFiles:
+    def test_a_folder_of_files_is_read_together(self, tmp_path):
+        _write_flux_file(tmp_path / "energy.nc", "energy", 1.0)
+        _write_flux_file(tmp_path / "waste.nc", "waste", 4.0)
+        inv = inventories.Inventory(
+            str(tmp_path), pollutant="CH4", src_units="kg/m**2/s"
+        )
+        assert inv.path == str(tmp_path)
+        assert set(inv.data.data_vars) == {"energy", "waste"}
+        assert (inv.data["energy"] == 1.0).all()
+        assert (inv.total_emissions == 5.0).all()
+
+    def test_one_file(self, tmp_path):
+        _write_flux_file(tmp_path / "energy.nc", "energy", 3.0)
+        inv = inventories.Inventory(
+            str(tmp_path / "energy.nc"), pollutant="CH4", src_units="kg/m**2/s"
+        )
+        assert list(inv.data.data_vars) == ["energy"]
+        assert (inv.data["energy"] == 3.0).all()
+
+    def test_a_folder_without_files_raises(self, tmp_path):
+        with pytest.raises(FileNotFoundError, match="No Inventory files found"):
+            inventories.Inventory(str(tmp_path), pollutant="CH4", src_units="kg/m**2/s")
+
+    def test_data_that_is_not_a_path_or_dataset_raises(self):
+        with pytest.raises(ValueError, match="path to a file or an xarray Dataset"):
+            inventories.Inventory(123, pollutant="CH4", src_units="kg/m**2/s")
+
+    def test_a_dataset_has_no_files(self, inventory):
+        assert inventory.path is None
+        with pytest.raises(ValueError, match="built from a Dataset and has no files"):
+            inventory._file_root()
+
+
+class TestInventoryAccessors:
+    def test_get_units_as_quantities(self, inventory):
+        from lair import units
+
+        quantity, area, time = inventory.get_units(pint=True)
+        assert (quantity, area, time) == (units("kg"), units("m**2"), units("s"))
+
+    def test_quantify_has_pint_units(self, inventory):
+        from lair import units
+
+        quantified = inventory.quantify()
+        assert quantified["energy"].pint.units == units.Unit("kg/m**2/s")
+        assert float(quantified["agriculture"].pint.magnitude.max()) == 2.0
+
+    @pytest.fixture
+    def plotted(self):
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        yield
+        plt.close("all")
+
+    @staticmethod
+    def _steps():
+        # energy 1 in 2020 and 5 in 2021; agriculture is twice energy
+        import pandas as pd
+
+        energy = np.stack([np.full((2, 2), 1.0), np.full((2, 2), 5.0)])
+        ds = xr.Dataset(
+            {
+                "energy": (("time", "lat", "lon"), energy),
+                "agriculture": (("time", "lat", "lon"), 2 * energy),
+            },
+            coords={
+                "time": pd.date_range("2020-01-01", periods=2, freq="YS"),
+                "lat": [40.0, 41.0],
+                "lon": [-112.0, -111.0],
+            },
+        )
+        for var in ds.data_vars:
+            ds[var].attrs["units"] = "kg/m**2/s"
+        return inventories.Inventory(ds, pollutant="CH4", src_units="kg/m**2/s")
+
+    @staticmethod
+    def _drawn(ax):
+        return np.asarray(ax.collections[0].get_array()).ravel()
+
+    @pytest.mark.usefixtures("plotted")
+    @pytest.mark.parametrize(
+        "time, sector, expected",
+        [
+            (-1, None, 15.0),  # the last step: 5 + 10
+            (0, None, 3.0),  # the first: 1 + 2
+            ("2021-01-01", "agriculture", 10.0),  # a label, one sector
+            ("mean", "energy", 3.0),  # (1 + 5) / 2
+        ],
+    )
+    def test_plot_selects_the_step_and_sector(self, time, sector, expected):
+        ax = self._steps().plot(time=time, sector=sector)
+        np.testing.assert_allclose(self._drawn(ax), expected)
+
+    @pytest.mark.usefixtures("plotted")
+    def test_plot_draws_on_the_axes_it_is_given(self):
+        import cartopy.crs as ccrs
+        import matplotlib.pyplot as plt
+
+        ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree()})[1]
+        assert self._steps().plot(ax=ax, time=0) is ax
+
+
+# --- Time steps the base class knows ------------------------------------------
+
+
+class TestCalendarSteps:
+    """absolute_emissions of a flux per second is the flux times the step's seconds."""
+
+    @staticmethod
+    def _seconds(inv):
+        absolute = inv.absolute_emissions["energy"]
+        per_m2 = absolute / (inv.gridcell_area * 1e6)
+        return per_m2.isel(lat=0, lon=0).values
+
+    def test_quarters_have_the_days_of_their_months(self):
+        # January to March 2019 is 31 + 28 + 31 = 90 days, April to June 30 + 31 + 30 = 91
+        inv = _flux_of_one("quarterly", "QS", "kg m-2 s-1")
+        assert inv.data.indexes["time"].month.tolist() == [1, 4]
+        np.testing.assert_allclose(self._seconds(inv), [90 * 86400, 91 * 86400])
+
+    def test_a_quarterly_leap_year_quarter_has_91_days(self):
+        # January to March 2020: 31 + 29 + 31
+        inv = _flux_of_one("quarterly", "QS", "kg m-2 s-1", start="2020-01-01")
+        np.testing.assert_allclose(self._seconds(inv)[0], 91 * 86400)
+
+    def test_biweekly_is_fourteen_days(self):
+        inv = _flux_of_one("biweekly", "14D", "kg m-2 s-1")
+        np.testing.assert_allclose(self._seconds(inv), [14 * 86400] * 2)
+
+    def test_a_step_that_is_not_known_raises(self):
+        with pytest.raises(ValueError, match="Time step weekly not supported"):
+            _ = _flux_of_one("weekly", "7D", "kg m-2 s-1").absolute_emissions
+
+    def test_converting_a_quarterly_flux_uses_pints_year(self):
+        # No pint unit is one quarter, so nothing is per step: 1 kg m-2 s-1 is
+        # 1e-3 Mg / 1e-6 km2 = 1000 Mg km-2 s-1, and a pint year is 365.25 days
+        inv = _flux_of_one("quarterly", "QS", "kg m-2 s-1")
+        converted = inv.convert_units("Mg/km**2/yr")
+        np.testing.assert_allclose(_values(converted), 1000 * 365.25 * 86400)
+
+
+def test_bounds_that_were_not_decoded_raise():
+    # The bounds of a file opened with decode_times=False are numbers
+    ds = xr.Dataset(
+        {"time_bnds": (("time", "nv"), np.array([[0, 31], [31, 59]]))},
+        coords={"time": [15, 45]},
+    )
+    with pytest.raises(ValueError, match="'time_bnds' was not decoded to datetimes"):
+        inventories._label_period_starts(ds)
+
+
+class TestMultiModelLabels:
+    def test_a_model_is_selected_by_its_label(self, tmp_path):
+        # Models named by text (WetCHARTs numbers them): 'b' is three times 'a'
+        import pandas as pd
+
+        values = np.ones((2, 1, 2, 2))
+        values[1] = 3.0
+        ds = xr.Dataset(
+            {"wetlands": (("model", "time", "lat", "lon"), values)},
+            coords={
+                "model": ["a", "b"],
+                "time": pd.date_range("2020-01-01", periods=1, freq="YS"),
+                "lat": [40.05, 40.15],
+                "lon": [-111.95, -111.85],
+            },
+        )
+        ds["wetlands"].attrs["units"] = "kg/m**2/s"
+        ds.to_netcdf(tmp_path / "models.nc")
+        inv = inventories.MultiModelInventory(
+            str(tmp_path / "models.nc"),
+            pollutant="CH4",
+            src_units="kg/m**2/s",
+            model="b",
+        )
+        assert "model" not in inv.data.dims
+        assert (inv.data["wetlands"] == 3.0).all()
+        assert inv.multimodel_data.sizes["model"] == 2
+
+
+# --- Loaders ----------------------------------------------------------------
+
+
+class TestEPALoaders:
+    def test_a_time_step_without_a_reader_raises(self, epa_v1_dir):
+        import shutil
+
+        folder = epa_v1_dir / "EPA" / "v1"
+        shutil.copy(folder / "GEPA_Annual.nc", folder / "GEPA_Hourly.nc")
+        with pytest.raises(ValueError, match="Time step hourly not supported"):
+            inventories.EPAv1("Hourly", inventory_dir=epa_v1_dir)
+
+    @pytest.mark.parametrize(
+        "name, prefix, expected",
+        [
+            (
+                "emi_ch4_1A_Combustion_Stationary",
+                "emi_ch4",
+                ("1A", "Combustion_Stationary"),
+            ),
+            ("emi_ch4_5A1_Landfills_MSW", "emi_ch4", ("5A1", "Landfills_MSW")),
+            ("emi_ch4_total", "emi_ch4", (None, None)),
+            ("lat", "emi_ch4", (None, None)),
+        ],
+    )
+    def test_ipcc_code_and_short_name_from_a_variable_name(
+        self, name, prefix, expected
+    ):
+        epa = _epa_v2(express=False)
+        assert epa._extract_ipcc_code_and_short_name(name, prefix) == expected
+
+
+@pytest.fixture
+def gfei_v1_dir(tmp_path):
+    """
+    GFEI v1 files: two sectors, their relative and geometric deviations, and the total.
+
+    The sectors have a value of their own in each file, so a mix-up shows. The files
+    for "All" sectors are there too: they are not a sector.
+    """
+    d = tmp_path / "GFEI" / "v1"
+    d.mkdir(parents=True)
+    grid = {"lat": [40.05, 40.15], "lon": [-111.95, -111.85]}
+    prefix = "Global_Fuel_Exploitation_Inventory"
+
+    def write(suffix, variable, value):
+        xr.Dataset(
+            {variable: (("lat", "lon"), np.full((2, 2), value))},
+            coords=grid,
+            attrs={"year": "2016"},
+        ).to_netcdf(d / f"{prefix}_{suffix}.nc")
+
+    for sector, emis, rsd, gsd in [("Coal", 10.0, 0.5, 1.5), ("Gas", 20.0, 0.25, 1.25)]:
+        write(sector, "emis_ch4", emis)
+        write(f"{sector}_rsd", "rsd", rsd)
+        write(f"{sector}_gsd", "gsd", gsd)
+    write("Total_Fuel_Exploitation", "emis_ch4", 30.0)
+    write("All_rsd", "rsd", 0.99)
+    write("All_gsd", "gsd", 9.99)
+    return tmp_path
+
+
+class TestGFEIv1:
+    def test_sectors_without_the_total_or_the_deviation_files(self, gfei_v1_dir):
+        gfei = inventories.GFEIv1(inventory_dir=gfei_v1_dir)
+        assert set(gfei.data.data_vars) == {"Coal", "Gas"}
+        assert float(gfei.data["Coal"].max()) == 10.0
+        assert float(gfei.data["Gas"].max()) == 20.0
+
+    @pytest.mark.parametrize(
+        "kind, expected",
+        [
+            ("relative", {"Coal": 0.5, "Gas": 0.25}),
+            ("geometric", {"Coal": 1.5, "Gas": 1.25}),
+        ],
+    )
+    def test_standard_deviations_of_each_sector(self, gfei_v1_dir, kind, expected):
+        gfei = inventories.GFEIv1(inventory_dir=gfei_v1_dir)
+        sd = gfei.get_standard_deviations(kind)
+        # The files for all sectors together are not a sector
+        assert set(sd.data_vars) == set(expected)
+        for sector, value in expected.items():
+            assert (sd[sector] == value).all()
+            assert sd[sector].attrs["standard_name"] == f"{kind}_standard_deviation"
+        assert sd.indexes["time"].year.tolist() == [2016]
+
+
+class TestVulcanErrors:
+    def test_alaska_is_refused(self, vulcan_dir):
+        with pytest.raises(ValueError, match="Alaska region not supported"):
+            inventories.Vulcan(region="AK", inventory_dir=vulcan_dir)
+
+    def test_uncertainties_are_annual_only(self, vulcan_hourly_dir):
+        v = inventories.Vulcan("hourly", inventory_dir=vulcan_hourly_dir)
+        with pytest.raises(ValueError, match="only available for annual data"):
+            v.get_uncertainties("lower")
