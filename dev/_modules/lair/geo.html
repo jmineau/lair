@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=2cee7cec"></script>
+    <script src="../../_static/documentation_options.js?v=68726d7d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev15+g62123660a" />
+  <meta name="docsearch:version" content="2026.12.11.dev18+g288e0c13e" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1876,6 +1876,12 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Regrid data to a new grid. Uses `xesmf` for regridding.</span>
 
+<span class="sd">    An output cell that the source does not reach is NaN: outside the</span>
+<span class="sd">    source, and, for ``'bilinear'`` and ``'patch'``, a center beyond the</span>
+<span class="sd">    source's outermost cell centers. A conservative regrid keeps the part of a</span>
+<span class="sd">    cell that overlaps the source, so only a cell wholly outside it is NaN.</span>
+<span class="sd">    ``'nearest_s2d'`` gives every cell its nearest source cell, however far.</span>
+
 <span class="sd">    .. note::</span>
 <span class="sd">        At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.</span>
 <span class="sd">        Possibly could use `xesmf.frontend.BaseRegridder` to regrid to a generic grid.</span>
@@ -1934,8 +1940,11 @@
     <span class="c1"># a DataArray is turned back into one at the end)</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">_as_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">"lat"</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">])</span>
 
-    <span class="c1"># Regrid the data using `xesmf`</span>
-    <span class="n">regridder</span> <span class="o">=</span> <span class="n">xe</span><span class="o">.</span><span class="n">Regridder</span><span class="p">(</span><span class="n">ds_in</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span> <span class="n">ds_out</span><span class="o">=</span><span class="n">out_grid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+    <span class="c1"># Regrid the data using `xesmf`. An output cell the source does not reach is</span>
+    <span class="c1"># NaN: xesmf's default leaves it 0, a plausible value for any field.</span>
+    <span class="n">regridder</span> <span class="o">=</span> <span class="n">xe</span><span class="o">.</span><span class="n">Regridder</span><span class="p">(</span>
+        <span class="n">ds_in</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span> <span class="n">ds_out</span><span class="o">=</span><span class="n">out_grid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">unmapped_to_nan</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
     <span class="n">regridded</span> <span class="o">=</span> <span class="n">regridder</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">keep_attrs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">regridded</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -1981,9 +1990,9 @@
 <span class="sd">    - Every other method (``"bilinear"``, the default, and ``"conservative_normed"``</span>
 <span class="sd">      included) keeps it only when its center is inside the source, which takes</span>
 <span class="sd">      more than half of it, and otherwise drops the strip. A cell centered outside</span>
-<span class="sd">      the source's outermost cell centers gets zero from bilinear interpolation,</span>
-<span class="sd">      not data, and ``"conservative_normed"`` would give it the flux of the part</span>
-<span class="sd">      inside but count its whole area.</span>
+<span class="sd">      the source's outermost cell centers is NaN from bilinear interpolation</span>
+<span class="sd">      (:func:`regrid`), and ``"conservative_normed"`` would give it the flux of the</span>
+<span class="sd">      part inside but count its whole area.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2008,7 +2017,7 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    A flux of 1 on four cells of 0.1 degree, to cells of 0.05 degree. The</span>
-<span class="sd">    default, bilinear, leaves the outer cells at zero (they are outside the</span>
+<span class="sd">    default, bilinear, leaves the outer cells NaN (they are outside the</span>
 <span class="sd">    outermost centers); a flux needs ``"conservative"``:</span>
 
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
@@ -2021,10 +2030,10 @@
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; flux = write_rio_crs(flux.rio.set_spatial_dims(x_dim="lon", y_dim="lat"), 4326)</span>
 <span class="sd">    &gt;&gt;&gt; resample(flux, 0.05).values</span>
-<span class="sd">    array([[0., 0., 0., 0.],</span>
-<span class="sd">           [0., 1., 1., 0.],</span>
-<span class="sd">           [0., 1., 1., 0.],</span>
-<span class="sd">           [0., 0., 0., 0.]])</span>
+<span class="sd">    array([[nan, nan, nan, nan],</span>
+<span class="sd">           [nan,  1.,  1., nan],</span>
+<span class="sd">           [nan,  1.,  1., nan],</span>
+<span class="sd">           [nan, nan, nan, nan]])</span>
 <span class="sd">    &gt;&gt;&gt; conservative = resample(flux, 0.05, regrid_method="conservative")</span>
 <span class="sd">    &gt;&gt;&gt; float(conservative.min().round(3)), float(conservative.max().round(3))</span>
 <span class="sd">    (1.0, 1.0)</span>

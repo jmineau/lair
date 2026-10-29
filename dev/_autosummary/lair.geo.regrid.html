@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=2cee7cec"></script>
+    <script src="../_static/documentation_options.js?v=68726d7d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev15+g62123660a" />
+  <meta name="docsearch:version" content="2026.12.11.dev18+g288e0c13e" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -821,6 +821,11 @@
 <dt class="sig sig-object py" id="lair.geo.regrid">
 <span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">regrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#regrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.regrid" title="Link to this definition">#</a></dt>
 <dd><p>Regrid data to a new grid. Uses <cite>xesmf</cite> for regridding.</p>
+<p>An output cell that the source does not reach is NaN: outside the
+source, and, for <code class="docutils literal notranslate"><span class="pre">'bilinear'</span></code> and <code class="docutils literal notranslate"><span class="pre">'patch'</span></code>, a center beyond the
+source’s outermost cell centers. A conservative regrid keeps the part of a
+cell that overlaps the source, so only a cell wholly outside it is NaN.
+<code class="docutils literal notranslate"><span class="pre">'nearest_s2d'</span></code> gives every cell its nearest source cell, however far.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>At present, <cite>xesmf</cite> only supports regridding lat-lon grids. self.data must be on a lat-lon grid.

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=2cee7cec"></script>
+    <script src="../_static/documentation_options.js?v=68726d7d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev15+g62123660a" />
+  <meta name="docsearch:version" content="2026.12.11.dev18+g288e0c13e" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -743,7 +743,7 @@ it does not keep the sum of flux times area.</p>
 <p>A flux is different: its total must not change when the grid does. On the box
 above, <code class="docutils literal notranslate"><span class="pre">lair.geo.resample</span></code> with its default lost 6.6% of the 2022 total at
 0.01 degrees. The 1,100 new cells along the edges of the box, outside the
-outermost cell centers, came out zero.</p>
+outermost cell centers, came out NaN: bilinear interpolation does not reach them.</p>
 <p>So send a flux through the inventory’s own <code class="docutils literal notranslate"><span class="pre">regrid</span></code> or <code class="docutils literal notranslate"><span class="pre">resample</span></code>, or pass
 the method yourself: <code class="docutils literal notranslate"><span class="pre">method=&quot;conservative&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">lair.geo.regrid</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">regrid_method=&quot;conservative&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">lair.geo.resample</span></code>. The two defaults

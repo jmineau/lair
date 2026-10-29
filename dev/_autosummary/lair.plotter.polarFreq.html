@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=2cee7cec"></script>
+    <script src="../_static/documentation_options.js?v=68726d7d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev15+g62123660a" />
+  <meta name="docsearch:version" content="2026.12.11.dev18+g288e0c13e" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -821,6 +821,8 @@
 <dt class="sig sig-object py" id="lair.plotter.polarFreq">
 <span class="sig-prename descclassname"><span class="pre">lair.plotter.</span></span><span class="sig-name descname"><span class="pre">polarFreq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ws'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'wd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xbins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/plotter.html#polarFreq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.plotter.polarFreq" title="Link to this definition">#</a></dt>
 <dd><p>Plot the contoured frequency of the data.</p>
+<p>The colorbar is the percent of all the samples that fall in each bin of
+direction and <code class="docutils literal notranslate"><span class="pre">x</span></code>, so the bins add up to 100; empty bins are blank.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

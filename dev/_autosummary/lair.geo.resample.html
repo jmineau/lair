@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=2cee7cec"></script>
+    <script src="../_static/documentation_options.js?v=68726d7d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev15+g62123660a" />
+  <meta name="docsearch:version" content="2026.12.11.dev18+g288e0c13e" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -833,9 +833,9 @@ counting as zero, so flux times area still adds up to the source’s total.</p><
 <li><p>Every other method (<code class="docutils literal notranslate"><span class="pre">&quot;bilinear&quot;</span></code>, the default, and <code class="docutils literal notranslate"><span class="pre">&quot;conservative_normed&quot;</span></code>
 included) keeps it only when its center is inside the source, which takes
 more than half of it, and otherwise drops the strip. A cell centered outside
-the source’s outermost cell centers gets zero from bilinear interpolation,
-not data, and <code class="docutils literal notranslate"><span class="pre">&quot;conservative_normed&quot;</span></code> would give it the flux of the part
-inside but count its whole area.</p></li>
+the source’s outermost cell centers is NaN from bilinear interpolation
+(<a class="reference internal" href="lair.geo.regrid.html#lair.geo.regrid" title="lair.geo.regrid"><code class="xref py py-func docutils literal notranslate"><span class="pre">regrid()</span></code></a>), and <code class="docutils literal notranslate"><span class="pre">&quot;conservative_normed&quot;</span></code> would give it the flux of the
+part inside but count its whole area.</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -864,7 +864,7 @@ is assumed to be the same in both dimensions.</p></li>
 </div>
 <p class="rubric">Examples</p>
 <p>A flux of 1 on four cells of 0.1 degree, to cells of 0.05 degree. The
-default, bilinear, leaves the outer cells at zero (they are outside the
+default, bilinear, leaves the outer cells NaN (they are outside the
 outermost centers); a flux needs <code class="docutils literal notranslate"><span class="pre">&quot;conservative&quot;</span></code>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
@@ -876,10 +876,10 @@ outermost centers); a flux needs <code class="docutils literal notranslate"><spa
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">flux</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">flux</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">set_spatial_dims</span><span class="p">(</span><span class="n">x_dim</span><span class="o">=</span><span class="s2">"lon"</span><span class="p">,</span> <span class="n">y_dim</span><span class="o">=</span><span class="s2">"lat"</span><span class="p">),</span> <span class="mi">4326</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">resample</span><span class="p">(</span><span class="n">flux</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
-<span class="go">array([[0., 0., 0., 0.],</span>
-<span class="go">       [0., 1., 1., 0.],</span>
-<span class="go">       [0., 1., 1., 0.],</span>
-<span class="go">       [0., 0., 0., 0.]])</span>
+<span class="go">array([[nan, nan, nan, nan],</span>
+<span class="go">       [nan,  1.,  1., nan],</span>
+<span class="go">       [nan,  1.,  1., nan],</span>
+<span class="go">       [nan, nan, nan, nan]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">conservative</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">flux</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">regrid_method</span><span class="o">=</span><span class="s2">"conservative"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="n">conservative</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span> <span class="nb">float</span><span class="p">(</span><span class="n">conservative</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
 <span class="go">(1.0, 1.0)</span>
