@@ -85,6 +85,18 @@ def metadata(token: str | None = None, timeout: float = 120, **query) -> pd.Data
         Indexed by ``stid``: ``name``, ``latitude``, ``longitude``,
         ``elevation_ft``, ``network_id``, ``status``, ``record_start``,
         ``record_end`` (UTC, naive).
+
+    See Also
+    --------
+    timeseries : The observations of the stations it finds.
+
+    Examples
+    --------
+    Needs a token and the internet:
+
+    >>> from lair.synoptic import metadata
+    >>> stations = metadata(bbox="-112.2,40.4,-111.7,40.9")  # doctest: +SKIP
+    >>> stations[["name", "latitude", "longitude"]].head()  # doctest: +SKIP
     """
     payload = _get("stations/metadata", query, token, timeout)
     rows = []
@@ -125,7 +137,8 @@ def timeseries(
     Parameters
     ----------
     start, end
-        Window, anything ``pd.Timestamp`` parses; naive times are taken as UTC.
+        Window, anything ``pd.Timestamp`` parses; naive times follow
+        :ref:`the UTC rule <utc-rule>`.
     token : str, optional
         API token; defaults to ``$SYNOPTIC_TOKEN``.
     timeout : float
@@ -142,6 +155,24 @@ def timeseries(
         Columns ``stid``, ``Time`` (UTC, tz-aware) and one column per returned
         variable in the API's naming (``wind_speed_set_1``, ...). Stations with no
         observations in the window are omitted.
+
+    See Also
+    --------
+    metadata : Which stations exist for a query.
+    hourly_mean : Averages the frame by hour, with the wind as a vector.
+
+    Examples
+    --------
+    Needs a token and the internet:
+
+    >>> from lair.synoptic import hourly_mean, timeseries
+    >>> obs = timeseries(
+    ...     "2024-01-15 12:00",
+    ...     "2024-01-15 18:00",
+    ...     stid="TRJO",
+    ...     vars="wind_speed,wind_direction",
+    ... )  # doctest: +SKIP
+    >>> hourly = hourly_mean(obs)  # doctest: +SKIP
     """
     params = dict(query, start=_time(start), end=_time(end), units=units)
     payload = _get("stations/timeseries", params, token, timeout)
@@ -206,6 +237,33 @@ def hourly_mean(
     -------
     pd.DataFrame
         ``stid`` (if given), ``Time`` and the averaged columns.
+
+    See Also
+    --------
+    timeseries : Returns the frame it takes.
+    lair.air.wind_components : Splits a wind into u and v.
+    lair.air.wind_direction : Turns u and v back into a direction.
+
+    Examples
+    --------
+    Two observations in one hour, from 350 and 10 degrees, average to a wind
+    from the north (0 degrees), where a mean of the two directions gives 180:
+
+    >>> import pandas as pd
+    >>> from lair.synoptic import hourly_mean
+    >>> obs = pd.DataFrame(
+    ...     {
+    ...         "Time": pd.to_datetime(
+    ...             ["2024-01-15 12:00", "2024-01-15 12:30"], utc=True
+    ...         ),
+    ...         "wind_speed_set_1": [4.0, 4.0],
+    ...         "wind_direction_set_1": [350.0, 10.0],
+    ...     }
+    ... )
+    >>> hourly = hourly_mean(obs)
+    >>> hourly[["wind_speed_set_1", "wind_direction_set_1", "n_obs"]].round(1)
+       wind_speed_set_1  wind_direction_set_1  n_obs
+    0               4.0                   0.0      2
     """
     if "stid" in df.columns:
         parts = [

@@ -24,8 +24,8 @@ Mitchell et al. 2018's algorithm):
 
 Everything is plain numpy; the platform-specific file formats live in the calling package
 (e.g. ``slv.measurements.mobile`` for TRAX). Times are POSIX seconds (float) or
-datetime-like (datetime64, or pandas times with or without a time zone; naive times are
-taken as UTC). The builder skips samples without a time (NaN / NaT).
+datetime-like (datetime64, or pandas times with or without a time zone; naive times
+follow :ref:`the UTC rule <utc-rule>`). The builder skips samples without a time (NaN / NaT).
 """
 
 from __future__ import annotations

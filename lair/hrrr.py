@@ -35,7 +35,8 @@ import cartopy.crs as ccrs  # noqa: E402
 from botocore import UNSIGNED  # noqa: E402
 from botocore.config import Config  # noqa: E402
 
-#: HRRR Projection
+#: HRRR's Lambert conformal projection, a cartopy CRS. :func:`get_nearest_point`
+#: uses it to find a longitude and latitude on the HRRR grid.
 PROJECTION: ccrs.CRS = ccrs.LambertConformal(
     central_longitude=262.5,
     central_latitude=38.5,
@@ -54,8 +55,9 @@ class ZarrId:
     Parameters
     ----------
     run_hour : dt.datetime
-        run hour of the model. A naive time is taken as UTC; a tz-aware time
-        is converted to UTC when the S3 key is built.
+        run hour of the model. A naive time follows :ref:`the UTC rule
+        <utc-rule>`; a tz-aware time is converted to UTC when the S3 key is
+        built.
     level_type : 'sfc' | 'prs'
         vertical level
     var_level : str
@@ -69,6 +71,28 @@ class ZarrId:
     -------
     format_chunk_id(chunk_id)
         Format chunk_id for zarr url.
+
+    See Also
+    --------
+    generate_zarr_ids : Makes one for each time and variable.
+    create_s3_group_url : The S3 address of its group.
+    create_s3_chunk_url : The S3 address of one chunk.
+
+    Examples
+    --------
+    The analysis of 12 UTC on 2024-01-15, the 10 m u wind:
+
+    >>> import datetime as dt
+    >>> from lair.hrrr import ZarrId, create_s3_group_url
+    >>> zarr_id = ZarrId(
+    ...     run_hour=dt.datetime(2024, 1, 15, 12),
+    ...     level_type="sfc",
+    ...     var_level="10m_above_ground",
+    ...     var_name="UGRD",
+    ...     model_type="anl",
+    ... )
+    >>> create_s3_group_url(zarr_id)
+    's3://hrrrzarr/sfc/20240115/20240115_12z_anl.zarr/10m_above_ground/UGRD'
     """
 
     run_hour: dt.datetime
@@ -90,6 +114,27 @@ class ZarrId:
         -------
         str
             formatted chunk_id
+
+        See Also
+        --------
+        lair.hrrr.create_s3_chunk_url : Uses it to name a chunk.
+
+        Examples
+        --------
+        A forecast has a leading time index; an analysis does not:
+
+        >>> import datetime as dt
+        >>> from lair.hrrr import ZarrId
+        >>> kwargs = dict(
+        ...     run_hour=dt.datetime(2024, 1, 15, 12),
+        ...     level_type="sfc",
+        ...     var_level="10m_above_ground",
+        ...     var_name="UGRD",
+        ... )
+        >>> ZarrId(model_type="anl", **kwargs).format_chunk_id("4.5")
+        '4.5'
+        >>> ZarrId(model_type="fcst", **kwargs).format_chunk_id("4.5")
+        '0.4.5'
         """
         if self.model_type == "fcst":
             # Extra id part since forecasts have an additional (time) dimension
@@ -116,6 +161,27 @@ def winds_frame(u_grid, v_grid, lon: float, times) -> pd.DataFrame:
     pd.DataFrame
         Columns ``u``, ``v`` (earth-relative, m/s), ``ws`` (speed from u and v,
         m/s) and ``wd`` (direction, degrees).
+
+    See Also
+    --------
+    Winds : Downloads the components and calls this.
+    lair.air.rotate_winds : Turns grid-relative components to earth-relative.
+    lair.air.wind_direction : The direction of a u and v.
+
+    Examples
+    --------
+    At 97.5 W, the middle of the HRRR domain, the grid points north, so the
+    components do not change. A wind blowing toward the south (v = -4) comes
+    from the north (0 degrees); one blowing toward the east (u = 3), from the
+    west (270):
+
+    >>> import datetime as dt
+    >>> from lair.hrrr import winds_frame
+    >>> times = [dt.datetime(2024, 1, 15, 12), dt.datetime(2024, 1, 15, 13)]
+    >>> winds_frame([0.0, 3.0], [-4.0, 0.0], lon=-97.5, times=times).round(2)
+                           u    v   ws     wd
+    2024-01-15 12:00:00  0.0 -4.0  4.0    0.0
+    2024-01-15 13:00:00  3.0  0.0  3.0  270.0
     """
     u, v = rotate_winds(
         np.asarray(u_grid, dtype=float), np.asarray(v_grid, dtype=float), lon
@@ -142,9 +208,10 @@ class Winds:
     lon : float
         longitude of point
     times : list[dt.datetime]
-        Hours of the analyses to download. A naive time is taken as UTC. A
-        tz-aware time is converted to UTC to choose the analysis, so 05:00 in
-        ``America/Denver`` in January reads the 12 UTC analysis.
+        Hours of the analyses to download. A naive time follows :ref:`the UTC
+        rule <utc-rule>`. A tz-aware time is converted to UTC to choose the
+        analysis, so 05:00 in ``America/Denver`` in January reads the 12 UTC
+        analysis.
 
     Attributes
     ----------
@@ -159,6 +226,22 @@ class Winds:
         10 m winds: ``u``, ``v`` (earth-relative), ``ws`` (speed from u and v)
         and ``wd`` (see :func:`winds_frame`). The index is ``times`` as given,
         so tz-aware times keep their time zone.
+
+    See Also
+    --------
+    winds_frame : Builds ``data`` from the downloaded components.
+    ZarrId : Names one hour of one variable in the archive.
+    lair.clock.UTC2MTN : Moves the index to Mountain time.
+
+    Examples
+    --------
+    Needs the internet (the ``requests``, ``formats`` and ``geo`` extras):
+
+    >>> import datetime as dt
+    >>> from lair.hrrr import Winds
+    >>> times = [dt.datetime(2024, 1, 15, 12), dt.datetime(2024, 1, 15, 13)]  # UTC
+    >>> w = Winds(lat=40.766, lon=-111.848, times=times)  # doctest: +SKIP
+    >>> w.data  # doctest: +SKIP
     """
 
     lat: float
@@ -210,8 +293,8 @@ def create_s3_group_url(zarr_id: ZarrId, prefix: bool = True) -> str:
      - Start of the zarr array data format
      - Includes metadata such as the grid
 
-    The archive is keyed by the UTC run hour: a naive ``run_hour`` is taken as
-    UTC, and a tz-aware one is converted to UTC.
+    The archive is keyed by the UTC run hour: a naive ``run_hour`` follows
+    :ref:`the UTC rule <utc-rule>`, and a tz-aware one is converted to UTC.
 
     Parameters
     ----------
@@ -224,6 +307,25 @@ def create_s3_group_url(zarr_id: ZarrId, prefix: bool = True) -> str:
     -------
     str
         s3 group url
+
+    See Also
+    --------
+    create_s3_subgroup_url : The same, one level down.
+    create_s3_chunk_url : The same, down to one chunk.
+    ZarrId : What it takes.
+
+    Examples
+    --------
+    The archive is keyed by the UTC hour, so 05:00 in Utah in January is the
+    12 UTC run:
+
+    >>> import datetime as dt
+    >>> from zoneinfo import ZoneInfo
+    >>> from lair.hrrr import ZarrId, create_s3_group_url
+    >>> local = dt.datetime(2024, 1, 15, 5, tzinfo=ZoneInfo("America/Denver"))
+    >>> zarr_id = ZarrId(local, "sfc", "10m_above_ground", "UGRD", "anl")
+    >>> create_s3_group_url(zarr_id, prefix=False)
+    'sfc/20240115/20240115_12z_anl.zarr/10m_above_ground/UGRD'
     """
     url = "s3://hrrrzarr/" if prefix else ""  # Skip when using boto3
     # strftime formats a tz-aware time in its own zone, so convert it first
@@ -256,6 +358,21 @@ def create_s3_subgroup_url(zarr_id: ZarrId, prefix: bool = True) -> str:
     -------
     str
         s3 subgroup url
+
+    See Also
+    --------
+    create_s3_group_url : The level above.
+    create_s3_chunk_url : The level below.
+
+    Examples
+    --------
+    >>> import datetime as dt
+    >>> from lair.hrrr import ZarrId, create_s3_subgroup_url
+    >>> zarr_id = ZarrId(
+    ...     dt.datetime(2024, 1, 15, 12), "sfc", "10m_above_ground", "UGRD", "anl"
+    ... )
+    >>> create_s3_subgroup_url(zarr_id, prefix=False)
+    'sfc/20240115/20240115_12z_anl.zarr/10m_above_ground/UGRD/10m_above_ground'
     """
     url = create_s3_group_url(zarr_id, prefix)
     url += f"/{zarr_id.var_level}"
@@ -286,6 +403,22 @@ def create_s3_chunk_url(zarr_id: ZarrId, chunk_id, prefix: bool = False) -> str:
     -------
     str
         s3 chunk url
+
+    See Also
+    --------
+    create_s3_subgroup_url : The level above.
+    get_value : Reads the chunk this names.
+    get_nearest_point : Gives the ``chunk_id`` of a point.
+
+    Examples
+    --------
+    >>> import datetime as dt
+    >>> from lair.hrrr import ZarrId, create_s3_chunk_url
+    >>> zarr_id = ZarrId(
+    ...     dt.datetime(2024, 1, 15, 12), "sfc", "10m_above_ground", "UGRD", "anl"
+    ... )
+    >>> create_s3_chunk_url(zarr_id, "4.5")
+    'sfc/20240115/20240115_12z_anl.zarr/10m_above_ground/UGRD/10m_above_ground/UGRD/4.5'
     """
     url = create_s3_subgroup_url(zarr_id, prefix)
     url += f"/{zarr_id.var_name}/{zarr_id.format_chunk_id(chunk_id)}"
@@ -311,6 +444,26 @@ def get_nearest_point(
     -------
     xr.Dataset
         nearest point
+
+    See Also
+    --------
+    create_s3_chunk_url : Takes the ``chunk_id`` of the point it returns.
+    Winds : Calls it for the point you give.
+    PROJECTION : The projection it uses.
+
+    Examples
+    --------
+    The chunk index is a Zarr dataset in the HRRR archive (needs the internet):
+
+    >>> import s3fs
+    >>> import xarray as xr
+    >>> from lair.hrrr import get_nearest_point
+    >>> fs = s3fs.S3FileSystem(anon=True)
+    >>> index = xr.open_zarr(
+    ...     s3fs.S3Map("s3://hrrrzarr/grid/HRRR_chunk_index.zarr", s3=fs)
+    ... )  # doctest: +SKIP
+    >>> point = get_nearest_point(-111.848, 40.766, index)  # doctest: +SKIP
+    >>> str(point.chunk_id.values)  # doctest: +SKIP
     """
     x, y = PROJECTION.transform_point(longitude, latitude, ccrs.PlateCarree())
     return chunk_index.sel(x=x, y=y, method="nearest")
@@ -331,6 +484,25 @@ def retrieve_object(s3, s3_url: str):
     -------
     bytes
         compressed object data
+
+    See Also
+    --------
+    decompress_chunk : Turns the bytes into an array.
+    get_value : Does both, and picks the point out of the chunk.
+
+    Examples
+    --------
+    Needs the internet:
+
+    >>> import boto3
+    >>> from botocore import UNSIGNED
+    >>> from botocore.config import Config
+    >>> from lair.hrrr import retrieve_object
+    >>> s3 = boto3.resource(
+    ...     "s3", region_name="us-west-1", config=Config(signature_version=UNSIGNED)
+    ... )  # doctest: +SKIP
+    >>> key = "sfc/20240115/20240115_12z_anl.zarr/10m_above_ground/UGRD/10m_above_ground/UGRD/4.5"
+    >>> data = retrieve_object(s3, key)  # doctest: +SKIP
     """
     obj = s3.Object("hrrrzarr", s3_url)
     return obj.get()["Body"].read()
@@ -348,8 +520,9 @@ def generate_zarr_ids(
     Parameters
     ----------
     times : [dt.datetime]
-        list of datetime objects with hour specified. Naive times are taken as
-        UTC; tz-aware times are converted to UTC when the S3 keys are built.
+        list of datetime objects with hour specified. Naive times follow
+        :ref:`the UTC rule <utc-rule>`; tz-aware times are converted to UTC when
+        the S3 keys are built.
     level_type : str
         veritical level
     variables : [(str, str)]
@@ -362,6 +535,26 @@ def generate_zarr_ids(
     ids : [ZarrId]
         dictionary of zarr ids with var as key
 
+    See Also
+    --------
+    ZarrId : What it makes.
+    Winds : Calls it for the 10 m u and v.
+
+    Examples
+    --------
+    Two hours of the 10 m u wind: one key per variable, with a list of one
+    ``ZarrId`` per time:
+
+    >>> import datetime as dt
+    >>> from lair.hrrr import generate_zarr_ids
+    >>> times = [dt.datetime(2024, 1, 15, 12), dt.datetime(2024, 1, 15, 13)]
+    >>> ids = generate_zarr_ids(
+    ...     times, "sfc", [("UGRD", "10m_above_ground")], model_type="anl"
+    ... )
+    >>> list(ids)
+    [('UGRD', '10m_above_ground')]
+    >>> [z.run_hour.hour for z in ids[("UGRD", "10m_above_ground")]]
+    [12, 13]
     """
     ids = {}
 
@@ -395,6 +588,29 @@ def decompress_chunk(zarr_id: ZarrId, compressed_data: bytes):
     -------
     np.array
         decompressed chunk
+
+    See Also
+    --------
+    retrieve_object : Gets the bytes it takes.
+    get_value : Does both, and picks the point out of the chunk.
+
+    Examples
+    --------
+    An analysis chunk is 150 by 150 half-precision numbers; here, a made-up one:
+
+    >>> import datetime as dt
+    >>> import numcodecs
+    >>> import numpy as np
+    >>> from lair.hrrr import ZarrId, decompress_chunk
+    >>> zarr_id = ZarrId(
+    ...     dt.datetime(2024, 1, 15, 12), "sfc", "10m_above_ground", "UGRD", "anl"
+    ... )
+    >>> raw = np.arange(150 * 150, dtype="<f2").tobytes()
+    >>> chunk = decompress_chunk(
+    ...     zarr_id, bytes(numcodecs.blosc.compress(raw, b"zstd", 5))
+    ... )
+    >>> chunk.shape, chunk[0, :3]
+    ((150, 150), array([0., 1., 2.], dtype=float16))
     """
     buffer = ncd.blosc.decompress(compressed_data)
 
@@ -432,6 +648,25 @@ def get_value(s3, zarr_id: ZarrId, chunk_id, nearest_point: xr.Dataset):
     -------
     np.array
         array of values
+
+    See Also
+    --------
+    retrieve_object : Gets the chunk's bytes.
+    decompress_chunk : Turns them into an array.
+    get_nearest_point : Gives the ``chunk_id`` and ``nearest_point``.
+
+    Examples
+    --------
+    ``Winds`` does this for the 10 m u and v. For one hour of u at the nearest
+    point (needs the internet; ``s3`` and ``point`` are as in
+    :func:`retrieve_object` and :func:`get_nearest_point`):
+
+    >>> import datetime as dt
+    >>> from lair.hrrr import ZarrId, get_value
+    >>> zarr_id = ZarrId(
+    ...     dt.datetime(2024, 1, 15, 12), "sfc", "10m_above_ground", "UGRD", "anl"
+    ... )
+    >>> u = get_value(s3, zarr_id, point.chunk_id.values, point)  # doctest: +SKIP
     """
     compressed_data = retrieve_object(s3, create_s3_chunk_url(zarr_id, chunk_id))
     chunk_data = decompress_chunk(zarr_id, compressed_data)
