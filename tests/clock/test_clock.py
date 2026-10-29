@@ -262,7 +262,13 @@ class TestTimezones:
         # MST is UTC-7 (no DST).
         converted = clock.UTC2MST([dt.datetime(2024, 1, 1, 18)])
         assert converted[0].hour == 11
-        assert str(converted[0].tzinfo) == "MST"
+        assert str(converted[0].tzinfo) == "Etc/GMT+7"
+
+    @pytest.mark.parametrize("year", [1918, 1943, 1967, 2024])
+    def test_mst_is_utc_minus_7_in_every_year(self, year):
+        # 'MST' is America/Phoenix in tzdata 2024b+, which had DST in these years (#181)
+        assert clock.UTC2MST(dt.datetime(year, 7, 1, 18)).hour == 11
+        assert clock.MST2UTC(dt.datetime(year, 7, 1, 11)).hour == 18
 
     def test_localize_drops_tzinfo(self):
         converted = clock.UTC2MST([dt.datetime(2024, 1, 1, 18)], localize=True)
@@ -299,9 +305,9 @@ class TestTimezones:
 
 SHORTCUTS = [
     # name, naive-time zone in, zone out
-    ("UTC2MST", "UTC", "MST"),
+    ("UTC2MST", "UTC", "Etc/GMT+7"),
     ("UTC2MTN", "UTC", "America/Denver"),
-    ("MST2UTC", "MST", "UTC"),
+    ("MST2UTC", "Etc/GMT+7", "UTC"),
     ("MTN2UTC", "America/Denver", "UTC"),
 ]
 
