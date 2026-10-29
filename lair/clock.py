@@ -1085,6 +1085,11 @@ def convert_timezones(
 # The shortcuts are functions, not ``functools.partial`` objects, so that each has
 # its own signature and its own ``help()`` text.
 
+# Mountain Standard Time, a fixed UTC-7 (POSIX signs are reversed). Not 'MST': since
+# tzdata 2024b that is a link to America/Phoenix, which kept daylight saving time in
+# 1918-1919, 1942-1944 and 1967.
+_MST = "Etc/GMT+7"
+
 
 def UTC2(
     x,
@@ -1160,10 +1165,12 @@ def UTC2MST(
     nonexistent: _Nonexistent = "raise",
 ):
     """
-    Convert times from UTC to Mountain Standard Time (``'MST'``).
+    Convert times from UTC to Mountain Standard Time (``'Etc/GMT+7'``).
 
     MST is 7 hours behind UTC all year, with no daylight saving time, so every
-    day is 24 hours long. A time without a time zone is taken as UTC (the rule on
+    day is 24 hours long, in every year. The zone is ``'Etc/GMT+7'``, a fixed
+    offset (its sign is POSIX's, reversed): the tz database's ``'MST'`` is
+    Phoenix's time, which kept daylight saving time in 1967 and the war years. A time without a time zone is taken as UTC (the rule on
     the :ref:`clock example <utc-rule>`), and a time with one is converted from
     its own.
 
@@ -1201,7 +1208,7 @@ def UTC2MST(
     >>> import datetime as dt
     >>> from lair.clock import UTC2MST
     >>> UTC2MST(dt.datetime(2024, 7, 15, 18))
-    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='MST'))
+    datetime.datetime(2024, 7, 15, 11, 0, tzinfo=zoneinfo.ZoneInfo(key='Etc/GMT+7'))
 
     The index of a DataFrame, kept naive in MST with ``localize=True``:
 
@@ -1215,7 +1222,7 @@ def UTC2MST(
     """
     return UTC2(
         x,
-        "MST",
+        _MST,
         localize=localize,
         driver=driver,
         ambiguous=ambiguous,
@@ -1309,12 +1316,12 @@ def MST2UTC(
     nonexistent: _Nonexistent = "raise",
 ):
     """
-    Convert times from Mountain Standard Time (``'MST'``) to UTC.
+    Convert times from Mountain Standard Time (``'Etc/GMT+7'``) to UTC.
 
     Use it for a file whose times are standard time all year (its manual or
     settings say so): MST has no daylight saving time, so no time is repeated or
-    skipped. A time without a time zone is taken as MST, and a time with one is
-    converted from its own.
+    skipped. A time without a time zone is taken as MST, UTC-7 in every year (see
+    :func:`UTC2MST`), and a time with one is converted from its own.
 
     Parameters
     ----------
@@ -1365,7 +1372,7 @@ def MST2UTC(
     return convert_timezones(
         x,
         "UTC",
-        fromtz="MST",
+        fromtz=_MST,
         localize=localize,
         driver=driver,
         ambiguous=ambiguous,
