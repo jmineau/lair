@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+from lair import noaa
 from lair.noaa import CarbonTracker, CarbonTrackerCH4, CarbonTrackerCO2, GMLData
 
 
@@ -85,6 +86,16 @@ class TestCarbonTrackerPaths:
         assert ct._molefraction_file_for_date("2020-01-15") == target
         # No file for an unrelated date.
         assert ct._molefraction_file_for_date("2020-02-01") is None
+
+
+class TestOneFilePerDayCheck:
+    def test_names_without_a_date_are_not_compared(self):
+        # Two files of one name in two folders are not "the same day": only a
+        # name that ends with a date says which day it covers
+        check = noaa._check_one_file_per_day
+        check(["/a/molefrac.nc", "/b/molefrac.nc"])
+        with pytest.raises(ValueError, match="2020-01-01"):
+            check(["/a/x_2020-01-01.nc", "/b/y_2020-01-01.nc", "/a/molefrac.nc"])
 
 
 class TestPreprocessMolefractions:
@@ -249,6 +260,22 @@ class TestSampleField:
         assert out["ct_ch4_ppb"].iloc[0] == 1900.0
         assert np.isnan(out["ct_ch4_ppb"].iloc[1])
         assert np.isnan(out["ct_level"].iloc[1])
+
+    def test_a_one_cell_axis_has_no_edge_to_test(self):
+        # One latitude (a grid one cell tall): its cell width is unknown, so only
+        # the longitude is tested against the grid, as for a grid with many cells
+        ds = self._synthetic_ct().isel(latitude=[0])
+        points = pd.DataFrame(
+            {
+                "datetime": ["2020-01-01", "2020-01-01"],
+                "lati": [40.0, 40.0],
+                "long": [-112.0, -100.0],  # on a cell centre; far east of the grid
+                "zagl": [10.0, 10.0],
+            }
+        )
+        out = CarbonTracker._sample_field(points, ds, "ch4")
+        assert out["ct_ch4_ppb"].iloc[0] == 1900.0
+        assert np.isnan(out["ct_ch4_ppb"].iloc[1])
 
     def test_units_in_column_name(self):
         ds = self._synthetic_ct().rename({"ch4": "co2"})
@@ -432,6 +459,15 @@ class TestGMLMonthly:
         ]
         assert data["value"].iloc[1] == pytest.approx(1781.70)
 
+    def test_a_header_without_data_gives_no_rows(self, tmp_path):
+        g = GMLData("ch4", "uta", frequency="month", gml_dir=str(tmp_path))
+        g.directory.mkdir(parents=True, exist_ok=True)
+        g.filepath.write_text("# data_fields: site year month value\n")
+        data = g.data
+        assert list(data.columns) == ["site", "year", "month", "value"]
+        assert len(data) == 0
+        assert data.index.name == "datetime"
+
 
 class TestApplyQAQC:
     @pytest.fixture
@@ -445,6 +481,15 @@ class TestApplyQAQC:
 
     def test_allows_extra_flags(self, data):
         assert GMLData.apply_qaqc(data, flags="A..")["value"].tolist() == [1, 3, 4]
+
+    def test_allows_a_list_of_extra_flags(self, data):
+        assert GMLData.apply_qaqc(data, flags=["A..", ".X."])["value"].tolist() == [
+            1,
+            2,
+            3,
+            4,
+        ]
+        assert GMLData.apply_qaqc(data, flags=[".X."])["value"].tolist() == [1, 2, 3]
 
     def test_invalid_driver_raises(self, data):
         with pytest.raises(ValueError, match="Invalid driver"):

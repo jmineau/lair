@@ -629,6 +629,17 @@ class TestDownloadSoundingUnits:
         assert ds.speed.isel(time=0, height=0).item() == pytest.approx(19.438444924)
         assert ds.v_wind.isel(time=0, height=0).item() == pytest.approx(19.438444924)
 
+    def test_a_frame_without_some_wind_columns_converts_the_rest(self, download):
+        # Only the speed is there: it is converted, and no wind column is made up
+        date = pd.Timestamp("2024-01-15 12:00")
+        full = _current_frame(date)
+        sent = _with_units(full.drop(columns=["u_wind", "v_wind"]), dict(full.units))
+        saved = pd.read_csv(download(lambda *_: sent))
+        assert saved["speed"].tolist() == pytest.approx(
+            (sent["speed"] * 3600 / 1852).tolist()
+        )
+        assert "u_wind" not in saved.columns and "v_wind" not in saved.columns
+
     def test_the_original_frame_is_not_changed(self, download):
         date = pd.Timestamp("2024-01-15 12:00")
         sent = _current_frame(date)
@@ -930,6 +941,18 @@ class TestGetSoundingsPandas:
         assert (df["station_number"] == 72572).all()
         assert (df["pw"] == 10.0).all()
         assert sorted(df["height"].unique()) == [1289.0, 1389.0, 1489.0]
+
+    def test_a_sounding_without_pw_has_no_pw(self, tmp_path):
+        # The 00 UTC file has precipitable water (10 mm), the 12 UTC file has none
+        _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01 00:00"), top=1289.0)
+        _write_sounding(
+            tmp_path, "SLC", pd.Timestamp("2024-01-01 12:00"), top=1289.0, with_pw=False
+        )
+        df = soundings.get_soundings("SLC", sounding_dir=str(tmp_path), driver="pandas")
+        pw = df.set_index("time")["pw"]
+        assert pw[dt.datetime(2024, 1, 1, 0)] == 10.0
+        assert np.isnan(pw[dt.datetime(2024, 1, 1, 12)])
+        assert (df["station"] == "SLC").all()
 
     def test_invalid_driver_raises(self, tmp_path):
         _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01"))
