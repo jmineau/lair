@@ -1371,6 +1371,12 @@ def regrid(
     """
     Regrid data to a new grid. Uses `xesmf` for regridding.
 
+    An output cell that the source does not reach is NaN: outside the
+    source, and, for ``'bilinear'`` and ``'patch'``, a center beyond the
+    source's outermost cell centers. A conservative regrid keeps the part of a
+    cell that overlaps the source, so only a cell wholly outside it is NaN.
+    ``'nearest_s2d'`` gives every cell its nearest source cell, however far.
+
     .. note::
         At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.
         Possibly could use `xesmf.frontend.BaseRegridder` to regrid to a generic grid.
@@ -1429,8 +1435,11 @@ def regrid(
     # a DataArray is turned back into one at the end)
     ds = _as_dataset(data).cf.add_bounds(["lat", "lon"])
 
-    # Regrid the data using `xesmf`
-    regridder = xe.Regridder(ds_in=ds, ds_out=out_grid, method=method)
+    # Regrid the data using `xesmf`. An output cell the source does not reach is
+    # NaN: xesmf's default leaves it 0, a plausible value for any field.
+    regridder = xe.Regridder(
+        ds_in=ds, ds_out=out_grid, method=method, unmapped_to_nan=True
+    )
     regridded = regridder(ds, keep_attrs=True)
 
     if len(regridded.lon.dims) == 2:
@@ -1473,9 +1482,9 @@ def resample(
     - Every other method (``"bilinear"``, the default, and ``"conservative_normed"``
       included) keeps it only when its center is inside the source, which takes
       more than half of it, and otherwise drops the strip. A cell centered outside
-      the source's outermost cell centers gets zero from bilinear interpolation,
-      not data, and ``"conservative_normed"`` would give it the flux of the part
-      inside but count its whole area.
+      the source's outermost cell centers is NaN from bilinear interpolation
+      (:func:`regrid`), and ``"conservative_normed"`` would give it the flux of the
+      part inside but count its whole area.
 
     Parameters
     ----------
@@ -1500,7 +1509,7 @@ def resample(
     Examples
     --------
     A flux of 1 on four cells of 0.1 degree, to cells of 0.05 degree. The
-    default, bilinear, leaves the outer cells at zero (they are outside the
+    default, bilinear, leaves the outer cells NaN (they are outside the
     outermost centers); a flux needs ``"conservative"``:
 
     >>> import numpy as np
@@ -1513,10 +1522,10 @@ def resample(
     ... )
     >>> flux = write_rio_crs(flux.rio.set_spatial_dims(x_dim="lon", y_dim="lat"), 4326)
     >>> resample(flux, 0.05).values
-    array([[0., 0., 0., 0.],
-           [0., 1., 1., 0.],
-           [0., 1., 1., 0.],
-           [0., 0., 0., 0.]])
+    array([[nan, nan, nan, nan],
+           [nan,  1.,  1., nan],
+           [nan,  1.,  1., nan],
+           [nan, nan, nan, nan]])
     >>> conservative = resample(flux, 0.05, regrid_method="conservative")
     >>> float(conservative.min().round(3)), float(conservative.max().round(3))
     (1.0, 1.0)

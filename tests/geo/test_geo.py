@@ -678,6 +678,53 @@ class TestResampleRegrid:
         assert (out.sizes["lat"], out.sizes["lon"]) == (10, 13)
         assert out.lon.values[-1] < -110.0
 
+    @staticmethod
+    def _larger_grid():
+        """0.5 degree cells reaching a degree past the source on every side."""
+        out = geo.generate_regular_grid(
+            -115.0, -109.0, 0.5, 38.0, 43.0, 0.5, x_label="lon", y_label="lat"
+        )
+        out.lat.attrs["units"] = "degrees_north"
+        out.lon.attrs["units"] = "degrees_east"
+        return out
+
+    # nearest_s2d is left out: it gives every cell its nearest source cell, however far
+    @pytest.mark.parametrize("method", ["bilinear", "patch"])
+    def test_regrid_outside_the_source_is_nan(self, method):
+        # xesmf leaves an unmapped cell at 0 unless told otherwise (#180)
+        pytest.importorskip("xesmf")
+        flux = self._fine_flux()
+        flux["flux"][:] = 280.0
+        out = geo.regrid(flux, self._larger_grid(), method=method).flux
+        outside = (out.lat < 39) | (out.lat > 42) | (out.lon < -114) | (out.lon > -110)
+        assert out.where(outside).isnull().all()
+        np.testing.assert_allclose(out.where(~outside, drop=True), 280.0)
+
+    def test_conservative_regrid_outside_the_source_is_nan(self):
+        # Cells wholly outside are NaN; cells overlapping the source are kept, so
+        # the total does not change. ESMF draws cell edges as great circles, so the
+        # row sharing the source's southern edge overlaps it by a sliver (values
+        # near 1e-4 of the flux) and is left out of the check.
+        pytest.importorskip("xesmf")
+        flux = self._fine_flux()
+        out = geo.regrid(flux, self._larger_grid(), method="conservative")
+        outside = (out.lat < 39) | (out.lat > 42) | (out.lon < -114) | (out.lon > -110)
+        apart = (out.lat < 38.5) | (out.lat > 42) | (out.lon < -114) | (out.lon > -110)
+        assert out.flux.where(apart).isnull().all()
+        assert out.flux.where(~outside).notnull().sum() == (~outside).sum()
+        assert self._total(out) == pytest.approx(self._total(flux), rel=1e-3)
+
+    def test_bilinear_resample_to_finer_has_no_zeros(self):
+        # The outer ring of a finer grid is outside the source's outermost
+        # centers: bilinear cannot reach it, which gave 280 K a ring of 0 K (#180)
+        pytest.importorskip("xesmf")
+        flux = self._fine_flux()
+        flux["flux"][:] = 280.0
+        out = geo.resample(flux, 0.05).flux
+        assert not (out == 0).any()
+        assert out.isel(lat=0).isnull().all() and out.isel(lon=-1).isnull().all()
+        np.testing.assert_allclose(out.isel(lat=slice(1, -1), lon=slice(1, -1)), 280.0)
+
     def test_regrid_to_target_grid(self, latlon_grid):
         out_grid = geo.generate_regular_grid(
             -114, -108, 2.0, 40, 45, 2.0, x_label="lon", y_label="lat"
