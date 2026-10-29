@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=660702d8"></script>
+    <script src="../_static/documentation_options.js?v=8358b512"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev21+g8f6f31855" />
+  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -832,6 +832,28 @@
 <dd class="field-even"><p><em>bytes</em> – compressed object data</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.hrrr.decompress_chunk.html#lair.hrrr.decompress_chunk" title="lair.hrrr.decompress_chunk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decompress_chunk</span></code></a></dt><dd><p>Turns the bytes into an array.</p>
+</dd>
+<dt><a class="reference internal" href="lair.hrrr.get_value.html#lair.hrrr.get_value" title="lair.hrrr.get_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value</span></code></a></dt><dd><p>Does both, and picks the point out of the chunk.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>Needs the internet:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">botocore</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSIGNED</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">botocore.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.hrrr</span><span class="w"> </span><span class="kn">import</span> <span class="n">retrieve_object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s3</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">resource</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">"s3"</span><span class="p">,</span> <span class="n">region_name</span><span class="o">=</span><span class="s2">"us-west-1"</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">Config</span><span class="p">(</span><span class="n">signature_version</span><span class="o">=</span><span class="n">UNSIGNED</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key</span> <span class="o">=</span> <span class="s2">"sfc/20240115/20240115_12z_anl.zarr/10m_above_ground/UGRD/10m_above_ground/UGRD/4.5"</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">retrieve_object</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

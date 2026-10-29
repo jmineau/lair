@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=660702d8"></script>
+    <script src="../../_static/documentation_options.js?v=8358b512"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev21+g8f6f31855" />
+  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -527,6 +527,18 @@
 <span class="sd">        Indexed by ``stid``: ``name``, ``latitude``, ``longitude``,</span>
 <span class="sd">        ``elevation_ft``, ``network_id``, ``status``, ``record_start``,</span>
 <span class="sd">        ``record_end`` (UTC, naive).</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    timeseries : The observations of the stations it finds.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Needs a token and the internet:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.synoptic import metadata</span>
+<span class="sd">    &gt;&gt;&gt; stations = metadata(bbox="-112.2,40.4,-111.7,40.9")  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; stations[["name", "latitude", "longitude"]].head()  # doctest: +SKIP</span>
 <span class="sd">    """</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="s2">"stations/metadata"</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
@@ -570,7 +582,8 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    start, end</span>
-<span class="sd">        Window, anything ``pd.Timestamp`` parses; naive times are taken as UTC.</span>
+<span class="sd">        Window, anything ``pd.Timestamp`` parses; naive times follow</span>
+<span class="sd">        :ref:`the UTC rule &lt;utc-rule&gt;`.</span>
 <span class="sd">    token : str, optional</span>
 <span class="sd">        API token; defaults to ``$SYNOPTIC_TOKEN``.</span>
 <span class="sd">    timeout : float</span>
@@ -587,6 +600,24 @@
 <span class="sd">        Columns ``stid``, ``Time`` (UTC, tz-aware) and one column per returned</span>
 <span class="sd">        variable in the API's naming (``wind_speed_set_1``, ...). Stations with no</span>
 <span class="sd">        observations in the window are omitted.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    metadata : Which stations exist for a query.</span>
+<span class="sd">    hourly_mean : Averages the frame by hour, with the wind as a vector.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Needs a token and the internet:</span>
+
+<span class="sd">    &gt;&gt;&gt; from lair.synoptic import hourly_mean, timeseries</span>
+<span class="sd">    &gt;&gt;&gt; obs = timeseries(</span>
+<span class="sd">    ...     "2024-01-15 12:00",</span>
+<span class="sd">    ...     "2024-01-15 18:00",</span>
+<span class="sd">    ...     stid="TRJO",</span>
+<span class="sd">    ...     vars="wind_speed,wind_direction",</span>
+<span class="sd">    ... )  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; hourly = hourly_mean(obs)  # doctest: +SKIP</span>
 <span class="sd">    """</span>
     <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">_time</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="n">_time</span><span class="p">(</span><span class="n">end</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="s2">"stations/timeseries"</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
@@ -654,6 +685,33 @@
 <span class="sd">    -------</span>
 <span class="sd">    pd.DataFrame</span>
 <span class="sd">        ``stid`` (if given), ``Time`` and the averaged columns.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    timeseries : Returns the frame it takes.</span>
+<span class="sd">    lair.air.wind_components : Splits a wind into u and v.</span>
+<span class="sd">    lair.air.wind_direction : Turns u and v back into a direction.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Two observations in one hour, from 350 and 10 degrees, average to a wind</span>
+<span class="sd">    from the north (0 degrees), where a mean of the two directions gives 180:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from lair.synoptic import hourly_mean</span>
+<span class="sd">    &gt;&gt;&gt; obs = pd.DataFrame(</span>
+<span class="sd">    ...     {</span>
+<span class="sd">    ...         "Time": pd.to_datetime(</span>
+<span class="sd">    ...             ["2024-01-15 12:00", "2024-01-15 12:30"], utc=True</span>
+<span class="sd">    ...         ),</span>
+<span class="sd">    ...         "wind_speed_set_1": [4.0, 4.0],</span>
+<span class="sd">    ...         "wind_direction_set_1": [350.0, 10.0],</span>
+<span class="sd">    ...     }</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; hourly = hourly_mean(obs)</span>
+<span class="sd">    &gt;&gt;&gt; hourly[["wind_speed_set_1", "wind_direction_set_1", "n_obs"]].round(1)</span>
+<span class="sd">       wind_speed_set_1  wind_direction_set_1  n_obs</span>
+<span class="sd">    0               4.0                   0.0      2</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="s2">"stid"</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>

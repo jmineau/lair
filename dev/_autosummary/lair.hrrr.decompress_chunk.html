@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=660702d8"></script>
+    <script src="../_static/documentation_options.js?v=8358b512"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev21+g8f6f31855" />
+  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -832,6 +832,32 @@
 <dd class="field-even"><p><em>np.array</em> – decompressed chunk</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.hrrr.retrieve_object.html#lair.hrrr.retrieve_object" title="lair.hrrr.retrieve_object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">retrieve_object</span></code></a></dt><dd><p>Gets the bytes it takes.</p>
+</dd>
+<dt><a class="reference internal" href="lair.hrrr.get_value.html#lair.hrrr.get_value" title="lair.hrrr.get_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value</span></code></a></dt><dd><p>Does both, and picks the point out of the chunk.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>An analysis chunk is 150 by 150 half-precision numbers; here, a made-up one:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numcodecs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.hrrr</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZarrId</span><span class="p">,</span> <span class="n">decompress_chunk</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zarr_id</span> <span class="o">=</span> <span class="n">ZarrId</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="s2">"sfc"</span><span class="p">,</span> <span class="s2">"10m_above_ground"</span><span class="p">,</span> <span class="s2">"UGRD"</span><span class="p">,</span> <span class="s2">"anl"</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">150</span> <span class="o">*</span> <span class="mi">150</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"&lt;f2"</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chunk</span> <span class="o">=</span> <span class="n">decompress_chunk</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">zarr_id</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">numcodecs</span><span class="o">.</span><span class="n">blosc</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"zstd"</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chunk</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">((150, 150), array([0., 1., 2.], dtype=float16))</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

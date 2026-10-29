@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=660702d8"></script>
+    <script src="../_static/documentation_options.js?v=8358b512"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev21+g8f6f31855" />
+  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -839,6 +839,20 @@
 <dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>DataFrame</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.synoptic.timeseries.html#lair.synoptic.timeseries" title="lair.synoptic.timeseries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">timeseries</span></code></a></dt><dd><p>The observations of the stations it finds.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>Needs a token and the internet:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.synoptic</span><span class="w"> </span><span class="kn">import</span> <span class="n">metadata</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stations</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">(</span><span class="n">bbox</span><span class="o">=</span><span class="s2">"-112.2,40.4,-111.7,40.9"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stations</span><span class="p">[[</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"latitude"</span><span class="p">,</span> <span class="s2">"longitude"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

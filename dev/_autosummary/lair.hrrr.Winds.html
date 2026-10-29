@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=660702d8"></script>
+    <script src="../_static/documentation_options.js?v=8358b512"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev21+g8f6f31855" />
+  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -830,9 +830,10 @@ Each parameter is also an attribute of the same name.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lat</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – latitude of point</p></li>
 <li><p><strong>lon</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – longitude of point</p></li>
-<li><p><strong>times</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>dt.datetime</em><em>]</em>) – Hours of the analyses to download. A naive time is taken as UTC. A
-tz-aware time is converted to UTC to choose the analysis, so 05:00 in
-<code class="docutils literal notranslate"><span class="pre">America/Denver</span></code> in January reads the 12 UTC analysis.</p></li>
+<li><p><strong>times</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><em>dt.datetime</em><em>]</em>) – Hours of the analyses to download. A naive time follows <a class="reference internal" href="../examples/clock.html#utc-rule"><span class="std std-ref">the UTC
+rule</span></a>. A tz-aware time is converted to UTC to choose the
+analysis, so 05:00 in <code class="docutils literal notranslate"><span class="pre">America/Denver</span></code> in January reads the 12 UTC
+analysis.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Variables<span class="colon">:</span></dt>
@@ -847,6 +848,26 @@ so tz-aware times keep their time zone.</p></li>
 </ul>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.hrrr.winds_frame.html#lair.hrrr.winds_frame" title="lair.hrrr.winds_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">winds_frame</span></code></a></dt><dd><p>Builds <code class="docutils literal notranslate"><span class="pre">data</span></code> from the downloaded components.</p>
+</dd>
+<dt><a class="reference internal" href="lair.hrrr.ZarrId.html#lair.hrrr.ZarrId" title="lair.hrrr.ZarrId"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZarrId</span></code></a></dt><dd><p>Names one hour of one variable in the archive.</p>
+</dd>
+<dt><a class="reference internal" href="lair.clock.UTC2MTN.html#lair.clock.UTC2MTN" title="lair.clock.UTC2MTN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.clock.UTC2MTN</span></code></a></dt><dd><p>Moves the index to Mountain time.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>Needs the internet (the <code class="docutils literal notranslate"><span class="pre">requests</span></code>, <code class="docutils literal notranslate"><span class="pre">formats</span></code> and <code class="docutils literal notranslate"><span class="pre">geo</span></code> extras):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.hrrr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Winds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">13</span><span class="p">)]</span>  <span class="c1"># UTC</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">Winds</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="mf">40.766</span><span class="p">,</span> <span class="n">lon</span><span class="o">=-</span><span class="mf">111.848</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

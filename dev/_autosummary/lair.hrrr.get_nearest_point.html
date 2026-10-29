@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=660702d8"></script>
+    <script src="../_static/documentation_options.js?v=8358b512"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev21+g8f6f31855" />
+  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -836,6 +836,30 @@
 <dd class="field-odd"><p><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.9.0)"><em>Dataset</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.hrrr.create_s3_chunk_url.html#lair.hrrr.create_s3_chunk_url" title="lair.hrrr.create_s3_chunk_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_s3_chunk_url</span></code></a></dt><dd><p>Takes the <code class="docutils literal notranslate"><span class="pre">chunk_id</span></code> of the point it returns.</p>
+</dd>
+<dt><a class="reference internal" href="lair.hrrr.Winds.html#lair.hrrr.Winds" title="lair.hrrr.Winds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Winds</span></code></a></dt><dd><p>Calls it for the point you give.</p>
+</dd>
+<dt><a class="reference internal" href="lair.hrrr.PROJECTION.html#lair.hrrr.PROJECTION" title="lair.hrrr.PROJECTION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PROJECTION</span></code></a></dt><dd><p>The projection it uses.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>The chunk index is a Zarr dataset in the HRRR archive (needs the internet):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">s3fs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.hrrr</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_nearest_point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fs</span> <span class="o">=</span> <span class="n">s3fs</span><span class="o">.</span><span class="n">S3FileSystem</span><span class="p">(</span><span class="n">anon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_zarr</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">s3fs</span><span class="o">.</span><span class="n">S3Map</span><span class="p">(</span><span class="s2">"s3://hrrrzarr/grid/HRRR_chunk_index.zarr"</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">point</span> <span class="o">=</span> <span class="n">get_nearest_point</span><span class="p">(</span><span class="o">-</span><span class="mf">111.848</span><span class="p">,</span> <span class="mf">40.766</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">chunk_id</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

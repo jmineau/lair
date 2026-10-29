@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=660702d8"></script>
+    <script src="../_static/documentation_options.js?v=8358b512"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev21+g8f6f31855" />
+  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -844,6 +844,37 @@ column.</p></li>
 <dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>DataFrame</em></a></p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.synoptic.timeseries.html#lair.synoptic.timeseries" title="lair.synoptic.timeseries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">timeseries</span></code></a></dt><dd><p>Returns the frame it takes.</p>
+</dd>
+<dt><a class="reference internal" href="lair.air.wind_components.html#lair.air.wind_components" title="lair.air.wind_components"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.air.wind_components</span></code></a></dt><dd><p>Splits a wind into u and v.</p>
+</dd>
+<dt><a class="reference internal" href="lair.air.wind_direction.html#lair.air.wind_direction" title="lair.air.wind_direction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.air.wind_direction</span></code></a></dt><dd><p>Turns u and v back into a direction.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>Two observations in one hour, from 350 and 10 degrees, average to a wind
+from the north (0 degrees), where a mean of the two directions gives 180:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.synoptic</span><span class="w"> </span><span class="kn">import</span> <span class="n">hourly_mean</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span>
+<span class="gp">... </span>        <span class="s2">"Time"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
+<span class="gp">... </span>            <span class="p">[</span><span class="s2">"2024-01-15 12:00"</span><span class="p">,</span> <span class="s2">"2024-01-15 12:30"</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span>        <span class="p">),</span>
+<span class="gp">... </span>        <span class="s2">"wind_speed_set_1"</span><span class="p">:</span> <span class="p">[</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">"wind_direction_set_1"</span><span class="p">:</span> <span class="p">[</span><span class="mf">350.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hourly</span> <span class="o">=</span> <span class="n">hourly_mean</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hourly</span><span class="p">[[</span><span class="s2">"wind_speed_set_1"</span><span class="p">,</span> <span class="s2">"wind_direction_set_1"</span><span class="p">,</span> <span class="s2">"n_obs"</span><span class="p">]]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">   wind_speed_set_1  wind_direction_set_1  n_obs</span>
+<span class="go">0               4.0                   0.0      2</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
