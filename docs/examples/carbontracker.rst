@@ -14,7 +14,7 @@ come out of it:
 
    This page does not run when the docs build. It downloads a 35 MB file from
    NOAA's FTP server. The output below was recorded from one run of this code
-   on 2026-10-19.
+   on 2026-10-29, with lair 2026.12.11.dev9+g55e932b18.
 
 .. _carbontracker-data:
 

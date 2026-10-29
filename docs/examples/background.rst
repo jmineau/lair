@@ -24,7 +24,7 @@ against the background the data were made from. Three rules come out of it:
    CCG filter, which lair downloads the first time it is imported (see
    :ref:`first-import-download`), and ``scipy``, from the ``science`` extra
    (see :ref:`optional-dependencies`). The output below was recorded from one
-   run of this code on 2026-10-23.
+   run of this code on 2026-10-29, with lair 2026.12.11.dev9+g55e932b18.
 
 The methods
 -----------

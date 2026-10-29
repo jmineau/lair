@@ -15,7 +15,8 @@ computes potential temperature on regular heights. Two rules come out of it:
 
    This page does not run when the docs build. It needs the ``requests`` extra
    (see :ref:`installation`) and downloads from the University of Wyoming. The
-   output below was recorded from one run of this code on 2026-10-22.
+   output below was recorded from one run of this code on 2026-10-29, with lair
+   2026.12.11.dev9+g55e932b18.
 
 .. _soundings-data:
 

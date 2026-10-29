@@ -22,7 +22,7 @@ come out of it:
    too large for the docs build, and, for ``resample`` and ``regrid``, ESMF,
    which the conda route of :ref:`installation` installs (``integrate()`` works
    without it). The output below was recorded from one run of this code, with
-   ESMF, on 2026-10-27.
+   ESMF, on 2026-10-29, with lair 2026.12.11.dev9+g55e932b18.
 
 .. _inventory-data:
 

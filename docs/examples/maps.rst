@@ -22,7 +22,8 @@ inventory. Three rules come out of it:
    This page does not run when the docs build. It needs the ``geo`` and
    ``science`` extras (see :ref:`optional-dependencies`), EDGAR's files, and the
    internet the first time cartopy draws a feature. The output and the figures
-   below were recorded from one run of this code on 2026-10-14.
+   below were recorded from one run of this code on 2026-10-29, with lair
+   2026.12.11.dev9+g55e932b18.
 
 The data
 --------
@@ -52,7 +53,7 @@ years of EDGAR v8's methane, on the whole globe, and it takes about a minute:
       ...: t0 = time.time()
       ...: ax = inv.plot()
       ...: print(f"mean of every year: {time.time() - t0:.0f} s")
-   mean of every year: 51 s
+   mean of every year: 41 s
 
 ``time`` picks one step instead: an integer position (``-1`` is the last), or a
 label such as ``"2022-01-01"``. EDGAR's annual steps are labeled by the start of

@@ -16,7 +16,8 @@ Utah campus. Two rules come out of it:
 
    This page does not run when the docs build. It needs the ``requests``,
    ``formats`` and ``geo`` extras (see :ref:`installation`) and downloads from
-   AWS. The output below was recorded from one run of this code on 2026-10-13.
+   AWS. The output below was recorded from one run of this code on 2026-10-29, with
+   lair 2026.12.11.dev9+g55e932b18.
 
 The data
 --------
