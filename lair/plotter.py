@@ -17,7 +17,9 @@ from matplotlib.figure import Figure
 from matplotlib.legend_handler import HandlerLineCollection
 from matplotlib.projections.polar import PolarAxes
 
-#: Season colors (ColorBrewer Dark2) used for all season-keyed plots.
+#: Season colors (ColorBrewer Dark2) used for all season-keyed plots, such as
+#: :func:`seasonalPlot`: a color for each of ``"DJF"``, ``"MAM"``, ``"JJA"``
+#: and ``"SON"``.
 SEASON_COLORS = {"DJF": "#e7298a", "MAM": "#1b9e77", "JJA": "#d95f02", "SON": "#7570b3"}
 
 
@@ -36,6 +38,10 @@ def log10formatter(x, pos, deci=0) -> str:
     -------
     str
         Formatted tick label.
+
+    See Also
+    --------
+    matplotlib.ticker.FuncFormatter : Wraps a function as a tick formatter.
 
     Examples
     --------
@@ -83,6 +89,11 @@ def truncate_colormap(
     matplotlib.colors.LinearSegmentedColormap
         Truncated colormap.
 
+    See Also
+    --------
+    terrain_cmap : The terrain colormap, truncated.
+    NCL_cmap : A colormap from NCL's tables.
+
     Examples
     --------
     .. plot::
@@ -123,6 +134,18 @@ def NCL_cmap(table_name: str) -> mcolors.LinearSegmentedColormap:
     -------
     matplotlib.colors.LinearSegmentedColormap
         matplotlib colormap from NCL color table.
+
+    See Also
+    --------
+    truncate_colormap : Keeps part of a colormap.
+    terrain_cmap : A colormap that needs no download.
+
+    Examples
+    --------
+    Needs the internet:
+
+    >>> from lair.plotter import NCL_cmap
+    >>> cmap = NCL_cmap("WhiteBlueGreenYellowRed")  # doctest: +SKIP
     """
     import pandas as pd
 
@@ -162,6 +185,10 @@ def terrain_cmap(
     -------
     matplotlib.colors.LinearSegmentedColormap
         Matplotlib terrain colormap.
+
+    See Also
+    --------
+    truncate_colormap : What it calls, for any colormap.
 
     Examples
     --------
@@ -222,6 +249,11 @@ def diurnalPlot(
     -------
     plt.Axes
         Axis with the plot
+
+    See Also
+    --------
+    seasonalPlot : The cycle over the year.
+    lair.clock.diurnal : The cycle it plots, as numbers.
 
     Examples
     --------
@@ -357,6 +389,11 @@ def seasonalPlot(
     plt.Axes
         Axis with the plot
 
+    See Also
+    --------
+    diurnalPlot : The cycle over the day.
+    lair.clock.seasonal : The seasons it plots, as numbers.
+
     Examples
     --------
     .. plot::
@@ -411,6 +448,22 @@ def create_polar_ax() -> PolarAxes:
     -------
     plt.Axes
         Polar axis.
+
+    See Also
+    --------
+    polarPlot : Draws a contour plot on it.
+    format_radial_axis : Labels its radial axis.
+
+    Examples
+    --------
+    North is at the top and angles run clockwise:
+
+    .. plot::
+
+       >>> from lair.plotter import create_polar_ax
+       >>> ax = create_polar_ax()
+       >>> ax.set_rlim(0, 10)
+       (0.0, 10.0)
     """
     fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
     ax = cast(PolarAxes, ax)
@@ -437,6 +490,21 @@ def format_radial_axis(ax: PolarAxes, x: str, scale_angle: float | None) -> None
     Returns
     -------
     None
+
+    See Also
+    --------
+    create_polar_ax : The axis it formats.
+    polarPlot : Calls it.
+
+    Examples
+    --------
+    .. plot::
+
+       >>> from lair.plotter import create_polar_ax, format_radial_axis
+       >>> ax = create_polar_ax()
+       >>> ax.set_rlim(0, 10)
+       (0.0, 10.0)
+       >>> format_radial_axis(ax, "wind speed [m/s]", scale_angle=45)
     """
     if scale_angle is not None:
         ax.set_rlabel_position(scale_angle)
@@ -488,6 +556,12 @@ def polarPlot(
     -------
     plt.Axes
         Axis with the plot
+
+    See Also
+    --------
+    lair.air.bin_polar : Bins the data by wind direction and speed.
+    polarFreq : How often the winds fall in each bin, not a value by wind.
+    create_polar_ax : The axis it draws on.
 
     Examples
     --------
@@ -657,6 +731,27 @@ def windvectorPlot(
     -------
     plt.Axes
         Axis with the plot
+
+    See Also
+    --------
+    lair.air.wind_components : The u and v of a wind speed and direction.
+    polarPlot : The same wind data as a function of direction.
+
+    Examples
+    --------
+    Winds turning from north-westerly to southerly over six hours, drawn at
+    their speed:
+
+    .. plot::
+
+       >>> import pandas as pd
+       >>> from lair.plotter import windvectorPlot
+       >>> times = pd.date_range("2024-01-15 00:00", periods=6, freq="1h")
+       >>> winds = pd.DataFrame(
+       ...     {"WD": [315, 300, 270, 240, 210, 180], "WS": [2, 3, 4, 3, 2, 1]},
+       ...     index=times,
+       ... )
+       >>> ax = windvectorPlot(winds)
     """
     from lair.air import wind_components
 
@@ -686,6 +781,10 @@ class HandlerDashedLines(HandlerLineCollection):
     There's a potentially better version in the above link
 
     This needs a new names and better documentation.
+
+    See Also
+    --------
+    matplotlib.legend_handler.HandlerLineCollection : What it extends.
     """
 
     def create_artists(
