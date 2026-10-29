@@ -122,6 +122,19 @@ def robust_z(enh: np.ndarray, min_points: int = 20) -> np.ndarray:
     See Also
     --------
     enhancement : The enhancement matrix.
+    detection_frequency : Counts the transits above a threshold at each point.
+
+    Examples
+    --------
+    The first transit has one point far above its own median, which scores
+    about 33; the second is the same everywhere (zero MAD), so it has no score:
+
+    >>> import numpy as np
+    >>> from lair.transects import robust_z
+    >>> enh = np.array([[0.0, 0.1, 0.0, 5.0, 0.1], [1.0, 1.0, 1.0, 1.0, 1.0]])
+    >>> robust_z(enh, min_points=3).round(2)
+    array([[-0.67,  0.  , -0.67, 33.05,  0.  ],
+           [  nan,   nan,   nan,   nan,   nan]])
     """
     enh = np.asarray(enh, dtype=float)
     import warnings
@@ -264,6 +277,20 @@ def transit_times(time: np.ndarray, stat: str = "median") -> pd.DatetimeIndex:
     See Also
     --------
     profile : Bins the metrics by these times.
+    transect_matrix : Gives the time matrix.
+
+    Examples
+    --------
+    Two transits of three points; the second has a point without a time, which
+    the median skips:
+
+    >>> import numpy as np
+    >>> from lair.transects import transit_times
+    >>> time = np.array([[0, 60, 120.0], [3600, 3660, np.nan]])
+    >>> list(transit_times(time).strftime("%H:%M:%S"))
+    ['00:01:00', '01:00:30']
+    >>> list(transit_times(time, "max").strftime("%H:%M:%S"))
+    ['00:02:00', '01:01:00']
     """
     t = np.asarray(time)
     if np.issubdtype(t.dtype, np.datetime64):
@@ -312,6 +339,30 @@ def profile(
         ``(bins, freq, mag)``: the bin values, and ``freq[bin, point]`` and
         ``mag[bin, point]`` from :func:`detection_frequency` and :func:`magnitude`
         (median) on the transits of each bin.
+
+    See Also
+    --------
+    transit_times : Gives ``times``.
+    detection_frequency : The frequency it computes in each bin.
+    magnitude : The magnitude it computes in each bin.
+
+    Examples
+    --------
+    One transit an hour for a day, with point 0 enhanced before noon only. Each
+    hour has one transit, so ``min_transits=1``:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from lair.transects import profile
+    >>> enh = np.array([[1.0, 0.0]] * 12 + [[0.0, 0.0]] * 12)
+    >>> times = pd.date_range("2024-01-15 00:00", periods=24, freq="1h")
+    >>> bins, freq, mag = profile(enh, times, min_transits=1)
+    >>> freq[[0, 12]]
+    array([[1., 0.],
+           [0., 0.]])
+    >>> mag[[0, 12]]
+    array([[ 1., nan],
+           [nan, nan]])
     """
     t = times + pd.Timedelta(hours=tz_offset_hours)
     key = {"hour": t.hour, "weekday": t.day_of_week, "month": t.month}[by]
@@ -343,6 +394,25 @@ def along_route_distance(lon: np.ndarray, lat: np.ndarray) -> np.ndarray:
     -------
     np.ndarray
         Distance from the first point on the WGS84 ellipsoid (km), starting at 0.
+
+    See Also
+    --------
+    lair.geo.haversine : The distance between two points on a sphere.
+
+    Notes
+    -----
+    Needs the ``geo`` extra (pyproj).
+
+    Examples
+    --------
+    Three points 0.01 degrees of latitude apart, about 1.11 km:
+
+    >>> import numpy as np
+    >>> from lair.transects import along_route_distance
+    >>> lon = np.array([-111.9, -111.9, -111.9])
+    >>> lat = np.array([40.70, 40.71, 40.72])
+    >>> along_route_distance(lon, lat).round(2)  # doctest: +SKIP
+    array([0.  , 1.11, 2.22])
     """
     from pyproj import Geod
 
@@ -376,6 +446,23 @@ def merge_route_points(
     See Also
     --------
     pool_routes : Stacks the routes' matrices onto the network points.
+
+    Examples
+    --------
+    The second route shares two points with the first (within 50 m) and adds one:
+
+    >>> import numpy as np
+    >>> from lair.transects import merge_route_points
+    >>> r1 = np.array([[0, 0], [1000, 0], [2000, 0.0]])
+    >>> r2 = np.array([[1000, 10], [2000, 5], [2000, 1000.0]])
+    >>> network, index = merge_route_points([r1, r2], tol=50)  # doctest: +SKIP
+    >>> network  # doctest: +SKIP
+    array([[   0.,    0.],
+           [1000.,    0.],
+           [2000.,    0.],
+           [2000., 1000.]])
+    >>> index  # doctest: +SKIP
+    [array([0, 1, 2]), array([1, 2, 3])]
     """
     from scipy.spatial import cKDTree
 
@@ -416,6 +503,22 @@ def pool_routes(
     np.ndarray
         A ``[sum of transits, n_network]`` matrix, NaN where a route has no point
         (or no data) at a network point.
+
+    See Also
+    --------
+    merge_route_points : Gives ``index`` and the network points.
+
+    Examples
+    --------
+    One transit on each of the two routes of :func:`merge_route_points`:
+
+    >>> import numpy as np
+    >>> from lair.transects import pool_routes
+    >>> index = [np.array([0, 1, 2]), np.array([1, 2, 3])]
+    >>> matrices = [np.array([[1.0, 2.0, 3.0]]), np.array([[10.0, 20.0, 30.0]])]
+    >>> pool_routes(matrices, index, n_network=4)
+    array([[ 1.,  2.,  3., nan],
+           [nan, 10., 20., 30.]])
     """
     rows = sum(m.shape[0] for m in matrices)
     out = np.full((rows, n_network), np.nan)
@@ -490,6 +593,20 @@ def lag_positions(time, xy: np.ndarray, lag_s, max_gap_s: float = 600.0) -> np.n
     See Also
     --------
     snap_to_route : The next step, the route point of each position.
+
+    Examples
+    --------
+    A platform logging one position a minute, with the inlet 60 s behind: each
+    sample belongs where the platform was a minute earlier (the first keeps its
+    own position):
+
+    >>> import numpy as np
+    >>> from lair.transects import lag_positions
+    >>> time = np.arange(0, 6) * 60.0
+    >>> x = np.array([0, 500, 1000, 1500, 2000, 2500.0])
+    >>> xy = np.column_stack([x, np.zeros_like(x)])
+    >>> lag_positions(time, xy, lag_s=60.0)[:, 0]
+    array([   0.,    0.,  500., 1000., 1500., 2000.])
     """
     t = _time_seconds(time)
     xy = np.asarray(xy, dtype=float)
@@ -532,6 +649,23 @@ def snap_to_route(
     See Also
     --------
     transect_matrix : Averages the samples onto ``[transit, point]``.
+    lag_positions : Gives the positions to snap.
+    merge_route_points : Joins the points of several routes.
+
+    Examples
+    --------
+    Six route points 500 m apart along x; the sample at 700 m is 200 m from the
+    nearest, beyond ``max_dist``:
+
+    >>> import numpy as np
+    >>> from lair.transects import snap_to_route
+    >>> route = np.column_stack([np.arange(0, 2501, 500.0), np.zeros(6)])
+    >>> xy = np.array([[10.0, 0.0], [1010.0, 5.0], [700.0, 0.0]])
+    >>> index, distance = snap_to_route(xy, route, max_dist=100)  # doctest: +SKIP
+    >>> index  # doctest: +SKIP
+    array([ 0,  2, -1])
+    >>> distance.round(1)  # doctest: +SKIP
+    array([ 10. ,  11.2, 200. ])
     """
     from scipy.spatial import cKDTree
 
@@ -598,6 +732,27 @@ def split_transits(
     See Also
     --------
     transect_matrix : Averages the samples onto ``[transit, point]``.
+    snap_to_route : Gives the route point of each sample.
+
+    Examples
+    --------
+    A platform drives out along the route and back, one sample a minute. The
+    turn at 2500 m ends the first transit (the turning sample starts the next):
+
+    >>> import numpy as np
+    >>> from lair.transects import split_transits
+    >>> time = np.arange(0, 11) * 60.0
+    >>> s = np.array([0, 500, 1000, 1500, 2000, 2500, 2000, 1500, 1000, 500, 0.0])
+    >>> transit, table = split_transits(
+    ...     time, s, reversal_m=500, min_span_m=1000
+    ... )  # doctest: +SKIP
+    >>> transit  # doctest: +SKIP
+    array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+    >>> table[["direction", "s_min", "s_max", "n"]]  # doctest: +SKIP
+             direction  s_min   s_max  n
+    transit
+    0                1    0.0  2000.0  5
+    1               -1    0.0  2500.0  6
     """
     from scipy.signal import find_peaks
 
@@ -690,6 +845,30 @@ def transect_matrix(
     See Also
     --------
     enhancement : The first metric on the matrix.
+    split_transits : Gives ``transit``.
+    snap_to_route : Gives ``point``.
+    transit_times : One time per transit from the time matrix.
+
+    Examples
+    --------
+    An outbound transit of six samples and a return of five, with each sample
+    snapped to the route point at its position (every 500 m, 0 to 5):
+
+    >>> import numpy as np
+    >>> from lair.transects import transect_matrix
+    >>> time = np.arange(0, 11) * 60.0
+    >>> transit = np.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+    >>> point = np.array([0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])
+    >>> obs = np.linspace(2.0, 2.1, 11)
+    >>> mean, mean_time, n = transect_matrix(
+    ...     transit, point, obs, time, n_transits=2, n_points=6
+    ... )
+    >>> mean.round(3)
+    array([[2.005, 2.02 , 2.03 , 2.04 , 2.05 ,   nan],
+           [  nan, 2.1  , 2.09 , 2.08 , 2.07 , 2.06 ]])
+    >>> n
+    array([[ 2.,  1.,  1.,  1.,  1., nan],
+           [nan,  1.,  1.,  1.,  1.,  1.]])
     """
     t = _time_seconds(time)
     obs = np.asarray(obs, dtype=float)
