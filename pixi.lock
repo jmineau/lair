@@ -1602,7 +1602,7 @@ packages:
   requires_dist:
   - cf-xarray>=0.10.4
   - dask>=2024.4.2
-  - matplotlib>=3.10.7
+  - matplotlib>=3.8
   - netcdf4>=1.7.1
   - numpy>=1.26
   - pandas>=3.0

@@ -15,7 +15,7 @@ requires-python = ">=3.11"
 dependencies = [
   "cf_xarray>=0.10.4",  # 0.10.3 and earlier import xarray.core.arithmetic, gone from xarray 2026
   "dask>=2024.4.2",  # 2024.1.0 fails 4 tests
-  "matplotlib>=3.10.7",  # 3.10.6 and earlier use pyparsing calls it deprecates, which the test filter makes errors
+  "matplotlib>=3.8",
   "netcdf4>=1.7.1",  # 1.6.5 fails 26 tests
   "numpy>=1.26",  # what pandas 3 needs
   "pandas>=3.0",  # pandas 3 only: the tests run on pandas 3, and nothing on pandas 2
@@ -160,6 +160,8 @@ filterwarnings = [
     # numpy ignores this one itself (compiled packages such as netCDF4 raise it on
     # import); pytest's "error" filter would bring it back.
     "ignore:numpy.ndarray size changed:RuntimeWarning",
+    # matplotlib before 3.10.7 calls pyparsing methods that pyparsing 3.3 deprecates.
+    "ignore::pyparsing.warnings.PyparsingDeprecationWarning",
     # netCDF4 1.7.4 sets an array's shape when it writes a variable, which
     # NumPy 2.5 deprecates.
     "ignore:Setting the shape on a NumPy array:DeprecationWarning",

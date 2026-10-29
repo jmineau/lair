@@ -1954,7 +1954,7 @@ requires-dist = [
     { name = "lair", extras = ["requests"], marker = "extra == 'complete'" },
     { name = "lair", extras = ["science"], marker = "extra == 'complete'" },
     { name = "lxml", marker = "extra == 'formats'" },
-    { name = "matplotlib", specifier = ">=3.10.7" },
+    { name = "matplotlib", specifier = ">=3.8" },
     { name = "molmass", marker = "extra == 'science'" },
     { name = "netcdf4", specifier = ">=1.7.1" },
     { name = "networkx", marker = "extra == 'geo'" },
