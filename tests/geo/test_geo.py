@@ -97,6 +97,12 @@ class TestDistanceHelpers:
         d = geo.haversine(40, -111, np.array([41.0, 42.0]), np.array([-111.0, -111.0]))
         np.testing.assert_allclose(d, [111.19, 222.39], atol=0.1)
 
+    def test_haversine_in_radians(self):
+        # One degree of latitude along a meridian is R * pi / 180 = 111.195 km
+        lat1, lat2 = np.deg2rad(40.0), np.deg2rad(41.0)
+        d = geo.haversine(lat1, 0.0, lat2, 0.0, deg=False)
+        assert d == pytest.approx(6371 * np.pi / 180, rel=1e-12)
+
 
 # Worked example from https://www.movable-type.co.uk/scripts/latlong.html:
 # Land's End (50 03 59N, 005 42 53W) -> John o' Groats (58 38 38N, 003 04 12W)
@@ -228,6 +234,29 @@ class TestCRS:
         crs = geo.CRS(4326)
         assert "4326" in str(crs)
         assert "4326" in repr(crs)
+
+    @pytest.mark.parametrize(
+        "kind", ["int", "EPSG string", "pyproj", "rasterio", "cartopy", "CRS"]
+    )
+    def test_any_kind_of_crs_gives_the_same_crs(self, kind):
+        # EPSG:5070 is NAD83 / Conus Albers, whichever library made it
+        import cartopy.crs as ccrs
+        import pyproj
+        import rasterio
+
+        crs = {
+            "int": 5070,
+            "EPSG string": "EPSG:5070",
+            "pyproj": pyproj.CRS.from_epsg(5070),
+            "rasterio": rasterio.CRS.from_epsg(5070),
+            "cartopy": ccrs.epsg(5070),
+            "CRS": geo.CRS(5070),
+        }[kind]
+        assert geo.CRS(crs).epsg == 5070
+
+    def test_a_wkt_string_is_read(self):
+        wkt = geo.CRS(5070).wkt
+        assert geo.CRS(wkt).epsg == 5070
 
     def test_conversions_return_objects(self):
         crs = geo.CRS(4326)
@@ -386,6 +415,23 @@ class TestPointsAlongLine:
         d = np.hypot(*(xy[:, None, :] - xy[None, :, :]).transpose(2, 0, 1))
         # Up to float error: distances of exactly `spacing` are allowed
         assert d[np.triu_indices(len(xy), k=1)].min() >= spacing - 1e-12
+
+    @pytest.mark.parametrize("resolution_factor", [None, 0.5, 0.05])
+    @pytest.mark.parametrize("decimals", [None, 3, 8])
+    def test_step_and_rounding_do_not_move_the_points(
+        self, resolution_factor, decimals
+    ):
+        # 0, 0.25, 0.5, 0.75 and 1 on a unit line, however finely it is walked
+        from shapely import LineString
+
+        pts = geo.points_along_line(
+            LineString([(0, 0), (1, 0)]),
+            spacing=0.25,
+            resolution_factor=resolution_factor,
+            decimals=decimals,
+        )
+        assert [p.x for p in pts] == pytest.approx([0, 0.25, 0.5, 0.75, 1.0], abs=1e-3)
+        assert [p.y for p in pts] == [0.0] * 5
 
     def test_rejects_nonpositive_spacing(self):
         from shapely import LineString
@@ -933,6 +979,58 @@ class TestBaseGridOperations:
         regridded = bgrid.regrid(out_grid)
         assert regridded.data.sizes["lat"] == out_grid.sizes["lat"]
 
+    def test_regrid_inplace(self, latlon_grid):
+        out_grid = geo.generate_regular_grid(
+            -114, -108, 2.0, 40, 45, 2.0, x_label="lon", y_label="lat"
+        )
+        out_grid.lat.attrs["units"] = "degrees_north"
+        out_grid.lon.attrs["units"] = "degrees_east"
+        bgrid = geo.BaseGrid(latlon_grid, crs=4326)
+        assert bgrid.regrid(out_grid, inplace=True) is bgrid
+        assert bgrid.data.sizes["lat"] == out_grid.sizes["lat"]
+
+    def test_resample_inplace(self, latlon_grid):
+        bgrid = geo.BaseGrid(latlon_grid, crs=4326)
+        assert bgrid.resample(2.0, inplace=True) is bgrid
+        assert bgrid.data.sizes["lat"] < latlon_grid.sizes["lat"]
+
+    @pytest.mark.parametrize("inplace", [False, True])
+    def test_reproject_a_constant_field_stays_constant(self, inplace):
+        # UTM 12N cells of 1 km around Salt Lake City, a field of 3: a bilinear
+        # regrid onto lat/lon cannot make any other value where it has a source
+        import xarray as xr
+        from pyproj import Transformer
+
+        x = 4.1e5 + 1000.0 * np.arange(10)
+        y = 4.51e6 + 1000.0 * np.arange(10)
+        lon, lat = Transformer.from_crs(32612, 4326, always_xy=True).transform(
+            *np.meshgrid(x, y)
+        )
+        ds = xr.Dataset(
+            {"v": (("y", "x"), np.full((10, 10), 3.0))},
+            coords={
+                "y": y,
+                "x": x,
+                "lat": (("y", "x"), lat, {"units": "degrees_north"}),
+                "lon": (("y", "x"), lon, {"units": "degrees_east"}),
+            },
+        ).rio.set_spatial_dims(x_dim="x", y_dim="y")
+        bgrid = geo.BaseGrid(geo.write_rio_crs(ds, 32612), crs=32612)
+        out = bgrid.reproject(0.02, inplace=inplace)
+        assert (out is bgrid) == inplace
+        assert out.crs.epsg == 4326
+        assert {"lat", "lon"} <= set(out.data.dims)
+        # The cell at the middle of the source patch is 3 (cells beyond the
+        # patch have no source to take a value from)
+        middle = out.data["v"].sel(
+            lat=lat[4:6, 4:6].mean(), lon=lon[4:6, 4:6].mean(), method="nearest"
+        )
+        assert float(middle) == pytest.approx(3.0)
+        # Any other cell has no source: 0 or NaN, whichever regrid gives there
+        values = out.data["v"].values
+        has_source = np.isfinite(values) & ~np.isclose(values, 0.0)
+        np.testing.assert_allclose(values[has_source], 3.0)
+
     def test_gridcell_area_property(self, latlon_grid):
         bgrid = geo.BaseGrid(latlon_grid, crs=4326)
         assert float(bgrid.gridcell_area.min()) > 0
@@ -983,6 +1081,15 @@ class TestTickHelpers:
         assert len(ax.get_xticks()) == len(ref.get_xticks())
         assert len(ax.get_yticks()) == len(ref.get_yticks())
 
+    def test_label_size_and_rotation(self):
+        ax = self._geo_ax([-113, -110, 39, 42])
+        geo.add_lat_ticks(ax, ylims=[39, 42], labelsize=7)
+        geo.add_lon_ticks(ax, xlims=[-113, -110], rotation=45, labelsize=9)
+        assert {t.get_fontsize() for t in ax.get_yticklabels()} == {7}
+        xlabels = ax.get_xticklabels()
+        assert {t.get_fontsize() for t in xlabels} == {9}
+        assert {t.get_rotation() for t in xlabels} == {45}
+
     def test_add_lat_and_lon_ticks(self):
         ax = self._geo_ax([-113, -110, 39, 42])
         geo.add_lat_ticks(ax, ylims=[39, 42])
@@ -1003,6 +1110,13 @@ class TestPlotting:
     def test_plot_grid_crs_inputs(self, latlon_grid, crs):
         ax = geo.plot_grid(latlon_grid, crs=crs)
         assert ax is not None
+
+    def test_plot_grid_draws_on_the_axes_it_is_given(self, latlon_grid):
+        import cartopy.crs as ccrs
+        import matplotlib.pyplot as plt
+
+        ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree()})[1]
+        assert geo.plot_grid(latlon_grid, ax=ax) is ax
 
     def test_plot_grid_accepts_crs_wrapper(self, latlon_grid):
         assert geo.plot_grid(latlon_grid, crs=geo.CRS(5070)) is not None
