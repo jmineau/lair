@@ -13,15 +13,15 @@ keywords = ["land-air interactions", "research", "pollution", "atmospheric scien
 dynamic = ["version"]  # from git tags via setuptools-scm (see [tool.setuptools_scm])
 requires-python = ">=3.11"
 dependencies = [
-  "cf_xarray",
-  "dask",
-  "matplotlib",
-  "netcdf4",
-  "numpy",
+  "cf_xarray>=0.10.4",  # 0.10.3 and earlier import xarray.core.arithmetic, gone from xarray 2026
+  "dask>=2024.4.2",  # 2024.1.0 fails 4 tests
+  "matplotlib>=3.10.7",  # 3.10.6 and earlier use pyparsing calls it deprecates, which the test filter makes errors
+  "netcdf4>=1.7.1",  # 1.6.5 fails 26 tests
+  "numpy>=1.26",  # what pandas 3 needs
   "pandas>=3.0",  # pandas 3 only: the tests run on pandas 3, and nothing on pandas 2
   "pint>=0.24.4",  # sort_by_dimensionality (lair/__init__.py); 0.24.0 to 0.24.3 do not import with flexparser 0.4
-  "pint-xarray",
-  "xarray",
+  "pint-xarray>=0.3",
+  "xarray>=2025.3.0",  # 2025.1.x fails 24 tests
 ]
 license = "MIT"
 license-files = ["LICENSE"]
