@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=4ad9a196"></script>
+    <script src="../../_static/documentation_options.js?v=37f146eb"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev34+g7d48ca6b7" />
+  <meta name="docsearch:version" content="2026.12.11.dev35+g8a98b7897" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -436,23 +436,21 @@
                   
   <h1>Source code for lair.clock</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">Times, time zones and time ranges.</span>
+<span class="sd">Times and time zones.</span>
 
 <span class="sd">:func:`convert_timezones` moves times between zones (a time without a zone</span>
 <span class="sd">needs ``fromtz``), and :func:`UTC2MTN` and its siblings are its common cases.</span>
-<span class="sd">:class:`TimeRange` is a start and an end parsed from ISO strings; the</span>
-<span class="sd">remaining functions turn times into decimal years (:func:`dt2decimalDate`),</span>
+<span class="sd">The remaining functions turn times into decimal years (:func:`dt2decimalDate`),</span>
 <span class="sd">intervals, time-difference matrices, and diurnal and seasonal aggregates.</span>
 <span class="sd">:doc:`/examples/clock` shows the time-zone rules and the afternoon mean.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextDecorator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Literal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zoneinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZoneInfo</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -462,7 +460,6 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"AFTERNOON"</span><span class="p">,</span>
     <span class="s2">"SEASONS"</span><span class="p">,</span>
-    <span class="s2">"TimeRange"</span><span class="p">,</span>
     <span class="s2">"Timer"</span><span class="p">,</span>
     <span class="s2">"datetime_accessor"</span><span class="p">,</span>
     <span class="s2">"regular_times_to_intervals"</span><span class="p">,</span>
@@ -509,337 +506,6 @@
     <span class="mi">11</span><span class="p">:</span> <span class="s2">"SON"</span><span class="p">,</span>
     <span class="mi">12</span><span class="p">:</span> <span class="s2">"DJF"</span><span class="p">,</span>
 <span class="p">}</span>
-
-
-<div class="viewcode-block" id="TimeRange">
-<a class="viewcode-back" href="../../_autosummary/lair.clock.TimeRange.html#lair.clock.TimeRange">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TimeRange</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    TimeRange class to represent a time range with start and stop times.</span>
-
-<span class="sd">    The range includes its start and not its stop, so ``TimeRange("2024")``</span>
-<span class="sd">    covers 2024 and stops at 2025-01-01 00:00.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    time_range : TimeRange | str | list | tuple | slice | None, optional</span>
-<span class="sd">        The whole range in one argument: another ``TimeRange``; an ISO 8601</span>
-<span class="sd">        string, which covers the period it names (``"2024"`` is all of</span>
-<span class="sd">        2024, ``"2024-07-04"`` that day); a ``(start, stop)`` pair; or a</span>
-<span class="sd">        slice. With no ``start`` or ``stop`` either, the default (None) is a</span>
-<span class="sd">        range open at both ends.</span>
-<span class="sd">    start : str | dt.datetime | numpy.datetime64 | None, optional</span>
-<span class="sd">        The start, when ``time_range`` is not given. A string stands for</span>
-<span class="sd">        the start of the period it names. None leaves the range open at the</span>
-<span class="sd">        start.</span>
-<span class="sd">    stop : str | dt.datetime | numpy.datetime64 | None, optional</span>
-<span class="sd">        The stop, when ``time_range`` is not given. It is not part of the</span>
-<span class="sd">        range. A string stands for the end of the period it names:</span>
-<span class="sd">        ``"2024"`` stops at 2025-01-01 00:00. None leaves the range open at</span>
-<span class="sd">        the end.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If ``time_range`` is given together with ``start`` or ``stop``, or</span>
-<span class="sd">        if any of them has an unrecognized format.</span>
-
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
-<span class="sd">    start : dt.datetime | None</span>
-<span class="sd">        The start time of the time range.</span>
-<span class="sd">    stop : dt.datetime | None</span>
-<span class="sd">        The stop time of the time range.</span>
-<span class="sd">    total_seconds : float</span>
-<span class="sd">        The total number of seconds in the time range.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    parse_iso(string: str, inclusive: bool = False) -&gt; dt.datetime</span>
-<span class="sd">        Parse the ISO8601 formatted time string and return a datetime object.</span>
-
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    TimeRange.parse_iso : How a string becomes a start or a stop.</span>
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
-<span class="sd">    &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">    &gt;&gt;&gt; july = TimeRange("2024-07")</span>
-<span class="sd">    &gt;&gt;&gt; july.start, july.stop</span>
-<span class="sd">    (datetime.datetime(2024, 7, 1, 0, 0), datetime.datetime(2024, 8, 1, 0, 0))</span>
-<span class="sd">    &gt;&gt;&gt; dt.datetime(2024, 7, 31, 23) in july</span>
-<span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; TimeRange(start="2024-07-04")</span>
-<span class="sd">    TimeRange(start=2024-07-04 00:00:00, stop=None)</span>
-<span class="sd">    &gt;&gt;&gt; str(TimeRange())</span>
-<span class="sd">    'Entire Observation Period'</span>
-<span class="sd">    """</span>
-
-    <span class="c1"># typing.Union, not X | Y: the annotation below adds the "TimeRange" forward</span>
-    <span class="c1"># reference to it at runtime, which only typing.Union accepts.</span>
-    <span class="n">_input_types</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>  <span class="c1"># noqa: UP007</span>
-        <span class="nb">str</span><span class="p">,</span>
-        <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="nb">slice</span><span class="p">,</span>
-        <span class="kc">None</span><span class="p">,</span>
-    <span class="p">]</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">time_range</span><span class="p">:</span> <span class="s2">"TimeRange"</span> <span class="o">|</span> <span class="n">_input_types</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">start</span><span class="p">:</span> <span class="n">_input_types</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">stop</span><span class="p">:</span> <span class="n">_input_types</span> <span class="o">|</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Initialize a TimeRange; the class docstring describes the parameters."""</span>
-        <span class="k">if</span> <span class="n">time_range</span> <span class="ow">and</span> <span class="p">(</span><span class="n">start</span> <span class="ow">or</span> <span class="n">stop</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both time_range and start/stop"</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="n">TimeRange</span><span class="p">):</span>
-            <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">time_range</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">time_range</span><span class="o">.</span><span class="n">stop</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="n">time_range</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">]):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">elif</span> <span class="n">time_range</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="c1"># Handle the case when time_range is a string</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="o">.</span><span class="n">parse_iso</span><span class="p">(</span><span class="n">time_range</span><span class="p">)</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="o">.</span><span class="n">parse_iso</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="n">inclusive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_range</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="c1"># Handle the case when time_range is a list/tuple</span>
-                <span class="c1">#   representing start and stop</span>
-                <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">time_range</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
-                <span class="c1"># Handle the case when time_range is a slice</span>
-                <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">time_range</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">time_range</span><span class="o">.</span><span class="n">stop</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid time_range format"</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">"TimeRange(start=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">, stop=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">)"</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">]):</span>
-            <span class="k">return</span> <span class="s2">"Entire Observation Period"</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">"Before </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">"</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">"After </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">"</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="si">}</span><span class="s2">"</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">])</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">]):</span>
-            <span class="c1"># Entire Period - True</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="c1"># stop is exclusive: TimeRange('2024') stops at 2025-01-01 00:00,</span>
-        <span class="c1"># which belongs to the next period</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
-            <span class="c1"># Before stop - True if item &lt; stop</span>
-            <span class="k">return</span> <span class="n">item</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
-            <span class="c1"># After start - True if start &lt;= item</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;=</span> <span class="n">item</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;=</span> <span class="n">item</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        The start of the range, or None if it is open at the start.</span>
-
-<span class="sd">        Setting it takes a datetime, a ``numpy.datetime64``, None, or an ISO</span>
-<span class="sd">        8601 string, which stands for the start of the period it names.</span>
-
-<span class="sd">        See Also</span>
-<span class="sd">        --------</span>
-<span class="sd">        TimeRange.stop : The end of the range.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange("2024-07").start</span>
-<span class="sd">        datetime.datetime(2024, 7, 1, 0, 0)</span>
-<span class="sd">        """</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span>
-
-    <span class="nd">@start</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">start</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="o">.</span><span class="n">parse_iso</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid start time format"</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        The end of the range, or None if it is open at the end.</span>
-
-<span class="sd">        The stop itself is not in the range. Setting it takes a datetime, a</span>
-<span class="sd">        ``numpy.datetime64``, None, or an ISO 8601 string, which stands for the</span>
-<span class="sd">        end of the period it names.</span>
-
-<span class="sd">        See Also</span>
-<span class="sd">        --------</span>
-<span class="sd">        TimeRange.start : The start of the range.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange("2024-07").stop</span>
-<span class="sd">        datetime.datetime(2024, 8, 1, 0, 0)</span>
-<span class="sd">        """</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span>
-
-    <span class="nd">@stop</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">stop</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="o">.</span><span class="n">parse_iso</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">inclusive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid stop time format"</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">total_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        The length of the range in seconds; both ends must be set.</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        ValueError</span>
-<span class="sd">            If the range is open at either end.</span>
-
-<span class="sd">        See Also</span>
-<span class="sd">        --------</span>
-<span class="sd">        dt2decimalDate : Uses the length of a year from it.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange("2024-07").total_seconds / 86400  # days in July</span>
-<span class="sd">        31.0</span>
-<span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Both start and stop times must be specified"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
-
-<div class="viewcode-block" id="TimeRange.parse_iso">
-<a class="viewcode-back" href="../../_autosummary/lair.clock.TimeRange.parse_iso.html#lair.clock.TimeRange.parse_iso">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">parse_iso</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">inclusive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Parse an ISO 8601 time string, such as ``"2024-07"``, into a datetime.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        string : str</span>
-<span class="sd">            The ISO 8601 time string, from a year down to fractions of a second.</span>
-<span class="sd">            A trailing ``Z`` is accepted; the result has no time zone.</span>
-<span class="sd">        inclusive : bool, optional</span>
-<span class="sd">            If False (the default), return the start of the period the string</span>
-<span class="sd">            names. If True, return its end, which is the start of the next</span>
-<span class="sd">            period: ``"2024-07"`` gives 2024-08-01 00:00.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dt.datetime</span>
-<span class="sd">            The parsed datetime object.</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        ValueError</span>
-<span class="sd">            If the time_str format is invalid.</span>
-
-<span class="sd">        See Also</span>
-<span class="sd">        --------</span>
-<span class="sd">        TimeRange : A range made from such strings.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; from lair.clock import TimeRange</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso("2024-07")</span>
-<span class="sd">        datetime.datetime(2024, 7, 1, 0, 0)</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso("2024-07", inclusive=True)</span>
-<span class="sd">        datetime.datetime(2024, 8, 1, 0, 0)</span>
-<span class="sd">        &gt;&gt;&gt; TimeRange.parse_iso("2024-07-04T12Z")</span>
-<span class="sd">        datetime.datetime(2024, 7, 4, 12, 0)</span>
-<span class="sd">        """</span>
-        <span class="c1"># Parse time_range string using regex assuming ISO8601 format.</span>
-        <span class="c1"># Each component is only allowed after the one before it, and the</span>
-        <span class="c1"># whole string must match, so e.g. '2024-1' is rejected instead of</span>
-        <span class="c1"># being read as hour 1 of 2024.</span>
-        <span class="n">iso8601</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">r</span><span class="s2">"(?P&lt;year&gt;\d</span><span class="si">{4}</span><span class="s2">)"</span>
-            <span class="sa">r</span><span class="s2">"(?:-?(?P&lt;month&gt;\d</span><span class="si">{2}</span><span class="s2">)"</span>
-            <span class="sa">r</span><span class="s2">"(?:-?(?P&lt;day&gt;\d</span><span class="si">{2}</span><span class="s2">)"</span>
-            <span class="sa">r</span><span class="s2">"(?:[T\s]?(?P&lt;hour&gt;\d</span><span class="si">{2}</span><span class="s2">)"</span>
-            <span class="sa">r</span><span class="s2">"(?::?(?P&lt;minute&gt;\d</span><span class="si">{2}</span><span class="s2">)"</span>
-            <span class="sa">r</span><span class="s2">"(?::?(?P&lt;second&gt;\d</span><span class="si">{2}</span><span class="s2">(?:\.\d{1,6})?))?)?)?)?)?"</span>
-            <span class="sa">r</span><span class="s2">"Z?"</span>  <span class="c1"># UTC designator; times are naive (UTC by convention)</span>
-        <span class="p">)</span>
-        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">iso8601</span><span class="p">,</span> <span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid time string format: </span><span class="si">{</span><span class="n">string</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
-
-        <span class="n">components</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
-        <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"year"</span><span class="p">])</span>
-        <span class="n">month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"month"</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"day"</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">hour</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"hour"</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">minute</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"minute"</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">second</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">fraction</span> <span class="o">=</span> <span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="s2">"second"</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"0"</span><span class="p">)</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
-        <span class="n">microsecond</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fraction</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">"0"</span><span class="p">))</span> <span class="k">if</span> <span class="n">fraction</span> <span class="k">else</span> <span class="mi">0</span>
-
-        <span class="n">start</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">second</span><span class="p">),</span> <span class="n">microsecond</span><span class="p">)</span>
-
-        <span class="c1"># Determine the stop time based on the inclusive flag</span>
-        <span class="k">if</span> <span class="n">inclusive</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">components</span><span class="p">[</span><span class="s2">"year"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"month"</span><span class="p">]:</span>
-                <span class="s2">"YYYY"</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"month"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"day"</span><span class="p">]:</span>
-                <span class="s2">"YYYY-MM"</span>
-                <span class="n">mm</span> <span class="o">=</span> <span class="n">month</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">month</span> <span class="o">&lt;</span> <span class="mi">12</span> <span class="k">else</span> <span class="mi">1</span>
-                <span class="n">yyyy</span> <span class="o">=</span> <span class="n">year</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">month</span> <span class="o">==</span> <span class="mi">12</span> <span class="k">else</span> <span class="n">year</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">yyyy</span><span class="p">,</span> <span class="n">mm</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"day"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"hour"</span><span class="p">]:</span>
-                <span class="s2">"YYYY-MM-DD"</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"hour"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"minute"</span><span class="p">]:</span>
-                <span class="s2">"YYYY-MM-DDTHH"</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"minute"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">components</span><span class="p">[</span><span class="s2">"second"</span><span class="p">]:</span>
-                <span class="s2">"YYYY-MM-DDTHH:MM"</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">components</span><span class="p">[</span><span class="s2">"second"</span><span class="p">]:</span>
-                <span class="s2">"YYYY-MM-DDTHH:MM:SS"</span>
-                <span class="c1"># one unit of the finest digit given, e.g. 12:30:45.5 -&gt; +0.1 s</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mf">10.0</span> <span class="o">**</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">fraction</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid time string format"</span><span class="p">)</span>
-
-            <span class="k">return</span> <span class="n">stop</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">start</span></div>
-</div>
-
 
 
 <div class="viewcode-block" id="Timer">
@@ -1061,7 +727,7 @@
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    TimeRange : One interval, from ISO strings.</span>
+<span class="sd">    pandas.interval_range : Intervals of one length between a start and an end.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1301,6 +967,11 @@
 <span class="c1"># ----- Decimal Time ----- #</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_seconds_in_year</span><span class="p">(</span><span class="n">year</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return the number of seconds in the calendar year (366 days in a leap year)."""</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+
+
 <div class="viewcode-block" id="dt2decimalDate">
 <a class="viewcode-back" href="../../_autosummary/lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dt2decimalDate</span><span class="p">(</span><span class="n">datetime</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -1339,7 +1010,7 @@
 
     <span class="n">this_year</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">total_seconds</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span> <span class="o">-</span> <span class="n">this_year</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
-    <span class="n">total_seconds_year</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">year</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span>
+    <span class="n">total_seconds_year</span> <span class="o">=</span> <span class="n">_seconds_in_year</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">total_seconds</span> <span class="o">/</span> <span class="n">total_seconds_year</span><span class="p">)</span></div>
 
 
@@ -1375,7 +1046,7 @@
     <span class="n">rem</span> <span class="o">=</span> <span class="n">decimalDate</span> <span class="o">-</span> <span class="n">year</span>
 
     <span class="n">this_year</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">total_seconds_year</span> <span class="o">=</span> <span class="n">TimeRange</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span>
+    <span class="n">total_seconds_year</span> <span class="o">=</span> <span class="n">_seconds_in_year</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
     <span class="c1"># Round to the millisecond: the float year term only carries ~1e-5 s of</span>
     <span class="c1"># precision, and without rounding midnight comes back as 23:59:59.999998</span>
     <span class="c1"># of the day before</span>

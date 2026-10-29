@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=4ad9a196"></script>
+    <script src="../_static/documentation_options.js?v=37f146eb"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev34+g7d48ca6b7" />
+  <meta name="docsearch:version" content="2026.12.11.dev35+g8a98b7897" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -682,13 +682,6 @@
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.seasonal.html">lair.clock.seasonal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.time_decay_matrix.html">lair.clock.time_decay_matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lair.clock.time_difference_matrix.html">lair.clock.time_difference_matrix</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="lair.clock.TimeRange.html">lair.clock.TimeRange</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="lair.clock.TimeRange.start.html">lair.clock.TimeRange.start</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lair.clock.TimeRange.stop.html">lair.clock.TimeRange.stop</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lair.clock.TimeRange.total_seconds.html">lair.clock.TimeRange.total_seconds</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lair.clock.TimeRange.parse_iso.html">lair.clock.TimeRange.parse_iso</a></li>
-</ul>
-</details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="lair.clock.Timer.html">lair.clock.Timer</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="lair.clock.Timer.logger.html">lair.clock.Timer.logger</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lair.clock.Timer.reset_timers.html">lair.clock.Timer.reset_timers</a></li>
@@ -814,11 +807,10 @@
                   
   <section id="module-lair.clock">
 <span id="lair-clock"></span><h1>lair.clock<a class="headerlink" href="#module-lair.clock" title="Link to this heading">#</a></h1>
-<p>Times, time zones and time ranges.</p>
+<p>Times and time zones.</p>
 <p><a class="reference internal" href="lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_timezones()</span></code></a> moves times between zones (a time without a zone
 needs <code class="docutils literal notranslate"><span class="pre">fromtz</span></code>), and <a class="reference internal" href="lair.clock.UTC2MTN.html#lair.clock.UTC2MTN" title="lair.clock.UTC2MTN"><code class="xref py py-func docutils literal notranslate"><span class="pre">UTC2MTN()</span></code></a> and its siblings are its common cases.
-<a class="reference internal" href="lair.clock.TimeRange.html#lair.clock.TimeRange" title="lair.clock.TimeRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeRange</span></code></a> is a start and an end parsed from ISO strings; the
-remaining functions turn times into decimal years (<a class="reference internal" href="lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate" title="lair.clock.dt2decimalDate"><code class="xref py py-func docutils literal notranslate"><span class="pre">dt2decimalDate()</span></code></a>),
+The remaining functions turn times into decimal years (<a class="reference internal" href="lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate" title="lair.clock.dt2decimalDate"><code class="xref py py-func docutils literal notranslate"><span class="pre">dt2decimalDate()</span></code></a>),
 intervals, time-difference matrices, and diurnal and seasonal aggregates.
 <a class="reference internal" href="../examples/clock.html"><span class="doc">Average a time series by local hour and by season</span></a> shows the time-zone rules and the afternoon mean.</p>
 <p class="rubric">Attributes</p>
@@ -884,10 +876,7 @@ intervals, time-difference matrices, and diurnal and seasonal aggregates.
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.TimeRange.html#lair.clock.TimeRange" title="lair.clock.TimeRange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeRange</span></code></a></p></td>
-<td><p>TimeRange class to represent a time range with start and stop times.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.clock.Timer.html#lair.clock.Timer" title="lair.clock.Timer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Timer</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="lair.clock.Timer.html#lair.clock.Timer" title="lair.clock.Timer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Timer</span></code></a></p></td>
 <td><p>Time your code using a class, context manager, or decorator</p></td>
 </tr>
 </tbody>
