@@ -21,7 +21,7 @@ Rd = float(_Rd.m_as("J / kg / K"))
 cp = float(_cp.m_as("J / kg / K"))
 
 
-def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray:
+def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> pd.Series:
     """
     Calculate the valley heat deficit.
 
