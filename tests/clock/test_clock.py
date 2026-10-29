@@ -3,7 +3,6 @@
 import datetime as dt
 from zoneinfo import ZoneInfo
 
-import numpy as np
 import pandas as pd
 import pytest
 
