@@ -287,3 +287,90 @@ def test_snap_to_route_nan_position():
     idx, d = transects.snap_to_route(xy, route_xy, max_dist=10)
     assert idx.tolist() == [0, -1, 1, -1]
     assert np.isnan(d[1]) and d[3] == pytest.approx(300.0)
+
+
+def test_magnitude_without_threshold_uses_every_transit_with_data():
+    # point 0: 1, 3 and 8 (mean 4, median 3); point 1: 2 and 6 (the NaN is no transit)
+    enh = np.array([[1.0, 2.0], [3.0, np.nan], [8.0, 6.0]])
+    np.testing.assert_allclose(
+        transects.magnitude(enh, stat="mean", min_transits=2), [4, 4]
+    )
+    np.testing.assert_allclose(
+        transects.magnitude(enh, stat="median", min_transits=2), [3, 4]
+    )
+    # a point needs min_transits transits with data: point 1 has only two
+    out = transects.magnitude(enh, stat="mean", min_transits=3)
+    assert out[0] == pytest.approx(4.0) and np.isnan(out[1])
+
+
+@pytest.mark.parametrize(
+    "stat, expected",
+    [("median", "12:00:10"), ("min", "12:00:00"), ("max", "12:00:20")],
+)
+def test_transit_times_from_datetime64(stat, expected):
+    day = np.datetime64("2024-01-01")
+    row = day + np.array(
+        [12 * 3600, 12 * 3600 + 10, 12 * 3600 + 20], dtype="timedelta64[s]"
+    )
+    time = np.vstack([row, np.full(3, np.datetime64("NaT", "s"), dtype=row.dtype)])
+    tt = transects.transit_times(time, stat=stat)
+    assert tt[0] == pd.Timestamp(f"2024-01-01 {expected}")
+    assert pd.isna(tt[1])
+
+
+def test_lag_positions_without_any_time_is_all_nan():
+    time = np.full(4, np.datetime64("NaT", "s"), dtype="datetime64[s]")
+    xy = np.arange(8.0).reshape(4, 2)
+    out = transects.lag_positions(time, xy, lag_s=10.0)
+    assert out.shape == (4, 2) and np.isnan(out).all()
+
+
+def test_snap_to_route_with_no_position_is_off_route():
+    pytest.importorskip("scipy")
+    route_xy = np.c_[np.arange(0, 201, 50.0), np.zeros(5)]
+    idx, d = transects.snap_to_route(np.full((3, 2), np.nan), route_xy, max_dist=10)
+    assert idx.tolist() == [-1, -1, -1]
+    assert np.isnan(d).all()
+
+
+@pytest.mark.parametrize("which", ["s", "time"])
+def test_split_transits_with_nothing_to_place_is_empty(which):
+    pytest.importorskip("scipy")
+    t = np.arange(100.0)
+    s = t * 20.0
+    if which == "s":
+        s[:] = np.nan  # off the route throughout
+    else:
+        t[:] = np.nan  # no sample has a time
+    transit, table = transects.split_transits(t, s)
+    assert (transit == -1).all()
+    assert table.empty and list(table.columns) == transects.TRANSIT_COLUMNS
+
+
+def test_split_transits_skips_a_run_of_one_sample():
+    pytest.importorskip("scipy")
+    # 200 s along the route at 10 m/s (2 km), then an hour later one lone sample
+    t = np.r_[np.arange(200.0), 5000.0]
+    s = np.r_[np.arange(200.0) * 10.0, 500.0]
+    transit, table = transects.split_transits(t, s, max_gap_s=600)
+    assert transit[-1] == -1
+    assert (transit[:-1] == 0).all()
+    assert len(table) == 1 and table.loc[0, "n"] == 200
+
+
+def test_transect_matrix_counts_every_sample_without_max_dwell_s():
+    # Transit 0 sits at point 1 for three samples (obs 1, 3, 5 at t = 0, 10, 100 s)
+    transit = np.zeros(3, dtype=int)
+    point = np.ones(3, dtype=int)
+    obs = np.array([1.0, 3.0, 5.0])
+    time = np.array([0.0, 10.0, 100.0])
+    m_obs, m_t, m_n = transects.transect_matrix(transit, point, obs, time, 1, 2)
+    assert m_obs[0, 1] == pytest.approx(3.0)  # (1 + 3 + 5) / 3
+    assert m_t[0, 1] == pytest.approx(110.0 / 3)
+    assert m_n[0, 1] == 3
+    assert np.isnan(m_obs[0, 0])
+    # max_dwell_s=20 drops the sample 100 s after the first one
+    m_obs, _, m_n = transects.transect_matrix(
+        transit, point, obs, time, 1, 2, max_dwell_s=20
+    )
+    assert m_obs[0, 1] == pytest.approx(2.0) and m_n[0, 1] == 2
