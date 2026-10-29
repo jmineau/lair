@@ -106,4 +106,14 @@ jobs:
         run: pixi run python -c "import lair; lair.setup_ccg_filter()"
 
       - name: Test
-        run: pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow"
+        run: pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow" --cov --cov-report=xml
+
+      # The modules behind the extras run only here, so without this upload
+      # Codecov counts them as untested. Codecov merges it with the upload of
+      # the job above: a line run in either job is covered.
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
