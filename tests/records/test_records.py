@@ -166,6 +166,28 @@ def test_read_kml(tmp_path):
     assert document.name == "t"
 
 
+def test_read_kml_with_fastkml_before_1_0(tmp_path, monkeypatch):
+    """
+    Before 1.0, fastkml has no ``KML.parse``: ``from_string`` fills a new instance.
+
+    The installed fastkml is replaced by a stand-in with the old interface, which
+    records the bytes it is given.
+    """
+    kml_module = pytest.importorskip("fastkml.kml")
+    text = '<kml xmlns="http://www.opengis.net/kml/2.2"><name>Cañón</name></kml>'
+
+    class OldKML:
+        def from_string(self, data):
+            self.data = data
+
+    monkeypatch.setattr(kml_module, "KML", OldKML)
+    kml_path = tmp_path / "old.kml"
+    kml_path.write_text(text, encoding="utf-8")
+    k = records.read_kml(str(kml_path))
+    assert isinstance(k, OldKML)
+    assert k.data == text.encode("utf-8")
+
+
 class TestWgetDownload:
     @pytest.fixture
     def calls(self, monkeypatch):
