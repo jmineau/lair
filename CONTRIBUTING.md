@@ -149,15 +149,17 @@ fails when one breaks.
 A page whose code needs an optional extra, ESMF, or a large download cannot
 run in the docs build. Such a page shows its code and output as
 `.. code-block:: ipython`, recorded from one real run in the pixi environment,
-and says so in a note at the top with the date of the run
-(`docs/examples/inventory.rst`, `soundings.rst`, `hrrr_winds.rst`,
+and says so in a note at the top with the date of the run and the lair version
+that ran it (`docs/examples/inventory.rst`, `soundings.rst`, `hrrr_winds.rst`,
 `carbontracker.rst`, `background.rst` and `maps.rst` do; `clock.rst` runs when
 the docs build). A recorded page can show a figure: the recorded code saves it
 (`fig.savefig("name.png")`), and the page includes the PNG, which is committed
 beside the page (`maps.rst`).
 
 When the code such a page calls changes, run the page's code again and paste
-the new output. Run it in an empty folder: the blocks use relative paths, so
+the new output, with the new date and version in the note (a version such as
+`2026.12.11.dev9+g55e932b18` is the commit after release 2026.12.10 that ran it).
+Run it in an empty folder: the blocks use relative paths, so
 no machine's paths reach the page.
 
 ## Where a fact goes in the docs
