@@ -164,6 +164,32 @@ class TestIdealGasLaw:
         V = met.ideal_gas_law("volume", p=1e5, m=m, R=287.05, T=300.0)
         np.testing.assert_allclose(V, m * 287.05 * 300.0 / 1e5)
 
+    # One mole of any ideal gas at 273.15 K and 101325 Pa fills 22.413969545 L
+    # (CODATA 2018 molar volume), N_A = 6.02214076e23 molecules.
+    def test_pressure_from_molecules_and_volume(self):
+        p = met.ideal_gas_law("pressure", V=0.022413969545, N=6.02214076e23, T=273.15)
+        assert p == pytest.approx(101325.0, rel=1e-8)
+
+    def test_volume_from_molecules(self):
+        V = met.ideal_gas_law("volume", p=101325.0, N=6.02214076e23, T=273.15)
+        assert pytest.approx(0.022413969545, rel=1e-8) == V
+
+    def test_temperature_from_molecules_and_volume(self):
+        T = met.ideal_gas_law(
+            "temperature", p=101325.0, V=0.022413969545, N=6.02214076e23
+        )
+        assert pytest.approx(273.15, rel=1e-8) == T
+
+    # Dry air (R = 287.05) at 1e5 Pa and 300 K: 0.86115 m3/kg, so 1 kg fills
+    # 0.86115 m3 (287.05 * 300 / 1e5, done by hand).
+    def test_temperature_from_specific_volume(self):
+        T = met.ideal_gas_law("temperature", p=1e5, alpha=0.86115, R=287.05)
+        assert pytest.approx(300.0, rel=1e-9) == T
+
+    def test_temperature_from_mass_and_volume(self):
+        T = met.ideal_gas_law("temperature", p=1e5, V=0.86115, m=1.0, R=287.05)
+        assert pytest.approx(300.0, rel=1e-9) == T
+
     def test_zero_moles_is_a_value_not_missing(self):
         # n = 0 is valid input (zero pressure), not "n not given"
         p = met.ideal_gas_law("pressure", V=1.0, n=0.0, T=300.0)
