@@ -16,7 +16,8 @@ import pandas as pd
 
 # %% Polar
 
-#: The 16 compass sectors used by :func:`bin_polar`, in degrees clockwise from N
+#: The 16 compass sectors used by :func:`bin_polar`, in degrees clockwise from N:
+#: ``WIND_SECTORS["ESE"]`` is 112.5. :func:`sector_radians` gives them in radians.
 WIND_SECTORS = {
     "N": 0.0,
     "NNE": 22.5,
@@ -62,6 +63,28 @@ def bin_polar(
         A copy of ``data`` with binned wind direction and speed added as
         ``wd_bin`` (compass sector), ``radian_bin`` and ``x_bin``. The
         caller's frame is not modified.
+
+    See Also
+    --------
+    WIND_SECTORS : The sectors.
+    sector_radians : The sectors in radians, the ``radian_bin`` values.
+    circularize_radial_data : Closes the circle of the aggregated bins for a plot.
+    lair.plotter.polarPlot : Draws the binned data.
+
+    Examples
+    --------
+    A wind at 350 and one at 10 degrees are both in the N sector; the speed is
+    put in the bin whose upper edge is given:
+
+    >>> import pandas as pd
+    >>> from lair.air import bin_polar
+    >>> df = pd.DataFrame({"ws": [1.0, 2.5, 4.0], "wd": [350.0, 10.0, 95.0]})
+    >>> binned = bin_polar(df, xbins=[0, 2, 4])
+    >>> binned[["wd_bin", "x_bin"]].astype(str)
+      wd_bin x_bin
+    0      N     2
+    1      N     4
+    2      E     4
     """
     data = data.copy()
     directions = WIND_SECTORS
@@ -105,6 +128,17 @@ def sector_radians() -> np.ndarray:
     -------
     np.ndarray
         N, NNE, ..., NNW in radians clockwise from N.
+
+    See Also
+    --------
+    WIND_SECTORS : The same sectors in degrees.
+    bin_polar : Puts each wind in one of them.
+
+    Examples
+    --------
+    >>> from lair.air import sector_radians
+    >>> sector_radians().round(3)[:4]
+    array([0.   , 0.393, 0.785, 1.178])
     """
     return np.deg2rad(np.array(list(WIND_SECTORS.values())))
 
@@ -126,6 +160,29 @@ def circularize_radial_data(agg: pd.DataFrame):
     -------
     tuple[np.ndarray, np.ndarray, np.ndarray]
         Theta, r, and c for polar
+
+    See Also
+    --------
+    bin_polar : Bins the data the aggregate comes from.
+    sector_radians : The theta values of the 16 sectors.
+    lair.plotter.polarPlot : Does this for a contour plot.
+
+    Examples
+    --------
+    One value per sector (rows) and per speed (columns): the result has one more
+    row, a copy of the first, so the plotted contour closes:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from lair.air import circularize_radial_data, sector_radians
+    >>> agg = pd.DataFrame(
+    ...     np.arange(32).reshape(16, 2), index=sector_radians(), columns=[2.0, 4.0]
+    ... )
+    >>> theta, r, c = circularize_radial_data(agg)
+    >>> c.shape
+    (17, 2)
+    >>> bool((c[-1] == c[0]).all())
+    True
     """
     theta = agg.index.values
     dtheta = np.diff(theta).mean()

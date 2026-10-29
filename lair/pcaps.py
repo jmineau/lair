@@ -32,15 +32,59 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> xr.DataArray
 
     Parameters
     ----------
-    data : xr.DataSet
-        The sounding data.
+    data : xr.Dataset
+        The soundings, as :func:`lair.soundings.get_soundings` returns them.
     integration_height : int
         The height to integrate to [m].
 
     Returns
     -------
-    xr.DataArray
-        The valley heat deficit [MJ/m^2].
+    pd.Series
+        The valley heat deficit [MJ/m^2] named ``VHD_MJ_m2``, indexed by
+        ``Time_UTC``.
+
+    See Also
+    --------
+    determine_pcap_events : Finds the events where it stays high.
+    lair.soundings.get_soundings : Reads the soundings it takes.
+    lair.meteorology.poisson : The potential temperature it integrates.
+
+    Notes
+    -----
+    ``data`` needs temperature in degrees Celsius, pressure in hPa, a ``height``
+    dimension, and the ``elevation`` and ``interpolation_interval`` attributes
+    that ``get_soundings`` sets.
+
+    Examples
+    --------
+    Two made-up soundings, a cold pool (temperature falling 2 K per kilometer)
+    and a well-mixed one (6.5 K per kilometer), 12 hours apart:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import xarray as xr
+    >>> from lair.pcaps import valleyheatdeficit
+    >>> height = np.arange(1289.0, 3300.0, 10.0)
+    >>> temperature = np.vstack(
+    ...     [-5 - 2.0 * (height - 1289) / 1000, 0 - 6.5 * (height - 1289) / 1000]
+    ... )
+    >>> pressure = np.tile(870 * np.exp(-(height - 1289) / 8000), (2, 1))
+    >>> soundings = xr.Dataset(
+    ...     {
+    ...         "temperature": (("time", "height"), temperature),
+    ...         "pressure": (("time", "height"), pressure),
+    ...     },
+    ...     coords={
+    ...         "time": pd.to_datetime(["2024-01-15 00:00", "2024-01-15 12:00"]),
+    ...         "height": height,
+    ...     },
+    ...     attrs={"elevation": 1289.0, "interpolation_interval": 10},
+    ... )
+    >>> valleyheatdeficit(soundings).round(1)
+    Time_UTC
+    2024-01-15 00:00:00    3.6
+    2024-01-15 12:00:00    1.5
+    Name: VHD_MJ_m2, dtype: float64
     """
     h0 = data.elevation
 
@@ -211,8 +255,8 @@ def build_pcap_mask(index: pd.Index, events: pd.DataFrame) -> pd.Series:
     Parameters
     ----------
     index : pd.Index
-        The datetime-like index to build the mask for. Naive times are taken as UTC;
-        tz-aware times are converted.
+        The datetime-like index to build the mask for. Naive times follow
+        :ref:`the UTC rule <utc-rule>`; tz-aware times are converted.
     events : pd.DataFrame
         The DataFrame of PCAP events (naive UTC or tz-aware start/end).
 
@@ -220,6 +264,25 @@ def build_pcap_mask(index: pd.Index, events: pd.DataFrame) -> pd.Series:
     -------
     pd.Series
         A boolean mask where True indicates a time within a PCAP event.
+
+    See Also
+    --------
+    determine_pcap_events : Finds the events.
+    filter_pcap_events : Drops the rows the mask marks.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from lair.pcaps import build_pcap_mask
+    >>> events = pd.DataFrame(
+    ...     {
+    ...         "start": pd.to_datetime(["2024-01-01 12:00"]),
+    ...         "end": pd.to_datetime(["2024-01-03 11:59:59"]),
+    ...     }
+    ... )
+    >>> times = pd.date_range("2024-01-01 00:00", periods=6, freq="12h")
+    >>> build_pcap_mask(times, events).astype(int).tolist()
+    [0, 1, 1, 1, 1, 0]
     """
     # Ensure we can compare the index values to the event timestamps.
     # Use pd.to_datetime so the function is robust to Index types that
@@ -263,6 +326,26 @@ def filter_pcap_events(
     -------
     pd.DataFrame
         The DataFrame without the rows that fall within PCAP events.
+
+    See Also
+    --------
+    determine_pcap_events : Finds the events.
+    build_pcap_mask : The mask it applies.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from lair.pcaps import filter_pcap_events
+    >>> events = pd.DataFrame(
+    ...     {
+    ...         "start": pd.to_datetime(["2024-01-01 12:00"]),
+    ...         "end": pd.to_datetime(["2024-01-03 11:59:59"]),
+    ...     }
+    ... )
+    >>> times = pd.date_range("2024-01-01 00:00", periods=6, freq="12h")
+    >>> data = pd.DataFrame({"ch4": range(6)}, index=times)
+    >>> filter_pcap_events(data, events)["ch4"].tolist()
+    [0, 5]
     """
     index = data.index.get_level_values(level) if level is not None else data.index
     mask = build_pcap_mask(index, events)
