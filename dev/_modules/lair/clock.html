@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=37f146eb"></script>
+    <script src="../../_static/documentation_options.js?v=02c726c6"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev35+g8a98b7897" />
+  <meta name="docsearch:version" content="2026.12.11.dev36+ga1b3e03c0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -441,7 +441,7 @@
 <span class="sd">:func:`convert_timezones` moves times between zones (a time without a zone</span>
 <span class="sd">needs ``fromtz``), and :func:`UTC2MTN` and its siblings are its common cases.</span>
 <span class="sd">The remaining functions turn times into decimal years (:func:`dt2decimalDate`),</span>
-<span class="sd">intervals, time-difference matrices, and diurnal and seasonal aggregates.</span>
+<span class="sd">intervals, and diurnal and seasonal aggregates.</span>
 <span class="sd">:doc:`/examples/clock` shows the time-zone rules and the afternoon mean.</span>
 <span class="sd">"""</span>
 
@@ -463,8 +463,6 @@
     <span class="s2">"Timer"</span><span class="p">,</span>
     <span class="s2">"datetime_accessor"</span><span class="p">,</span>
     <span class="s2">"regular_times_to_intervals"</span><span class="p">,</span>
-    <span class="s2">"time_difference_matrix"</span><span class="p">,</span>
-    <span class="s2">"time_decay_matrix"</span><span class="p">,</span>
     <span class="s2">"diurnal"</span><span class="p">,</span>
     <span class="s2">"seasonal"</span><span class="p">,</span>
     <span class="s2">"dt2decimalDate"</span><span class="p">,</span>
@@ -760,93 +758,6 @@
     <span class="c1"># Create the IntervalIndex with specified closure</span>
     <span class="n">intervals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">IntervalIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span><span class="n">start_times</span><span class="p">,</span> <span class="n">stop_times</span><span class="p">,</span> <span class="n">closed</span><span class="o">=</span><span class="n">closed</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">intervals</span></div>
-
-
-
-<div class="viewcode-block" id="time_difference_matrix">
-<a class="viewcode-back" href="../../_autosummary/lair.clock.time_difference_matrix.html#lair.clock.time_difference_matrix">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">time_difference_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">absolute</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Calculate the time differences between each pair of times.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    times : list[dt.datetime]</span>
-<span class="sd">        The list of times to calculate the differences between.</span>
-<span class="sd">    absolute : bool, optional</span>
-<span class="sd">        If True, return the absolute differences. Default is True.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        The matrix of time differences, as ``timedelta64``: row i, column j is</span>
-<span class="sd">        time i minus time j (its absolute value by default).</span>
-
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    time_decay_matrix : An exponential decay of these differences.</span>
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; from lair.clock import time_difference_matrix</span>
-<span class="sd">    &gt;&gt;&gt; times = pd.to_datetime(</span>
-<span class="sd">    ...     ["2024-01-01 00:00", "2024-01-01 06:00", "2024-01-02 00:00"]</span>
-<span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; time_difference_matrix(times) / pd.Timedelta("1h")</span>
-<span class="sd">    array([[ 0.,  6., 24.],</span>
-<span class="sd">           [ 6.,  0., 18.],</span>
-<span class="sd">           [24., 18.,  0.]])</span>
-<span class="sd">    """</span>
-    <span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span>
-        <span class="n">times</span>
-    <span class="p">)</span>  <span class="c1"># wrap in pandas DatetimeIndex as np.subtract.outer doesn't like pd.Series</span>
-    <span class="n">diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">absolute</span><span class="p">:</span>
-        <span class="n">diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">diffs</span></div>
-
-
-
-<div class="viewcode-block" id="time_decay_matrix">
-<a class="viewcode-back" href="../../_autosummary/lair.clock.time_decay_matrix.html#lair.clock.time_decay_matrix">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">time_decay_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">decay</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Calculate the time decay matrix for the specified times and decay.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    times : list[dt.datetime]</span>
-<span class="sd">        The list of times to calculate the decay matrix for.</span>
-<span class="sd">    decay : str | pd.Timedelta</span>
-<span class="sd">        The decay to use for the exponential decay: the time over which a</span>
-<span class="sd">        value falls to 1/e.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        The matrix of time decay values: ``exp(-|t_i - t_j| / decay)``, 1 on</span>
-<span class="sd">        the diagonal.</span>
-
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    time_difference_matrix : The differences it decays.</span>
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; from lair.clock import time_decay_matrix</span>
-<span class="sd">    &gt;&gt;&gt; times = pd.to_datetime(</span>
-<span class="sd">    ...     ["2024-01-01 00:00", "2024-01-01 06:00", "2024-01-02 00:00"]</span>
-<span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; time_decay_matrix(times, "1D").round(3)</span>
-<span class="sd">    array([[1.   , 0.779, 0.368],</span>
-<span class="sd">           [0.779, 1.   , 0.472],</span>
-<span class="sd">           [0.368, 0.472, 1.   ]])</span>
-<span class="sd">    """</span>
-    <span class="c1"># Time differences (timedelta64) over the decay time scale -&gt; exponential decay</span>
-    <span class="n">diffs</span> <span class="o">=</span> <span class="n">time_difference_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">absolute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">diffs</span> <span class="o">/</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">decay</span><span class="p">)</span><span class="o">.</span><span class="n">to_timedelta64</span><span class="p">()))</span></div>
 
 
 
