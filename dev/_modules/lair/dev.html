@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=8358b512"></script>
+    <script src="../../_static/documentation_options.js?v=b6731611"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
+  <meta name="docsearch:version" content="2026.12.11.dev28+g37d713e8b" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -457,6 +457,19 @@
 <span class="sd">    -------</span>
 <span class="sd">    list[str]</span>
 <span class="sd">        List of public attributes.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    dir : Lists every name, private ones included.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from lair.dev import public_attrs</span>
+<span class="sd">    &gt;&gt;&gt; class Site:</span>
+<span class="sd">    ...     name = "SLC"</span>
+<span class="sd">    ...     _cache = {}</span>
+<span class="sd">    &gt;&gt;&gt; public_attrs(Site())</span>
+<span class="sd">    ['name']</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">a</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)]</span></div>
 

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=8358b512"></script>
+    <script src="../_static/documentation_options.js?v=b6731611"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev27+gfefbed725" />
+  <meta name="docsearch:version" content="2026.12.11.dev28+g37d713e8b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -821,6 +821,21 @@
 <dt class="sig sig-object py" id="lair.utils.updating_print">
 <span class="sig-prename descclassname"><span class="pre">lair.utils.</span></span><span class="sig-name descname"><span class="pre">updating_print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/utils.html#updating_print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.utils.updating_print" title="Link to this definition">#</a></dt>
 <dd><p>Print <em>msg</em> over the current line (a carriage return, no newline).</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#print" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print</span></code></a></dt><dd><p>Starts a new line each time.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>Each call returns to the start of the line, so a terminal shows only the
+last message:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">updating_print</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">updating_print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"file </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> of 3"</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
