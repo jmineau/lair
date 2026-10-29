@@ -6,6 +6,8 @@ against an independent trapezoid integration of a synthetic hydrostatic
 sounding.
 """
 
+import typing
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -63,6 +65,12 @@ class TestValleyHeatDeficit:
         assert vhd.index.name == "Time_UTC"
         assert len(vhd) == 2
         np.testing.assert_allclose(vhd.to_numpy(), expected, rtol=1e-3)
+
+    def test_returns_the_annotated_series(self):
+        ds, *_ = _sounding(pd.date_range("2024-01-01", periods=2, freq="12h"))
+        vhd = pcaps.valleyheatdeficit(ds)
+        assert typing.get_type_hints(pcaps.valleyheatdeficit)["return"] is pd.Series
+        assert isinstance(vhd, pd.Series)
 
     def test_single_sounding(self):
         # One time step must not be interpolated along time (-> all NaN -> 0)
