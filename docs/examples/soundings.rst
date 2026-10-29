@@ -22,7 +22,7 @@ computes potential temperature on regular heights. Two rules come out of it:
 The data
 --------
 
-The `University of Wyoming <https://weather.uwyo.edu/upperair/sounding.html>`_
+The `University of Wyoming <https://weather.uwyo.edu/upperair/sounding.shtml>`_
 keeps the radiosonde soundings of stations around the world, launched at 00
 and 12 UTC. lair downloads them with `siphon <https://unidata.github.io/siphon/>`_
 and saves each one as a CSV file named by station and UTC time, in one folder
