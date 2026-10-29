@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=512842b5"></script>
+    <script src="../_static/documentation_options.js?v=630f8255"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev11+g52ef88c16" />
+  <meta name="docsearch:version" content="2026.12.11.dev14+g1e2dfee04" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -821,18 +821,14 @@
 <dt class="sig sig-object py" id="lair.setup_ccg_filter">
 <span class="sig-prename descclassname"><span class="pre">lair.</span></span><span class="sig-name descname"><span class="pre">setup_ccg_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lair_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair.html#setup_ccg_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.setup_ccg_filter" title="Link to this definition">#</a></dt>
 <dd><p>Set up the CCG filter module from NOAA GML.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">_ccg_filter.py</span></code> is not already present, download NOAA’s
-<code class="docutils literal notranslate"><span class="pre">ccg_filter.zip</span></code> into a temporary directory, take <code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code> from
-it (other zip members are ignored), and move it into place as
-<code class="docutils literal notranslate"><span class="pre">_ccg_filter.py</span></code> with an atomic <a class="reference external" href="https://docs.python.org/3/library/os.html#os.replace" title="(in Python v3.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.replace()</span></code></a>. A failed download or
-unusable zip raises and leaves no partial file behind (at <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code>
-the failure is logged as a warning instead, and only <code class="docutils literal notranslate"><span class="pre">lair.background</span></code>
-is unavailable). Concurrent first
-imports (e.g. a SLURM array) are safe: each installs a complete file
-atomically, and one that finds the file already installed uses it.</p>
-<p>Set the environment variable <code class="docutils literal notranslate"><span class="pre">LAIR_SKIP_CCG_DOWNLOAD</span></code> to skip the network
-download (e.g. for testing, CI, or read-only/offline environments). When
-skipped and the file is absent, <code class="docutils literal notranslate"><span class="pre">lair.background</span></code> will not be importable.</p>
+<p>Installs <code class="docutils literal notranslate"><span class="pre">_ccg_filter.py</span></code> into <code class="docutils literal notranslate"><span class="pre">lair_dir</span></code>, from NOAA’s <code class="docutils literal notranslate"><span class="pre">ccg_filter.zip</span></code>,
+unless the file is already there. <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> calls this function:
+<a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a> says what is downloaded and why, what happens
+without a network, and how to skip the download or place the file yourself.</p>
+<p>Called on its own, it raises when the download fails or the zip holds no
+<code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code>, and leaves no partial file behind. The file is moved into
+place atomically, so concurrent first imports (a Slurm array, for example) are
+safe: one that finds the file already installed uses it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>lair_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Directory to install <code class="docutils literal notranslate"><span class="pre">_ccg_filter.py</span></code> into. Defaults to the lair
@@ -842,6 +838,18 @@ package directory.</p>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.background.thoning</span></code></a></dt><dd><p>Fits NOAA’s curve, which needs the filter.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">lair</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lair</span><span class="o">.</span><span class="n">setup_ccg_filter</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

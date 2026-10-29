@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=512842b5"></script>
+    <script src="../_static/documentation_options.js?v=630f8255"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev11+g52ef88c16" />
+  <meta name="docsearch:version" content="2026.12.11.dev14+g1e2dfee04" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -541,25 +541,30 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Set up the CCG filter module from NOAA GML.</span>
 
-<span class="sd">    If ``_ccg_filter.py`` is not already present, download NOAA's</span>
-<span class="sd">    ``ccg_filter.zip`` into a temporary directory, take ``ccg_filter.py`` from</span>
-<span class="sd">    it (other zip members are ignored), and move it into place as</span>
-<span class="sd">    ``_ccg_filter.py`` with an atomic :func:`os.replace`. A failed download or</span>
-<span class="sd">    unusable zip raises and leaves no partial file behind (at ``import lair``</span>
-<span class="sd">    the failure is logged as a warning instead, and only ``lair.background``</span>
-<span class="sd">    is unavailable). Concurrent first</span>
-<span class="sd">    imports (e.g. a SLURM array) are safe: each installs a complete file</span>
-<span class="sd">    atomically, and one that finds the file already installed uses it.</span>
+<span class="sd">    Installs ``_ccg_filter.py`` into ``lair_dir``, from NOAA's ``ccg_filter.zip``,</span>
+<span class="sd">    unless the file is already there. ``import lair`` calls this function:</span>
+<span class="sd">    :ref:`first-import-download` says what is downloaded and why, what happens</span>
+<span class="sd">    without a network, and how to skip the download or place the file yourself.</span>
 
-<span class="sd">    Set the environment variable ``LAIR_SKIP_CCG_DOWNLOAD`` to skip the network</span>
-<span class="sd">    download (e.g. for testing, CI, or read-only/offline environments). When</span>
-<span class="sd">    skipped and the file is absent, ``lair.background`` will not be importable.</span>
+<span class="sd">    Called on its own, it raises when the download fails or the zip holds no</span>
+<span class="sd">    ``ccg_filter.py``, and leaves no partial file behind. The file is moved into</span>
+<span class="sd">    place atomically, so concurrent first imports (a Slurm array, for example) are</span>
+<span class="sd">    safe: one that finds the file already installed uses it.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    lair_dir : str, optional</span>
 <span class="sd">        Directory to install ``_ccg_filter.py`` into. Defaults to the lair</span>
 <span class="sd">        package directory.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    lair.background.thoning : Fits NOAA's curve, which needs the filter.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import lair</span>
+<span class="sd">    &gt;&gt;&gt; lair.setup_ccg_filter()  # doctest: +SKIP</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
