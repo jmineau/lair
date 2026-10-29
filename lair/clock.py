@@ -5,7 +5,7 @@ Times, time zones and time ranges.
 needs ``fromtz``), and :func:`UTC2MTN` and its siblings are its common cases.
 :class:`TimeRange` is a start and an end parsed from ISO strings; the
 remaining functions turn times into decimal years (:func:`dt2decimalDate`),
-intervals, time-difference matrices, and diurnal and seasonal aggregates.
+intervals, and diurnal and seasonal aggregates.
 :doc:`/examples/clock` shows the time-zone rules and the afternoon mean.
 """
 
@@ -29,8 +29,6 @@ __all__ = [
     "Timer",
     "datetime_accessor",
     "regular_times_to_intervals",
-    "time_difference_matrix",
-    "time_decay_matrix",
     "diurnal",
     "seasonal",
     "dt2decimalDate",
@@ -634,87 +632,6 @@ def regular_times_to_intervals(
     # Create the IntervalIndex with specified closure
     intervals = pd.IntervalIndex.from_arrays(start_times, stop_times, closed=closed)
     return intervals
-
-
-def time_difference_matrix(times, absolute: bool = True) -> np.ndarray:
-    """
-    Calculate the time differences between each pair of times.
-
-    Parameters
-    ----------
-    times : list[dt.datetime]
-        The list of times to calculate the differences between.
-    absolute : bool, optional
-        If True, return the absolute differences. Default is True.
-
-    Returns
-    -------
-    np.ndarray
-        The matrix of time differences, as ``timedelta64``: row i, column j is
-        time i minus time j (its absolute value by default).
-
-    See Also
-    --------
-    time_decay_matrix : An exponential decay of these differences.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> from lair.clock import time_difference_matrix
-    >>> times = pd.to_datetime(
-    ...     ["2024-01-01 00:00", "2024-01-01 06:00", "2024-01-02 00:00"]
-    ... )
-    >>> time_difference_matrix(times) / pd.Timedelta("1h")
-    array([[ 0.,  6., 24.],
-           [ 6.,  0., 18.],
-           [24., 18.,  0.]])
-    """
-    times = pd.DatetimeIndex(
-        times
-    )  # wrap in pandas DatetimeIndex as np.subtract.outer doesn't like pd.Series
-    diffs = np.subtract.outer(times, times)
-    if absolute:
-        diffs = np.abs(diffs)
-    return diffs
-
-
-def time_decay_matrix(times, decay: str | pd.Timedelta) -> np.ndarray:
-    """
-    Calculate the time decay matrix for the specified times and decay.
-
-    Parameters
-    ----------
-    times : list[dt.datetime]
-        The list of times to calculate the decay matrix for.
-    decay : str | pd.Timedelta
-        The decay to use for the exponential decay: the time over which a
-        value falls to 1/e.
-
-    Returns
-    -------
-    np.ndarray
-        The matrix of time decay values: ``exp(-|t_i - t_j| / decay)``, 1 on
-        the diagonal.
-
-    See Also
-    --------
-    time_difference_matrix : The differences it decays.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> from lair.clock import time_decay_matrix
-    >>> times = pd.to_datetime(
-    ...     ["2024-01-01 00:00", "2024-01-01 06:00", "2024-01-02 00:00"]
-    ... )
-    >>> time_decay_matrix(times, "1D").round(3)
-    array([[1.   , 0.779, 0.368],
-           [0.779, 1.   , 0.472],
-           [0.368, 0.472, 1.   ]])
-    """
-    # Time differences (timedelta64) over the decay time scale -> exponential decay
-    diffs = time_difference_matrix(times, absolute=True)
-    return np.exp(-(diffs / pd.Timedelta(decay).to_timedelta64()))
 
 
 # ----- Time Aggregation ----- #
