@@ -82,6 +82,8 @@ These get data from somewhere else:
 * ``synoptic`` needs a Synoptic Data API token, passed as ``token=`` or set as
   ``SYNOPTIC_TOKEN``, and the ``requests`` extra.
 
+.. _pollutant-spelling:
+
 Spelling a pollutant
 --------------------
 

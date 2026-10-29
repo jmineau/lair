@@ -18,5 +18,18 @@ def public_attrs(obj: object) -> list[str]:
     -------
     list[str]
         List of public attributes.
+
+    See Also
+    --------
+    dir : Lists every name, private ones included.
+
+    Examples
+    --------
+    >>> from lair.dev import public_attrs
+    >>> class Site:
+    ...     name = "SLC"
+    ...     _cache = {}
+    >>> public_attrs(Site())
+    ['name']
     """
     return [a for a in dir(obj) if not a.startswith("_")]

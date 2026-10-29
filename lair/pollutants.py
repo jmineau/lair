@@ -54,6 +54,18 @@ class Pollutant:
     formula : str | None
         Chemical formula used for the molar mass; None for aerosols. NOx is
         given as NO2, the usual reporting basis for NOx mass.
+
+    See Also
+    --------
+    get_pollutant : Look one up by name, whatever its case.
+    POLLUTANTS : The registry.
+
+    Examples
+    --------
+    >>> from lair.pollutants import get_pollutant
+    >>> ch4 = get_pollutant("CH4")
+    >>> ch4.long_name, ch4.units, ch4.expected_range
+    ('methane', 'ppm', (1.7, 5.0))
     """
 
     name: str
@@ -73,6 +85,22 @@ class Pollutant:
         ------
         ValueError
             If the pollutant has no chemical formula (an aerosol).
+
+        See Also
+        --------
+        lair.inventories.molecular_weight : The same number from a formula
+            (case-sensitive).
+        lair.units : The registry whose ``mass_flux`` context takes it as ``mw``.
+
+        Examples
+        --------
+        >>> from lair.pollutants import get_pollutant
+        >>> print(f"{get_pollutant('CH4').molar_mass:~P.3f}")  # doctest: +SKIP
+        16.043 g/mol
+        >>> get_pollutant("PM2.5").molar_mass
+        Traceback (most recent call last):
+            ...
+        ValueError: PM2.5 has no chemical formula.
         """
         if self.formula is None:
             raise ValueError(f"{self.name} has no chemical formula.")
@@ -94,6 +122,19 @@ class Pollutant:
         -------
         str
             The label.
+
+        See Also
+        --------
+        get_pollutant : Look one up by name.
+
+        Examples
+        --------
+        >>> from lair.pollutants import get_pollutant
+        >>> pm = get_pollutant("pm25")
+        >>> pm.label(latex=False)
+        'PM2.5 [ug/m3]'
+        >>> pm.label(units=False, latex=False)
+        'PM2.5'
         """
         name = self.latex if latex else self.name
         if not units:
@@ -158,6 +199,22 @@ def get_pollutant(name: str) -> Pollutant:
     ------
     KeyError
         If the pollutant is not in :data:`POLLUTANTS`.
+
+    See Also
+    --------
+    Pollutant : What it returns.
+    lair.pollutants.POLLUTANTS : Every name it knows.
+
+    Examples
+    --------
+    A label ignores case, unlike a folder or file name
+    (:ref:`pollutant-spelling`):
+
+    >>> from lair.pollutants import get_pollutant
+    >>> get_pollutant("nox").name
+    'NOx'
+    >>> get_pollutant("PM25").name
+    'PM2.5'
     """
     canonical = _LOOKUP.get(name.strip().upper())
     if canonical is None:
