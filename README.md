@@ -22,53 +22,17 @@
 
 # Installation
 
-`lair` is installed from GitHub, not from PyPI. On PyPI, `lair` is an unrelated
-project (a helper for Flask web services), so `pip install lair` installs the
-wrong package.
-
-You need Python 3.11 or newer and [git](https://git-scm.com/). Install lair into a
-new environment, so that its packages stay apart from the rest of your work.
-
-Regridding (`geo.regrid`, `geo.resample`, and an inventory's `regrid` and
-`resample`) needs ESMF, a compiled library that pip cannot install. For it, use
-conda:
+`lair` is installed from GitHub, not from PyPI, where `lair` is an unrelated
+project. It needs Python 3.11 or newer and git:
 
 ```bash
-mamba create -n lair -c conda-forge python=3.12 esmpy "esmf=*=nompi*"
-conda activate lair
-pip install "lair[complete] @ git+https://github.com/jmineau/lair.git"
-```
-
-For everything else, pip is enough:
-
-```bash
-python3 -m venv lair-env
-source lair-env/bin/activate
 pip install "lair[requests,formats,geo,science] @ git+https://github.com/jmineau/lair.git"
 ```
 
-The names in square brackets are the extras, groups of optional packages:
-
-| Extra | Packages | Used by |
-|---|---|---|
-| `requests` | boto3, requests, s3fs, siphon | `hrrr`, `soundings`, `synoptic` |
-| `formats` | zarr, numcodecs, fastkml, lxml | `hrrr`, `records.read_kml` |
-| `geo` | cartopy, networkx, pyproj, rasterio, rioxarray, shapely | `geo`, `hrrr`, `inventories`, `transects` |
-| `science` | molmass, scipy | `background`, `inventories`, `pollutants`, `transects` |
-| `regridding` | xesmf (needs ESMF) | `geo` (regrid, resample), `inventories` (regrid, resample) |
-| `complete` | all of the above | |
-
-The first `import lair` in a new environment downloads one file, NOAA's CCG
-filter (used by `lair.background`), from `ftp.gml.noaa.gov`. Without a network
-`import lair` still works and only `lair.background` is unavailable. Set
-`LAIR_SKIP_CCG_DOWNLOAD=1` to skip the download.
-
-The [documentation](https://jmineau.github.io/lair/) has the rest: uv, a release
-or no git, placing the CCG filter by hand, which `LAIR_*` variables each module
-needs, and the steps for CHPC (University of Utah): `module load miniforge3`,
-then the conda commands above. To change lair's code, see
-[CONTRIBUTING.md](CONTRIBUTING.md), which also covers the
-[pixi](https://pixi.sh) environment with every extra.
+The [installation section of the documentation](https://jmineau.github.io/lair/#installation)
+has the rest: what each extra is for, conda for regridding (ESMF), uv, a release
+or no git, the file the first `import lair` downloads, and the steps for CHPC
+(University of Utah).
 
 # Logging
 
@@ -98,7 +62,7 @@ borrowed from StackOverflow and other online resources.
 
 # Contributing
 
-Contributions are welcome! Please take a look at current [issues](https://github.com/jmineau/lair/issues) and feel free to submit a pull request with new features or bug fixes.
+Contributions are welcome! Please take a look at current [issues](https://github.com/jmineau/lair/issues) and feel free to submit a pull request with new features or bug fixes. To change lair's code, start with [CONTRIBUTING.md](https://github.com/jmineau/lair/blob/main/CONTRIBUTING.md).
 
 # Citation
 
