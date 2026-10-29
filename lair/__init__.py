@@ -105,25 +105,30 @@ def setup_ccg_filter(lair_dir: str | None = None) -> None:
     """
     Set up the CCG filter module from NOAA GML.
 
-    If ``_ccg_filter.py`` is not already present, download NOAA's
-    ``ccg_filter.zip`` into a temporary directory, take ``ccg_filter.py`` from
-    it (other zip members are ignored), and move it into place as
-    ``_ccg_filter.py`` with an atomic :func:`os.replace`. A failed download or
-    unusable zip raises and leaves no partial file behind (at ``import lair``
-    the failure is logged as a warning instead, and only ``lair.background``
-    is unavailable). Concurrent first
-    imports (e.g. a SLURM array) are safe: each installs a complete file
-    atomically, and one that finds the file already installed uses it.
+    Installs ``_ccg_filter.py`` into ``lair_dir``, from NOAA's ``ccg_filter.zip``,
+    unless the file is already there. ``import lair`` calls this function:
+    :ref:`first-import-download` says what is downloaded and why, what happens
+    without a network, and how to skip the download or place the file yourself.
 
-    Set the environment variable ``LAIR_SKIP_CCG_DOWNLOAD`` to skip the network
-    download (e.g. for testing, CI, or read-only/offline environments). When
-    skipped and the file is absent, ``lair.background`` will not be importable.
+    Called on its own, it raises when the download fails or the zip holds no
+    ``ccg_filter.py``, and leaves no partial file behind. The file is moved into
+    place atomically, so concurrent first imports (a Slurm array, for example) are
+    safe: one that finds the file already installed uses it.
 
     Parameters
     ----------
     lair_dir : str, optional
         Directory to install ``_ccg_filter.py`` into. Defaults to the lair
         package directory.
+
+    See Also
+    --------
+    lair.background.thoning : Fits NOAA's curve, which needs the filter.
+
+    Examples
+    --------
+    >>> import lair
+    >>> lair.setup_ccg_filter()  # doctest: +SKIP
     """
     import tempfile
     import zipfile
