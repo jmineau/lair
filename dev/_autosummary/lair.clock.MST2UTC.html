@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=630f8255"></script>
+    <script src="../_static/documentation_options.js?v=2cee7cec"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev14+g1e2dfee04" />
+  <meta name="docsearch:version" content="2026.12.11.dev15+g62123660a" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -820,11 +820,11 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.clock.MST2UTC">
 <span class="sig-prename descclassname"><span class="pre">lair.clock.</span></span><span class="sig-name descname"><span class="pre">MST2UTC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">localize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambiguous</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonexistent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/clock.html#MST2UTC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.clock.MST2UTC" title="Link to this definition">#</a></dt>
-<dd><p>Convert times from Mountain Standard Time (<code class="docutils literal notranslate"><span class="pre">'MST'</span></code>) to UTC.</p>
+<dd><p>Convert times from Mountain Standard Time (<code class="docutils literal notranslate"><span class="pre">'Etc/GMT+7'</span></code>) to UTC.</p>
 <p>Use it for a file whose times are standard time all year (its manual or
 settings say so): MST has no daylight saving time, so no time is repeated or
-skipped. A time without a time zone is taken as MST, and a time with one is
-converted from its own.</p>
+skipped. A time without a time zone is taken as MST, UTC-7 in every year (see
+<a class="reference internal" href="lair.clock.UTC2MST.html#lair.clock.UTC2MST" title="lair.clock.UTC2MST"><code class="xref py py-func docutils literal notranslate"><span class="pre">UTC2MST()</span></code></a>), and a time with one is converted from its own.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
