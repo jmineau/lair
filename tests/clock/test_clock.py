@@ -495,6 +495,13 @@ class TestTimeMatrices:
         m = clock.time_difference_matrix(sample_datetimes, absolute=True)
         assert (m >= pd.Timedelta(0)).all()
 
+    def test_difference_matrix_is_signed_when_not_absolute(self, sample_datetimes):
+        # Row i, column j is time i minus time j; the times are at 0, 1, 3 and 6 h.
+        hours = np.array([0, 1, 3, 6])
+        m = clock.time_difference_matrix(sample_datetimes, absolute=False)
+        expected = (hours[:, None] - hours[None, :]) * np.timedelta64(1, "h")
+        assert (m == expected).all()
+
     def test_decay_matrix_in_unit_interval(self, sample_datetimes):
         decay = clock.time_decay_matrix(sample_datetimes, decay="1h")
         assert isinstance(decay, np.ndarray)
@@ -530,6 +537,15 @@ class TestConvertTimezonesPandas:
         s = pd.Series(pd.to_datetime(["2024-01-01 18:00", "2024-01-01 19:00"]))
         out = clock.convert_timezones(s, totz="MST", fromtz="UTC", driver="pandas")
         assert list(out.dt.hour) == [11, 12]
+
+    def test_aware_times_keep_their_instants(self):
+        # 18:00 UTC is 11:00 MST (UTC-7); fromtz is for naive times only
+        s = pd.Series(pd.to_datetime(["2024-01-01 18:00"], utc=True))
+        out = clock.convert_timezones(
+            s, totz="MST", fromtz="America/New_York", driver="pandas"
+        )
+        assert out.iloc[0] == pd.Timestamp("2024-01-01 11:00", tz="MST")
+        assert out.iloc[0] == s.iloc[0]
 
     def test_localize_drops_tz(self):
         df = pd.DataFrame({"v": [1]}, index=pd.to_datetime(["2024-01-01 18:00"]))
