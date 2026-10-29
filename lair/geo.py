@@ -1273,6 +1273,12 @@ def generate_regular_grid(
     ``min + d * (i + 0.5)``, rounded to 10 decimals only to drop float noise
     (``40.35``, not ``40.349999999999994``), which matches PYSTILT's grid axes.
 
+    When the domain is not a whole number of cells, a cell is kept if its center
+    is inside the domain, so the last cell ends within half a cell of the max
+    edge, past it or short of it. ``ymin=40.45``, ``ymax=40.93`` and ``dy=0.05``
+    give 10 rows, the last centered at 40.925 and ending at 40.95; rounding the
+    count down would give 9 rows.
+
     Parameters
     ----------
     xmin : float
@@ -1315,6 +1321,15 @@ def generate_regular_grid(
     array([-112.15, -112.05, -111.95, -111.85])
     >>> grid.lat.values
     array([40.65, 40.75, 40.85, 40.95])
+
+    A domain that is not a whole number of cells keeps the cell whose center is
+    inside it:
+
+    >>> grid = generate_regular_grid(
+    ...     -112.2, -111.8, 0.1, 40.45, 40.93, 0.05, x_label="lon", y_label="lat"
+    ... )
+    >>> grid.lat.size, float(grid.lat[-1])
+    (10, 40.925)
     """
     x = _cell_centers(xmin, xmax, dx)
     y = _cell_centers(ymin, ymax, dy)
