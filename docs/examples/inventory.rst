@@ -314,7 +314,7 @@ it does not keep the sum of flux times area.
 A flux is different: its total must not change when the grid does. On the box
 above, ``lair.geo.resample`` with its default lost 6.6% of the 2022 total at
 0.01 degrees. The 1,100 new cells along the edges of the box, outside the
-outermost cell centers, came out zero.
+outermost cell centers, came out NaN: bilinear interpolation does not reach them.
 
 So send a flux through the inventory's own ``regrid`` or ``resample``, or pass
 the method yourself: ``method="conservative"`` to ``lair.geo.regrid``, and
