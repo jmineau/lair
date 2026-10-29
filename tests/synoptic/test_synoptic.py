@@ -63,6 +63,16 @@ class TestRequests:
         assert params["start"] == "202401010000" and params["end"] == "202401020630"
         assert params["stid"] == "WBB"
 
+    def test_aware_times_are_sent_in_utc(self, api):
+        # Denver is on MST (UTC-7) in January: 12:00 there is 19:00 UTC
+        api.payload = {"SUMMARY": OK, "STATION": []}
+        start = pd.Timestamp("2024-01-01 12:00", tz="America/Denver")
+        end = pd.Timestamp("2024-01-02 00:00", tz="America/Denver")
+        synoptic.timeseries(start, end, stid="WBB")
+        _, params = api.calls[0]
+        assert params["start"] == "202401011900"
+        assert params["end"] == "202401020700"
+
     def test_missing_token(self, api, monkeypatch):
         monkeypatch.delenv("SYNOPTIC_TOKEN")
         with pytest.raises(ValueError, match="SYNOPTIC_TOKEN"):
@@ -127,6 +137,10 @@ class TestMetadata:
         assert meta.loc["WBB", "latitude"] == pytest.approx(40.766)
         assert meta.loc["WBB", "record_start"] == pd.Timestamp("1997-01-01")
 
+    def test_no_stations_gives_an_empty_frame(self, api):
+        api.payload = {"SUMMARY": OK, "STATION": []}
+        assert len(synoptic.metadata(stid="NOPE")) == 0
+
 
 class TestHourlyMean:
     def frame(self):
@@ -167,3 +181,35 @@ class TestHourlyMean:
         h = synoptic.hourly_mean(pd.concat([a, b]))
         assert list(h.columns[:2]) == ["stid", "Time"]
         assert h[h.stid == "B"].wind_direction_set_1.iloc[0] == pytest.approx(90.0)
+
+    def test_one_station_needs_no_stid_column(self):
+        # The same hourly values as the per-station frame, without its stid column
+        h = synoptic.hourly_mean(self.frame().drop(columns="stid"))
+        assert list(h.columns[:1]) == ["Time"]
+        assert "stid" not in h.columns
+        assert h.n_obs.tolist() == [2, 2]
+        assert h.wind_direction_set_1.iloc[0] % 360 == pytest.approx(0.0, abs=1e-9)
+        assert np.isnan(h.wind_direction_set_1.iloc[1])
+
+    def test_without_wind_columns_only_the_means(self):
+        # 2.0 and 4.0 average to 3.0 in hour 0; 10.0 alone in hour 1
+        df = pd.DataFrame(
+            {
+                "stid": "A",
+                "Time": pd.to_datetime(
+                    ["2024-01-01 00:10", "2024-01-01 00:40", "2024-01-01 01:20"],
+                    utc=True,
+                ),
+                "air_temp_set_1": [2.0, 4.0, 10.0],
+            }
+        )
+        h = synoptic.hourly_mean(df)
+        assert h.air_temp_set_1.tolist() == [3.0, 10.0]
+        assert set(h.columns) == {"stid", "Time", "air_temp_set_1"}
+
+    def test_no_observations_gives_an_empty_frame(self, api):
+        api.payload = {"SUMMARY": OK, "STATION": []}
+        df = synoptic.timeseries("2024-01-01", "2024-01-02", stid="NOPE")
+        h = synoptic.hourly_mean(df)
+        assert len(h) == 0
+        assert list(h.columns) == ["stid", "Time"]
