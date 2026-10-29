@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=b6731611"></script>
+    <script src="../_static/documentation_options.js?v=ba9cfe08"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11.dev28+g37d713e8b" />
+  <meta name="docsearch:version" content="2026.12.11.dev33+g541818af3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -836,6 +836,26 @@
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.plotter.create_polar_ax.html#lair.plotter.create_polar_ax" title="lair.plotter.create_polar_ax"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_polar_ax</span></code></a></dt><dd><p>The axis it formats.</p>
+</dd>
+<dt><a class="reference internal" href="lair.plotter.polarPlot.html#lair.plotter.polarPlot" title="lair.plotter.polarPlot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polarPlot</span></code></a></dt><dd><p>Calls it.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.plotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_polar_ax</span><span class="p">,</span> <span class="n">format_radial_axis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span> <span class="o">=</span> <span class="n">create_polar_ax</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">set_rlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">(0.0, 10.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">format_radial_axis</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="s2">"wind speed [m/s]"</span><span class="p">,</span> <span class="n">scale_angle</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/lair-plotter-format_radial_axis-1.png" class="plot-directive" src="../_images/lair-plotter-format_radial_axis-1.png" />
+</figure>
 </dd></dl>
 
 </section>
