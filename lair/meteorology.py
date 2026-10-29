@@ -442,6 +442,17 @@ def sat_vapor_pres_ice(T: Numeric) -> Numeric:
     See Also
     --------
     sat_vapor_pres : The same over liquid water.
+
+    Examples
+    --------
+    At the triple point, 273.16 K, it is about 611 Pa, as over liquid water
+    (the two fits differ by about 1 Pa there):
+
+    >>> from lair.meteorology import sat_vapor_pres, sat_vapor_pres_ice
+    >>> round(float(sat_vapor_pres_ice(273.16)), 1)
+    612.0
+    >>> round(float(sat_vapor_pres(273.16)), 1)
+    610.8
     """
     # Petty: e_si = 3.41e12 Pa exp(-6130 K / T); ~611 Pa at the triple point
     return 3.41e12 * np.exp(-6130 / T)
@@ -500,5 +511,14 @@ def T_from_e(e: Numeric) -> Numeric:  # Pa
     See Also
     --------
     sat_vapor_pres : Its inverse.
+
+    Examples
+    --------
+    The temperature at which the saturation vapor pressure is 1500 Pa (the dew
+    point of air with that vapor pressure):
+
+    >>> from lair.meteorology import T_from_e
+    >>> round(float(T_from_e(1500.0)), 2)
+    286.11
     """
     return -5420 / np.log(e / 2.53e11)  # K
