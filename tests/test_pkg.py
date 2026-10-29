@@ -131,6 +131,63 @@ def test_import_fails_when_pint_has_no_sort_by_dimensionality():
     assert "cannot import name 'sort_by_dimensionality'" in result.stderr
 
 
+def test_sort_by_dimensionality_in_pints_private_module():
+    """
+    ``import lair`` finds ``sort_by_dimensionality`` where pint 0.24 and 0.25 keep it.
+
+    Those versions have the function only in
+    ``pint.delegates.formatter._compound_unit_helpers``; pint >= 0.26 exports it
+    from ``pint.delegates.formatter`` too. A new interpreter gets the older
+    layout (the function moved to the private module) before lair is imported,
+    so the fallback import runs whichever pint is installed.
+    """
+    code = (
+        "import cf_xarray.units, pint_xarray\n"
+        "import pint.delegates.formatter as public\n"
+        "from pint.delegates.formatter import _compound_unit_helpers as private\n"
+        "func = getattr(public, 'sort_by_dimensionality', None)\n"
+        "func = func or private.sort_by_dimensionality\n"
+        "if hasattr(public, 'sort_by_dimensionality'):\n"
+        "    del public.sort_by_dimensionality\n"
+        "private.sort_by_dimensionality = func\n"
+        "import lair\n"
+        "assert lair.sort_by_dimensionality is func\n"
+        "assert lair.units.formatter.default_sort_func is func\n"
+        "print(f\"{lair.units('kg/km**2/day').units:~C}\")\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "kg/km**2/d"
+
+
+def test_version_without_installed_metadata():
+    """
+    ``lair.__version__`` is ``0+unknown`` when lair is not installed.
+
+    That is a source tree on ``sys.path`` with no package metadata. A new
+    interpreter makes the metadata lookup fail with ``PackageNotFoundError``,
+    as it does there, for lair only, before lair is imported.
+    """
+    code = (
+        "import importlib.metadata as md\n"
+        "real_version = md.version\n"
+        "def version(name):\n"
+        "    if name == 'lair':\n"
+        "        raise md.PackageNotFoundError(name)\n"
+        "    return real_version(name)\n"
+        "md.version = version\n"
+        "import lair\n"
+        "print(lair.__version__)\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "0+unknown"
+
+
 def test_reexports_present():
     """The handful of symbols __init__ explicitly re-exports are available."""
     assert callable(lair.ftp_download)
