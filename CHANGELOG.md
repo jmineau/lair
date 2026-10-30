@@ -9,6 +9,8 @@ file alone: the entries are written at release (`just changelog` drafts them).
 
 ## [Unreleased]
 
+## [2026.12.11] - 2026-10-29
+
 ### Added
 
 - `UTC2MTN` and the other time-zone shortcuts of `lair.clock` (`UTC2`,
@@ -16,6 +18,44 @@ file alone: the entries are written at release (`just changelog` drafts them).
   `driver="pandas"`, take a single `datetime` or `pd.Timestamp` and give a single
   time back, of the same type; they raised `TypeError` ("object is not
   iterable") before. Lists, DataFrames, Series and indexes work as they did.
+- Every API page of `air`, `pcaps`, `hrrr`, `synoptic`, `plotter`, `transects`,
+  `meteorology`, `config`, `parallel`, `pollutants`, `records` and `utils` has
+  See Also links and, where it reads no data, a runnable example; the
+  recorded example pages name the lair version that ran them.
+- Minimum versions for the seven dependencies that had none (numpy 1.26,
+  xarray 2025.3.0, dask 2024.4.2, matplotlib 3.8, netcdf4 1.7.1, cf_xarray
+  0.10.4, pint-xarray 0.3), tested at those minimums. matplotlib 3.8 is enough.
+
+### Fixed
+
+- `geo.regrid` (and `resample`, and the grids' and inventories' `regrid` and
+  `resample`) gives NaN, not 0, where the source does not reach: a larger
+  grid, or the outer ring of a bilinear resample to a finer resolution (a 280 K
+  field came back 0 K in 76 of 400 cells). A conservative regrid keeps the part
+  of a cell that overlaps the source, so only cells wholly outside it change,
+  and totals do not.
+- `plotter.polarFreq` counts the north sector once in its percentages. With 40 %
+  of the wind from the north, the 16 sectors added up to 71.4 % and north showed
+  28.6 %; they are now correct, and the docstring says what the colorbar shows.
+- `clock.UTC2MST` and `MST2UTC` are UTC-7 in every year. They used the zone
+  `MST`, which tzdata 2024b made a link to America/Phoenix, so in 1918-19,
+  1942-44 and 1967 the conversions were an hour off. They use the fixed zone
+  `Etc/GMT+7`, and the zone's name in the results changes from `MST` to
+  `Etc/GMT+7`.
+- `pcaps.valleyheatdeficit` is annotated to return the `pd.Series` it returns
+  (named `VHD_MJ_m2`, indexed by `Time_UTC`), not the `xr.DataArray` its
+  docstring said.
+- The docstrings of `wget_download` (`num_threads` defaults to 1) and
+  `ftp_download` (returns True or raises) say what the functions do.
+
+### Removed
+
+- **Breaking:** `clock.TimeRange` is gone; it was a copy of
+  `uataq.timerange.TimeRange`, which is where it belongs. `dt2decimalDate` and
+  `decimalDate2dt` give the same results.
+- **Breaking:** `clock.time_difference_matrix` and `clock.time_decay_matrix` are
+  gone. For a time covariance use `fips.Exponential("time", scale)`; for the
+  differences, `np.subtract.outer(times, times)` on a `pd.DatetimeIndex`.
 
 ### Changed
 
@@ -36,6 +76,8 @@ file alone: the entries are written at release (`just changelog` drafts them).
   imports (`Literal`, `ClassVar`, `Self`, `ArrayLike`, ...) no longer print
   their documentation, and `from lair.geo import *` no longer brings them in.
   The API pages are the same.
+- The README has the pip command, the line saying lair is not the `lair` on
+  PyPI, and one link to the docs' installation section, which holds the rest.
 
 ## [2026.12.10] - 2026-10-27
 
