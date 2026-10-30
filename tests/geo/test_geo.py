@@ -1132,23 +1132,127 @@ class TestPlotting:
         assert -115 < x0 <= -113 and -110 <= x1 < -108
         assert 39 < y0 <= 41 and 43 <= y1 < 45
 
-    def test_add_locator_map_outlines_box(self):
+
+class TestAddLocatorMap:
+    # The locator map is an inset of the main axes. Nothing here draws, so
+    # cartopy downloads no Natural Earth file.
+
+    MAIN_EXTENT = [-113, -110, 39, 42]
+
+    @pytest.fixture(autouse=True)
+    def _agg(self):
+        import matplotlib
+        import matplotlib.pyplot as plt
+
+        matplotlib.use("Agg")
+        yield
+        plt.close("all")
+
+    @pytest.fixture
+    def main_ax(self):
+        # A main map at a known place in the figure, with no aspect adjustment,
+        # so its position in the figure is the one given here
         import cartopy.crs as ccrs
         import matplotlib.pyplot as plt
 
         fig = plt.figure()
-        ax = geo.add_locator_map(
-            fig,
-            main_extent=[-113, -110, 39, 42],
-            main_extent_crs=ccrs.PlateCarree(),
-            locator_rect=(0.0, 0.0, 0.3, 0.3),
-            locator_extent=[-125, -100, 30, 50],
-            locator_crs=ccrs.PlateCarree(),
-            color="red",
-            linewidth=2,
+        ax = fig.add_axes((0.1, 0.2, 0.5, 0.4), projection=ccrs.PlateCarree())
+        ax.set_aspect("auto")
+        return ax
+
+    @staticmethod
+    def _bounds(inset):
+        # Where the inset sits, in figure fractions
+        return inset.get_axes_locator()(inset, None).bounds
+
+    def test_is_an_inset_of_the_axes_it_is_given(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(main_ax, self.MAIN_EXTENT, ccrs.PlateCarree())
+        assert inset in main_ax.child_axes
+        assert inset.get_figure() is main_ax.get_figure()
+
+    def test_defaults_are_the_western_us_in_the_upper_right(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(main_ax, self.MAIN_EXTENT, ccrs.PlateCarree())
+        # bounds (0.7, 0.7, 0.29, 0.29) of an axes at (0.1, 0.2) of size (0.5, 0.4)
+        np.testing.assert_allclose(
+            self._bounds(inset), (0.45, 0.48, 0.145, 0.116), atol=1e-12
         )
-        box_artist = ax.collections[-1]
-        # An outline: red edge, no fill
-        np.testing.assert_allclose(box_artist.get_edgecolor(), [[1, 0, 0, 1]])
+        assert inset.get_zorder() == 8
+        assert isinstance(inset.projection, ccrs.AlbersEqualArea)
+        assert inset.projection.proj4_params["lon_0"] == -111
+        x0, x1, y0, y1 = inset.get_extent(crs=ccrs.PlateCarree())
+        # The Albers view encloses the lon/lat box (-125, -105, 30, 50), and not by much
+        assert -129.5 < x0 <= -125 and -105 <= x1 < -103
+        assert 29 < y0 <= 30 and 50 <= y1 < 51
+
+    def test_bounds_are_fractions_of_the_main_axes(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(
+            main_ax, self.MAIN_EXTENT, ccrs.PlateCarree(), bounds=(0.0, 0.5, 0.25, 0.4)
+        )
+        np.testing.assert_allclose(
+            self._bounds(inset), (0.1, 0.4, 0.125, 0.16), atol=1e-12
+        )
+        # ... so moving the main axes moves the inset with it
+        main_ax.set_position((0.3, 0.1, 0.4, 0.2))
+        np.testing.assert_allclose(
+            self._bounds(inset), (0.3, 0.2, 0.1, 0.08), atol=1e-12
+        )
+
+    def test_locator_extent_is_lonlat_in_any_projection(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(
+            main_ax,
+            self.MAIN_EXTENT,
+            ccrs.PlateCarree(),
+            locator_extent=[-117, -106, 35, 43],
+            locator_crs=ccrs.PlateCarree(),
+        )
+        np.testing.assert_allclose(
+            inset.get_extent(crs=ccrs.PlateCarree()), [-117, -106, 35, 43]
+        )
+        assert isinstance(inset.projection, ccrs.PlateCarree)
+
+    def test_features_are_natural_earth_50m(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(main_ax, self.MAIN_EXTENT, ccrs.PlateCarree())
+        # the last artist is the outline of the main map
+        features = [(a._feature.name, a._feature.scale) for a in inset.collections[:3]]
+        assert features == [
+            ("ocean", "50m"),
+            ("land", "50m"),
+            ("admin_1_states_provinces_lakes", "50m"),
+        ]
+
+    def test_outlines_the_main_extent_in_the_color_given(self, main_ax):
+        import cartopy.crs as ccrs
+
+        main_crs = ccrs.LambertConformal()
+        extent = [-1.0e5, 1.0e5, -2.0e5, 2.0e5]
+        inset = geo.add_locator_map(
+            main_ax, extent, main_crs, color="blue", linewidth=3
+        )
+        box_artist = inset.collections[-1]
+        # An outline: blue edge, no fill
+        np.testing.assert_allclose(box_artist.get_edgecolor(), [[0, 0, 1, 1]])
         face = np.asarray(box_artist.get_facecolor())
         assert face.size == 0 or np.all(face[:, 3] == 0)
+        assert box_artist.get_linewidth() == [3]
+        # The box is the main extent, in the main map's CRS
+        feature = box_artist._feature
+        assert feature.crs == main_crs
+        assert next(iter(feature.geometries())).bounds == (-1.0e5, -2.0e5, 1.0e5, 2.0e5)
+
+    def test_default_outline_is_red(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(main_ax, self.MAIN_EXTENT, ccrs.PlateCarree())
+        box_artist = inset.collections[-1]
+        np.testing.assert_allclose(box_artist.get_edgecolor(), [[1, 0, 0, 1]])
+        assert box_artist.get_linewidth() == [2]

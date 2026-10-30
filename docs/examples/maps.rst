@@ -23,7 +23,8 @@ inventory. Three rules come out of it:
    ``science`` extras (see :ref:`optional-dependencies`), EDGAR's files, and the
    internet the first time cartopy draws a feature. The output and the figures
    below were recorded from one run of this code on 2026-10-29, with lair
-   2026.12.11.dev9+g55e932b18.
+   2026.12.11.dev9+g55e932b18. The last figure, the made-up footprint with its
+   locator map, was drawn again on 2026-10-30.
 
 The data
 --------
@@ -185,11 +186,13 @@ west, around a point in the Salt Lake Valley:
    Out[7]: Frozen({'lon': 70, 'lat': 60})
 
 :func:`~lair.geo.add_locator_map` adds a locator map, a small map of where the
-main map is, in the corner of the figure. It takes the main map's extent and
-projection, the position of the locator map in the figure as
-``(left, bottom, width, height)``, fractions of the figure's size, its own
-extent and projection, and the color and width of the outline it draws around
-the main extent:
+main map is, inside the main map. It takes the main map's axes, its extent and
+the CRS of that extent. The locator map shows the western United States
+(Natural Earth land, ocean and state lines) in the upper right corner, and
+outlines the main extent in red. ``locator_extent`` sets its view, in degrees;
+``bounds`` its position, as fractions of the main axes (``Axes.inset_axes``'s
+rectangle, ``(left, bottom, width, height)``); ``locator_crs`` its projection
+(an Albers equal-area map by default); ``color`` and ``linewidth`` the outline:
 
 .. code-block:: ipython
 
@@ -198,20 +201,11 @@ the main extent:
       ...: ax.set_title("A made-up footprint")
       ...: main_extent = [-112.2, -111.5, 40.4, 41.0]
       ...: geo.add_latlon_ticks(ax, main_extent)
-      ...: geo.add_locator_map(
-      ...:     fig,
-      ...:     main_extent=main_extent,
-      ...:     main_extent_crs=ccrs.PlateCarree(),
-      ...:     locator_rect=(0.14, 0.58, 0.24, 0.26),
-      ...:     locator_extent=[-117, -106, 35, 43],
-      ...:     locator_crs=ccrs.PlateCarree(),
-      ...:     color="red",
-      ...:     linewidth=1.5,
-      ...: )
+      ...: geo.add_locator_map(ax, main_extent, ccrs.PlateCarree())
       ...: fig.savefig("maps_footprint.png", dpi=100, bbox_inches="tight")
 
 .. image:: maps_footprint.png
-   :alt: A made-up footprint over the Salt Lake Valley, a bright oval that fades outward on a log color scale, with a small map of Utah in the upper left corner and a red box on it marking the main map.
+   :alt: A made-up footprint over the Salt Lake Valley, a bright oval that fades outward on a log color scale, with a small map of the western United States in the upper right corner and a red dot on it marking the main map.
 
 Next
 ----
