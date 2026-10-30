@@ -1,0 +1,6 @@
+lair.records.Cacher.\_\_call\_\_
+================================
+
+.. currentmodule:: lair.records
+
+.. automethod:: Cacher.__call__

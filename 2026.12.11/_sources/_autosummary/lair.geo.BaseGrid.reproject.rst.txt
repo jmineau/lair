@@ -1,0 +1,6 @@
+lair.geo.BaseGrid.reproject
+===========================
+
+.. currentmodule:: lair.geo
+
+.. automethod:: BaseGrid.reproject

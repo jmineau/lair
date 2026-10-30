@@ -14,15 +14,16 @@ inventory. Three rules come out of it:
   features, and :func:`~lair.geo.add_latlon_ticks` writes the tick labels in
   degrees (see `State lines and tick labels`_).
 * **The map helpers take an extent**, ``[west, east, south, north]``. ``clip``
-  takes the same extent, or a bbox, ``(west, south, east, north)``: the same
-  four numbers in another order. :func:`~lair.geo.bbox2extent` converts.
+  takes one too, or a bbox (:ref:`the inventory example <inventory-clip>` has
+  its order). :func:`~lair.geo.bbox2extent` converts.
 
 .. note::
 
    This page does not run when the docs build. It needs the ``geo`` and
    ``science`` extras (see :ref:`optional-dependencies`), EDGAR's files, and the
    internet the first time cartopy draws a feature. The output and the figures
-   below were recorded from one run of this code on 2026-10-14.
+   below were recorded from one run of this code on 2026-10-29, with lair
+   2026.12.11.dev9+g55e932b18.
 
 The data
 --------
@@ -52,7 +53,7 @@ years of EDGAR v8's methane, on the whole globe, and it takes about a minute:
       ...: t0 = time.time()
       ...: ax = inv.plot()
       ...: print(f"mean of every year: {time.time() - t0:.0f} s")
-   mean of every year: 51 s
+   mean of every year: 41 s
 
 ``time`` picks one step instead: an integer position (``-1`` is the last), or a
 label such as ``"2022-01-01"``. EDGAR's annual steps are labeled by the start of
@@ -134,8 +135,8 @@ The grid
 :func:`~lair.geo.plot_grid` outlines the cells of a grid on the axes you give
 it. It draws with xarray's plot, which adds a colorbar, and passes its other
 arguments on, so ``add_colorbar=False`` leaves the colorbar out. Here it
-outlines the Salt Lake Valley box of the :doc:`inventory example <inventory>`
-(there as a bbox), 6 by 6 cells of 0.1 degrees, over a map of its emissions. A
+outlines the Salt Lake Valley box of :ref:`the inventory example <inventory-clip>`
+over a map of its emissions. A
 small map has many close ticks, so ``x_rotation=45`` tilts the longitude
 labels:
 

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>LAIR: Land-Air Interactions Research &#8212; lair 2026.12.10</title>
+    <title>LAIR: Land-Air Interactions Research &#8212; lair 2026.12.11</title>
   
   
   
@@ -26,29 +26,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=10d37c90"></script>
+    <script src="_static/documentation_options.js?v=b4abf889"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -57,8 +57,9 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Quickstart" href="quickstart.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -436,20 +437,22 @@ macOS and Windows, without the extras.</p>
 <p>Regridding (<code class="docutils literal notranslate"><span class="pre">geo.regrid</span></code>, <code class="docutils literal notranslate"><span class="pre">geo.resample</span></code>, and an inventory’s <code class="docutils literal notranslate"><span class="pre">regrid</span></code>
 and <code class="docutils literal notranslate"><span class="pre">resample</span></code>) needs ESMF, a compiled library that pip cannot install.
 Grid-cell areas and inventory totals (<code class="docutils literal notranslate"><span class="pre">geo.gridcell_area</span></code>,
-<code class="docutils literal notranslate"><span class="pre">Inventory.integrate()</span></code>, <code class="docutils literal notranslate"><span class="pre">Inventory.absolute_emissions</span></code>) do not.</p>
+<code class="docutils literal notranslate"><span class="pre">Inventory.integrate()</span></code>, <code class="docutils literal notranslate"><span class="pre">Inventory.absolute_emissions</span></code>) do not. With pip,
+<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">xesmf</span></code> fails with <code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'ESMF'</span></code>, and so do the
+functions that regrid.</p>
 <ul class="simple">
 <li><p>To regrid, use <strong>conda</strong>.</p></li>
 <li><p>For everything else, inventory totals included, <strong>pip</strong> is enough.</p></li>
 </ul>
 </section>
 <section id="conda-everything">
-<h3>conda (everything)<a class="headerlink" href="#conda-everything" title="Link to this heading">#</a></h3>
+<span id="conda-route"></span><h3>conda (everything)<a class="headerlink" href="#conda-everything" title="Link to this heading">#</a></h3>
 <p>conda is a package manager. It installs Python itself, and compiled libraries
 such as ESMF, into separate environments. <code class="docutils literal notranslate"><span class="pre">mamba</span></code> is a faster command with the
 same arguments. Both come with <a class="reference external" href="https://conda-forge.org/download/">Miniforge</a>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>lair<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12<span class="w"> </span>esmpy<span class="w"> </span><span class="s2">&quot;esmf=*=nompi*&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>lair<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12<span class="w"> </span>esmpy<span class="w"> </span><span class="s2">"esmf=*=nompi*"</span>
 conda<span class="w"> </span>activate<span class="w"> </span>lair
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[complete] @ git+https://github.com/jmineau/lair.git&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"lair[complete] @ git+https://github.com/jmineau/lair.git"</span>
 </pre></div>
 </div>
 <p>The first line makes an environment named <code class="docutils literal notranslate"><span class="pre">lair</span></code> with Python and ESMF. It asks
@@ -464,7 +467,7 @@ pip. It installs lair and every extra (see <a class="reference internal" href="#
 packages you install.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>lair-env
 <span class="nb">source</span><span class="w"> </span>lair-env/bin/activate
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[requests,formats,geo,science] @ git+https://github.com/jmineau/lair.git&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"lair[requests,formats,geo,science] @ git+https://github.com/jmineau/lair.git"</span>
 </pre></div>
 </div>
 <p>If <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">--version</span></code> shows less than 3.11, use <code class="docutils literal notranslate"><span class="pre">python3.12</span></code> (or another
@@ -474,21 +477,22 @@ version you have) in the first line. On Windows, activate with
 and can fetch the Python version for you:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>venv<span class="w"> </span>--python<span class="w"> </span><span class="m">3</span>.12<span class="w"> </span>lair-env
 <span class="nb">source</span><span class="w"> </span>lair-env/bin/activate
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[requests,formats,geo,science] @ git+https://github.com/jmineau/lair.git&quot;</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"lair[requests,formats,geo,science] @ git+https://github.com/jmineau/lair.git"</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">lair[complete]</span></code> also installs with pip, but <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">xesmf</span></code> then fails with
-<code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'ESMF'</span></code>, and so do the functions listed above.</p>
+<p><code class="docutils literal notranslate"><span class="pre">lair[complete]</span></code> also installs with pip, but without ESMF.</p>
 </section>
 <section id="a-release-or-no-git">
 <h3>A release, or no git<a class="headerlink" href="#a-release-or-no-git" title="Link to this heading">#</a></h3>
 <p>To install a release instead of the newest code, add <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> and its tag to the
-address (the tags are on the <a class="reference external" href="https://github.com/jmineau/lair/releases">Releases</a> page):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[geo,science] @ git+https://github.com/jmineau/lair.git@v2026.12.8&quot;</span>
+address. The tags are on the <a class="reference external" href="https://github.com/jmineau/lair/releases">Releases</a>
+page, newest first, and look like <code class="docutils literal notranslate"><span class="pre">v2026.12.10</span></code>. That one still installs
+after newer releases come out:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"lair[geo,science] @ git+https://github.com/jmineau/lair.git@v2026.12.10"</span>
 </pre></div>
 </div>
 <p>If git is not installed, pip can install from a zip of the repository instead:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[geo,science] @ https://github.com/jmineau/lair/archive/refs/heads/main.zip&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"lair[geo,science] @ https://github.com/jmineau/lair/archive/refs/heads/main.zip"</span>
 </pre></div>
 </div>
 <p>From a clone of the repository, <a class="reference external" href="https://pixi.sh">pixi</a> builds an environment
@@ -540,16 +544,16 @@ rioxarray, shapely</p></td>
 </table>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">regridding</span></code> installs the <code class="docutils literal notranslate"><span class="pre">xesmf</span></code> package, which works only with ESMF in the
-same environment: see “conda” above.</p>
+same environment: see <a class="reference internal" href="#conda-route"><span class="std std-ref">conda (everything)</span></a>.</p>
 <p>A function whose package is missing raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> that names the
 extra and the command that installs it.</p>
 </section>
 <section id="check-the-install">
 <h3>Check the install<a class="headerlink" href="#check-the-install" title="Link to this heading">#</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import lair; print(lair.__version__)&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import lair; print(lair.__version__)"</span>
 </pre></div>
 </div>
-<p>This prints the version, for example <code class="docutils literal notranslate"><span class="pre">2026.12.8</span></code>. The first import in a new
+<p>This prints the version, such as <code class="docutils literal notranslate"><span class="pre">2026.12.10</span></code>. The first import in a new
 environment also downloads a file; the next section says which.</p>
 </section>
 <section id="the-first-import-downloads-a-file">
@@ -580,8 +584,8 @@ not FTP. NOAA serves the same zip over HTTPS. The last two lines copy the file
 into the installed <code class="docutils literal notranslate"><span class="pre">lair</span></code> folder (this does not import lair):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-O<span class="w"> </span>https://gml.noaa.gov/aftp/user/thoning/ccgcrv/ccg_filter.zip
 python<span class="w"> </span>-m<span class="w"> </span>zipfile<span class="w"> </span>-e<span class="w"> </span>ccg_filter.zip<span class="w"> </span>ccg_filter
-<span class="nv">LAIR_DIR</span><span class="o">=</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import importlib.util as u, os; print(os.path.dirname(u.find_spec(&#39;lair&#39;).origin))&quot;</span><span class="k">)</span>
-cp<span class="w"> </span>ccg_filter/ccg_filter.py<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$LAIR_DIR</span><span class="s2">/_ccg_filter.py&quot;</span>
+<span class="nv">LAIR_DIR</span><span class="o">=</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import importlib.util as u, os; print(os.path.dirname(u.find_spec('lair').origin))"</span><span class="k">)</span>
+cp<span class="w"> </span>ccg_filter/ccg_filter.py<span class="w"> </span><span class="s2">"</span><span class="nv">$LAIR_DIR</span><span class="s2">/_ccg_filter.py"</span>
 </pre></div>
 </div>
 </li>
@@ -591,11 +595,9 @@ cp<span class="w"> </span>ccg_filter/ccg_filter.py<span class="w"> </span><span 
 <h3>On CHPC (University of Utah)<a class="headerlink" href="#on-chpc-university-of-utah" title="Link to this heading">#</a></h3>
 <p>The steps above work on CHPC’s general-environment clusters (tested on
 Notchpeak), on a login node or in a job: compute nodes can reach GitHub, PyPI and
-NOAA. Use conda, which CHPC provides as the <code class="docutils literal notranslate"><span class="pre">miniforge3</span></code> module:</p>
+NOAA. Use conda, which CHPC provides as the <code class="docutils literal notranslate"><span class="pre">miniforge3</span></code> module. Load it, then
+run the three commands of <a class="reference internal" href="#conda-route"><span class="std std-ref">the conda route</span></a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>load<span class="w"> </span>miniforge3
-mamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>lair<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12<span class="w"> </span>esmpy<span class="w"> </span><span class="s2">&quot;esmf=*=nompi*&quot;</span>
-conda<span class="w"> </span>activate<span class="w"> </span>lair
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lair[complete] @ git+https://github.com/jmineau/lair.git&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -640,7 +642,7 @@ are shown by default; progress messages are logged at <code class="docutils lite
 unless you ask for them:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>            <span class="c1"># everything, incl. lair</span>
-<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;lair&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>   <span class="c1"># or tune lair alone</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"lair"</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>   <span class="c1"># or tune lair alone</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">lair.background.thoning_filter</span></code> prints the CCG filter’s diagnostics when the
@@ -752,8 +754,8 @@ software and/or acknowledge me.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -773,7 +775,7 @@ software and/or acknowledge me.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -786,7 +788,7 @@ software and/or acknowledge me.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

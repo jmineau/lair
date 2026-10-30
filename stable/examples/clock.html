@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Average a time series by local hour and by season &#8212; lair 2026.12.10</title>
+    <title>Average a time series by local hour and by season &#8212; lair 2026.12.11</title>
   
   
   
@@ -26,29 +26,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=10d37c90"></script>
+    <script src="../_static/documentation_options.js?v=b4abf889"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'examples/clock';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -58,8 +58,9 @@
     <link rel="next" title="Convert a methane flux from moles to mass" href="units.html" />
     <link rel="prev" title="Examples" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -467,7 +468,7 @@
 <p>This example takes a year of hourly data stamped in UTC, moves it to local
 time, and averages it by hour of the day, over the afternoon, and by season.
 Three rules come out of it:</p>
-<ul class="simple">
+<ul class="simple" id="utc-rule">
 <li><p><strong>A time without a time zone is UTC</strong> in lair’s functions that take a time,
 such as <a class="reference internal" href="../_autosummary/lair.soundings.get_soundings.html#lair.soundings.get_soundings" title="lair.soundings.get_soundings"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_soundings()</span></code></a> and
 <a class="reference internal" href="../_autosummary/lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate" title="lair.clock.dt2decimalDate"><code class="xref py py-func docutils literal notranslate"><span class="pre">dt2decimalDate()</span></code></a>. The exception is
@@ -494,13 +495,13 @@ seasonal cycle that peaks in January, and noise.</p>
 
 <span class="gp">In [3]: </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-<span class="gp">In [4]: </span><span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2023-12-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-11-30 23:00&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">)</span>  <span class="c1"># UTC</span>
+<span class="gp">In [4]: </span><span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">"2023-12-01"</span><span class="p">,</span> <span class="s2">"2024-11-30 23:00"</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"1h"</span><span class="p">)</span>  <span class="c1"># UTC</span>
 
 <span class="gp">In [5]: </span><span class="n">daily</span> <span class="o">=</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">hour</span> <span class="o">-</span> <span class="mi">12</span><span class="p">)</span> <span class="o">/</span> <span class="mi">24</span><span class="p">)</span>
 
 <span class="gp">In [6]: </span><span class="n">yearly</span> <span class="o">=</span> <span class="mf">0.02</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">day_of_year</span> <span class="o">-</span> <span class="mi">15</span><span class="p">)</span> <span class="o">/</span> <span class="mi">366</span><span class="p">)</span>
 
-<span class="gp">In [7]: </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;ch4&quot;</span><span class="p">:</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">daily</span> <span class="o">+</span> <span class="n">yearly</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">times</span><span class="o">.</span><span class="n">size</span><span class="p">)},</span> <span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+<span class="gp">In [7]: </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"ch4"</span><span class="p">:</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">daily</span> <span class="o">+</span> <span class="n">yearly</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">times</span><span class="o">.</span><span class="n">size</span><span class="p">)},</span> <span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
 
 <span class="gp">In [8]: </span><span class="n">data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gh">Out[8]: </span>
@@ -520,7 +521,7 @@ daylight saving time). <code class="docutils literal notranslate"><span class="p
 <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC2MST</span>
 
-<span class="gp">In [10]: </span><span class="n">local</span> <span class="o">=</span> <span class="n">UTC2MST</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<span class="gp">In [10]: </span><span class="n">local</span> <span class="o">=</span> <span class="n">UTC2MST</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">)</span>
 
 <span class="gp">In [11]: </span><span class="n">local</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gh">Out[11]: </span>
@@ -528,6 +529,21 @@ daylight saving time). <code class="docutils literal notranslate"><span class="p
 <span class="go">2023-11-30 17:00:00-07:00  1.965339</span>
 <span class="go">2023-11-30 18:00:00-07:00  1.964464</span>
 <span class="go">2023-11-30 19:00:00-07:00  1.977184</span>
+</pre></div>
+</div>
+<p>Without <code class="docutils literal notranslate"><span class="pre">driver=&quot;pandas&quot;</span></code> the shortcuts take a single time, or a list of
+them. A single time comes back as a single time (a <code class="docutils literal notranslate"><span class="pre">datetime</span></code> as a
+<code class="docutils literal notranslate"><span class="pre">datetime</span></code>, a <code class="docutils literal notranslate"><span class="pre">pd.Timestamp</span></code> as a <code class="docutils literal notranslate"><span class="pre">pd.Timestamp</span></code>). With no zone these
+are UTC times (the first rule), so in July 18:00 UTC is 12:00 daylight time:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+
+<span class="gp">In [13]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC2MTN</span>
+
+<span class="gp">In [14]: </span><span class="n">UTC2MTN</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">))</span>
+<span class="gh">Out[14]: </span><span class="go">datetime.datetime(2024, 7, 15, 12, 0, tzinfo=zoneinfo.ZoneInfo(key='America/Denver'))</span>
+
+<span class="gp">In [15]: </span><span class="n">UTC2MTN</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">"2024-07-15 18:00"</span><span class="p">))</span>
+<span class="gh">Out[15]: </span><span class="go">Timestamp('2024-07-15 12:00:00-0600', tz='America/Denver')</span>
 </pre></div>
 </div>
 <p>Standard time is the same offset from UTC all year, so every day is 24 hours
@@ -538,12 +554,12 @@ is in standard time.</p>
 <h2>By hour of the day<a class="headerlink" href="#by-hour-of-the-day" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.clock.diurnal.html#lair.clock.diurnal" title="lair.clock.diurnal"><code class="xref py py-func docutils literal notranslate"><span class="pre">diurnal()</span></code></a> groups the rows by their time of day (rounded down
 to <code class="docutils literal notranslate"><span class="pre">freq</span></code>, an hour by default) and averages each group:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">diurnal</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [16]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">diurnal</span>
 
-<span class="gp">In [13]: </span><span class="n">cycle</span> <span class="o">=</span> <span class="n">diurnal</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
+<span class="gp">In [17]: </span><span class="n">cycle</span> <span class="o">=</span> <span class="n">diurnal</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
 
-<span class="gp">In [14]: </span><span class="n">cycle</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
-<span class="gh">Out[14]: </span>
+<span class="gp">In [18]: </span><span class="n">cycle</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="gh">Out[18]: </span>
 <span class="go">            ch4</span>
 <span class="go">00:00:00  2.013</span>
 <span class="go">01:00:00  2.026</span>
@@ -554,7 +570,7 @@ to <code class="docutils literal notranslate"><span class="pre">freq</span></cod
 <span class="go">06:00:00  2.049</span>
 <span class="go">07:00:00  2.043</span>
 
-<span class="gp">In [15]: </span><span class="n">cycle</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;hour (MST)&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;CH$_4$ (ppm)&quot;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
+<span class="gp">In [19]: </span><span class="n">cycle</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"hour (MST)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"CH$_4$ (ppm)"</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/clock_diurnal.png"><img alt="../_images/clock_diurnal.png" src="../_images/clock_diurnal.png" style="width: 5in;" />
@@ -566,15 +582,15 @@ conversion it would peak at 12:00: the same data, labeled in UTC.</p>
 <h2>The afternoon<a class="headerlink" href="#the-afternoon" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">AFTERNOON</span></code> lists the hours from noon to 4 p.m., standard time. Selecting
 those hours and averaging each day gives one afternoon value per day:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [16]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFTERNOON</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [20]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">AFTERNOON</span>
 
-<span class="gp">In [17]: </span><span class="n">AFTERNOON</span>
-<span class="gh">Out[17]: </span><span class="go">[12, 13, 14, 15, 16]</span>
+<span class="gp">In [21]: </span><span class="n">AFTERNOON</span>
+<span class="gh">Out[21]: </span><span class="go">[12, 13, 14, 15, 16]</span>
 
-<span class="gp">In [18]: </span><span class="n">afternoon</span> <span class="o">=</span> <span class="n">local</span><span class="p">[</span><span class="n">local</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">hour</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">AFTERNOON</span><span class="p">)]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="gp">In [22]: </span><span class="n">afternoon</span> <span class="o">=</span> <span class="n">local</span><span class="p">[</span><span class="n">local</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">hour</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">AFTERNOON</span><span class="p">)]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">"D"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
-<span class="gp">In [19]: </span><span class="n">afternoon</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-<span class="gh">Out[19]: </span>
+<span class="gp">In [23]: </span><span class="n">afternoon</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gh">Out[23]: </span>
 <span class="go">                             ch4</span>
 <span class="go">2023-12-01 00:00:00-07:00  1.985</span>
 <span class="go">2023-12-02 00:00:00-07:00  1.990</span>
@@ -587,10 +603,10 @@ those hours and averaging each day gives one afternoon value per day:</p>
 <p><a class="reference internal" href="../_autosummary/lair.clock.seasonal.html#lair.clock.seasonal" title="lair.clock.seasonal"><code class="xref py py-func docutils literal notranslate"><span class="pre">seasonal()</span></code></a> averages over DJF, MAM, JJA and SON in each year.
 A DJF season takes the year of its January and February, so December 2023
 counts toward DJF 2024.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [20]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">seasonal</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [24]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">seasonal</span>
 
-<span class="gp">In [21]: </span><span class="n">seasonal</span><span class="p">(</span><span class="n">local</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-<span class="gh">Out[21]: </span>
+<span class="gp">In [25]: </span><span class="n">seasonal</span><span class="p">(</span><span class="n">local</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gh">Out[25]: </span>
 <span class="go">               ch4</span>
 <span class="go">season year       </span>
 <span class="go">SON    2023  1.986</span>
@@ -610,36 +626,36 @@ only in part is kept, not dropped, so drop it yourself if you do not want it.</p
 years. <a class="reference internal" href="../_autosummary/lair.clock.dt2decimalDate.html#lair.clock.dt2decimalDate" title="lair.clock.dt2decimalDate"><code class="xref py py-func docutils literal notranslate"><span class="pre">dt2decimalDate()</span></code></a> and
 <a class="reference internal" href="../_autosummary/lair.clock.decimalDate2dt.html#lair.clock.decimalDate2dt" title="lair.clock.decimalDate2dt"><code class="xref py py-func docutils literal notranslate"><span class="pre">decimalDate2dt()</span></code></a> convert both ways (a time with a time zone
 is converted to UTC first):</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [22]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [26]: </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 
-<span class="gp">In [23]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">decimalDate2dt</span><span class="p">,</span> <span class="n">dt2decimalDate</span>
+<span class="gp">In [27]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">decimalDate2dt</span><span class="p">,</span> <span class="n">dt2decimalDate</span>
 
-<span class="gp">In [24]: </span><span class="n">dt2decimalDate</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="gh">Out[24]: </span><span class="go">2024.4972677595629</span>
+<span class="gp">In [28]: </span><span class="n">dt2decimalDate</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gh">Out[28]: </span><span class="go">2024.4972677595629</span>
 
-<span class="gp">In [25]: </span><span class="n">decimalDate2dt</span><span class="p">(</span><span class="mf">2024.5</span><span class="p">)</span>
-<span class="gh">Out[25]: </span><span class="go">datetime.datetime(2024, 7, 2, 0, 0)</span>
+<span class="gp">In [29]: </span><span class="n">decimalDate2dt</span><span class="p">(</span><span class="mf">2024.5</span><span class="p">)</span>
+<span class="gh">Out[29]: </span><span class="go">datetime.datetime(2024, 7, 2, 0, 0)</span>
 </pre></div>
 </div>
 </section>
 <section id="times-that-will-not-convert">
-<h2>Times that will not convert<a class="headerlink" href="#times-that-will-not-convert" title="Link to this heading">#</a></h2>
+<span id="dst-errors"></span><h2>Times that will not convert<a class="headerlink" href="#times-that-will-not-convert" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.clock.convert_timezones.html#lair.clock.convert_timezones" title="lair.clock.convert_timezones"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert_timezones()</span></code></a> stops with a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when it would
 have to guess. The message says what to add.</p>
 <p><strong>A time without a zone, and no</strong> <code class="docutils literal notranslate"><span class="pre">fromtz</span></code>. The shortcuts above pass
 <code class="docutils literal notranslate"><span class="pre">fromtz=&quot;UTC&quot;</span></code>, which is the first rule at work. Called on its own, the
 function does not apply that rule: it asks.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [26]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_timezones</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [30]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_timezones</span>
 
-<span class="gp">In [27]: </span><span class="k">try</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="n">convert_timezones</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<span class="gp">In [31]: </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">convert_timezones</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"America/Denver"</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">)</span>
 <span class="gp">   ....: </span><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
 <span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
 <span class="gp">   ....: </span>
 <span class="go">Naive times need fromtz: the timezone they are in</span>
 
-<span class="gp">In [28]: </span><span class="n">convert_timezones</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;America/Denver&quot;</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="gh">Out[28]: </span>
+<span class="gp">In [32]: </span><span class="n">convert_timezones</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"America/Denver"</span><span class="p">,</span> <span class="n">fromtz</span><span class="o">=</span><span class="s2">"UTC"</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gh">Out[32]: </span>
 <span class="go">                                ch4</span>
 <span class="go">2023-11-30 17:00:00-07:00  1.965339</span>
 <span class="go">2023-11-30 18:00:00-07:00  1.964464</span>
@@ -647,8 +663,8 @@ function does not apply that rule: it asks.</p>
 </div>
 <p>A time that already has a zone, such as <code class="docutils literal notranslate"><span class="pre">local</span></code> above, needs no <code class="docutils literal notranslate"><span class="pre">fromtz</span></code>: it
 converts from its own.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [29]: </span><span class="n">convert_timezones</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s2">&quot;UTC&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="gh">Out[29]: </span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [33]: </span><span class="n">convert_timezones</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s2">"UTC"</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gh">Out[33]: </span>
 <span class="go">                                ch4</span>
 <span class="go">2023-12-01 00:00:00+00:00  1.965339</span>
 <span class="go">2023-12-01 01:00:00+00:00  1.964464</span>
@@ -660,20 +676,20 @@ saving time can do this, and only when you convert <em>from</em> it, as <code cl
 Sunday in November, so 1:00 to 2:00 happens twice. They go forward on the second
 Sunday in March, so 2:00 to 3:00 never happens. A file whose times are
 Utah clock time has these hours:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [30]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">MST2UTC</span><span class="p">,</span> <span class="n">MTN2UTC</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [34]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">MST2UTC</span><span class="p">,</span> <span class="n">MTN2UTC</span>
 
-<span class="gp">In [31]: </span><span class="n">fall</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-<span class="gp">   ....: </span>    <span class="p">{</span><span class="s2">&quot;ch4&quot;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)},</span>
-<span class="gp">   ....: </span>    <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2023-11-05 00:00&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">),</span>
+<span class="gp">In [35]: </span><span class="n">fall</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">   ....: </span>    <span class="p">{</span><span class="s2">"ch4"</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)},</span>
+<span class="gp">   ....: </span>    <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">"2023-11-05 00:00"</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"1h"</span><span class="p">),</span>
 <span class="gp">   ....: </span><span class="p">)</span>  <span class="c1"># Utah clock time</span>
 <span class="gp">   ....: </span>
 
-<span class="gp">In [32]: </span><span class="k">try</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<span class="gp">In [36]: </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">)</span>
 <span class="gp">   ....: </span><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
 <span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">Cannot infer dst time from 2023-11-05 01:00:00, try using the &#39;ambiguous&#39; argument</span>
+<span class="go">Cannot infer dst time from 2023-11-05 01:00:00, try using the 'ambiguous' argument</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">ambiguous=</span></code> says which of the two 1:00s the file means: <code class="docutils literal notranslate"><span class="pre">True</span></code> the first
@@ -681,32 +697,32 @@ Utah clock time has these hours:</p>
 <code class="docutils literal notranslate"><span class="pre">&quot;NaT&quot;</span></code> gives up on it and leaves a missing time, and <code class="docutils literal notranslate"><span class="pre">&quot;infer&quot;</span></code> works out
 which is which in a file that lists both, in order. Here is the 1:00 row each
 way:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [33]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="gh">Out[33]: </span><span class="go">Timestamp(&#39;2023-11-05 07:00:00+0000&#39;, tz=&#39;UTC&#39;)</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [37]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gh">Out[37]: </span><span class="go">Timestamp('2023-11-05 07:00:00+0000', tz='UTC')</span>
 
-<span class="gp">In [34]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="gh">Out[34]: </span><span class="go">Timestamp(&#39;2023-11-05 08:00:00+0000&#39;, tz=&#39;UTC&#39;)</span>
+<span class="gp">In [38]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gh">Out[38]: </span><span class="go">Timestamp('2023-11-05 08:00:00+0000', tz='UTC')</span>
 </pre></div>
 </div>
 <p>An hour that never happened is the same kind of error, and <code class="docutils literal notranslate"><span class="pre">nonexistent=</span></code> is
 the matching option. <code class="docutils literal notranslate"><span class="pre">&quot;shift_forward&quot;</span></code> moves a 2:00 time to 3:00, so it lands
 on the same instant as the real 3:00 row. <code class="docutils literal notranslate"><span class="pre">&quot;shift_backward&quot;</span></code> moves it to the
 last instant before the gap, and <code class="docutils literal notranslate"><span class="pre">&quot;NaT&quot;</span></code> leaves a missing time:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [35]: </span><span class="n">spring</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-<span class="gp">   ....: </span>    <span class="p">{</span><span class="s2">&quot;ch4&quot;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)},</span>
-<span class="gp">   ....: </span>    <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2024-03-10 00:00&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;1h&quot;</span><span class="p">),</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [39]: </span><span class="n">spring</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">   ....: </span>    <span class="p">{</span><span class="s2">"ch4"</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)},</span>
+<span class="gp">   ....: </span>    <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">"2024-03-10 00:00"</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"1h"</span><span class="p">),</span>
 <span class="gp">   ....: </span><span class="p">)</span>  <span class="c1"># Utah clock time</span>
 <span class="gp">   ....: </span>
 
-<span class="gp">In [36]: </span><span class="k">try</span><span class="p">:</span>
-<span class="gp">   ....: </span>    <span class="n">MTN2UTC</span><span class="p">(</span><span class="n">spring</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<span class="gp">In [40]: </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">   ....: </span>    <span class="n">MTN2UTC</span><span class="p">(</span><span class="n">spring</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">)</span>
 <span class="gp">   ....: </span><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
 <span class="gp">   ....: </span>    <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
 <span class="gp">   ....: </span>
-<span class="go">2024-03-10 02:00:00 is a nonexistent time due to daylight savings time. Try using the &#39;nonexistent&#39; argument.</span>
+<span class="go">2024-03-10 02:00:00 is a nonexistent time due to daylight savings time. Try using the 'nonexistent' argument.</span>
 
-<span class="gp">In [37]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">spring</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="n">nonexistent</span><span class="o">=</span><span class="s2">&quot;shift_forward&quot;</span><span class="p">)</span>
-<span class="gh">Out[37]: </span>
+<span class="gp">In [41]: </span><span class="n">MTN2UTC</span><span class="p">(</span><span class="n">spring</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">,</span> <span class="n">nonexistent</span><span class="o">=</span><span class="s2">"shift_forward"</span><span class="p">)</span>
+<span class="gh">Out[41]: </span>
 <span class="go">                           ch4</span>
 <span class="go">2024-03-10 07:00:00+00:00    0</span>
 <span class="go">2024-03-10 08:00:00+00:00    1</span>
@@ -719,15 +735,15 @@ last instant before the gap, and <code class="docutils literal notranslate"><spa
 <code class="docutils literal notranslate"><span class="pre">MST2UTC</span></code> never raise them. If the instrument that wrote a file kept standard
 time all year (its manual or settings say), convert it with <code class="docutils literal notranslate"><span class="pre">MST2UTC</span></code> and
 nothing is ambiguous:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [38]: </span><span class="n">MST2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="gh">Out[38]: </span><span class="go">Timestamp(&#39;2023-11-05 08:00:00+0000&#39;, tz=&#39;UTC&#39;)</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [42]: </span><span class="n">MST2UTC</span><span class="p">(</span><span class="n">fall</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"pandas"</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gh">Out[42]: </span><span class="go">Timestamp('2023-11-05 08:00:00+0000', tz='UTC')</span>
 </pre></div>
 </div>
 </section>
 <section id="next">
 <h2>Next<a class="headerlink" href="#next" title="Link to this heading">#</a></h2>
-<p><a class="reference internal" href="../_autosummary/lair.clock.html#module-lair.clock" title="lair.clock"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.clock</span></code></a> lists the rest, including <code class="docutils literal notranslate"><span class="pre">TimeRange</span></code> (a start and stop
-parsed from strings such as <code class="docutils literal notranslate"><span class="pre">&quot;2024-07&quot;</span></code>).</p>
+<p><a class="reference internal" href="../_autosummary/lair.clock.html#module-lair.clock" title="lair.clock"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.clock</span></code></a> lists the rest, including the decimal-year conversions
+(<code class="docutils literal notranslate"><span class="pre">dt2decimalDate</span></code> and <code class="docutils literal notranslate"><span class="pre">decimalDate2dt</span></code>).</p>
 </section>
 </section>
 
@@ -811,8 +827,8 @@ parsed from strings such as <code class="docutils literal notranslate"><span cla
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -832,7 +848,7 @@ parsed from strings such as <code class="docutils literal notranslate"><span cla
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -845,7 +861,7 @@ parsed from strings such as <code class="docutils literal notranslate"><span cla
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

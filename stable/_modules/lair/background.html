@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.background &#8212; lair 2026.12.10</title>
+    <title>lair.background &#8212; lair 2026.12.11</title>
   
   
   
@@ -25,29 +25,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
+    <script src="../../_static/documentation_options.js?v=b4abf889"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/background';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,8 +55,9 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -434,18 +435,18 @@
                 <article class="bd-article">
                   
   <h1>Source code for lair.background</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Background concentrations of a trace gas from its own time series.</span>
 
 <span class="sd">:func:`rolling_baseline` and :func:`phase_shift_corrected_baseline` take a low</span>
-<span class="sd">quantile of a moving window; :func:`thoning` fits NOAA&#39;s curve (Thoning et al.,</span>
+<span class="sd">quantile of a moving window; :func:`thoning` fits NOAA's curve (Thoning et al.,</span>
 <span class="sd">1989) through the data, which suits afternoon means (the afternoon is when the</span>
 <span class="sd">boundary layer is deep; :data:`lair.clock.AFTERNOON` lists its hours).</span>
-<span class="sd">CarbonTracker&#39;s background is in :mod:`lair.noaa`.</span>
+<span class="sd">CarbonTracker's background is in :mod:`lair.noaa`.</span>
 <span class="sd">:doc:`/examples/background` shows the methods side by side and when to use</span>
-<span class="sd">which. The module needs NOAA&#39;s CCG filter, which the first ``import lair``</span>
+<span class="sd">which. The module needs NOAA's CCG filter, which the first ``import lair``</span>
 <span class="sd">downloads (see :ref:`first-import-download`), and ``scipy``.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -457,11 +458,11 @@
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">lair._ccg_filter</span><span class="w"> </span><span class="kn">import</span> <span class="n">ccgFilter</span>  <span class="c1"># make available to user</span>
 <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;lair._ccg_filter&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">"lair._ccg_filter"</span><span class="p">:</span>
         <span class="k">raise</span>
     <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-        <span class="s2">&quot;lair.background needs NOAA&#39;s CCG filter, which isn&#39;t installed. Run &quot;</span>
-        <span class="s2">&quot;lair.setup_ccg_filter() (needs outbound FTP to ftp.gml.noaa.gov).&quot;</span>
+        <span class="s2">"lair.background needs NOAA's CCG filter, which isn't installed. Run "</span>
+        <span class="s2">"lair.setup_ccg_filter() (needs outbound FTP to ftp.gml.noaa.gov)."</span>
     <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">dt2decimalDate</span>
 
@@ -472,12 +473,12 @@
 <a class="viewcode-back" href="../../_autosummary/lair.background.rolling_baseline.html#lair.background.rolling_baseline">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">rolling_baseline</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
-    <span class="n">window</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="s2">&quot;24h&quot;</span><span class="p">,</span>
+    <span class="n">window</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="s2">"24h"</span><span class="p">,</span>
     <span class="n">q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
     <span class="n">min_periods</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">center</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the baseline concentration as a rolling quantile.</span>
 
 <span class="sd">    The baseline is the rolling ``q`` quantile over ``window``, smoothed with a</span>
@@ -489,7 +490,7 @@
 <span class="sd">        Time series of data to calculate the baseline from.</span>
 <span class="sd">    window : Any, optional</span>
 <span class="sd">        Window size for the rolling calculation. Must be passable to</span>
-<span class="sd">        pd.Timedelta. Default is &#39;24h&#39;.</span>
+<span class="sd">        pd.Timedelta. Default is '24h'.</span>
 <span class="sd">    q : float, optional</span>
 <span class="sd">        Quantile to calculate the baseline from. Default is 0.01.</span>
 <span class="sd">    min_periods : int, optional</span>
@@ -516,12 +517,12 @@
 
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.background import rolling_baseline</span>
-<span class="sd">    &gt;&gt;&gt; times = pd.date_range(&quot;2024-01-01&quot;, periods=72, freq=&quot;h&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.date_range("2024-01-01", periods=72, freq="h")</span>
 <span class="sd">    &gt;&gt;&gt; ch4 = pd.Series(2000.0, index=times)</span>
 <span class="sd">    &gt;&gt;&gt; ch4[times.hour == 8] += 50.0</span>
-<span class="sd">    &gt;&gt;&gt; rolling_baseline(ch4, window=&quot;24h&quot;).unique()</span>
+<span class="sd">    &gt;&gt;&gt; rolling_baseline(ch4, window="24h").unique()</span>
 <span class="sd">    array([2000.])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">window</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
     <span class="n">baseline</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">data</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">center</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="n">min_periods</span><span class="p">)</span>
@@ -539,7 +540,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">phase_shift_corrected_baseline</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Derive a baseline concentration from a low quantile, minimizing phase shift.</span>
 
 <span class="sd">    This method uses forward-looking and backward-looking</span>
@@ -554,11 +555,11 @@
 <span class="sd">    ----------</span>
 <span class="sd">    data : pd.Series</span>
 <span class="sd">        Signal time series with a datetime index. The baseline is calculated</span>
-<span class="sd">        separately for each calendar day of the index, in the index&#39;s own time</span>
+<span class="sd">        separately for each calendar day of the index, in the index's own time</span>
 <span class="sd">        zone (the function does no time zone conversion), so pass local time to</span>
 <span class="sd">        get local days.</span>
 <span class="sd">        The windows are counted on a one-second grid that starts at each</span>
-<span class="sd">        day&#39;s first time, so the times must fall on whole seconds from it</span>
+<span class="sd">        day's first time, so the times must fall on whole seconds from it</span>
 <span class="sd">        (one-second data, or a slower rate on whole seconds).</span>
 <span class="sd">    n : int, optional</span>
 <span class="sd">        Window size in seconds. Default is 3600.</span>
@@ -582,7 +583,7 @@
 
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.background import phase_shift_corrected_baseline</span>
-<span class="sd">    &gt;&gt;&gt; times = pd.date_range(&quot;2024-01-01 12:00&quot;, periods=7200, freq=&quot;s&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.date_range("2024-01-01 12:00", periods=7200, freq="s")</span>
 <span class="sd">    &gt;&gt;&gt; ch4 = pd.Series(2000.0, index=times)</span>
 <span class="sd">    &gt;&gt;&gt; ch4.iloc[3000:3300] += 100.0</span>
 <span class="sd">    &gt;&gt;&gt; baseline = phase_shift_corrected_baseline(ch4, n=600)</span>
@@ -590,13 +591,13 @@
 <span class="sd">    array([2000.])</span>
 <span class="sd">    &gt;&gt;&gt; round(float((ch4 - baseline).max()), 6)  # the plume above the baseline</span>
 <span class="sd">    100.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="n">b</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">)):</span>
-        <span class="n">hz</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">asfreq</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="s2">"D"</span><span class="p">)):</span>
+        <span class="n">hz</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">asfreq</span><span class="p">(</span><span class="s2">"s"</span><span class="p">)</span>
         <span class="n">left</span> <span class="o">=</span> <span class="n">hz</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
         <span class="n">right</span> <span class="o">=</span> <span class="n">hz</span><span class="o">.</span><span class="n">iloc</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
@@ -606,11 +607,11 @@
         <span class="n">b</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">forward</span><span class="p">,</span> <span class="n">backward</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">win_type</span><span class="o">=</span><span class="s2">&quot;blackman&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">win_type</span><span class="o">=</span><span class="s2">"blackman"</span><span class="p">)</span>
             <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
         <span class="p">)</span>
 
-    <span class="c1"># the windows run on the one-second grid; give the baseline at the input&#39;s times</span>
+    <span class="c1"># the windows run on the one-second grid; give the baseline at the input's times</span>
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div>
 
 
@@ -618,7 +619,7 @@
 <div class="viewcode-block" id="thoning_filter">
 <a class="viewcode-back" href="../../_autosummary/lair.background.thoning_filter.html#lair.background.thoning_filter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">thoning_filter</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccgFilter</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create a Thoning filter object from a time series of data.</span>
 
 <span class="sd">    Parameters</span>
@@ -636,10 +637,10 @@
 <span class="sd">        often than daily with no gap of a day, or daily data within one leap</span>
 <span class="sd">        year), lair passes the median step between samples instead (1/24 for</span>
 <span class="sd">        hourly data). For data more often than daily *with* gaps of a day or</span>
-<span class="sd">        more, the filter&#39;s estimate is the mean length of those gaps. The</span>
+<span class="sd">        more, the filter's estimate is the mean length of those gaps. The</span>
 <span class="sd">        filter interpolates onto its grid, it does not average, so a grid that</span>
 <span class="sd">        coarse samples the data at about the same hour each time and a diurnal</span>
-<span class="sd">        cycle shifts the curve. Pass the data&#39;s own step there</span>
+<span class="sd">        cycle shifts the curve. Pass the data's own step there</span>
 <span class="sd">        (``sampleinterval=1/24`` for hourly data).</span>
 
 <span class="sd">    Returns</span>
@@ -663,38 +664,38 @@
 <span class="sd">    &gt;&gt;&gt; from lair.background import thoning_filter</span>
 <span class="sd">    &gt;&gt;&gt; from lair.clock import dt2decimalDate</span>
 <span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
-<span class="sd">    &gt;&gt;&gt; days = pd.date_range(&quot;2020-01-01&quot;, &quot;2022-12-31&quot;, freq=&quot;D&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; days = pd.date_range("2020-01-01", "2022-12-31", freq="D")</span>
 <span class="sd">    &gt;&gt;&gt; years = (days - days[0]).days / 365.25</span>
 <span class="sd">    &gt;&gt;&gt; seasons = 3 * np.cos(2 * np.pi * years)</span>
 <span class="sd">    &gt;&gt;&gt; noise = rng.normal(0, 0.5, days.size)</span>
 <span class="sd">    &gt;&gt;&gt; co2 = pd.Series(410 + 2.5 * years + seasons + noise, index=days)</span>
 <span class="sd">    &gt;&gt;&gt; filt = thoning_filter(co2)</span>
-<span class="sd">    &gt;&gt;&gt; jan1 = [dt2decimalDate(pd.Timestamp(f&quot;{y}-01-01&quot;)) for y in (2021, 2022)]</span>
+<span class="sd">    &gt;&gt;&gt; jan1 = [dt2decimalDate(pd.Timestamp(f"{y}-01-01")) for y in (2021, 2022)]</span>
 <span class="sd">    &gt;&gt;&gt; filt.getTrendValue(np.array(jan1)).round(1)</span>
 <span class="sd">    array([412.5, 415. ])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data contains NaN values.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Data contains NaN values."</span><span class="p">)</span>
 
     <span class="c1"># Convert datetime index to decimal date</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">dt2decimalDate</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">yp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span>
 
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sampleinterval&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sampleinterval"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># ccgFilter estimates the interval from the steps longer than 0.002739</span>
         <span class="c1"># years (about a day) and divides by zero when there are none. Only then,</span>
-        <span class="c1"># pass the median step, in the filter&#39;s unit (1/365 of a decimal year).</span>
+        <span class="c1"># pass the median step, in the filter's unit (1/365 of a decimal year).</span>
         <span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">xp</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">steps</span> <span class="o">&gt;</span> <span class="mf">0.002739</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span><span class="p">[</span><span class="n">steps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">steps</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data needs samples at two or more distinct times.&quot;</span><span class="p">)</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sampleinterval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">steps</span><span class="p">))</span> <span class="o">*</span> <span class="mi">365</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sampleinterval set to </span><span class="si">%g</span><span class="s2"> days&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sampleinterval&quot;</span><span class="p">])</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Data needs samples at two or more distinct times."</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"sampleinterval"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">steps</span><span class="p">))</span> <span class="o">*</span> <span class="mi">365</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"sampleinterval set to </span><span class="si">%g</span><span class="s2"> days"</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"sampleinterval"</span><span class="p">])</span>
 
-    <span class="k">if</span> <span class="s2">&quot;debug&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="c1"># Print the filter&#39;s diagnostics when lair.background logs at DEBUG</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"debug"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="c1"># Print the filter's diagnostics when lair.background logs at DEBUG</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"debug"</span><span class="p">]</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
     <span class="c1"># Fit the Thoning curve</span>
     <span class="k">return</span> <span class="n">ccgFilter</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
@@ -706,7 +707,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">thoning</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">smooth_time</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Thoning curve fitting.</span>
 
 <span class="sd">    Wraps code published by NOAA GML: https://gml.noaa.gov/ccgg/mbl/crvfit/crvfit.html</span>
@@ -724,7 +725,7 @@
 <span class="sd">    smooth_time : list[datetime] | pd.Index, optional</span>
 <span class="sd">        Times at which to evaluate the fitted curve; they become the index of</span>
 <span class="sd">        the result. Default is the index of ``data``, so rows where ``data`` is</span>
-<span class="sd">        NaN get the curve&#39;s value.</span>
+<span class="sd">        NaN get the curve's value.</span>
 <span class="sd">    **kwargs</span>
 <span class="sd">        Additional keyword arguments to pass to the ccgFilter class (see</span>
 <span class="sd">        :func:`thoning_filter`). ``sampleinterval`` is the step, in days, of</span>
@@ -753,7 +754,7 @@
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.background import thoning</span>
 <span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
-<span class="sd">    &gt;&gt;&gt; days = pd.date_range(&quot;2020-01-01&quot;, &quot;2022-12-31&quot;, freq=&quot;D&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; days = pd.date_range("2020-01-01", "2022-12-31", freq="D")</span>
 <span class="sd">    &gt;&gt;&gt; years = (days - days[0]).days / 365.25</span>
 <span class="sd">    &gt;&gt;&gt; seasons = 3 * np.cos(2 * np.pi * years)</span>
 <span class="sd">    &gt;&gt;&gt; noise = rng.normal(0, 0.5, days.size)</span>
@@ -761,10 +762,10 @@
 <span class="sd">    &gt;&gt;&gt; smooth = thoning(co2)</span>
 <span class="sd">    &gt;&gt;&gt; round(float(smooth.iloc[-1] - smooth.iloc[0]), 1)</span>
 <span class="sd">    7.6</span>
-<span class="sd">    &gt;&gt;&gt; months = pd.date_range(&quot;2020-01-01&quot;, &quot;2022-12-01&quot;, freq=&quot;MS&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; months = pd.date_range("2020-01-01", "2022-12-01", freq="MS")</span>
 <span class="sd">    &gt;&gt;&gt; thoning(co2, smooth_time=months).round(1).head(3).tolist()</span>
 <span class="sd">    [413.0, 412.8, 412.1]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Drop nans (filter does not handle them)</span>
     <span class="n">orig_index</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># however, we may want to return the original index</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
@@ -814,8 +815,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -835,7 +836,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -848,7 +849,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

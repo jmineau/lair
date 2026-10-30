@@ -15,14 +15,15 @@ computes potential temperature on regular heights. Two rules come out of it:
 
    This page does not run when the docs build. It needs the ``requests`` extra
    (see :ref:`installation`) and downloads from the University of Wyoming. The
-   output below was recorded from one run of this code on 2026-10-22.
+   output below was recorded from one run of this code on 2026-10-29, with lair
+   2026.12.11.dev9+g55e932b18.
 
 .. _soundings-data:
 
 The data
 --------
 
-The `University of Wyoming <https://weather.uwyo.edu/upperair/sounding.html>`_
+The `University of Wyoming <https://weather.uwyo.edu/upperair/sounding.shtml>`_
 keeps the radiosonde soundings of stations around the world, launched at 00
 and 12 UTC. lair downloads them with `siphon <https://unidata.github.io/siphon/>`_
 and saves each one as a CSV file named by station and UTC time, in one folder
@@ -43,7 +44,7 @@ Download
 --------
 
 :func:`~lair.soundings.download_soundings` downloads every sounding from
-``start`` to ``end`` (both included; times without a time zone are UTC). It
+``start`` to ``end`` (both included; times follow :ref:`the UTC rule <utc-rule>`). It
 skips a file that is already in the folder, so you can run it again to add a
 period.
 
@@ -109,6 +110,8 @@ height of the first level, the ground:
 The columns are otherwise whatever Wyoming sends, so a file downloaded today
 also has ``relative_humidity`` and ``mixing_ratio``, and no ``pw``
 (precipitable water).
+
+.. _soundings-heights:
 
 Read many soundings
 -------------------

@@ -1,0 +1,6 @@
+lair.inventories.Inventory.collapsed
+====================================
+
+.. currentmodule:: lair.inventories
+
+.. autoproperty:: Inventory.collapsed

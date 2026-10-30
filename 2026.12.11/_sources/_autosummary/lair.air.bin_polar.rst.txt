@@ -1,0 +1,6 @@
+lair.air.bin\_polar
+===================
+
+.. currentmodule:: lair.air
+
+.. autofunction:: bin_polar

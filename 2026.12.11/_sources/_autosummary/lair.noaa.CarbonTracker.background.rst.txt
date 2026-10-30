@@ -1,0 +1,6 @@
+lair.noaa.CarbonTracker.background
+==================================
+
+.. currentmodule:: lair.noaa
+
+.. automethod:: CarbonTracker.background

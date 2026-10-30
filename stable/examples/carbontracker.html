@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Sample CarbonTracker at points &#8212; lair 2026.12.10</title>
+    <title>Sample CarbonTracker at points &#8212; lair 2026.12.11</title>
   
   
   
@@ -26,29 +26,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=10d37c90"></script>
+    <script src="../_static/documentation_options.js?v=b4abf889"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'examples/carbontracker';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -58,8 +58,9 @@
     <link rel="next" title="Estimate a background" href="background.html" />
     <link rel="prev" title="Get HRRR winds at a point" href="hrrr_winds.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -477,7 +478,7 @@ set of points</strong>, in ppm, such as the ends of STILT back trajectories.</p>
 <p class="admonition-title">Note</p>
 <p>This page does not run when the docs build. It downloads a 35 MB file from
 NOAA’s FTP server. The output below was recorded from one run of this code
-on 2026-10-19.</p>
+on 2026-10-29, with lair 2026.12.11.dev9+g55e932b18.</p>
 </div>
 <section id="the-data">
 <span id="carbontracker-data"></span><h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
@@ -511,7 +512,7 @@ default) and the folder, as <code class="docutils literal notranslate"><span cla
 <code class="docutils literal notranslate"><span class="pre">$LAIR_CARBONTRACKER_DIR</span></code> (see <a class="reference internal" href="../data.html#data-locations"><span class="std std-ref">Data locations</span></a>):</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.noaa</span><span class="w"> </span><span class="kn">import</span> <span class="n">CarbonTrackerCH4</span>
 <span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="n">ct</span> <span class="o">=</span> <span class="n">CarbonTrackerCH4</span><span class="p">(</span><span class="n">carbon_tracker_directory</span><span class="o">=</span><span class="s2">&quot;carbontracker&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ct</span> <span class="o">=</span> <span class="n">CarbonTrackerCH4</span><span class="p">(</span><span class="n">carbon_tracker_directory</span><span class="o">=</span><span class="s2">"carbontracker"</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">ct</span>
 <span class="gh">Out[1]: </span><span class="go">CarbonTrackerCH4(version=CT-CH4-2025, directory=carbontracker/ch4/CT-CH4-2025)</span>
 </pre></div>
@@ -520,9 +521,9 @@ default) and the folder, as <code class="docutils literal notranslate"><span cla
 into that folder. With no arguments it downloads every flux and mole fraction
 file of the version (the CT-CH4-2025 mole fractions of 2015 to 2023 alone are
 127 GB), so give a <code class="docutils literal notranslate"><span class="pre">pattern</span></code>:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">ct</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">sub_dirs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;molefractions&quot;</span><span class="p">],</span> <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;*2020-01-15*&quot;</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">&quot;*.nc&quot;</span><span class="p">))]</span>
-<span class="gh">Out[2]: </span><span class="go">[&#39;carbontracker/ch4/CT-CH4-2025/molefractions/2020/01/CTCH4_2025.molefrac_glb3x2_2020-01-15.nc&#39;]</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">ct</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">sub_dirs</span><span class="o">=</span><span class="p">[</span><span class="s2">"molefractions"</span><span class="p">],</span> <span class="n">pattern</span><span class="o">=</span><span class="s2">"*2020-01-15*"</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*.nc"</span><span class="p">))]</span>
+<span class="gh">Out[2]: </span><span class="go">['carbontracker/ch4/CT-CH4-2025/molefractions/2020/01/CTCH4_2025.molefrac_glb3x2_2020-01-15.nc']</span>
 </pre></div>
 </div>
 <p>That took about five minutes, most of it spent listing the folders on the
@@ -537,14 +538,14 @@ of a PYSTILT particle table. Here, four made-up points west of Salt Lake City:</
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="n">points</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
 <span class="gp">   ...: </span>    <span class="p">{</span>
-<span class="gp">   ...: </span>        <span class="s2">&quot;datetime&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s2">&quot;2020-01-15 17:00&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>  <span class="c1"># UTC</span>
-<span class="gp">   ...: </span>        <span class="s2">&quot;lati&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">41.5</span><span class="p">,</span> <span class="mf">41.5</span><span class="p">,</span> <span class="mf">39.5</span><span class="p">,</span> <span class="mf">39.5</span><span class="p">],</span>
-<span class="gp">   ...: </span>        <span class="s2">&quot;long&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">],</span>
-<span class="gp">   ...: </span>        <span class="s2">&quot;zagl&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">2000.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">2000.0</span><span class="p">],</span>
+<span class="gp">   ...: </span>        <span class="s2">"datetime"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s2">"2020-01-15 17:00"</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>  <span class="c1"># UTC</span>
+<span class="gp">   ...: </span>        <span class="s2">"lati"</span><span class="p">:</span> <span class="p">[</span><span class="mf">41.5</span><span class="p">,</span> <span class="mf">41.5</span><span class="p">,</span> <span class="mf">39.5</span><span class="p">,</span> <span class="mf">39.5</span><span class="p">],</span>
+<span class="gp">   ...: </span>        <span class="s2">"long"</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">114.5</span><span class="p">],</span>
+<span class="gp">   ...: </span>        <span class="s2">"zagl"</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">2000.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">2000.0</span><span class="p">],</span>
 <span class="gp">   ...: </span>    <span class="p">}</span>
 <span class="gp">   ...: </span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">sampled</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">sampled</span><span class="p">[[</span><span class="s2">&quot;lati&quot;</span><span class="p">,</span> <span class="s2">&quot;zagl&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_ch4_ppb&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_time&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_latitude&quot;</span><span class="p">,</span> <span class="s2">&quot;ct_level&quot;</span><span class="p">]]</span>
+<span class="gp">   ...: </span><span class="n">sampled</span><span class="p">[[</span><span class="s2">"lati"</span><span class="p">,</span> <span class="s2">"zagl"</span><span class="p">,</span> <span class="s2">"ct_ch4_ppb"</span><span class="p">,</span> <span class="s2">"ct_time"</span><span class="p">,</span> <span class="s2">"ct_latitude"</span><span class="p">,</span> <span class="s2">"ct_level"</span><span class="p">]]</span>
 <span class="gh">Out[3]:</span>
 <span class="go">   lati    zagl   ct_ch4_ppb             ct_time  ct_latitude  ct_level</span>
 <span class="go">0  41.5   100.0  1953.038326 2020-01-15 16:30:00         41.0       2.0</span>
@@ -599,7 +600,7 @@ asks for:</p>
     <span class="nb">print</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">molefractions</span><span class="p">)</span>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -685,8 +686,8 @@ needs no guard. <code class="docutils literal notranslate"><span class="pre">par
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -706,7 +707,7 @@ needs no guard. <code class="docutils literal notranslate"><span class="pre">par
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -719,7 +720,7 @@ needs no guard. <code class="docutils literal notranslate"><span class="pre">par
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

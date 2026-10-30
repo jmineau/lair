@@ -1,0 +1,6 @@
+lair.inventories.convert\_units
+===============================
+
+.. currentmodule:: lair.inventories
+
+.. autofunction:: convert_units

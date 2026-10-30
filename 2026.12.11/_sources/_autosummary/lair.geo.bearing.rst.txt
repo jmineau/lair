@@ -1,0 +1,6 @@
+lair.geo.bearing
+================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: bearing

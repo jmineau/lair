@@ -1,0 +1,6 @@
+lair.meteorology.ideal\_gas\_law
+================================
+
+.. currentmodule:: lair.meteorology
+
+.. autofunction:: ideal_gas_law

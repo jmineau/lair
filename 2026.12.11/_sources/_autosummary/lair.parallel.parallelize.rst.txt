@@ -1,0 +1,6 @@
+lair.parallel.parallelize
+=========================
+
+.. currentmodule:: lair.parallel
+
+.. autofunction:: parallelize

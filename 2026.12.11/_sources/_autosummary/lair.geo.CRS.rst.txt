@@ -1,0 +1,34 @@
+lair.geo.CRS
+============
+
+.. currentmodule:: lair.geo
+
+.. autoclass:: CRS
+   :no-members:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~CRS.epsg
+   ~CRS.proj4
+   ~CRS.units
+   ~CRS.wkt
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~CRS.to_cartopy
+   ~CRS.to_pyproj
+   ~CRS.to_rasterio
+
+
+

@@ -1,0 +1,6 @@
+lair.meteorology.hypsometric
+============================
+
+.. currentmodule:: lair.meteorology
+
+.. autofunction:: hypsometric

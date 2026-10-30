@@ -1,0 +1,6 @@
+lair.plotter.format\_radial\_axis
+=================================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: format_radial_axis

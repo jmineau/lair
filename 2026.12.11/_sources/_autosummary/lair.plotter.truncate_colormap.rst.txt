@@ -1,0 +1,6 @@
+lair.plotter.truncate\_colormap
+===============================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: truncate_colormap

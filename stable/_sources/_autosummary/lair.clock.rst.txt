@@ -13,11 +13,6 @@
 
    AFTERNOON
    SEASONS
-   UTC2
-   UTC2MST
-   UTC2MTN
-   MST2UTC
-   MTN2UTC
 
 
 
@@ -27,6 +22,11 @@
    :toctree:
    :nosignatures:
 
+   MST2UTC
+   MTN2UTC
+   UTC2
+   UTC2MST
+   UTC2MTN
    convert_timezones
    datetime_accessor
    decimalDate2dt
@@ -34,8 +34,6 @@
    dt2decimalDate
    regular_times_to_intervals
    seasonal
-   time_decay_matrix
-   time_difference_matrix
 
 
 
@@ -45,7 +43,6 @@
    :toctree:
    :nosignatures:
 
-   TimeRange
    Timer
 
 

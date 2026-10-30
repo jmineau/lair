@@ -1,0 +1,6 @@
+lair.noaa.CarbonTracker.molefractions\_dir
+==========================================
+
+.. currentmodule:: lair.noaa
+
+.. autoproperty:: CarbonTracker.molefractions_dir

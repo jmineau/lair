@@ -1,0 +1,6 @@
+lair.records.ftp\_download
+==========================
+
+.. currentmodule:: lair.records
+
+.. autofunction:: ftp_download

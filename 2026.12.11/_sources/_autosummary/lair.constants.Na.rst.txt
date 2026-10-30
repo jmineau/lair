@@ -1,0 +1,6 @@
+lair.constants.Na
+=================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: Na

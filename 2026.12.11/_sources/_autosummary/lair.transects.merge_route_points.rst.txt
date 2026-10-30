@@ -1,0 +1,6 @@
+lair.transects.merge\_route\_points
+===================================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: merge_route_points

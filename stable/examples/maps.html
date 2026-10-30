@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Draw a map of an inventory &#8212; lair 2026.12.10</title>
+    <title>Draw a map of an inventory &#8212; lair 2026.12.11</title>
   
   
   
@@ -26,29 +26,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=10d37c90"></script>
+    <script src="../_static/documentation_options.js?v=b4abf889"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'examples/maps';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -58,8 +58,9 @@
     <link rel="next" title="Read a sounding and compute its potential temperature" href="soundings.html" />
     <link rel="prev" title="Total an inventory over a region" href="inventory.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -477,15 +478,16 @@ axes with only the field on it. State lines and coastlines are cartopy
 features, and <a class="reference internal" href="../_autosummary/lair.geo.add_latlon_ticks.html#lair.geo.add_latlon_ticks" title="lair.geo.add_latlon_ticks"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_latlon_ticks()</span></code></a> writes the tick labels in
 degrees (see <a class="reference internal" href="#state-lines-and-tick-labels">State lines and tick labels</a>).</p></li>
 <li><p><strong>The map helpers take an extent</strong>, <code class="docutils literal notranslate"><span class="pre">[west,</span> <span class="pre">east,</span> <span class="pre">south,</span> <span class="pre">north]</span></code>. <code class="docutils literal notranslate"><span class="pre">clip</span></code>
-takes the same extent, or a bbox, <code class="docutils literal notranslate"><span class="pre">(west,</span> <span class="pre">south,</span> <span class="pre">east,</span> <span class="pre">north)</span></code>: the same
-four numbers in another order. <a class="reference internal" href="../_autosummary/lair.geo.bbox2extent.html#lair.geo.bbox2extent" title="lair.geo.bbox2extent"><code class="xref py py-func docutils literal notranslate"><span class="pre">bbox2extent()</span></code></a> converts.</p></li>
+takes one too, or a bbox (<a class="reference internal" href="inventory.html#inventory-clip"><span class="std std-ref">the inventory example</span></a> has
+its order). <a class="reference internal" href="../_autosummary/lair.geo.bbox2extent.html#lair.geo.bbox2extent" title="lair.geo.bbox2extent"><code class="xref py py-func docutils literal notranslate"><span class="pre">bbox2extent()</span></code></a> converts.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This page does not run when the docs build. It needs the <code class="docutils literal notranslate"><span class="pre">geo</span></code> and
 <code class="docutils literal notranslate"><span class="pre">science</span></code> extras (see <a class="reference internal" href="../index.html#optional-dependencies"><span class="std std-ref">Optional dependencies</span></a>), EDGAR’s files, and the
 internet the first time cartopy draws a feature. The output and the figures
-below were recorded from one run of this code on 2026-10-14.</p>
+below were recorded from one run of this code on 2026-10-29, with lair
+2026.12.11.dev9+g55e932b18.</p>
 </div>
 <section id="the-data">
 <h2>The data<a class="headerlink" href="#the-data" title="Link to this heading">#</a></h2>
@@ -502,20 +504,20 @@ years of EDGAR v8’s methane, on the whole globe, and it takes about a minute:<
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.inventories</span><span class="w"> </span><span class="kn">import</span> <span class="n">EDGARv8</span>
 <span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv8</span><span class="p">(</span><span class="s2">&quot;CH4&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">inv</span> <span class="o">=</span> <span class="n">EDGARv8</span><span class="p">(</span><span class="s2">"CH4"</span><span class="p">)</span>
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="gp">   ...: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mean of every year: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
-<span class="go">mean of every year: 51 s</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mean of every year: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="go">mean of every year: 41 s</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">time</span></code> picks one step instead: an integer position (<code class="docutils literal notranslate"><span class="pre">-1</span></code> is the last), or a
 label such as <code class="docutils literal notranslate"><span class="pre">&quot;2022-01-01&quot;</span></code>. EDGAR’s annual steps are labeled by the start of
 the year (see <a class="reference internal" href="inventory.html"><span class="doc">Total an inventory over a region</span></a>). Reading one year is far quicker:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="gp">   ...: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;2022 only: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">"2022-01-01"</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"2022 only: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
 <span class="go">2022 only: 3 s</span>
 </pre></div>
 </div>
@@ -533,7 +535,7 @@ and in the order the map helpers want, holds 60 by 60 cells of 0.1 degrees:</p>
 <span class="gp">   ...: </span><span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">114.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">108.5</span><span class="p">,</span> <span class="mf">36.5</span><span class="p">,</span> <span class="mf">42.5</span><span class="p">]</span>  <span class="c1"># west, east, south, north</span>
 <span class="gp">   ...: </span><span class="n">utah</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">utah</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span>
-<span class="gh">Out[3]: </span><span class="go">Frozen({&#39;time&#39;: 53, &#39;lat&#39;: 60, &#39;lon&#39;: 60})</span>
+<span class="gh">Out[3]: </span><span class="go">Frozen({'time': 53, 'lat': 60, 'lon': 60})</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">plot</span></code> passes its other arguments to xarray’s plot. <code class="docutils literal notranslate"><span class="pre">cmap</span></code> picks the colors,
@@ -542,11 +544,11 @@ the values, so the few largest sources do not set it. xarray titles the plot
 with the scalar coordinates it finds (<code class="docutils literal notranslate"><span class="pre">time</span> <span class="pre">=</span> <span class="pre">2022-01-01,</span> <span class="pre">spatial_ref</span> <span class="pre">=</span> <span class="pre">0</span></code>),
 so set a title of your own. <code class="docutils literal notranslate"><span class="pre">plot</span></code> returns the axes, and <code class="docutils literal notranslate"><span class="pre">add_feature</span></code> and
 <a class="reference internal" href="../_autosummary/lair.geo.add_latlon_ticks.html#lair.geo.add_latlon_ticks" title="lair.geo.add_latlon_ticks"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_latlon_ticks()</span></code></a> draw on it:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">utah</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;YlOrRd&quot;</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;EDGAR v8 methane, 2022&quot;</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">utah</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">"2022-01-01"</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"YlOrRd"</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"EDGAR v8 methane, 2022"</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_latlon_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">extent</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;maps_inventory.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">"maps_inventory.png"</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">"tight"</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="A map of Utah in 2022 in 0.1 degree cells, with state lines and tick labels in degrees. Methane is highest along the Wasatch Front and in the northeast, with a few isolated sources elsewhere." src="../_images/maps_inventory.png" />
@@ -558,8 +560,8 @@ megabytes, after the map above:</p>
 <span class="gp">   ...:</span>
 <span class="gp">   ...: </span><span class="kn">import</span><span class="w"> </span><span class="nn">cartopy</span>
 <span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cartopy</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;data_dir&quot;</span><span class="p">])</span>
-<span class="gp">   ...: </span><span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">data_dir</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cartopy</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"data_dir"</span><span class="p">])</span>
+<span class="gp">   ...: </span><span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">data_dir</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*"</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gh">Out[5]: </span><span class="go">36.4</span>
 </pre></div>
 </div>
@@ -576,17 +578,17 @@ cartopy transforms it, so any cartopy axes works.</p>
 <p><a class="reference internal" href="../_autosummary/lair.geo.plot_grid.html#lair.geo.plot_grid" title="lair.geo.plot_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_grid()</span></code></a> outlines the cells of a grid on the axes you give
 it. It draws with xarray’s plot, which adds a colorbar, and passes its other
 arguments on, so <code class="docutils literal notranslate"><span class="pre">add_colorbar=False</span></code> leaves the colorbar out. Here it
-outlines the Salt Lake Valley box of the <a class="reference internal" href="inventory.html"><span class="doc">inventory example</span></a>
-(there as a bbox), 6 by 6 cells of 0.1 degrees, over a map of its emissions. A
+outlines the Salt Lake Valley box of <a class="reference internal" href="inventory.html#inventory-clip"><span class="std std-ref">the inventory example</span></a>
+over a map of its emissions. A
 small map has many close ticks, so <code class="docutils literal notranslate"><span class="pre">x_rotation=45</span></code> tilts the longitude
 labels:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">slv_extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">112.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.7</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">]</span>
 <span class="gp">   ...: </span><span class="n">slv</span> <span class="o">=</span> <span class="n">inv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">slv_extent</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;YlOrRd&quot;</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;EDGAR v8 methane, 2022&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span> <span class="o">=</span> <span class="n">slv</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="s2">"2022-01-01"</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"YlOrRd"</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"EDGAR v8 methane, 2022"</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">plot_grid</span><span class="p">(</span><span class="n">slv</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">add_colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_latlon_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">slv_extent</span><span class="p">,</span> <span class="n">x_rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;maps_grid.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">"maps_grid.png"</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">"tight"</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="The Salt Lake Valley in 2022 in six by six cells, each outlined in black, with tick labels in degrees." src="../_images/maps_grid.png" />
@@ -609,13 +611,13 @@ west, around a point in the Salt Lake Valley:</p>
 <span class="gp">   ...: </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="gp">   ...: </span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogNorm</span>
 <span class="gp">   ...:</span>
-<span class="gp">   ...: </span><span class="n">grid</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">generate_regular_grid</span><span class="p">(</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.5</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">grid</span> <span class="o">=</span> <span class="n">geo</span><span class="o">.</span><span class="n">generate_regular_grid</span><span class="p">(</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.5</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="s2">"lon"</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s2">"lat"</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">east</span> <span class="o">=</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">lon</span> <span class="o">+</span> <span class="mf">111.85</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mf">40.77</span><span class="p">))</span>  <span class="c1"># degrees from the point</span>
 <span class="gp">   ...: </span><span class="n">north</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">lat</span> <span class="o">-</span> <span class="mf">40.77</span>
 <span class="gp">   ...: </span><span class="n">sx</span><span class="p">,</span> <span class="n">sy</span> <span class="o">=</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.12</span>  <span class="c1"># widths of the plume, in degrees</span>
 <span class="gp">   ...: </span><span class="n">footprint</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">east</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sx</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">north</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sy</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
 <span class="gp">   ...: </span><span class="n">footprint</span><span class="o">.</span><span class="n">sizes</span>
-<span class="gh">Out[7]: </span><span class="go">Frozen({&#39;lon&#39;: 70, &#39;lat&#39;: 60})</span>
+<span class="gh">Out[7]: </span><span class="go">Frozen({'lon': 70, 'lat': 60})</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="../_autosummary/lair.geo.add_locator_map.html#lair.geo.add_locator_map" title="lair.geo.add_locator_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_locator_map()</span></code></a> adds a locator map, a small map of where the
@@ -624,9 +626,9 @@ projection, the position of the locator map in the figure as
 <code class="docutils literal notranslate"><span class="pre">(left,</span> <span class="pre">bottom,</span> <span class="pre">width,</span> <span class="pre">height)</span></code>, fractions of the figure’s size, its own
 extent and projection, and the color and width of the outline it draws around
 the main extent:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;projection&quot;</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()})</span>
-<span class="gp">   ...: </span><span class="n">footprint</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span> <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">))</span>
-<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;A made-up footprint&quot;</span><span class="p">)</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">"projection"</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()})</span>
+<span class="gp">   ...: </span><span class="n">footprint</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">"lon"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">"lat"</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span> <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">))</span>
+<span class="gp">   ...: </span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"A made-up footprint"</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">main_extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">112.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.5</span><span class="p">,</span> <span class="mf">40.4</span><span class="p">,</span> <span class="mf">41.0</span><span class="p">]</span>
 <span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_latlon_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">main_extent</span><span class="p">)</span>
 <span class="gp">   ...: </span><span class="n">geo</span><span class="o">.</span><span class="n">add_locator_map</span><span class="p">(</span>
@@ -636,10 +638,10 @@ the main extent:</p>
 <span class="gp">   ...: </span>    <span class="n">locator_rect</span><span class="o">=</span><span class="p">(</span><span class="mf">0.14</span><span class="p">,</span> <span class="mf">0.58</span><span class="p">,</span> <span class="mf">0.24</span><span class="p">,</span> <span class="mf">0.26</span><span class="p">),</span>
 <span class="gp">   ...: </span>    <span class="n">locator_extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">117</span><span class="p">,</span> <span class="o">-</span><span class="mi">106</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">43</span><span class="p">],</span>
 <span class="gp">   ...: </span>    <span class="n">locator_crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
-<span class="gp">   ...: </span>    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+<span class="gp">   ...: </span>    <span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">,</span>
 <span class="gp">   ...: </span>    <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
 <span class="gp">   ...: </span><span class="p">)</span>
-<span class="gp">   ...: </span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;maps_footprint.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+<span class="gp">   ...: </span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">"maps_footprint.png"</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">"tight"</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="A made-up footprint over the Salt Lake Valley, a bright oval that fades outward on a log color scale, with a small map of Utah in the upper left corner and a red box on it marking the main map." src="../_images/maps_footprint.png" />
@@ -729,8 +731,8 @@ the main extent:</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -750,7 +752,7 @@ the main extent:</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -763,7 +765,7 @@ the main extent:</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Quickstart &#8212; lair 2026.12.10</title>
+    <title>Quickstart &#8212; lair 2026.12.11</title>
   
   
   
@@ -26,29 +26,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=10d37c90"></script>
+    <script src="_static/documentation_options.js?v=b4abf889"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'quickstart';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -58,8 +58,9 @@
     <link rel="next" title="Data locations" href="data.html" />
     <link rel="prev" title="LAIR: Land-Air Interactions Research" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -455,8 +456,7 @@
 <section id="install">
 <h2>Install<a class="headerlink" href="#install" title="Link to this heading">#</a></h2>
 <p>lair is installed from GitHub, not from PyPI: <a class="reference internal" href="index.html#installation"><span class="std std-ref">Installation</span></a> has the
-commands. Use the conda route if you will regrid data (it needs ESMF). For
-everything else, pip is enough.</p>
+commands and says which route (conda or pip) your work needs.</p>
 </section>
 <section id="point-lair-at-your-data">
 <h2>Point lair at your data<a class="headerlink" href="#point-lair-at-your-data" title="Link to this heading">#</a></h2>
@@ -464,11 +464,7 @@ everything else, pip is enough.</p>
 <p>The modules that read files you keep on disk (<code class="docutils literal notranslate"><span class="pre">inventories</span></code>, <code class="docutils literal notranslate"><span class="pre">soundings</span></code>,
 and <code class="docutils literal notranslate"><span class="pre">noaa</span></code>’s <code class="docutils literal notranslate"><span class="pre">CarbonTracker</span></code> and <code class="docutils literal notranslate"><span class="pre">GMLData</span></code>) take the folder as an argument,
 or read it from a <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> environment variable. <a class="reference internal" href="data.html#data-locations"><span class="std std-ref">Data locations</span></a> lists
-the variables. Set the one you need before you start Python, for example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">LAIR_INVENTORY_DIR</span><span class="o">=</span>/path/to/inventories
-</pre></div>
-</div>
-<p>If a variable is missing, lair raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> that names it.</p>
+the variables, shows how to set one and says what happens when one is missing.</p>
 </section>
 <section id="a-first-calculation">
 <h2>A first calculation<a class="headerlink" href="#a-first-calculation" title="Link to this heading">#</a></h2>
@@ -479,11 +475,11 @@ three pressure levels.</p>
 
 <span class="gp">In [2]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.meteorology</span><span class="w"> </span><span class="kn">import</span> <span class="n">poisson</span>
 
-<span class="gp">In [3]: </span><span class="n">levels</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">850</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">500</span><span class="p">]}</span>  <span class="c1"># hPa, as labels</span>
+<span class="gp">In [3]: </span><span class="n">levels</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"level"</span><span class="p">:</span> <span class="p">[</span><span class="mi">850</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">500</span><span class="p">]}</span>  <span class="c1"># hPa, as labels</span>
 
-<span class="gp">In [4]: </span><span class="n">p</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">([</span><span class="mf">85000.0</span><span class="p">,</span> <span class="mf">70000.0</span><span class="p">,</span> <span class="mf">50000.0</span><span class="p">],</span> <span class="n">coords</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;level&quot;</span><span class="p">)</span>  <span class="c1"># Pa</span>
+<span class="gp">In [4]: </span><span class="n">p</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">([</span><span class="mf">85000.0</span><span class="p">,</span> <span class="mf">70000.0</span><span class="p">,</span> <span class="mf">50000.0</span><span class="p">],</span> <span class="n">coords</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">"level"</span><span class="p">)</span>  <span class="c1"># Pa</span>
 
-<span class="gp">In [5]: </span><span class="n">T</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">([</span><span class="mf">275.0</span><span class="p">,</span> <span class="mf">265.0</span><span class="p">,</span> <span class="mf">250.0</span><span class="p">],</span> <span class="n">coords</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;level&quot;</span><span class="p">)</span>  <span class="c1"># K</span>
+<span class="gp">In [5]: </span><span class="n">T</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">([</span><span class="mf">275.0</span><span class="p">,</span> <span class="mf">265.0</span><span class="p">,</span> <span class="mf">250.0</span><span class="p">],</span> <span class="n">coords</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">"level"</span><span class="p">)</span>  <span class="c1"># K</span>
 
 <span class="gp">In [6]: </span><span class="n">poisson</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
 <span class="gh">Out[6]: </span>
@@ -501,7 +497,7 @@ converts a flux from moles to mass with it). lair converts them to SI on the way
 in, and the result is still a plain number in kelvin:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span>
 
-<span class="gp">In [8]: </span><span class="n">poisson</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;degC&quot;</span><span class="p">),</span> <span class="mi">850</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">hPa</span><span class="p">)</span>
+<span class="gp">In [8]: </span><span class="n">poisson</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">"degC"</span><span class="p">),</span> <span class="mi">850</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">hPa</span><span class="p">)</span>
 <span class="gh">Out[8]: </span><span class="go">np.float64(288.22325401883245)</span>
 </pre></div>
 </div>
@@ -596,8 +592,8 @@ carry no units.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -617,7 +613,7 @@ carry no units.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -630,7 +626,7 @@ carry no units.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.transects &#8212; lair 2026.12.10</title>
+    <title>lair.transects &#8212; lair 2026.12.11</title>
   
   
   
@@ -25,29 +25,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
+    <script src="../../_static/documentation_options.js?v=b4abf889"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/transects';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,8 +55,9 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -434,14 +435,14 @@
                 <article class="bd-article">
                   
   <h1>Source code for lair.transects</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Metrics on mobile-platform transect matrices.</span>
 
 <span class="sd">A *transect matrix* is a 2-D array ``obs[transit, point]`` of a species measured on</span>
 <span class="sd">repeated transits of a fixed route, resampled onto fixed along-route points (NaN where a</span>
 <span class="sd">transit has no data at a point). Persistence questions are answered per point:</span>
 
-<span class="sd">- :func:`enhancement`        — obs minus each transit&#39;s own low percentile (removes the</span>
+<span class="sd">- :func:`enhancement`        — obs minus each transit's own low percentile (removes the</span>
 <span class="sd">                                boundary-layer / background cycle transit by transit)</span>
 <span class="sd">- :func:`detection_frequency` — fraction of transits enhanced above a threshold</span>
 <span class="sd">- :func:`magnitude`          — mean or median enhancement, over detected transits or all</span>
@@ -450,7 +451,7 @@
 <span class="sd">- :func:`along_route_distance` — cumulative geodesic distance of the points [km]</span>
 
 <span class="sd">Building the matrix from a georeferenced time series (the *transect builder*, after</span>
-<span class="sd">Mitchell et al. 2018&#39;s algorithm):</span>
+<span class="sd">Mitchell et al. 2018's algorithm):</span>
 
 <span class="sd">- :func:`lag_positions`  — put each sample where the sampled air was taken in (inlet lag)</span>
 <span class="sd">- :func:`snap_to_route`  — nearest fixed route point of each sample</span>
@@ -460,9 +461,9 @@
 
 <span class="sd">Everything is plain numpy; the platform-specific file formats live in the calling package</span>
 <span class="sd">(e.g. ``slv.measurements.mobile`` for TRAX). Times are POSIX seconds (float) or</span>
-<span class="sd">datetime-like (datetime64, or pandas times with or without a time zone; naive times are</span>
-<span class="sd">taken as UTC). The builder skips samples without a time (NaN / NaT).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">datetime-like (datetime64, or pandas times with or without a time zone; naive times</span>
+<span class="sd">follow :ref:`the UTC rule &lt;utc-rule&gt;`). The builder skips samples without a time (NaN / NaT).</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -470,40 +471,40 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;enhancement&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;robust_z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detection_frequency&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;magnitude&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;transit_times&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;profile&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;along_route_distance&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;merge_route_points&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;pool_routes&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;lag_positions&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;snap_to_route&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;split_transits&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;transect_matrix&quot;</span><span class="p">,</span>
+    <span class="s2">"enhancement"</span><span class="p">,</span>
+    <span class="s2">"robust_z"</span><span class="p">,</span>
+    <span class="s2">"detection_frequency"</span><span class="p">,</span>
+    <span class="s2">"magnitude"</span><span class="p">,</span>
+    <span class="s2">"transit_times"</span><span class="p">,</span>
+    <span class="s2">"profile"</span><span class="p">,</span>
+    <span class="s2">"along_route_distance"</span><span class="p">,</span>
+    <span class="s2">"merge_route_points"</span><span class="p">,</span>
+    <span class="s2">"pool_routes"</span><span class="p">,</span>
+    <span class="s2">"lag_positions"</span><span class="p">,</span>
+    <span class="s2">"snap_to_route"</span><span class="p">,</span>
+    <span class="s2">"split_transits"</span><span class="p">,</span>
+    <span class="s2">"transect_matrix"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="enhancement">
 <a class="viewcode-back" href="../../_autosummary/lair.transects.enhancement.html#lair.transects.enhancement">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">enhancement</span><span class="p">(</span><span class="n">obs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">baseline_q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Enhancement above each transit&#39;s own ``baseline_q``-th percentile along the route.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Enhancement above each transit's own ``baseline_q``-th percentile along the route.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    obs : np.ndarray</span>
 <span class="sd">        Transect matrix ``obs[transit, point]``.</span>
 <span class="sd">    baseline_q : float, optional</span>
-<span class="sd">        Percentile (0 to 100) of each transit&#39;s values taken as its baseline.</span>
+<span class="sd">        Percentile (0 to 100) of each transit's values taken as its baseline.</span>
 <span class="sd">        Default 5.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
-<span class="sd">        ``obs`` minus each transit&#39;s baseline, the same shape. Transits with no</span>
+<span class="sd">        ``obs`` minus each transit's baseline, the same shape. Transits with no</span>
 <span class="sd">        finite values are NaN throughout.</span>
 
 <span class="sd">    See Also</span>
@@ -514,7 +515,7 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    Three transits over four points; with ``baseline_q=0`` each transit&#39;s</span>
+<span class="sd">    Three transits over four points; with ``baseline_q=0`` each transit's</span>
 <span class="sd">    lowest value is its baseline:</span>
 
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
@@ -526,7 +527,7 @@
 <span class="sd">    array([[0. , 0.1, 0.6, 0. ],</span>
 <span class="sd">           [0. , 0. , 0.1, 0.7],</span>
 <span class="sd">           [0. , nan, 0.5, 0. ]])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">ok</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">base</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">obs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
@@ -538,11 +539,11 @@
 <div class="viewcode-block" id="robust_z">
 <a class="viewcode-back" href="../../_autosummary/lair.transects.robust_z.html#lair.transects.robust_z">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">robust_z</span><span class="p">(</span><span class="n">enh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">min_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Per-transit robust z-score of the enhancement.</span>
 
 <span class="sd">    The score is ``(enh - median) / (1.4826 * MAD)``, with the median and MAD taken</span>
-<span class="sd">    along each transit&#39;s route points.</span>
+<span class="sd">    along each transit's route points.</span>
 
 <span class="sd">    A point is then judged against the rest of *its own transit*, so a night with the whole</span>
 <span class="sd">    route elevated does not read as detections everywhere.</span>
@@ -563,17 +564,30 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    enhancement : The enhancement matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    detection_frequency : Counts the transits above a threshold at each point.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The first transit has one point far above its own median, which scores</span>
+<span class="sd">    about 33; the second is the same everywhere (zero MAD), so it has no score:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import robust_z</span>
+<span class="sd">    &gt;&gt;&gt; enh = np.array([[0.0, 0.1, 0.0, 5.0, 0.1], [1.0, 1.0, 1.0, 1.0, 1.0]])</span>
+<span class="sd">    &gt;&gt;&gt; robust_z(enh, min_points=3).round(2)</span>
+<span class="sd">    array([[-0.67,  0.  , -0.67, 33.05,  0.  ],</span>
+<span class="sd">           [  nan,   nan,   nan,   nan,   nan]])</span>
+<span class="sd">    """</span>
     <span class="n">enh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">enh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
     <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
         <span class="n">med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">enh</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">mad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">enh</span> <span class="o">-</span> <span class="n">med</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.4826</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">enh</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">ok</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="n">min_points</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">mad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
         <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">enh</span> <span class="o">-</span> <span class="n">med</span><span class="p">)</span> <span class="o">/</span> <span class="n">mad</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ok</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span></div>
 
@@ -584,7 +598,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">detection_frequency</span><span class="p">(</span>
     <span class="n">enh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">min_transits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fraction of transits (with data at the point) whose enhancement exceeds ``threshold``.</span>
 
 <span class="sd">    Parameters</span>
@@ -619,11 +633,11 @@
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; detection_frequency(enh, threshold=0.2, min_transits=2).round(3)</span>
 <span class="sd">    array([0.   , 0.   , 0.667, 0.333])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">enh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">enh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">enh</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">det</span> <span class="o">=</span> <span class="p">(</span><span class="n">enh</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">det</span> <span class="o">/</span> <span class="n">n</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="n">min_transits</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">f</span></div>
@@ -635,10 +649,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">magnitude</span><span class="p">(</span>
     <span class="n">enh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">stat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;median&quot;</span><span class="p">,</span>
+    <span class="n">stat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"median"</span><span class="p">,</span>
     <span class="n">min_transits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Per-point enhancement magnitude.</span>
 
 <span class="sd">    It is ``stat`` over detected transits (``enh &gt; threshold``) or over all</span>
@@ -652,7 +666,7 @@
 <span class="sd">        Enhancement above which a transit counts as a detection; None (the</span>
 <span class="sd">        default) uses every transit with data.</span>
 <span class="sd">    stat : str, optional</span>
-<span class="sd">        ``&quot;median&quot;`` (the default) or ``&quot;mean&quot;``.</span>
+<span class="sd">        ``"median"`` (the default) or ``"mean"``.</span>
 <span class="sd">    min_transits : int, optional</span>
 <span class="sd">        Fewest transits with data (before thresholding) a point needs. Default 10.</span>
 
@@ -675,17 +689,17 @@
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; magnitude(enh, threshold=0.2, min_transits=2)</span>
 <span class="sd">    array([ nan,  nan, 0.55, 0.7 ])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">enh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">enh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">enh</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">enh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">enh</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">enh</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-    <span class="n">func</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">}[</span><span class="n">stat</span><span class="p">]</span>
-    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"median"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">}[</span><span class="n">stat</span><span class="p">]</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
         <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">enh</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="n">min_transits</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span></div>
 
@@ -693,8 +707,8 @@
 
 <div class="viewcode-block" id="transit_times">
 <a class="viewcode-back" href="../../_autosummary/lair.transects.transit_times.html#lair.transects.transit_times">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">transit_times</span><span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">stat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;median&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">transit_times</span><span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">stat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"median"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    One timestamp per transit from a ``time[transit, point]`` matrix.</span>
 
 <span class="sd">    Parameters</span>
@@ -703,8 +717,8 @@
 <span class="sd">        Time matrix ``time[transit, point]``, in POSIX seconds or datetime64, as</span>
 <span class="sd">        from :func:`transect_matrix`.</span>
 <span class="sd">    stat : str, optional</span>
-<span class="sd">        How to reduce each transit&#39;s times: ``&quot;median&quot;`` (the default), ``&quot;min&quot;``</span>
-<span class="sd">        or ``&quot;max&quot;``.</span>
+<span class="sd">        How to reduce each transit's times: ``"median"`` (the default), ``"min"``</span>
+<span class="sd">        or ``"max"``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -714,18 +728,32 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    profile : Bins the metrics by these times.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    transect_matrix : Gives the time matrix.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Two transits of three points; the second has a point without a time, which</span>
+<span class="sd">    the median skips:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import transit_times</span>
+<span class="sd">    &gt;&gt;&gt; time = np.array([[0, 60, 120.0], [3600, 3660, np.nan]])</span>
+<span class="sd">    &gt;&gt;&gt; list(transit_times(time).strftime("%H:%M:%S"))</span>
+<span class="sd">    ['00:01:00', '01:00:30']</span>
+<span class="sd">    &gt;&gt;&gt; list(transit_times(time, "max").strftime("%H:%M:%S"))</span>
+<span class="sd">    ['00:02:00', '01:01:00']</span>
+<span class="sd">    """</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"datetime64[s]"</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">t</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time</span><span class="p">))]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">func</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">}[</span><span class="n">stat</span><span class="p">]</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"median"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">,</span> <span class="s2">"min"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">}[</span><span class="n">stat</span><span class="p">]</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
     <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
         <span class="n">rep</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">rep</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">rep</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"s"</span><span class="p">)</span></div>
 
 
 
@@ -734,12 +762,12 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">profile</span><span class="p">(</span>
     <span class="n">enh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">times</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span>
-    <span class="n">by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hour&quot;</span><span class="p">,</span>
+    <span class="n">by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"hour"</span><span class="p">,</span>
     <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">min_transits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="n">tz_offset_hours</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the detection frequency and median magnitude per point, binned by time.</span>
 
 <span class="sd">    Parameters</span>
@@ -749,7 +777,7 @@
 <span class="sd">    times : pd.DatetimeIndex</span>
 <span class="sd">        One UTC time per transit, as from :func:`transit_times`.</span>
 <span class="sd">    by : str, optional</span>
-<span class="sd">        The bins: ``&quot;hour&quot;`` (the default), ``&quot;weekday&quot;`` or ``&quot;month&quot;`` of the</span>
+<span class="sd">        The bins: ``"hour"`` (the default), ``"weekday"`` or ``"month"`` of the</span>
 <span class="sd">        transit time.</span>
 <span class="sd">    threshold : float, optional</span>
 <span class="sd">        Enhancement above which a transit counts as a detection. Default 0.</span>
@@ -765,10 +793,34 @@
 <span class="sd">        ``(bins, freq, mag)``: the bin values, and ``freq[bin, point]`` and</span>
 <span class="sd">        ``mag[bin, point]`` from :func:`detection_frequency` and :func:`magnitude`</span>
 <span class="sd">        (median) on the transits of each bin.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    transit_times : Gives ``times``.</span>
+<span class="sd">    detection_frequency : The frequency it computes in each bin.</span>
+<span class="sd">    magnitude : The magnitude it computes in each bin.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    One transit an hour for a day, with point 0 enhanced before noon only. Each</span>
+<span class="sd">    hour has one transit, so ``min_transits=1``:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import profile</span>
+<span class="sd">    &gt;&gt;&gt; enh = np.array([[1.0, 0.0]] * 12 + [[0.0, 0.0]] * 12)</span>
+<span class="sd">    &gt;&gt;&gt; times = pd.date_range("2024-01-15 00:00", periods=24, freq="1h")</span>
+<span class="sd">    &gt;&gt;&gt; bins, freq, mag = profile(enh, times, min_transits=1)</span>
+<span class="sd">    &gt;&gt;&gt; freq[[0, 12]]</span>
+<span class="sd">    array([[1., 0.],</span>
+<span class="sd">           [0., 0.]])</span>
+<span class="sd">    &gt;&gt;&gt; mag[[0, 12]]</span>
+<span class="sd">    array([[ 1., nan],</span>
+<span class="sd">           [nan, nan]])</span>
+<span class="sd">    """</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">times</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">tz_offset_hours</span><span class="p">)</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="s2">&quot;weekday&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">day_of_week</span><span class="p">,</span> <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">month</span><span class="p">}[</span><span class="n">by</span><span class="p">]</span>
-    <span class="n">bins</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">),</span> <span class="s2">&quot;weekday&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span> <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)}[</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"hour"</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="s2">"weekday"</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">day_of_week</span><span class="p">,</span> <span class="s2">"month"</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">month</span><span class="p">}[</span><span class="n">by</span><span class="p">]</span>
+    <span class="n">bins</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"hour"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">),</span> <span class="s2">"weekday"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span> <span class="s2">"month"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)}[</span>
         <span class="n">by</span>
     <span class="p">]</span>
     <span class="n">key</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -779,7 +831,7 @@
         <span class="k">if</span> <span class="n">sel</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="n">freq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">detection_frequency</span><span class="p">(</span><span class="n">enh</span><span class="p">[</span><span class="n">sel</span><span class="p">],</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">min_transits</span><span class="p">)</span>
-        <span class="n">mag</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">magnitude</span><span class="p">(</span><span class="n">enh</span><span class="p">[</span><span class="n">sel</span><span class="p">],</span> <span class="n">threshold</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="n">min_transits</span><span class="p">)</span>
+        <span class="n">mag</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">magnitude</span><span class="p">(</span><span class="n">enh</span><span class="p">[</span><span class="n">sel</span><span class="p">],</span> <span class="n">threshold</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">,</span> <span class="n">min_transits</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">bins</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">mag</span></div>
 
 
@@ -787,7 +839,7 @@
 <div class="viewcode-block" id="along_route_distance">
 <a class="viewcode-back" href="../../_autosummary/lair.transects.along_route_distance.html#lair.transects.along_route_distance">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">along_route_distance</span><span class="p">(</span><span class="n">lon</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Cumulative geodesic distance along the ordered route points.</span>
 
 <span class="sd">    Parameters</span>
@@ -799,10 +851,29 @@
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Distance from the first point on the WGS84 ellipsoid (km), starting at 0.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    lair.geo.haversine : The distance between two points on a sphere.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Needs the ``geo`` extra (pyproj).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Three points 0.01 degrees of latitude apart, about 1.11 km:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import along_route_distance</span>
+<span class="sd">    &gt;&gt;&gt; lon = np.array([-111.9, -111.9, -111.9])</span>
+<span class="sd">    &gt;&gt;&gt; lat = np.array([40.70, 40.71, 40.72])</span>
+<span class="sd">    &gt;&gt;&gt; along_route_distance(lon, lat).round(2)  # doctest: +SKIP</span>
+<span class="sd">    array([0.  , 1.11, 2.22])</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">pyproj</span><span class="w"> </span><span class="kn">import</span> <span class="n">Geod</span>
 
-    <span class="n">seg</span> <span class="o">=</span> <span class="n">Geod</span><span class="p">(</span><span class="n">ellps</span><span class="o">=</span><span class="s2">&quot;WGS84&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">line_lengths</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+    <span class="n">seg</span> <span class="o">=</span> <span class="n">Geod</span><span class="p">(</span><span class="n">ellps</span><span class="o">=</span><span class="s2">"WGS84"</span><span class="p">)</span><span class="o">.</span><span class="n">line_lengths</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">seg</span><span class="p">)])</span> <span class="o">/</span> <span class="mf">1000.0</span></div>
 
 
@@ -812,7 +883,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">merge_route_points</span><span class="p">(</span>
     <span class="n">routes_xy</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Merge the fixed points of several routes into one network point set.</span>
 
 <span class="sd">    Points of the first route are kept; a point of a later route is added only if it is</span>
@@ -830,12 +901,29 @@
 <span class="sd">    -------</span>
 <span class="sd">    tuple[np.ndarray, list[np.ndarray]]</span>
 <span class="sd">        ``(network_xy, index)``: the network points, and per route the network</span>
-<span class="sd">        point of each of its points (``index[i][k]`` for route ``i``&#39;s point ``k``).</span>
+<span class="sd">        point of each of its points (``index[i][k]`` for route ``i``'s point ``k``).</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    pool_routes : Stacks the routes&#39; matrices onto the network points.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    pool_routes : Stacks the routes' matrices onto the network points.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The second route shares two points with the first (within 50 m) and adds one:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import merge_route_points</span>
+<span class="sd">    &gt;&gt;&gt; r1 = np.array([[0, 0], [1000, 0], [2000, 0.0]])</span>
+<span class="sd">    &gt;&gt;&gt; r2 = np.array([[1000, 10], [2000, 5], [2000, 1000.0]])</span>
+<span class="sd">    &gt;&gt;&gt; network, index = merge_route_points([r1, r2], tol=50)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; network  # doctest: +SKIP</span>
+<span class="sd">    array([[   0.,    0.],</span>
+<span class="sd">           [1000.,    0.],</span>
+<span class="sd">           [2000.,    0.],</span>
+<span class="sd">           [2000., 1000.]])</span>
+<span class="sd">    &gt;&gt;&gt; index  # doctest: +SKIP</span>
+<span class="sd">    [array([0, 1, 2]), array([1, 2, 3])]</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">cKDTree</span>
 
     <span class="n">network</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">routes_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -857,7 +945,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">pool_routes</span><span class="p">(</span>
     <span class="n">matrices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">index</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">n_network</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Stack per-route ``[transit, point]`` matrices onto the network points.</span>
 
 <span class="sd">    Where two route points of one route snap to the same network point, the last one</span>
@@ -878,7 +966,23 @@
 <span class="sd">    np.ndarray</span>
 <span class="sd">        A ``[sum of transits, n_network]`` matrix, NaN where a route has no point</span>
 <span class="sd">        (or no data) at a network point.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    merge_route_points : Gives ``index`` and the network points.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    One transit on each of the two routes of :func:`merge_route_points`:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import pool_routes</span>
+<span class="sd">    &gt;&gt;&gt; index = [np.array([0, 1, 2]), np.array([1, 2, 3])]</span>
+<span class="sd">    &gt;&gt;&gt; matrices = [np.array([[1.0, 2.0, 3.0]]), np.array([[10.0, 20.0, 30.0]])]</span>
+<span class="sd">    &gt;&gt;&gt; pool_routes(matrices, index, n_network=4)</span>
+<span class="sd">    array([[ 1.,  2.,  3., nan],</span>
+<span class="sd">           [nan, 10., 20., 30.]])</span>
+<span class="sd">    """</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matrices</span><span class="p">)</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">n_network</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
     <span class="n">r0</span> <span class="o">=</span> <span class="mi">0</span>
@@ -894,25 +998,25 @@
 <span class="c1"># Transect builder: from a georeferenced time series to [transit, point]</span>
 <span class="c1"># ---------------------------------------------------------------------------</span>
 
-<span class="n">TRANSIT_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;direction&quot;</span><span class="p">,</span> <span class="s2">&quot;t_start&quot;</span><span class="p">,</span> <span class="s2">&quot;t_end&quot;</span><span class="p">,</span> <span class="s2">&quot;s_min&quot;</span><span class="p">,</span> <span class="s2">&quot;s_max&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">]</span>
+<span class="n">TRANSIT_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"direction"</span><span class="p">,</span> <span class="s2">"t_start"</span><span class="p">,</span> <span class="s2">"t_end"</span><span class="p">,</span> <span class="s2">"s_min"</span><span class="p">,</span> <span class="s2">"s_max"</span><span class="p">,</span> <span class="s2">"n"</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_time_seconds</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    POSIX seconds (float) from numeric or datetime-like input; NaN for NaT.</span>
 
 <span class="sd">    Datetime-like input goes through pandas, which handles tz-aware times (an object</span>
 <span class="sd">    array to numpy) and NaT. Naive times are taken as UTC.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="s2">&quot;biuf&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="s2">"biuf"</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">dt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">dt</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s2">&quot;UTC&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">dt</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s2">"UTC"</span><span class="p">))</span> <span class="o">/</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_runs</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">max_gap_s</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run index per sample; a new run starts after a gap longer than ``max_gap_s``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Run index per sample; a new run starts after a gap longer than ``max_gap_s``."""</span>
     <span class="n">new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="nb">bool</span><span class="p">)</span>
     <span class="n">new</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_gap_s</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">new</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
@@ -921,15 +1025,15 @@
 <div class="viewcode-block" id="lag_positions">
 <a class="viewcode-back" href="../../_autosummary/lair.transects.lag_positions.html#lair.transects.lag_positions">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">lag_positions</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">lag_s</span><span class="p">,</span> <span class="n">max_gap_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">600.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Positions where the air of each sample was actually taken in.</span>
 
 <span class="sd">    A sample logged at time *t* is air that entered the inlet ``lag_s`` seconds earlier, so</span>
-<span class="sd">    it belongs at the platform&#39;s position at ``t - lag``. Positions are interpolated</span>
+<span class="sd">    it belongs at the platform's position at ``t - lag``. Positions are interpolated</span>
 <span class="sd">    linearly in time along ``xy``.</span>
 
 <span class="sd">    The record is cut into runs at gaps longer than ``max_gap_s``, and ``t - lag`` is not</span>
-<span class="sd">    allowed to reach back before the start of the sample&#39;s own run: the first seconds of a</span>
+<span class="sd">    allowed to reach back before the start of the sample's own run: the first seconds of a</span>
 <span class="sd">    run keep its first position instead of being interpolated across the gap to wherever</span>
 <span class="sd">    the previous run ended.</span>
 
@@ -955,7 +1059,21 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    snap_to_route : The next step, the route point of each position.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    A platform logging one position a minute, with the inlet 60 s behind: each</span>
+<span class="sd">    sample belongs where the platform was a minute earlier (the first keeps its</span>
+<span class="sd">    own position):</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import lag_positions</span>
+<span class="sd">    &gt;&gt;&gt; time = np.arange(0, 6) * 60.0</span>
+<span class="sd">    &gt;&gt;&gt; x = np.array([0, 500, 1000, 1500, 2000, 2500.0])</span>
+<span class="sd">    &gt;&gt;&gt; xy = np.column_stack([x, np.zeros_like(x)])</span>
+<span class="sd">    &gt;&gt;&gt; lag_positions(time, xy, lag_s=60.0)[:, 0]</span>
+<span class="sd">    array([   0.,    0.,  500., 1000., 1500., 2000.])</span>
+<span class="sd">    """</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">_time_seconds</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
     <span class="n">xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">lag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lag_s</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -978,7 +1096,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">snap_to_route</span><span class="p">(</span>
     <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">route_xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find the nearest route point of each sample, within ``max_dist``.</span>
 
 <span class="sd">    Parameters</span>
@@ -1000,7 +1118,24 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    transect_matrix : Averages the samples onto ``[transit, point]``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    lag_positions : Gives the positions to snap.</span>
+<span class="sd">    merge_route_points : Joins the points of several routes.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Six route points 500 m apart along x; the sample at 700 m is 200 m from the</span>
+<span class="sd">    nearest, beyond ``max_dist``:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import snap_to_route</span>
+<span class="sd">    &gt;&gt;&gt; route = np.column_stack([np.arange(0, 2501, 500.0), np.zeros(6)])</span>
+<span class="sd">    &gt;&gt;&gt; xy = np.array([[10.0, 0.0], [1010.0, 5.0], [700.0, 0.0]])</span>
+<span class="sd">    &gt;&gt;&gt; index, distance = snap_to_route(xy, route, max_dist=100)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; index  # doctest: +SKIP</span>
+<span class="sd">    array([ 0,  2, -1])</span>
+<span class="sd">    &gt;&gt;&gt; distance.round(1)  # doctest: +SKIP</span>
+<span class="sd">    array([ 10. ,  11.2, 200. ])</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">cKDTree</span>
 
     <span class="n">xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -1016,7 +1151,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_empty_transit_table</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">TRANSIT_COLUMNS</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">([],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;transit&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">TRANSIT_COLUMNS</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">([],</span> <span class="n">name</span><span class="o">=</span><span class="s2">"transit"</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="split_transits">
@@ -1028,8 +1163,8 @@
     <span class="n">reversal_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">500.0</span><span class="p">,</span>
     <span class="n">min_span_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1000.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Cut a platform&#39;s along-route coordinate into one-way transits.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Cut a platform's along-route coordinate into one-way transits.</span>
 
 <span class="sd">    A transit ends</span>
 
@@ -1069,7 +1204,28 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    transect_matrix : Averages the samples onto ``[transit, point]``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    snap_to_route : Gives the route point of each sample.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    A platform drives out along the route and back, one sample a minute. The</span>
+<span class="sd">    turn at 2500 m ends the first transit (the turning sample starts the next):</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import split_transits</span>
+<span class="sd">    &gt;&gt;&gt; time = np.arange(0, 11) * 60.0</span>
+<span class="sd">    &gt;&gt;&gt; s = np.array([0, 500, 1000, 1500, 2000, 2500, 2000, 1500, 1000, 500, 0.0])</span>
+<span class="sd">    &gt;&gt;&gt; transit, table = split_transits(</span>
+<span class="sd">    ...     time, s, reversal_m=500, min_span_m=1000</span>
+<span class="sd">    ... )  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; transit  # doctest: +SKIP</span>
+<span class="sd">    array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1])</span>
+<span class="sd">    &gt;&gt;&gt; table[["direction", "s_min", "s_max", "n"]]  # doctest: +SKIP</span>
+<span class="sd">             direction  s_min   s_max  n</span>
+<span class="sd">    transit</span>
+<span class="sd">    0                1    0.0  2000.0  5</span>
+<span class="sd">    1               -1    0.0  2500.0  6</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_peaks</span>
 
     <span class="n">t</span> <span class="o">=</span> <span class="n">_time_seconds</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
@@ -1111,8 +1267,8 @@
             <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">transit</span><span class="p">,</span> <span class="n">_empty_transit_table</span><span class="p">()</span>
-    <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;transit&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">TRANSIT_COLUMNS</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span>
-        <span class="s2">&quot;transit&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"transit"</span><span class="p">,</span> <span class="o">*</span><span class="n">TRANSIT_COLUMNS</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span>
+        <span class="s2">"transit"</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">transit</span><span class="p">,</span> <span class="n">table</span></div>
 
@@ -1129,7 +1285,7 @@
     <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">max_dwell_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Average samples onto a ``[transit, point]`` matrix.</span>
 
 <span class="sd">    With ``max_dwell_s``, samples at a point taken more than that long after the transit</span>
@@ -1164,27 +1320,51 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    enhancement : The first metric on the matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    split_transits : Gives ``transit``.</span>
+<span class="sd">    snap_to_route : Gives ``point``.</span>
+<span class="sd">    transit_times : One time per transit from the time matrix.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    An outbound transit of six samples and a return of five, with each sample</span>
+<span class="sd">    snapped to the route point at its position (every 500 m, 0 to 5):</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from lair.transects import transect_matrix</span>
+<span class="sd">    &gt;&gt;&gt; time = np.arange(0, 11) * 60.0</span>
+<span class="sd">    &gt;&gt;&gt; transit = np.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1])</span>
+<span class="sd">    &gt;&gt;&gt; point = np.array([0, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])</span>
+<span class="sd">    &gt;&gt;&gt; obs = np.linspace(2.0, 2.1, 11)</span>
+<span class="sd">    &gt;&gt;&gt; mean, mean_time, n = transect_matrix(</span>
+<span class="sd">    ...     transit, point, obs, time, n_transits=2, n_points=6</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; mean.round(3)</span>
+<span class="sd">    array([[2.005, 2.02 , 2.03 , 2.04 , 2.05 ,   nan],</span>
+<span class="sd">           [  nan, 2.1  , 2.09 , 2.08 , 2.07 , 2.06 ]])</span>
+<span class="sd">    &gt;&gt;&gt; n</span>
+<span class="sd">    array([[ 2.,  1.,  1.,  1.,  1., nan],</span>
+<span class="sd">           [nan,  1.,  1.,  1.,  1.,  1.]])</span>
+<span class="sd">    """</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">_time_seconds</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
     <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">ok</span> <span class="o">=</span> <span class="p">(</span><span class="n">transit</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">point</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-        <span class="p">{</span><span class="s2">&quot;transit&quot;</span><span class="p">:</span> <span class="n">transit</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="s2">&quot;point&quot;</span><span class="p">:</span> <span class="n">point</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span> <span class="n">obs</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">[</span><span class="n">ok</span><span class="p">]}</span>
+        <span class="p">{</span><span class="s2">"transit"</span><span class="p">:</span> <span class="n">transit</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="s2">"point"</span><span class="p">:</span> <span class="n">point</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="s2">"obs"</span><span class="p">:</span> <span class="n">obs</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="s2">"t"</span><span class="p">:</span> <span class="n">t</span><span class="p">[</span><span class="n">ok</span><span class="p">]}</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">max_dwell_s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">first</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;transit&quot;</span><span class="p">,</span> <span class="s2">&quot;point&quot;</span><span class="p">])[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">first</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_dwell_s</span><span class="p">]</span>
-    <span class="n">agg</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;transit&quot;</span><span class="p">,</span> <span class="s2">&quot;point&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-        <span class="n">obs</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;obs&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span> <span class="n">t</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;obs&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">"transit"</span><span class="p">,</span> <span class="s2">"point"</span><span class="p">])[</span><span class="s2">"t"</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">"min"</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span> <span class="o">-</span> <span class="n">first</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_dwell_s</span><span class="p">]</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">"transit"</span><span class="p">,</span> <span class="s2">"point"</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">obs</span><span class="o">=</span><span class="p">(</span><span class="s2">"obs"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span> <span class="n">t</span><span class="o">=</span><span class="p">(</span><span class="s2">"t"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="p">(</span><span class="s2">"obs"</span><span class="p">,</span> <span class="s2">"size"</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="n">out_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_transits</span><span class="p">,</span> <span class="n">n_points</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
     <span class="n">out_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">out_obs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
     <span class="n">out_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">out_obs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-    <span class="n">ti</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;transit&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-    <span class="n">pi</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;point&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-    <span class="n">out_obs</span><span class="p">[</span><span class="n">ti</span><span class="p">,</span> <span class="n">pi</span><span class="p">]</span> <span class="o">=</span> <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;obs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-    <span class="n">out_t</span><span class="p">[</span><span class="n">ti</span><span class="p">,</span> <span class="n">pi</span><span class="p">]</span> <span class="o">=</span> <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-    <span class="n">out_n</span><span class="p">[</span><span class="n">ti</span><span class="p">,</span> <span class="n">pi</span><span class="p">]</span> <span class="o">=</span> <span class="n">agg</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">ti</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"transit"</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">pi</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"point"</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">out_obs</span><span class="p">[</span><span class="n">ti</span><span class="p">,</span> <span class="n">pi</span><span class="p">]</span> <span class="o">=</span> <span class="n">agg</span><span class="p">[</span><span class="s2">"obs"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">out_t</span><span class="p">[</span><span class="n">ti</span><span class="p">,</span> <span class="n">pi</span><span class="p">]</span> <span class="o">=</span> <span class="n">agg</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">out_n</span><span class="p">[</span><span class="n">ti</span><span class="p">,</span> <span class="n">pi</span><span class="p">]</span> <span class="o">=</span> <span class="n">agg</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">out_obs</span><span class="p">,</span> <span class="n">out_t</span><span class="p">,</span> <span class="n">out_n</span></div>
 
 </pre></div>
@@ -1216,8 +1396,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1237,7 +1417,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -1250,7 +1430,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

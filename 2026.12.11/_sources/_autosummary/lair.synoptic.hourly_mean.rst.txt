@@ -1,0 +1,6 @@
+lair.synoptic.hourly\_mean
+==========================
+
+.. currentmodule:: lair.synoptic
+
+.. autofunction:: hourly_mean

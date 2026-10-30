@@ -1,0 +1,6 @@
+lair.inventories.Vulcan.reproject
+=================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Vulcan.reproject

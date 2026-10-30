@@ -1,0 +1,6 @@
+lair.config.get\_data\_dir
+==========================
+
+.. currentmodule:: lair.config
+
+.. autofunction:: get_data_dir

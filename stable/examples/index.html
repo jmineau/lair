@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Examples &#8212; lair 2026.12.10</title>
+    <title>Examples &#8212; lair 2026.12.11</title>
   
   
   
@@ -26,29 +26,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=10d37c90"></script>
+    <script src="../_static/documentation_options.js?v=b4abf889"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'examples/index';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -58,8 +58,9 @@
     <link rel="next" title="Average a time series by local hour and by season" href="clock.html" />
     <link rel="prev" title="Data locations" href="../data.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -468,15 +469,16 @@ Each page says whether it runs when the docs build.</p>
 season, and what to do when a time will not convert.</p></li>
 <li><p><a class="reference internal" href="units.html"><span class="doc">Convert a methane flux from moles to mass</span></a>: convert a flux between moles and mass with a molecular weight,
 and why pint’s <code class="docutils literal notranslate"><span class="pre">kt</span></code> is not a kilotonne.</p></li>
-<li><p><a class="reference internal" href="inventory.html"><span class="doc">Total an inventory over a region</span></a>: total an emissions inventory over a region, and move it to
-another grid without losing mass.</p></li>
-<li><p><a class="reference internal" href="maps.html"><span class="doc">Draw a map of an inventory</span></a>: draw a map of an inventory, with state lines, tick labels, the
-grid and a locator map (a small map of where it is), and the same for any gridded
-field.</p></li>
-<li><p><a class="reference internal" href="soundings.html"><span class="doc">Read a sounding and compute its potential temperature</span></a>: download soundings, read them, and compute potential
-temperature.</p></li>
-<li><p><a class="reference internal" href="hrrr_winds.html"><span class="doc">Get HRRR winds at a point</span></a>: HRRR winds at a point.</p></li>
-<li><p><a class="reference internal" href="carbontracker.html"><span class="doc">Sample CarbonTracker at points</span></a>: CarbonTracker’s background at a set of points.</p></li>
+<li><p><a class="reference internal" href="inventory.html"><span class="doc">Total an inventory over a region</span></a>: why <code class="docutils literal notranslate"><span class="pre">integrate()</span></code>, not <code class="docutils literal notranslate"><span class="pre">total_emissions</span></code>, is the
+total, and how to move an inventory to another grid without losing mass.</p></li>
+<li><p><a class="reference internal" href="maps.html"><span class="doc">Draw a map of an inventory</span></a>: add state lines, tick labels, the grid and a locator map (a
+small map of where it is) to a map, and draw any gridded field the same way.</p></li>
+<li><p><a class="reference internal" href="soundings.html"><span class="doc">Read a sounding and compute its potential temperature</span></a>: download soundings from Wyoming into a folder, read them
+on the same heights, and when <code class="docutils literal notranslate"><span class="pre">get_soundings</span></code> downloads.</p></li>
+<li><p><a class="reference internal" href="hrrr_winds.html"><span class="doc">Get HRRR winds at a point</span></a>: six hours of 10 m winds at the nearest HRRR grid point,
+asked for in UTC or in local time.</p></li>
+<li><p><a class="reference internal" href="carbontracker.html"><span class="doc">Sample CarbonTracker at points</span></a>: download one day of CarbonTracker, sample it at points
+such as the ends of STILT back trajectories, and average them.</p></li>
 <li><p><a class="reference internal" href="background.html"><span class="doc">Estimate a background</span></a>: lair’s background methods side by side on one series,
 what each needs, and when to use which.</p></li>
 </ul>
@@ -545,8 +547,8 @@ what each needs, and when to use which.</p></li>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -566,7 +568,7 @@ what each needs, and when to use which.</p></li>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -579,7 +581,7 @@ what each needs, and when to use which.</p></li>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

@@ -1,0 +1,6 @@
+lair.dev.public\_attrs
+======================
+
+.. currentmodule:: lair.dev
+
+.. autofunction:: public_attrs

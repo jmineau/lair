@@ -1,0 +1,6 @@
+lair.pcaps.filter\_pcap\_events
+===============================
+
+.. currentmodule:: lair.pcaps
+
+.. autofunction:: filter_pcap_events

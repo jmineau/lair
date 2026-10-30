@@ -96,6 +96,13 @@ writes the new unit back into the attribute:
        grid_kg = grid.pint.quantify().pint.to("kg km-2 d-1")
    grid_kg.pint.dequantify()
 
+.. _unit-spellings:
+
+The same unit has more than one spelling, and pint reads them alike: ``kg km-2
+d-1`` and ``kilogram / kilometer ** 2 / day`` (what ``dequantify()`` writes) are
+one unit, and so are ``kg m-2 s-1`` and ``kg/m**2/s`` (the ``units`` attribute of
+an inventory's ``total_emissions``).
+
 :func:`lair.inventories.convert_units` does the same for any array or dataset
 with a ``units`` attribute, given the pollutant instead of ``mw``:
 ``convert_units(grid, "CH4", "kg km-2 d-1")`` returns a plain array with the new

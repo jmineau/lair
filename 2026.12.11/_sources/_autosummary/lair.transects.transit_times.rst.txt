@@ -1,0 +1,6 @@
+lair.transects.transit\_times
+=============================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: transit_times

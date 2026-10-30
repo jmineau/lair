@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.geo &#8212; lair 2026.12.10</title>
+    <title>lair.geo &#8212; lair 2026.12.11</title>
   
   
   
@@ -25,29 +25,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
+    <script src="../../_static/documentation_options.js?v=b4abf889"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/geo';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,8 +55,9 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -434,7 +435,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for lair.geo</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Grids, maps and distances.</span>
 
 <span class="sd">:class:`BaseGrid` and the functions it wraps work on gridded xarray data:</span>
@@ -445,7 +446,7 @@
 <span class="sd">(:doc:`/examples/maps`), and :func:`haversine` and :func:`bearing` measure on</span>
 <span class="sd">the sphere. Importing the module needs the ``geo`` extra, and regridding needs</span>
 <span class="sd">ESMF as well (see :ref:`optional-dependencies`).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">annotations</span><span class="p">,</span>
@@ -466,14 +467,14 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair._optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional_dependency</span>
 
-<span class="c1">#: An xarray object; functions annotated with it return the type they&#39;re given</span>
-<span class="n">_XarrayT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_XarrayT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">)</span>
+<span class="c1">#: An xarray object; functions annotated with it return the type they're given</span>
+<span class="n">_XarrayT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">"_XarrayT"</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">)</span>
 
-<span class="n">cartopy</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;cartopy&quot;</span><span class="p">)</span>
-<span class="n">pyproj</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;pyproj&quot;</span><span class="p">)</span>
-<span class="n">rasterio</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;rasterio&quot;</span><span class="p">)</span>
-<span class="n">rioxarray</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;rioxarray&quot;</span><span class="p">)</span>
-<span class="n">shapely</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;shapely&quot;</span><span class="p">)</span>
+<span class="n">cartopy</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"cartopy"</span><span class="p">)</span>
+<span class="n">pyproj</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"pyproj"</span><span class="p">)</span>
+<span class="n">rasterio</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"rasterio"</span><span class="p">)</span>
+<span class="n">rioxarray</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"rioxarray"</span><span class="p">)</span>
+<span class="n">shapely</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"shapely"</span><span class="p">)</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rasterio.crs</span>  <span class="c1"># noqa: E402 F811</span>
@@ -487,13 +488,42 @@
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">shapely</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineString</span><span class="p">,</span> <span class="n">MultiLineString</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Polygon</span>  <span class="c1"># noqa: E402</span>
 
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"bbox2extent"</span><span class="p">,</span>
+    <span class="s2">"extent2bbox"</span><span class="p">,</span>
+    <span class="s2">"PC"</span><span class="p">,</span>
+    <span class="s2">"CRS"</span><span class="p">,</span>
+    <span class="s2">"dms2dd"</span><span class="p">,</span>
+    <span class="s2">"wrap_lons"</span><span class="p">,</span>
+    <span class="s2">"add_lat_ticks"</span><span class="p">,</span>
+    <span class="s2">"add_lon_ticks"</span><span class="p">,</span>
+    <span class="s2">"add_latlon_ticks"</span><span class="p">,</span>
+    <span class="s2">"add_locator_map"</span><span class="p">,</span>
+    <span class="s2">"XESMF_Regrid_Methods"</span><span class="p">,</span>
+    <span class="s2">"BaseGrid"</span><span class="p">,</span>
+    <span class="s2">"clip"</span><span class="p">,</span>
+    <span class="s2">"gridcell_area"</span><span class="p">,</span>
+    <span class="s2">"plot_grid"</span><span class="p">,</span>
+    <span class="s2">"generate_regular_grid"</span><span class="p">,</span>
+    <span class="s2">"regrid"</span><span class="p">,</span>
+    <span class="s2">"resample"</span><span class="p">,</span>
+    <span class="s2">"round_latlon"</span><span class="p">,</span>
+    <span class="s2">"write_rio_crs"</span><span class="p">,</span>
+    <span class="s2">"bearing"</span><span class="p">,</span>
+    <span class="s2">"cosine_weights"</span><span class="p">,</span>
+    <span class="s2">"earth_radius"</span><span class="p">,</span>
+    <span class="s2">"gridcell_area_from_latlon"</span><span class="p">,</span>
+    <span class="s2">"haversine"</span><span class="p">,</span>
+    <span class="s2">"points_along_line"</span><span class="p">,</span>
+<span class="p">]</span>
+
 <span class="c1"># ----- BOUNDS ----- #</span>
 
 
 <div class="viewcode-block" id="bbox2extent">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.bbox2extent.html#lair.geo.bbox2extent">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">bbox2extent</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Bounding box to extent.</span>
 
 <span class="sd">    Parameters</span>
@@ -515,7 +545,7 @@
 <span class="sd">    &gt;&gt;&gt; from lair.geo import bbox2extent</span>
 <span class="sd">    &gt;&gt;&gt; bbox2extent([-112.3, 40.4, -111.7, 41.0])</span>
 <span class="sd">    [-112.3, -111.7, 40.4, 41.0]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">bbox</span>
     <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">extent</span></div>
@@ -525,7 +555,7 @@
 <div class="viewcode-block" id="extent2bbox">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.extent2bbox.html#lair.geo.extent2bbox">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">extent2bbox</span><span class="p">(</span><span class="n">extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extent to bounding box.</span>
 
 <span class="sd">    Parameters</span>
@@ -547,7 +577,7 @@
 <span class="sd">    &gt;&gt;&gt; from lair.geo import extent2bbox</span>
 <span class="sd">    &gt;&gt;&gt; extent2bbox([-112.3, -111.7, 40.4, 41.0])</span>
 <span class="sd">    [-112.3, 40.4, -111.7, 41.0]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">extent</span>
     <span class="n">bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">bbox</span></div>
@@ -556,7 +586,7 @@
 
 <span class="c1"># ----- COORDINATES ----- #</span>
 
-<span class="c1">#: cartopy&#39;s PlateCarree projection: plain longitude and latitude. Pass it as</span>
+<span class="c1">#: cartopy's PlateCarree projection: plain longitude and latitude. Pass it as</span>
 <span class="c1">#: ``transform=`` to draw lat/lon data on a map in any projection.</span>
 <span class="c1">#:</span>
 <span class="c1">#: .. seealso:: :doc:`/examples/maps`, which draws with it.</span>
@@ -566,7 +596,7 @@
 <div class="viewcode-block" id="CRS">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.html#lair.geo.CRS">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CRS</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Coordinate Reference System (CRS) class.</span>
 
 <span class="sd">    This class is a wrapper around the pyproj.CRS class, with additional methods</span>
@@ -580,7 +610,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    crs : Any</span>
-<span class="sd">        The CRS: another ``CRS``, an EPSG code (``4326``), an ``&quot;EPSG:...&quot;``</span>
+<span class="sd">        The CRS: another ``CRS``, an EPSG code (``4326``), an ``"EPSG:..."``</span>
 <span class="sd">        string, a cartopy, pyproj or rasterio CRS, or anything</span>
 <span class="sd">        ``pyproj.CRS.from_user_input`` reads (a PROJ string, WKT).</span>
 
@@ -602,11 +632,11 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from lair.geo import CRS</span>
-<span class="sd">    &gt;&gt;&gt; CRS(&quot;EPSG:4326&quot;).epsg</span>
+<span class="sd">    &gt;&gt;&gt; CRS("EPSG:4326").epsg</span>
 <span class="sd">    4326</span>
 <span class="sd">    &gt;&gt;&gt; CRS(4326).to_pyproj().name</span>
-<span class="sd">    &#39;WGS 84&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    'WGS 84'</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
         <span class="c1"># Convert input to pyproj.CRS</span>
@@ -614,15 +644,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">crs</span><span class="o">.</span><span class="n">crs</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_epsg</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">crs</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;EPSG:&quot;</span><span class="p">):</span>
-            <span class="n">epsg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">crs</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">crs</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"EPSG:"</span><span class="p">):</span>
+            <span class="n">epsg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">crs</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_epsg</span><span class="p">(</span><span class="n">epsg</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">crs</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">CRS</span><span class="p">):</span>
-            <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">Env</span><span class="p">(</span><span class="n">OSR_WKT_FORMAT</span><span class="o">=</span><span class="s2">&quot;WKT2_2018&quot;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">Env</span><span class="p">(</span><span class="n">OSR_WKT_FORMAT</span><span class="o">=</span><span class="s2">"WKT2_2018"</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_wkt</span><span class="p">(</span><span class="n">crs</span><span class="o">.</span><span class="n">wkt</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># If not any of the above, try to convert to pyproj.CRS</span>
@@ -637,10 +667,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">epsg</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the EPSG code of the CRS.</span>
 
-<span class="sd">        None for a CRS without one, such as Vulcan&#39;s Lambert conformal grid.</span>
+<span class="sd">        None for a CRS without one, such as Vulcan's Lambert conformal grid.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -649,32 +679,32 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; from lair.geo import CRS</span>
-<span class="sd">        &gt;&gt;&gt; CRS(&quot;EPSG:4326&quot;).epsg</span>
+<span class="sd">        &gt;&gt;&gt; CRS("EPSG:4326").epsg</span>
 <span class="sd">        4326</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_epsg</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">proj4</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the PROJ4 string of the CRS.</span>
 
-<span class="sd">        pyproj warns that a PROJ string can lose some of a CRS&#39;s information;</span>
+<span class="sd">        pyproj warns that a PROJ string can lose some of a CRS's information;</span>
 <span class="sd">        prefer :attr:`wkt` to store one.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        CRS.wkt : The CRS as WKT, which loses nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_proj4</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">units</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the units of the CRS.</span>
 
-<span class="sd">        The linear units, as rasterio names them: ``&#39;metre&#39;`` for a projected</span>
-<span class="sd">        CRS in meters, ``&#39;unknown&#39;`` for a geographic one (degrees).</span>
+<span class="sd">        The linear units, as rasterio names them: ``'metre'`` for a projected</span>
+<span class="sd">        CRS in meters, ``'unknown'`` for a geographic one (degrees).</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -683,14 +713,14 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; from lair.geo import CRS</span>
-<span class="sd">        &gt;&gt;&gt; CRS(&quot;EPSG:3857&quot;).units</span>
-<span class="sd">        &#39;metre&#39;</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; CRS("EPSG:3857").units</span>
+<span class="sd">        'metre'</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_rasterio</span><span class="p">()</span><span class="o">.</span><span class="n">linear_units</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">wkt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the WKT string of the CRS.</span>
 
 <span class="sd">        See Also</span>
@@ -700,44 +730,44 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; from lair.geo import CRS</span>
-<span class="sd">        &gt;&gt;&gt; CRS(&quot;EPSG:4326&quot;).wkt[:20]</span>
-<span class="sd">        &#39;GEOGCRS[&quot;WGS 84&quot;,ENS&#39;</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; CRS("EPSG:4326").wkt[:20]</span>
+<span class="sd">        'GEOGCRS["WGS 84",ENS'</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_wkt</span><span class="p">()</span>
 
 <div class="viewcode-block" id="CRS.to_cartopy">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.to_cartopy.html#lair.geo.CRS.to_cartopy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_cartopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert to cartopy CRS.</span>
 
 <span class="sd">        A plain ``cartopy.crs.CRS``, not a ``Projection``, so it can transform</span>
-<span class="sd">        data but cannot be a map&#39;s projection.</span>
+<span class="sd">        data but cannot be a map's projection.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        CRS.to_pyproj : The pyproj CRS it is made from.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CRS.to_rasterio">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.to_rasterio.html#lair.geo.CRS.to_rasterio">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_rasterio</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">CRS</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert to rasterio CRS.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        CRS.to_pyproj : The pyproj CRS it is made from.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CRS.to_pyproj">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.CRS.to_pyproj.html#lair.geo.CRS.to_pyproj">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_pyproj</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert to pyproj CRS.</span>
 
 <span class="sd">        See Also</span>
@@ -750,7 +780,7 @@
 <span class="sd">        &gt;&gt;&gt; from lair.geo import CRS</span>
 <span class="sd">        &gt;&gt;&gt; CRS(4326).to_pyproj().is_geographic</span>
 <span class="sd">        True</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span></div>
 </div>
 
@@ -759,7 +789,7 @@
 <div class="viewcode-block" id="dms2dd">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.dms2dd.html#lair.geo.dms2dd">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dms2dd</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Degree-minute-second to decimal degree</span>
 
 <span class="sd">    The sign of ``d`` applies to the whole angle (``m`` and ``s`` are</span>
@@ -792,7 +822,7 @@
 <span class="sd">    40.76</span>
 <span class="sd">    &gt;&gt;&gt; dms2dd(-111, 53, 24)</span>
 <span class="sd">    -111.89</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">d</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
@@ -807,7 +837,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">wrap_lons</span><span class="p">(</span>
     <span class="n">longitudes</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">base</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">180.0</span><span class="p">,</span> <span class="n">period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">360.0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Transform the longitude values into the half-open interval [base, base + period).</span>
 
 <span class="sd">    Parameters</span>
@@ -840,7 +870,7 @@
 <span class="sd">    array([-170.,  179.,    0.])</span>
 <span class="sd">    &gt;&gt;&gt; wrap_lons(350.0, base=0)</span>
 <span class="sd">    array([350.])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1">#</span>
     <span class="c1"># TODO: support radians</span>
     <span class="c1">#</span>
@@ -861,7 +891,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">add_lat_ticks</span><span class="p">(</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">,</span> <span class="n">ylims</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">labelsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">more_ticks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add latitude ticks to the map.</span>
 
 <span class="sd">    Parameters</span>
@@ -882,12 +912,12 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    add_latlon_ticks : Both axes at once.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Figure</span><span class="p">,</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="p">)</span>
     <span class="c1"># One tick per inch of axis height (independent of dpi)</span>
     <span class="n">bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
 
-    <span class="n">y_ticks</span> <span class="o">=</span> <span class="n">LatitudeLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="n">bins</span> <span class="o">+</span> <span class="n">more_ticks</span><span class="p">,</span> <span class="n">prune</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tick_values</span><span class="p">(</span>
+    <span class="n">y_ticks</span> <span class="o">=</span> <span class="n">LatitudeLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="n">bins</span> <span class="o">+</span> <span class="n">more_ticks</span><span class="p">,</span> <span class="n">prune</span><span class="o">=</span><span class="s2">"both"</span><span class="p">)</span><span class="o">.</span><span class="n">tick_values</span><span class="p">(</span>
         <span class="n">ylims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ylims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="p">)</span>
 
@@ -896,7 +926,7 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">LatitudeFormatter</span><span class="p">())</span>
 
     <span class="k">if</span> <span class="n">labelsize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">labelsize</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">labelsize</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -911,7 +941,7 @@
     <span class="n">labelsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">more_ticks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add longitude ticks to the map.</span>
 
 <span class="sd">    Parameters</span>
@@ -934,12 +964,12 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    add_latlon_ticks : Both axes at once.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Figure</span><span class="p">,</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="p">)</span>
     <span class="c1"># One tick per inch of axis width (independent of dpi)</span>
     <span class="n">bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
 
-    <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">LongitudeLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="n">bins</span> <span class="o">+</span> <span class="n">more_ticks</span><span class="p">,</span> <span class="n">prune</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tick_values</span><span class="p">(</span>
+    <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">LongitudeLocator</span><span class="p">(</span><span class="n">nbins</span><span class="o">=</span><span class="n">bins</span> <span class="o">+</span> <span class="n">more_ticks</span><span class="p">,</span> <span class="n">prune</span><span class="o">=</span><span class="s2">"both"</span><span class="p">)</span><span class="o">.</span><span class="n">tick_values</span><span class="p">(</span>
         <span class="n">xlims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xlims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="p">)</span>
 
@@ -949,11 +979,11 @@
 
     <span class="k">if</span> <span class="n">rotation</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">rotation_mode</span><span class="o">=</span><span class="s2">&quot;anchor&quot;</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"right"</span><span class="p">,</span> <span class="n">rotation_mode</span><span class="o">=</span><span class="s2">"anchor"</span>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">labelsize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">labelsize</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">labelsize</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -969,7 +999,7 @@
     <span class="n">more_lon_ticks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">more_lat_ticks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add latitude and longitude ticks to the map.</span>
 
 <span class="sd">    Parameters</span>
@@ -1004,7 +1034,7 @@
 <span class="sd">        extent = [-112.3, -111.7, 40.4, 41.0]</span>
 <span class="sd">        ax.set_extent(extent, crs=PC)</span>
 <span class="sd">        add_latlon_ticks(ax, extent, x_rotation=45)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">xlims</span><span class="p">,</span> <span class="n">ylims</span> <span class="o">=</span> <span class="n">extent</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
 
     <span class="n">add_lat_ticks</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ylims</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">labelsize</span><span class="p">,</span> <span class="n">more_ticks</span><span class="o">=</span><span class="n">more_lat_ticks</span><span class="p">)</span>
@@ -1030,7 +1060,7 @@
     <span class="n">linewidth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">zorder</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add a small locator map to the figure that shows where the main map is.</span>
 
 <span class="sd">    The locator map is a new axes with land, ocean and state boundaries, and</span>
@@ -1067,12 +1097,12 @@
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    plot_grid : Draws a grid&#39;s cells on the main map.</span>
+<span class="sd">    plot_grid : Draws a grid's cells on the main map.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    A locator map of Utah and its neighbors in the top left of ``fig``, with</span>
-<span class="sd">    the main map&#39;s extent outlined in red, as :doc:`/examples/maps` draws it::</span>
+<span class="sd">    the main map's extent outlined in red, as :doc:`/examples/maps` draws it::</span>
 
 <span class="sd">        add_locator_map(</span>
 <span class="sd">            fig,</span>
@@ -1081,10 +1111,10 @@
 <span class="sd">            locator_rect=(0.14, 0.58, 0.24, 0.26),</span>
 <span class="sd">            locator_extent=[-117, -106, 35, 43],</span>
 <span class="sd">            locator_crs=PC,</span>
-<span class="sd">            color=&quot;red&quot;,</span>
+<span class="sd">            color="red",</span>
 <span class="sd">            linewidth=1.5,</span>
 <span class="sd">        )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.feature</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cfeature</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
 
@@ -1103,7 +1133,7 @@
     <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_geometries</span><span class="p">(</span>
         <span class="p">[</span><span class="n">main_poly</span><span class="p">],</span>
         <span class="n">crs</span><span class="o">=</span><span class="n">main_extent_crs</span><span class="p">,</span>
-        <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+        <span class="n">facecolor</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
         <span class="n">edgecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
         <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span>
     <span class="p">)</span>
@@ -1115,32 +1145,32 @@
 <span class="c1"># ----- XARRAY UTILITIES ----- #</span>
 
 <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span>
-    <span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;conservative&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;conservative_normed&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;nearest_s2d&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;nearest_d2s&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;patch&quot;</span><span class="p">,</span>
+    <span class="s2">"bilinear"</span><span class="p">,</span>
+    <span class="s2">"conservative"</span><span class="p">,</span>
+    <span class="s2">"conservative_normed"</span><span class="p">,</span>
+    <span class="s2">"nearest_s2d"</span><span class="p">,</span>
+    <span class="s2">"nearest_d2s"</span><span class="p">,</span>
+    <span class="s2">"patch"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="c1">#: Name of the variable a DataArray is stored under while it is a temporary Dataset</span>
-<span class="n">_TMP_VAR</span> <span class="o">=</span> <span class="s2">&quot;__lair_data__&quot;</span>
+<span class="n">_TMP_VAR</span> <span class="o">=</span> <span class="s2">"__lair_data__"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_as_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Wrap a DataArray in a one-variable Dataset; a Dataset is returned as is.</span>
 
-<span class="sd">    cf_xarray&#39;s bounds helpers (``cf.add_bounds``/``cf.get_bounds``, also used</span>
+<span class="sd">    cf_xarray's bounds helpers (``cf.add_bounds``/``cf.get_bounds``, also used</span>
 <span class="sd">    by xesmf) only exist on Datasets. Undo with :func:`_like_input`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataArray</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">_TMP_VAR</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">data</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_like_input</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">_XarrayT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_XarrayT</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Undo :func:`_as_dataset`: a DataArray input gets a DataArray back, with its name.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Undo :func:`_as_dataset`: a DataArray input gets a DataArray back, with its name."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DataArray</span><span class="p">):</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">_TMP_VAR</span><span class="p">]</span>
         <span class="n">out</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">name</span>
@@ -1151,7 +1181,7 @@
 <div class="viewcode-block" id="BaseGrid">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.html#lair.geo.BaseGrid">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseGrid</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Base class for working with gridded data.</span>
 
 <span class="sd">    This class is a wrapper around xarray DataArray and Dataset objects, with additional methods</span>
@@ -1176,15 +1206,15 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from lair.geo import BaseGrid, generate_regular_grid</span>
 <span class="sd">    &gt;&gt;&gt; data = generate_regular_grid(</span>
-<span class="sd">    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label=&quot;lon&quot;, y_label=&quot;lat&quot;</span>
-<span class="sd">    ... ).rio.set_spatial_dims(x_dim=&quot;lon&quot;, y_dim=&quot;lat&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; grid = BaseGrid(data, &quot;EPSG:4326&quot;)</span>
+<span class="sd">    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label="lon", y_label="lat"</span>
+<span class="sd">    ... ).rio.set_spatial_dims(x_dim="lon", y_dim="lat")</span>
+<span class="sd">    &gt;&gt;&gt; grid = BaseGrid(data, "EPSG:4326")</span>
 <span class="sd">    &gt;&gt;&gt; grid.crs.epsg</span>
 <span class="sd">    4326</span>
 <span class="sd">    &gt;&gt;&gt; box = grid.clip(bbox=(-112.1, 40.7, -111.9, 40.9))</span>
 <span class="sd">    &gt;&gt;&gt; dict(box.data.sizes)</span>
-<span class="sd">    {&#39;lat&#39;: 2, &#39;lon&#39;: 2}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    {'lat': 2, 'lon': 2}</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">crs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">CRS</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
@@ -1193,7 +1223,7 @@
 <div class="viewcode-block" id="BaseGrid.copy">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.BaseGrid.copy.html#lair.geo.BaseGrid.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a copy of the grid.</span>
 
 <span class="sd">        Returns</span>
@@ -1204,13 +1234,13 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        BaseGrid.clip : Returns a changed copy unless ``inplace=True``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">gridcell_area</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Calculate the grid cell area in km^2.</span>
 
 <span class="sd">        Returns</span>
@@ -1220,7 +1250,7 @@
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
-<span class="sd">        gridcell_area : How each cell&#39;s area is computed.</span>
+<span class="sd">        gridcell_area : How each cell's area is computed.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1228,12 +1258,12 @@
 
 <span class="sd">        &gt;&gt;&gt; from lair.geo import BaseGrid, generate_regular_grid</span>
 <span class="sd">        &gt;&gt;&gt; data = generate_regular_grid(</span>
-<span class="sd">        ...     -112.0, -111.8, 0.1, 40.6, 40.8, 0.1, x_label=&quot;lon&quot;, y_label=&quot;lat&quot;</span>
-<span class="sd">        ... ).rio.set_spatial_dims(x_dim=&quot;lon&quot;, y_dim=&quot;lat&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; BaseGrid(data, &quot;EPSG:4326&quot;).gridcell_area.values.round(3)</span>
+<span class="sd">        ...     -112.0, -111.8, 0.1, 40.6, 40.8, 0.1, x_label="lon", y_label="lat"</span>
+<span class="sd">        ... ).rio.set_spatial_dims(x_dim="lon", y_dim="lat")</span>
+<span class="sd">        &gt;&gt;&gt; BaseGrid(data, "EPSG:4326").gridcell_area.values.round(3)</span>
 <span class="sd">        array([[93.922, 93.922],</span>
 <span class="sd">               [93.783, 93.783]])</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">gridcell_area</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseGrid.clip">
@@ -1247,7 +1277,7 @@
         <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Clip the data to the given bounds.</span>
 
 <span class="sd">        .. note::</span>
@@ -1279,7 +1309,7 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        clip : The same for xarray data.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">crs</span> <span class="o">=</span> <span class="n">crs</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_rasterio</span><span class="p">()</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="n">geom</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
@@ -1296,10 +1326,10 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">regrid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">out_grid</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">"bilinear"</span><span class="p">,</span>
         <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Regrid the data to a new grid. Uses `xesmf` for regridding.</span>
 
 <span class="sd">        .. note::</span>
@@ -1315,7 +1345,7 @@
 <span class="sd">        out_grid : xr.DataArray</span>
 <span class="sd">            The new grid to resample to. Must be a lat-lon grid.</span>
 <span class="sd">        method : str, optional</span>
-<span class="sd">            The regridding method, by default &#39;bilinear&#39;.</span>
+<span class="sd">            The regridding method, by default 'bilinear'.</span>
 <span class="sd">        inplace : bool, optional</span>
 <span class="sd">            Whether to modify the object in-place. Default is False.</span>
 
@@ -1328,7 +1358,7 @@
 <span class="sd">        --------</span>
 <span class="sd">        regrid : The same for xarray data.</span>
 <span class="sd">        BaseGrid.resample : To a new resolution over the same area.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">regrid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">out_grid</span><span class="o">=</span><span class="n">out_grid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
@@ -1344,13 +1374,13 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">resample</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-        <span class="n">regrid_method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+        <span class="n">regrid_method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">"bilinear"</span><span class="p">,</span>
         <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Resample the data to a new resolution.</span>
 
-<span class="sd">        A resolution that does not divide the grid&#39;s width leaves a strip at the</span>
+<span class="sd">        A resolution that does not divide the grid's width leaves a strip at the</span>
 <span class="sd">        far edge; :func:`lair.geo.resample` says what happens to it.</span>
 
 <span class="sd">        Parameters</span>
@@ -1359,7 +1389,7 @@
 <span class="sd">            The new resolution in degrees. If a single value is provided, the resolution</span>
 <span class="sd">            is assumed to be the same in both dimensions.</span>
 <span class="sd">        regrid_method : str, optional</span>
-<span class="sd">            The regridding method, by default &#39;bilinear&#39;.</span>
+<span class="sd">            The regridding method, by default 'bilinear'.</span>
 <span class="sd">        inplace : bool, optional</span>
 <span class="sd">            Whether to modify the object in-place. Default is False.</span>
 
@@ -1372,7 +1402,7 @@
 <span class="sd">        --------</span>
 <span class="sd">        resample : The same for xarray data, and the methods.</span>
 <span class="sd">        lair.inventories.Inventory.resample : Conservative by default, for a flux.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">,</span> <span class="n">regrid_method</span><span class="o">=</span><span class="n">regrid_method</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
@@ -1388,10 +1418,10 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">reproject</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-        <span class="n">regrid_method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+        <span class="n">regrid_method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">"bilinear"</span><span class="p">,</span>
         <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Reproject the data to a lat lon rectilinear grid.</span>
 
 <span class="sd">        Parameters</span>
@@ -1400,7 +1430,7 @@
 <span class="sd">            The new resolution in degrees. If a single value is provided, the resolution</span>
 <span class="sd">            is assumed to be the same in both dimensions.</span>
 <span class="sd">        regrid_method : str, optional</span>
-<span class="sd">            The regridding method, by default &#39;bilinear&#39;.</span>
+<span class="sd">            The regridding method, by default 'bilinear'.</span>
 <span class="sd">        inplace : bool, optional</span>
 <span class="sd">            Whether to modify the object in-place. Default is False.</span>
 
@@ -1417,22 +1447,22 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        BaseGrid.resample : For data already on lat/lon.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Any geographic CRS (EPSG:4326, OGC:CRS84, NAD83, ...) is already lat/lon</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_pyproj</span><span class="p">()</span><span class="o">.</span><span class="n">is_geographic</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data is already in lat lon&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Data is already in lat lon"</span><span class="p">)</span>
 
         <span class="n">resampled_data</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">,</span> <span class="n">regrid_method</span><span class="o">=</span><span class="n">regrid_method</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">CRS</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">CRS</span><span class="p">(</span><span class="s2">"EPSG:4326"</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">resampled_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">new</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">CRS</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">CRS</span><span class="p">(</span><span class="s2">"EPSG:4326"</span><span class="p">)</span>
             <span class="n">new</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">resampled_data</span><span class="p">,</span> <span class="n">new</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">new</span></div>
 </div>
@@ -1446,10 +1476,10 @@
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">geom</span><span class="p">:</span> <span class="n">Polygon</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Polygon</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">crs</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span><span class="p">,</span>
+    <span class="n">crs</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="s2">"EPSG:4326"</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Clip the data to the given bounds.</span>
 
 <span class="sd">    .. note::</span>
@@ -1469,7 +1499,7 @@
 <span class="sd">        The geometry, or a collection of geometries (list, array, GeoSeries),</span>
 <span class="sd">        to clip the data to.</span>
 <span class="sd">    crs : Any, optional</span>
-<span class="sd">        The CRS of the input geometries. Default is &#39;EPSG:4326&#39;.</span>
+<span class="sd">        The CRS of the input geometries. Default is 'EPSG:4326'.</span>
 <span class="sd">    kwargs : Any</span>
 <span class="sd">        Additional keyword arguments to pass to the rioxarray clip method.</span>
 
@@ -1494,16 +1524,16 @@
 
 <span class="sd">    &gt;&gt;&gt; from lair.geo import clip, generate_regular_grid, write_rio_crs</span>
 <span class="sd">    &gt;&gt;&gt; grid = generate_regular_grid(</span>
-<span class="sd">    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label=&quot;lon&quot;, y_label=&quot;lat&quot;</span>
+<span class="sd">    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label="lon", y_label="lat"</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; grid = write_rio_crs(grid.rio.set_spatial_dims(x_dim=&quot;lon&quot;, y_dim=&quot;lat&quot;), 4326)</span>
+<span class="sd">    &gt;&gt;&gt; grid = write_rio_crs(grid.rio.set_spatial_dims(x_dim="lon", y_dim="lat"), 4326)</span>
 <span class="sd">    &gt;&gt;&gt; dict(clip(grid, bbox=(-112.1, 40.7, -111.9, 40.9)).sizes)</span>
-<span class="sd">    {&#39;lat&#39;: 2, &#39;lon&#39;: 2}</span>
+<span class="sd">    {'lat': 2, 'lon': 2}</span>
 <span class="sd">    &gt;&gt;&gt; dict(clip(grid, extent=(-112.1, -111.9, 40.7, 40.9)).sizes)</span>
-<span class="sd">    {&#39;lat&#39;: 2, &#39;lon&#39;: 2}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    {'lat': 2, 'lon': 2}</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">bbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">extent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">geom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Exactly one of bbox, extent, or geom must be provided.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Exactly one of bbox, extent, or geom must be provided."</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">extent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Convert extent to bbox</span>
@@ -1527,13 +1557,13 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_authalic_q</span><span class="p">(</span><span class="n">lat</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return ``q`` of the authalic latitude on the WGS84 ellipsoid.</span>
 
 <span class="sd">    The area of the ellipsoid between the equator and latitude ``lat`` (degrees)</span>
 <span class="sd">    over a longitude span ``dlon`` (radians) is ``a**2 / 2 * dlon * q(lat)``</span>
 <span class="sd">    (Snyder 1987, *Map Projections: A Working Manual*, eq. 3-12).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">e2</span> <span class="o">=</span> <span class="n">_WGS84_F</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">_WGS84_F</span><span class="p">)</span>
     <span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">e2</span><span class="p">)</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
@@ -1545,7 +1575,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">gridcell_area</span><span class="p">(</span>
     <span class="n">grid</span><span class="p">:</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the area of each grid cell in a grid.</span>
 
 <span class="sd">    On a lat-lon grid each cell is bounded by two meridians and two parallels,</span>
@@ -1570,15 +1600,15 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    xr.DataArray</span>
-<span class="sd">        grid-cell area in square-kilometers, with the grid&#39;s (y, x) dims. Its</span>
-<span class="sd">        only attribute is ``units`` (``&#39;km2&#39;``), so an array multiplied by it</span>
+<span class="sd">        grid-cell area in square-kilometers, with the grid's (y, x) dims. Its</span>
+<span class="sd">        only attribute is ``units`` (``'km2'``), so an array multiplied by it</span>
 <span class="sd">        (``Inventory.absolute_emissions``) takes no description of the grid.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If the grid has no CRS, its CRS is neither geographic nor in meters, or</span>
-<span class="sd">        a lat-lon grid&#39;s ``lat`` or ``lon`` is not 1-D.</span>
+<span class="sd">        a lat-lon grid's ``lat`` or ``lon`` is not 1-D.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -1586,13 +1616,13 @@
 <span class="sd">    too large at the equator, 0.12% too small at 40.5 N and 0.9% too small</span>
 <span class="sd">    next to a pole; a 0.1-degree cell centered at 40.75 N is 93.668 km2</span>
 <span class="sd">    against 93.783 km2 on the ellipsoid. A sphere whose radius is the</span>
-<span class="sd">    ellipsoid&#39;s radius at the cell&#39;s latitude (:func:`earth_radius`) is worse</span>
+<span class="sd">    ellipsoid's radius at the cell's latitude (:func:`earth_radius`) is worse</span>
 <span class="sd">    at 40.75 N (93.611 km2, 0.18% too small).</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    gridcell_area_from_latlon : The same from latitudes and longitudes.</span>
-<span class="sd">    BaseGrid.gridcell_area : The areas of a grid&#39;s cells.</span>
+<span class="sd">    BaseGrid.gridcell_area : The areas of a grid's cells.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1600,26 +1630,26 @@
 <span class="sd">    &gt;&gt;&gt; area = geo.gridcell_area_from_latlon([40.65, 40.75, 40.85], [-111.95, -111.85])</span>
 <span class="sd">    &gt;&gt;&gt; round(float(area[1, 1]), 3)  # the 0.1-degree cell at 40.75 N, 111.85 W</span>
 <span class="sd">    93.783</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">crs</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">crs</span>
     <span class="k">if</span> <span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;grid has no CRS; set one with write_rio_crs(grid, crs).&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"grid has no CRS; set one with write_rio_crs(grid, crs)."</span><span class="p">)</span>
 
     <span class="c1"># Only the coordinates matter, and cf bounds need a Dataset</span>
     <span class="n">grid</span> <span class="o">=</span> <span class="n">_as_dataset</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">crs</span><span class="o">.</span><span class="n">is_geographic</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">grid</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">grid</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"lat"</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"lon"</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;gridcell_area needs 1-D lat and lon coordinates on a lat-lon grid.&quot;</span>
+                <span class="s2">"gridcell_area needs 1-D lat and lon coordinates on a lat-lon grid."</span>
             <span class="p">)</span>
-        <span class="n">bounds</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span>
-        <span class="c1"># Each cell&#39;s edges, halfway between the centers (a pole stays a pole)</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">"lat"</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">])</span>
+        <span class="c1"># Each cell's edges, halfway between the centers (a pole stays a pole)</span>
         <span class="n">lat_b</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">lat_bounds</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
         <span class="n">lat_lo</span> <span class="o">=</span> <span class="n">lat_b</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">bounds</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">lat_hi</span> <span class="o">=</span> <span class="n">lat_b</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">bounds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">dlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span>
-            <span class="nb">abs</span><span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">lon_bounds</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">lon_bounds</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">"bounds"</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="s2">"bounds"</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
         <span class="p">)</span>
         <span class="c1"># abs: north-up rasters store lat descending. The latitude term comes</span>
         <span class="c1"># first, so the result is (y, x) like the data.</span>
@@ -1629,20 +1659,20 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dsin</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat_hi</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat_lo</span><span class="p">)))</span>
             <span class="n">area</span> <span class="o">=</span> <span class="n">R</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dsin</span> <span class="o">*</span> <span class="n">dlon</span>
-        <span class="n">area</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">&quot;lat_bounds&quot;</span><span class="p">,</span> <span class="s2">&quot;lon_bounds&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">crs</span><span class="o">.</span><span class="n">linear_units</span> <span class="o">==</span> <span class="s2">&quot;metre&quot;</span><span class="p">:</span>
-        <span class="n">bounds</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
-        <span class="n">dx</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">x_bounds</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">dy</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">y_bounds</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="s2">&quot;bounds&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">area</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">"lat_bounds"</span><span class="p">,</span> <span class="s2">"lon_bounds"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">crs</span><span class="o">.</span><span class="n">linear_units</span> <span class="o">==</span> <span class="s2">"metre"</span><span class="p">:</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">])</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">x_bounds</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">"bounds"</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="s2">"bounds"</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">y_bounds</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">"bounds"</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="s2">"bounds"</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># abs: north-up rasters store y descending (negative dy).</span>
         <span class="c1"># dy first so the result is (y, x) like the data.</span>
         <span class="n">cell_area_m2</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dy</span> <span class="o">*</span> <span class="n">dx</span><span class="p">)</span>
-        <span class="n">area</span> <span class="o">=</span> <span class="n">cell_area_m2</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">quantify</span><span class="p">(</span><span class="s2">&quot;m2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;km2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">dequantify</span><span class="p">()</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">cell_area_m2</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">quantify</span><span class="p">(</span><span class="s2">"m2"</span><span class="p">)</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"km2"</span><span class="p">)</span><span class="o">.</span><span class="n">pint</span><span class="o">.</span><span class="n">dequantify</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only lat-lon and meter grids are supported.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Only lat-lon and meter grids are supported."</span><span class="p">)</span>
     <span class="c1"># The area is multiplied into data variables (Inventory.absolute_emissions),</span>
     <span class="c1"># which keep its attributes: keep only the units (issue #136).</span>
-    <span class="n">area</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;km2&quot;</span><span class="p">}</span>
+    <span class="n">area</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"units"</span><span class="p">:</span> <span class="s2">"km2"</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">area</span></div>
 
 
@@ -1657,7 +1687,7 @@
     <span class="n">crs</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Plot a grid.</span>
 
 <span class="sd">    Parameters</span>
@@ -1673,7 +1703,7 @@
 <span class="sd">        projection, by default None.</span>
 <span class="sd">    crs : Any, optional</span>
 <span class="sd">        Map projection for a new axes: a cartopy projection, or anything</span>
-<span class="sd">        :class:`CRS` accepts (EPSG code, &quot;EPSG:...&quot; string, pyproj CRS, ...).</span>
+<span class="sd">        :class:`CRS` accepts (EPSG code, "EPSG:..." string, pyproj CRS, ...).</span>
 <span class="sd">        By default PlateCarree. Ignored when ``ax`` is given.</span>
 <span class="sd">    kwargs : Any</span>
 <span class="sd">        Additional keyword arguments to pass to the pcol</span>
@@ -1690,12 +1720,12 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    The cells of an inventory&#39;s grid, outlined over its map, as</span>
+<span class="sd">    The cells of an inventory's grid, outlined over its map, as</span>
 <span class="sd">    :doc:`/examples/maps` draws them::</span>
 
-<span class="sd">        ax = slv.plot(time=&quot;2022-01-01&quot;)</span>
+<span class="sd">        ax = slv.plot(time="2022-01-01")</span>
 <span class="sd">        plot_grid(slv.data, ax=ax, add_colorbar=False)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">crs</span> <span class="o">=</span> <span class="n">PC</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span><span class="p">):</span>
@@ -1703,20 +1733,20 @@
         <span class="n">crs</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span><span class="p">(</span><span class="n">CRS</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span><span class="o">.</span><span class="n">to_pyproj</span><span class="p">())</span>
 
     <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;projection&quot;</span><span class="p">:</span> <span class="n">crs</span><span class="p">})</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">"projection"</span><span class="p">:</span> <span class="n">crs</span><span class="p">})</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">GeoAxes</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">extent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_extent</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">PC</span><span class="p">)</span>
 
-    <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">],</span> <span class="n">grid</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">]</span>
+    <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"lat"</span><span class="p">],</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"lon"</span><span class="p">]</span>
 
     <span class="n">grid</span> <span class="o">=</span> <span class="n">DataArray</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">lat</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lon</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="n">lat</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="n">lon</span><span class="p">}</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">lat</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lon</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"lat"</span><span class="p">:</span> <span class="n">lat</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">:</span> <span class="n">lon</span><span class="p">}</span>
     <span class="p">)</span>
 
     <span class="n">grid</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-        <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">PC</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">PC</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">ax</span></div>
@@ -1732,18 +1762,24 @@
     <span class="n">ymin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">ymax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">dy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">x_label</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
-    <span class="n">y_label</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span>
+    <span class="n">x_label</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span>
+    <span class="n">y_label</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span>
     <span class="n">chunks</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate a regular grid. Grid points are cell centers.</span>
 
 <span class="sd">    Cells start at ``xmin``/``ymin`` and continue while their center is below</span>
 <span class="sd">    ``xmax``/``ymax`` (a center landing exactly on the max edge may or may not</span>
 <span class="sd">    be included, depending on float error). Centers are</span>
 <span class="sd">    ``min + d * (i + 0.5)``, rounded to 10 decimals only to drop float noise</span>
-<span class="sd">    (``40.35``, not ``40.349999999999994``), which matches PYSTILT&#39;s grid axes.</span>
+<span class="sd">    (``40.35``, not ``40.349999999999994``), which matches PYSTILT's grid axes.</span>
+
+<span class="sd">    When the domain is not a whole number of cells, a cell is kept if its center</span>
+<span class="sd">    is inside the domain, so the last cell ends within half a cell of the max</span>
+<span class="sd">    edge, past it or short of it. ``ymin=40.45``, ``ymax=40.93`` and ``dy=0.05``</span>
+<span class="sd">    give 10 rows, the last centered at 40.925 and ending at 40.95; rounding the</span>
+<span class="sd">    count down would give 9 rows.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1760,9 +1796,9 @@
 <span class="sd">    dy : float</span>
 <span class="sd">        y resolution</span>
 <span class="sd">    x_label : str, optional</span>
-<span class="sd">        Name of the x coordinate, by default &#39;x&#39;</span>
+<span class="sd">        Name of the x coordinate, by default 'x'</span>
 <span class="sd">    y_label : str, optional</span>
-<span class="sd">        Name of the y coordinate, by default &#39;y&#39;</span>
+<span class="sd">        Name of the y coordinate, by default 'y'</span>
 <span class="sd">    chunks : dict, optional</span>
 <span class="sd">        If given, chunk the grid with dask (``DataArray.chunk(chunks)``).</span>
 
@@ -1781,13 +1817,22 @@
 
 <span class="sd">    &gt;&gt;&gt; from lair.geo import generate_regular_grid</span>
 <span class="sd">    &gt;&gt;&gt; grid = generate_regular_grid(</span>
-<span class="sd">    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label=&quot;lon&quot;, y_label=&quot;lat&quot;</span>
+<span class="sd">    ...     -112.2, -111.8, 0.1, 40.6, 41.0, 0.1, x_label="lon", y_label="lat"</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; grid.lon.values</span>
 <span class="sd">    array([-112.15, -112.05, -111.95, -111.85])</span>
 <span class="sd">    &gt;&gt;&gt; grid.lat.values</span>
 <span class="sd">    array([40.65, 40.75, 40.85, 40.95])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="sd">    A domain that is not a whole number of cells keeps the cell whose center is</span>
+<span class="sd">    inside it:</span>
+
+<span class="sd">    &gt;&gt;&gt; grid = generate_regular_grid(</span>
+<span class="sd">    ...     -112.2, -111.8, 0.1, 40.45, 40.93, 0.05, x_label="lon", y_label="lat"</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; grid.lat.size, float(grid.lat[-1])</span>
+<span class="sd">    (10, 40.925)</span>
+<span class="sd">    """</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">_cell_centers</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">_cell_centers</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
     <span class="n">zeros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
@@ -1799,7 +1844,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_cell_centers</span><span class="p">(</span><span class="n">vmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">vmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Centers of the cells of size ``d`` from ``vmin`` whose center is below ``vmax``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Centers of the cells of size ``d`` from ``vmin`` whose center is below ``vmax``."""</span>
     <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vmin</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">vmax</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
     <span class="c1"># Cell count exactly as before (np.arange). Where the last center lands on</span>
     <span class="c1"># vmax, float error decides whether that cell is included.</span>
@@ -1809,12 +1854,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_end_of_last_cell</span><span class="p">(</span><span class="n">vmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">vmax</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    End of the last cell of size ``d`` that starts below ``vmax``.</span>
 
 <span class="sd">    Cells start at ``vmin``. When ``d`` does not divide ``vmax - vmin`` the last</span>
 <span class="sd">    cell reaches past ``vmax``, so the cells cover everything up to ``vmax``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vmin</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">vmax</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
     <span class="c1"># A strip under a millionth of a cell is float noise in the bounds, not a cell</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">vmax</span> <span class="o">-</span> <span class="n">vmin</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">))</span>
@@ -1826,10 +1871,16 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">regrid</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">_XarrayT</span><span class="p">,</span>
     <span class="n">out_grid</span><span class="p">:</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">,</span>
-    <span class="n">method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">"bilinear"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_XarrayT</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Regrid data to a new grid. Uses `xesmf` for regridding.</span>
+
+<span class="sd">    An output cell that the source does not reach is NaN: outside the</span>
+<span class="sd">    source, and, for ``'bilinear'`` and ``'patch'``, a center beyond the</span>
+<span class="sd">    source's outermost cell centers. A conservative regrid keeps the part of a</span>
+<span class="sd">    cell that overlaps the source, so only a cell wholly outside it is NaN.</span>
+<span class="sd">    ``'nearest_s2d'`` gives every cell its nearest source cell, however far.</span>
 
 <span class="sd">    .. note::</span>
 <span class="sd">        At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.</span>
@@ -1846,7 +1897,7 @@
 <span class="sd">    out_grid : xr.DataArray</span>
 <span class="sd">        The new grid to resample to. Must be a lat-lon grid.</span>
 <span class="sd">    method : str, optional</span>
-<span class="sd">        The regridding method, by default &#39;bilinear&#39;.</span>
+<span class="sd">        The regridding method, by default 'bilinear'.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1868,29 +1919,32 @@
 <span class="sd">    &gt;&gt;&gt; from lair.geo import generate_regular_grid, regrid</span>
 <span class="sd">    &gt;&gt;&gt; flux = xr.DataArray(</span>
 <span class="sd">    ...     np.ones((2, 2)),</span>
-<span class="sd">    ...     coords={&quot;lat&quot;: [40.65, 40.75], &quot;lon&quot;: [-111.95, -111.85]},</span>
-<span class="sd">    ...     dims=(&quot;lat&quot;, &quot;lon&quot;),</span>
+<span class="sd">    ...     coords={"lat": [40.65, 40.75], "lon": [-111.95, -111.85]},</span>
+<span class="sd">    ...     dims=("lat", "lon"),</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; fine = generate_regular_grid(</span>
-<span class="sd">    ...     -112.0, -111.8, 0.05, 40.6, 40.8, 0.05, x_label=&quot;lon&quot;, y_label=&quot;lat&quot;</span>
+<span class="sd">    ...     -112.0, -111.8, 0.05, 40.6, 40.8, 0.05, x_label="lon", y_label="lat"</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; out = regrid(flux, fine, method=&quot;conservative&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; out.sizes[&quot;lat&quot;], out.sizes[&quot;lon&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; out = regrid(flux, fine, method="conservative")</span>
+<span class="sd">    &gt;&gt;&gt; out.sizes["lat"], out.sizes["lon"]</span>
 <span class="sd">    (4, 4)</span>
 <span class="sd">    &gt;&gt;&gt; float(out.min().round(3)), float(out.max().round(3))</span>
 <span class="sd">    (1.0, 1.0)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Optional dependency for advanced regridding</span>
-    <span class="n">xe</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;xesmf&quot;</span><span class="p">)</span>
+    <span class="n">xe</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"xesmf"</span><span class="p">)</span>
 
-    <span class="n">out_crs</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span>
+    <span class="n">out_crs</span> <span class="o">=</span> <span class="s2">"EPSG:4326"</span>
 
     <span class="c1"># Use cf-xarray to calculate the bounds of the grid cells (Dataset only;</span>
     <span class="c1"># a DataArray is turned back into one at the end)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">_as_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">_as_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">"lat"</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">])</span>
 
-    <span class="c1"># Regrid the data using `xesmf`</span>
-    <span class="n">regridder</span> <span class="o">=</span> <span class="n">xe</span><span class="o">.</span><span class="n">Regridder</span><span class="p">(</span><span class="n">ds_in</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span> <span class="n">ds_out</span><span class="o">=</span><span class="n">out_grid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+    <span class="c1"># Regrid the data using `xesmf`. An output cell the source does not reach is</span>
+    <span class="c1"># NaN: xesmf's default leaves it 0, a plausible value for any field.</span>
+    <span class="n">regridder</span> <span class="o">=</span> <span class="n">xe</span><span class="o">.</span><span class="n">Regridder</span><span class="p">(</span>
+        <span class="n">ds_in</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span> <span class="n">ds_out</span><span class="o">=</span><span class="n">out_grid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">unmapped_to_nan</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
     <span class="n">regridded</span> <span class="o">=</span> <span class="n">regridder</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">keep_attrs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">regridded</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -1900,13 +1954,13 @@
         <span class="n">lats</span> <span class="o">=</span> <span class="n">regridded</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="n">regridded</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
         <span class="n">regridded</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">regridded</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span>
-            <span class="o">.</span><span class="n">rename_dims</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;lat&quot;</span><span class="p">})</span>
+            <span class="n">regridded</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">([</span><span class="s2">"lat"</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">rename_dims</span><span class="p">({</span><span class="s2">"x"</span><span class="p">:</span> <span class="s2">"lon"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">:</span> <span class="s2">"lat"</span><span class="p">})</span>
             <span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="n">lats</span><span class="p">,</span> <span class="n">lon</span><span class="o">=</span><span class="n">lons</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="c1"># Regridding drops rioxarray info - reattach</span>
-    <span class="n">regridded</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">set_spatial_dims</span><span class="p">(</span><span class="n">x_dim</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">y_dim</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">regridded</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">set_spatial_dims</span><span class="p">(</span><span class="n">x_dim</span><span class="o">=</span><span class="s2">"lon"</span><span class="p">,</span> <span class="n">y_dim</span><span class="o">=</span><span class="s2">"lat"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">regridded</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">regridded</span><span class="p">,</span> <span class="n">out_crs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_like_input</span><span class="p">(</span><span class="n">regridded</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
@@ -1918,27 +1972,27 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">resample</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">_XarrayT</span><span class="p">,</span>
     <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-    <span class="n">regrid_method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">,</span>
+    <span class="n">regrid_method</span><span class="p">:</span> <span class="n">XESMF_Regrid_Methods</span> <span class="o">=</span> <span class="s2">"bilinear"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_XarrayT</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resample the data to a new resolution.</span>
 
 <span class="sd">    Returns new data; the input is not modified.</span>
 
-<span class="sd">    The new grid starts at the source&#39;s outer edge. When the resolution does not</span>
-<span class="sd">    divide the source&#39;s width (0.3 degrees over 4.0 degrees of longitude), the</span>
+<span class="sd">    The new grid starts at the source's outer edge. When the resolution does not</span>
+<span class="sd">    divide the source's width (0.3 degrees over 4.0 degrees of longitude), the</span>
 <span class="sd">    last cell is partial, and what becomes of it depends on the method:</span>
 
-<span class="sd">    - ``&quot;conservative&quot;`` keeps it whole, so the new grid covers the whole source</span>
-<span class="sd">      and its last cell reaches past the source&#39;s edge. That cell holds the flux of</span>
+<span class="sd">    - ``"conservative"`` keeps it whole, so the new grid covers the whole source</span>
+<span class="sd">      and its last cell reaches past the source's edge. That cell holds the flux of</span>
 <span class="sd">      the part inside the source averaged over the whole cell, the part outside</span>
-<span class="sd">      counting as zero, so flux times area still adds up to the source&#39;s total.</span>
-<span class="sd">    - Every other method (``&quot;bilinear&quot;``, the default, and ``&quot;conservative_normed&quot;``</span>
+<span class="sd">      counting as zero, so flux times area still adds up to the source's total.</span>
+<span class="sd">    - Every other method (``"bilinear"``, the default, and ``"conservative_normed"``</span>
 <span class="sd">      included) keeps it only when its center is inside the source, which takes</span>
 <span class="sd">      more than half of it, and otherwise drops the strip. A cell centered outside</span>
-<span class="sd">      the source&#39;s outermost cell centers gets zero from bilinear interpolation,</span>
-<span class="sd">      not data, and ``&quot;conservative_normed&quot;`` would give it the flux of the part</span>
-<span class="sd">      inside but count its whole area.</span>
+<span class="sd">      the source's outermost cell centers is NaN from bilinear interpolation</span>
+<span class="sd">      (:func:`regrid`), and ``"conservative_normed"`` would give it the flux of the</span>
+<span class="sd">      part inside but count its whole area.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1948,7 +2002,7 @@
 <span class="sd">        The new resolution in degrees. If a single value is provided, the resolution</span>
 <span class="sd">        is assumed to be the same in both dimensions.</span>
 <span class="sd">    regrid_method : str, optional</span>
-<span class="sd">        The regridding method, by default &#39;bilinear&#39;.</span>
+<span class="sd">        The regridding method, by default 'bilinear'.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1963,37 +2017,37 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    A flux of 1 on four cells of 0.1 degree, to cells of 0.05 degree. The</span>
-<span class="sd">    default, bilinear, leaves the outer cells at zero (they are outside the</span>
-<span class="sd">    outermost centers); a flux needs ``&quot;conservative&quot;``:</span>
+<span class="sd">    default, bilinear, leaves the outer cells NaN (they are outside the</span>
+<span class="sd">    outermost centers); a flux needs ``"conservative"``:</span>
 
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; import xarray as xr</span>
 <span class="sd">    &gt;&gt;&gt; from lair.geo import resample, write_rio_crs</span>
 <span class="sd">    &gt;&gt;&gt; flux = xr.DataArray(</span>
 <span class="sd">    ...     np.ones((2, 2)),</span>
-<span class="sd">    ...     coords={&quot;lat&quot;: [40.65, 40.75], &quot;lon&quot;: [-111.95, -111.85]},</span>
-<span class="sd">    ...     dims=(&quot;lat&quot;, &quot;lon&quot;),</span>
+<span class="sd">    ...     coords={"lat": [40.65, 40.75], "lon": [-111.95, -111.85]},</span>
+<span class="sd">    ...     dims=("lat", "lon"),</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; flux = write_rio_crs(flux.rio.set_spatial_dims(x_dim=&quot;lon&quot;, y_dim=&quot;lat&quot;), 4326)</span>
+<span class="sd">    &gt;&gt;&gt; flux = write_rio_crs(flux.rio.set_spatial_dims(x_dim="lon", y_dim="lat"), 4326)</span>
 <span class="sd">    &gt;&gt;&gt; resample(flux, 0.05).values</span>
-<span class="sd">    array([[0., 0., 0., 0.],</span>
-<span class="sd">           [0., 1., 1., 0.],</span>
-<span class="sd">           [0., 1., 1., 0.],</span>
-<span class="sd">           [0., 0., 0., 0.]])</span>
-<span class="sd">    &gt;&gt;&gt; conservative = resample(flux, 0.05, regrid_method=&quot;conservative&quot;)</span>
+<span class="sd">    array([[nan, nan, nan, nan],</span>
+<span class="sd">           [nan,  1.,  1., nan],</span>
+<span class="sd">           [nan,  1.,  1., nan],</span>
+<span class="sd">           [nan, nan, nan, nan]])</span>
+<span class="sd">    &gt;&gt;&gt; conservative = resample(flux, 0.05, regrid_method="conservative")</span>
 <span class="sd">    &gt;&gt;&gt; float(conservative.min().round(3)), float(conservative.max().round(3))</span>
 <span class="sd">    (1.0, 1.0)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Optional dependency for advanced regridding</span>
-    <span class="n">xe</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;xesmf&quot;</span><span class="p">)</span>
+    <span class="n">xe</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"xesmf"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
         <span class="n">resolution</span> <span class="o">=</span> <span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span>
 
     <span class="c1"># Calculate the new grid. A conservative regrid must cover the whole source or</span>
     <span class="c1"># the strip left over by a resolution that does not divide it is lost</span>
-    <span class="n">cover</span> <span class="o">=</span> <span class="n">regrid_method</span> <span class="o">==</span> <span class="s2">&quot;conservative&quot;</span>
-    <span class="n">bounds</span> <span class="o">=</span> <span class="n">_as_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">])</span>
+    <span class="n">cover</span> <span class="o">=</span> <span class="n">regrid_method</span> <span class="o">==</span> <span class="s2">"conservative"</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="n">_as_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">add_bounds</span><span class="p">([</span><span class="s2">"lat"</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">])</span>
     <span class="n">xmin</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">lon_bounds</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
     <span class="n">xmax</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">lon_bounds</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="n">ymin</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">lat_bounds</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
@@ -2010,11 +2064,11 @@
             <span class="n">ymin</span><span class="o">=</span><span class="n">ymin</span><span class="p">,</span>
             <span class="n">ymax</span><span class="o">=</span><span class="n">_end_of_last_cell</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span> <span class="k">if</span> <span class="n">cover</span> <span class="k">else</span> <span class="n">ymax</span><span class="p">,</span>
             <span class="n">dy</span><span class="o">=</span><span class="n">dy</span><span class="p">,</span>
-            <span class="n">x_label</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span>
-            <span class="n">y_label</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span>
+            <span class="n">x_label</span><span class="o">=</span><span class="s2">"lon"</span><span class="p">,</span>
+            <span class="n">y_label</span><span class="o">=</span><span class="s2">"lat"</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">out_grid</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;degrees_north&quot;</span>
-        <span class="n">out_grid</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;degrees_east&quot;</span>
+        <span class="n">out_grid</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"degrees_north"</span>
+        <span class="n">out_grid</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"degrees_east"</span>
 
     <span class="k">return</span> <span class="n">regrid</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">out_grid</span><span class="o">=</span><span class="n">out_grid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">regrid_method</span><span class="p">)</span></div>
 
@@ -2026,10 +2080,10 @@
     <span class="n">data</span><span class="p">:</span> <span class="n">_XarrayT</span><span class="p">,</span>
     <span class="n">lat_deci</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">lon_deci</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">lat_dim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lat&quot;</span><span class="p">,</span>
-    <span class="n">lon_dim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span>
+    <span class="n">lat_dim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"lat"</span><span class="p">,</span>
+    <span class="n">lon_dim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"lon"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_XarrayT</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Round latitude and longitude values to a specified number of decimal places.</span>
 
 <span class="sd">    Parameters</span>
@@ -2041,9 +2095,9 @@
 <span class="sd">    lon_deci : int</span>
 <span class="sd">        Number of decimal places to round longitude values to.</span>
 <span class="sd">    lat_dim : str, optional</span>
-<span class="sd">        Name of the latitude dimension, by default &#39;lat&#39;.</span>
+<span class="sd">        Name of the latitude dimension, by default 'lat'.</span>
 <span class="sd">    lon_dim : str, optional</span>
-<span class="sd">        Name of the longitude dimension, by default &#39;lon&#39;.</span>
+<span class="sd">        Name of the longitude dimension, by default 'lon'.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -2056,19 +2110,19 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    Float noise in a file&#39;s coordinates, rounded away so two grids align:</span>
+<span class="sd">    Float noise in a file's coordinates, rounded away so two grids align:</span>
 
 <span class="sd">    &gt;&gt;&gt; import xarray as xr</span>
 <span class="sd">    &gt;&gt;&gt; from lair.geo import round_latlon</span>
 <span class="sd">    &gt;&gt;&gt; data = xr.DataArray(</span>
 <span class="sd">    ...     [[1.0]],</span>
-<span class="sd">    ...     coords={&quot;lat&quot;: [40.749999999], &quot;lon&quot;: [-111.850000001]},</span>
-<span class="sd">    ...     dims=(&quot;lat&quot;, &quot;lon&quot;),</span>
+<span class="sd">    ...     coords={"lat": [40.749999999], "lon": [-111.850000001]},</span>
+<span class="sd">    ...     dims=("lat", "lon"),</span>
 <span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; rounded = round_latlon(data, 2, 2)</span>
 <span class="sd">    &gt;&gt;&gt; float(rounded.lat[0]), float(rounded.lon[0])</span>
 <span class="sd">    (40.75, -111.85)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">(</span>
         <span class="p">{</span>
             <span class="n">lat_dim</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">lat_dim</span><span class="p">],</span> <span class="n">lat_deci</span><span class="p">),</span>
@@ -2081,7 +2135,7 @@
 <div class="viewcode-block" id="write_rio_crs">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.write_rio_crs.html#lair.geo.write_rio_crs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_rio_crs</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">_XarrayT</span><span class="p">,</span> <span class="n">crs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_XarrayT</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Write the CRS and coordinate system to the rioxarray accessor.</span>
 
 <span class="sd">    Parameters</span>
@@ -2108,12 +2162,12 @@
 <span class="sd">    &gt;&gt;&gt; from lair.geo import write_rio_crs</span>
 <span class="sd">    &gt;&gt;&gt; data = xr.DataArray(</span>
 <span class="sd">    ...     np.zeros((2, 2)),</span>
-<span class="sd">    ...     coords={&quot;lat&quot;: [40.65, 40.75], &quot;lon&quot;: [-111.95, -111.85]},</span>
-<span class="sd">    ...     dims=(&quot;lat&quot;, &quot;lon&quot;),</span>
-<span class="sd">    ... ).rio.set_spatial_dims(x_dim=&quot;lon&quot;, y_dim=&quot;lat&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; write_rio_crs(data, &quot;EPSG:4326&quot;).rio.crs.to_epsg()</span>
+<span class="sd">    ...     coords={"lat": [40.65, 40.75], "lon": [-111.95, -111.85]},</span>
+<span class="sd">    ...     dims=("lat", "lon"),</span>
+<span class="sd">    ... ).rio.set_spatial_dims(x_dim="lon", y_dim="lat")</span>
+<span class="sd">    &gt;&gt;&gt; write_rio_crs(data, "EPSG:4326").rio.crs.to_epsg()</span>
 <span class="sd">    4326</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">CRS</span><span class="p">):</span>
         <span class="n">crs</span> <span class="o">=</span> <span class="n">crs</span><span class="o">.</span><span class="n">to_rasterio</span><span class="p">()</span>
 
@@ -2129,7 +2183,7 @@
 <div class="viewcode-block" id="bearing">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.bearing.html#lair.geo.bearing">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">bearing</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Great-circle bearing from point 1 to point 2 on a sphere.</span>
 
 <span class="sd">    Formulas from https://www.movable-type.co.uk/scripts/latlong.html.</span>
@@ -2169,7 +2223,7 @@
 <span class="sd">    60.16</span>
 <span class="sd">    &gt;&gt;&gt; round(float(bearing(35, 45, 35, 135, final=True)), 2)</span>
 <span class="sd">    119.84</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">final</span><span class="p">:</span>
         <span class="c1"># Final bearing = reverse of the initial bearing from point 2 back to 1.</span>
         <span class="c1"># (Not initial + 180: that is just the reverse course at point 1.)</span>
@@ -2190,7 +2244,7 @@
 <div class="viewcode-block" id="cosine_weights">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.cosine_weights.html#lair.geo.cosine_weights">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">cosine_weights</span><span class="p">(</span><span class="n">lats</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate cosine weights from latitude.</span>
 
 <span class="sd">    Parameters</span>
@@ -2213,13 +2267,13 @@
 
 <span class="sd">    &gt;&gt;&gt; import xarray as xr</span>
 <span class="sd">    &gt;&gt;&gt; from lair.geo import cosine_weights</span>
-<span class="sd">    &gt;&gt;&gt; field = xr.DataArray([1.0, 3.0], coords={&quot;lat&quot;: [0.0, 60.0]}, dims=&quot;lat&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; field = xr.DataArray([1.0, 3.0], coords={"lat": [0.0, 60.0]}, dims="lat")</span>
 <span class="sd">    &gt;&gt;&gt; weights = cosine_weights(field.lat)</span>
 <span class="sd">    &gt;&gt;&gt; weights.values.round(3)</span>
 <span class="sd">    array([1. , 0.5])</span>
 <span class="sd">    &gt;&gt;&gt; round(float(field.weighted(weights).mean()), 3)</span>
 <span class="sd">    1.667</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lats</span><span class="p">))</span></div>
 
 
@@ -2227,11 +2281,11 @@
 <div class="viewcode-block" id="earth_radius">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.earth_radius.html#lair.geo.earth_radius">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">earth_radius</span><span class="p">(</span><span class="n">lat</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate radius of Earth assuming oblate spheroid defined by WGS84</span>
 
-<span class="sd">    The radius is the distance from the Earth&#39;s center to the ellipsoid at each</span>
-<span class="sd">    latitude. It is not the radius of a sphere with the ellipsoid&#39;s areas:</span>
+<span class="sd">    The radius is the distance from the Earth's center to the ellipsoid at each</span>
+<span class="sd">    latitude. It is not the radius of a sphere with the ellipsoid's areas:</span>
 <span class="sd">    :func:`gridcell_area` computes those on the ellipsoid itself.</span>
 
 <span class="sd">    Parameters</span>
@@ -2244,7 +2298,7 @@
 <span class="sd">    array-like</span>
 <span class="sd">        vector of radius in kilometers. For a ``DataArray`` it is named</span>
 <span class="sd">        ``earth_radius`` and its only attributes are its own, ``long_name``</span>
-<span class="sd">        and ``units`` (``km``), not the latitude&#39;s.</span>
+<span class="sd">        and ``units`` (``km``), not the latitude's.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -2259,13 +2313,13 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import xarray as xr</span>
 <span class="sd">    &gt;&gt;&gt; from lair import geo</span>
-<span class="sd">    &gt;&gt;&gt; lat = xr.DataArray([0.0, 90.0], dims=&quot;lat&quot;, attrs={&quot;units&quot;: &quot;degrees_north&quot;})</span>
+<span class="sd">    &gt;&gt;&gt; lat = xr.DataArray([0.0, 90.0], dims="lat", attrs={"units": "degrees_north"})</span>
 <span class="sd">    &gt;&gt;&gt; radius = geo.earth_radius(lat)</span>
 <span class="sd">    &gt;&gt;&gt; radius.values.round(3)</span>
 <span class="sd">    array([6378.137, 6356.752])</span>
 <span class="sd">    &gt;&gt;&gt; radius.attrs</span>
-<span class="sd">    {&#39;long_name&#39;: &#39;Earth radius&#39;, &#39;units&#39;: &#39;km&#39;}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    {'long_name': 'Earth radius', 'units': 'km'}</span>
+<span class="sd">    """</span>
     <span class="c1"># define oblate spheroid from WGS84</span>
     <span class="n">a</span> <span class="o">=</span> <span class="mi">6378137</span>
     <span class="n">b</span> <span class="o">=</span> <span class="mf">6356752.3142</span>
@@ -2282,10 +2336,10 @@
 
     <span class="n">r</span> <span class="o">/=</span> <span class="mi">1000</span>  <span class="c1"># convert to km</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">DataArray</span><span class="p">):</span>
-        <span class="c1"># The ufuncs above kept the latitude&#39;s attributes (units: degrees_north,</span>
-        <span class="c1"># axis: &#39;Y&#39;, ...) and name: label the radius as what it is (issue #139).</span>
-        <span class="n">r</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;long_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Earth radius&quot;</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;km&quot;</span><span class="p">}</span>
-        <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;earth_radius&quot;</span>
+        <span class="c1"># The ufuncs above kept the latitude's attributes (units: degrees_north,</span>
+        <span class="c1"># axis: 'Y', ...) and name: label the radius as what it is (issue #139).</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"long_name"</span><span class="p">:</span> <span class="s2">"Earth radius"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"km"</span><span class="p">}</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"earth_radius"</span>
     <span class="k">return</span> <span class="n">r</span></div>
 
 
@@ -2295,7 +2349,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">gridcell_area_from_latlon</span><span class="p">(</span>
     <span class="n">lat</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the area of each grid cell in a lat-lon grid.</span>
 
 <span class="sd">    Parameters</span>
@@ -2324,14 +2378,14 @@
 <span class="sd">    array([[93.922, 93.922],</span>
 <span class="sd">           [93.783, 93.783],</span>
 <span class="sd">           [93.644, 93.644]])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
     <span class="c1"># A coordinate-only grid with cf-recognizable lat/lon</span>
-    <span class="n">grid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="n">lat</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="n">lon</span><span class="p">})</span>
-    <span class="n">grid</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;degrees_north&quot;</span>
-    <span class="n">grid</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;degrees_east&quot;</span>
-    <span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">set_spatial_dims</span><span class="p">(</span><span class="n">x_dim</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">y_dim</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">)</span>
-    <span class="n">grid</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"lat"</span><span class="p">:</span> <span class="n">lat</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">:</span> <span class="n">lon</span><span class="p">})</span>
+    <span class="n">grid</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"degrees_north"</span>
+    <span class="n">grid</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"degrees_east"</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">set_spatial_dims</span><span class="p">(</span><span class="n">x_dim</span><span class="o">=</span><span class="s2">"lon"</span><span class="p">,</span> <span class="n">y_dim</span><span class="o">=</span><span class="s2">"lat"</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="s2">"EPSG:4326"</span><span class="p">)</span>
 
     <span class="n">area</span> <span class="o">=</span> <span class="n">gridcell_area</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">area</span><span class="o">.</span><span class="n">values</span></div>
@@ -2341,7 +2395,7 @@
 <div class="viewcode-block" id="haversine">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.haversine.html#lair.geo.haversine">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">haversine</span><span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="mi">6371</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Great-circle distance between two points on a sphere (haversine formula).</span>
 
 <span class="sd">    Formula from https://www.movable-type.co.uk/scripts/latlong.html.</span>
@@ -2384,7 +2438,7 @@
 <span class="sd">    ...     np.array([-111.6585, -111.9738]),</span>
 <span class="sd">    ... ).round(1)</span>
 <span class="sd">    array([61.8, 51.9])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">deg</span><span class="p">:</span>
         <span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">lat1</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">lon2</span><span class="p">))</span>
 
@@ -2408,7 +2462,7 @@
     <span class="n">resolution_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">decimals</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Point</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate points spaced along a line or a network of lines.</span>
 
 <span class="sd">    Every pair of points is at least ``spacing`` apart (Euclidean distance, in</span>
@@ -2427,7 +2481,7 @@
 <span class="sd">       ``decimals`` places, which snaps microscopic gaps between lines together.</span>
 <span class="sd">    3. **Point placement**: each connected component is walked breadth-first</span>
 <span class="sd">       from an endpoint (any node for a closed loop), visiting each node once.</span>
-<span class="sd">       The walk carries the last point placed behind it as its &quot;origin&quot;. A node</span>
+<span class="sd">       The walk carries the last point placed behind it as its "origin". A node</span>
 <span class="sd">       at least ``spacing`` from its origin gets a point, which becomes the new</span>
 <span class="sd">       origin. A node closer than ``spacing`` to any other placed point is</span>
 <span class="sd">       skipped, and the walk keeps going, still measuring from the old origin.</span>
@@ -2463,7 +2517,7 @@
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    haversine : A distance in km, where this one is in the coordinates&#39; units.</span>
+<span class="sd">    haversine : A distance in km, where this one is in the coordinates' units.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -2472,13 +2526,13 @@
 <span class="sd">    &gt;&gt;&gt; points = points_along_line(LineString([(0, 0), (10, 0)]), 2.5)</span>
 <span class="sd">    &gt;&gt;&gt; [(p.x, p.y) for p in points]</span>
 <span class="sd">    [(0.0, 0.0), (2.5, 0.0), (5.0, 0.0), (7.5, 0.0), (10.0, 0.0)]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;networkx&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"networkx"</span><span class="p">)</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">shapely</span><span class="w"> </span><span class="kn">import</span> <span class="n">line_merge</span><span class="p">,</span> <span class="n">segmentize</span><span class="p">,</span> <span class="n">union_all</span>
 
     <span class="k">if</span> <span class="n">spacing</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;spacing must be positive, got </span><span class="si">{</span><span class="n">spacing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"spacing must be positive, got </span><span class="si">{</span><span class="n">spacing</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">resolution_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">resolution_factor</span> <span class="o">=</span> <span class="mf">0.1</span>
     <span class="n">step_size</span> <span class="o">=</span> <span class="n">spacing</span> <span class="o">*</span> <span class="n">resolution_factor</span>
@@ -2498,7 +2552,7 @@
     <span class="c1"># linemerge then stitches simple paths back together where possible.</span>
     <span class="n">cleaned_geom</span> <span class="o">=</span> <span class="n">line_merge</span><span class="p">(</span><span class="n">union_all</span><span class="p">(</span><span class="n">multiline</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cleaned_geom</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cleaned_geom</span><span class="p">,</span> <span class="s2">"geoms"</span><span class="p">):</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cleaned_geom</span><span class="o">.</span><span class="n">geoms</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">cleaned_geom</span><span class="p">]</span>
@@ -2506,7 +2560,7 @@
     <span class="c1"># --- Build High-Res Graph ---</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
 
-    <span class="c1"># Round coordinates to &quot;snap&quot; microscopic gaps</span>
+    <span class="c1"># Round coordinates to "snap" microscopic gaps</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">round_coord</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">decimals</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">decimals</span><span class="p">))</span>
 
@@ -2538,13 +2592,13 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">cell_size</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">cell_size</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">place</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Place a point at c; returns its index in `placed`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Place a point at c; returns its index in `placed`."""</span>
         <span class="n">placed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="n">cells</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">cell_of</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">placed</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">placed</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">too_close</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">skip</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether c is closer than `spacing` to a placed point (other than `skip`).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Whether c is closer than `spacing` to a placed point (other than `skip`)."""</span>
         <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">cell_of</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="n">cx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">cy</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">cy</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
@@ -2554,7 +2608,7 @@
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="c1"># --- Process Every Component ---</span>
-    <span class="c1"># This loop ensures we jump to the top line even if it&#39;s disconnected</span>
+    <span class="c1"># This loop ensures we jump to the top line even if it's disconnected</span>
     <span class="k">for</span> <span class="n">component_nodes</span> <span class="ow">in</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
         <span class="n">subgraph</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">component_nodes</span><span class="p">)</span>
 
@@ -2622,8 +2676,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -2643,7 +2697,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -2656,7 +2710,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

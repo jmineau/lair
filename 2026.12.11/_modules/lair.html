@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lair &#8212; lair 2026.12.11</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=b4abf889"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            true;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.12.11" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/lair_forlight_r.png" class="logo__image only-light" alt="LAIR - Home"/>
+    <img src="../_static/lair_fordark_r.png" class="logo__image only-dark pst-js-only" alt="LAIR - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data.html">
+    Data locations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmineau/lair" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">lair</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for lair</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">lair: tools for land-air interactions research.</span>
+
+<span class="sd">lair is a toolkit, one module per topic: import the module you need, as in</span>
+<span class="sd">``from lair.meteorology import poisson`` (the API reference lists them). The</span>
+<span class="sd">package itself holds what the modules share: the unit registry</span>
+<span class="sd">:data:`units` with its :data:`mass_flux` context, and</span>
+<span class="sd">:func:`setup_ccg_filter`, which ``import lair`` calls. It also re-exports</span>
+<span class="sd">:mod:`lair.config`, :func:`~lair.records.ftp_download` and</span>
+<span class="sd">:func:`~lair.records.unzip`, and ``__version__``.</span>
+
+<span class="sd">Importing lair changes pint for the whole process: it adds the</span>
+<span class="sd">:data:`mass_flux` context to the registry and makes pint write a unit's parts</span>
+<span class="sd">in the order of their dimensions (``kg/km**2/d``).</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">PackageNotFoundError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span> <span class="k">as</span> <span class="n">_version</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cf_xarray.units</span>  <span class="c1"># must be imported before pint_xarray</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pint_xarray</span>
+
+<span class="c1"># sort_by_dimensionality prints a unit's parts in dimension order (kg/km**2/d,</span>
+<span class="c1"># where pint's default gives kg/d/km**2). pint &gt;= 0.26 exports it; pint 0.24 and</span>
+<span class="c1"># 0.25, the newest pint on Python 3.11, have it only in a private module. When</span>
+<span class="c1"># neither has it (pint older than 0.24, or a pint that moves it again) the import</span>
+<span class="c1"># fails here, on purpose: without it Inventory.get_units mislabels a flux unit.</span>
+<span class="c1"># pyrefly checks against the installed pint, so it reports whichever import that</span>
+<span class="c1"># pint lacks: each suppression below is for one pint version.</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># pyrefly: ignore[missing-module-attribute]</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pint.delegates.formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">sort_by_dimensionality</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pint.delegates.formatter._compound_unit_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="c1"># pyrefly: ignore[missing-module-attribute]</span>
+        <span class="n">sort_by_dimensionality</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.records</span><span class="w"> </span><span class="kn">import</span> <span class="n">ftp_download</span><span class="p">,</span> <span class="n">unzip</span>
+
+<span class="c1">#: The pint unit registry lair uses, which is pint-xarray's, so a quantified</span>
+<span class="c1">#: xarray object and a plain quantity share it. It has the :data:`mass_flux`</span>
+<span class="c1">#: context.</span>
+<span class="c1">#: :doc:`/examples/units` converts a methane flux with it.</span>
+<span class="c1">#:</span>
+<span class="c1">#: :meta hide-value:</span>
+<span class="n">units</span> <span class="o">=</span> <span class="n">pint_xarray</span><span class="o">.</span><span class="n">unit_registry</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="n">_version</span><span class="p">(</span><span class="s2">"lair"</span><span class="p">)</span>  <span class="c1"># set by setuptools-scm from git tags</span>
+<span class="k">except</span> <span class="n">PackageNotFoundError</span><span class="p">:</span>  <span class="c1"># running from a source tree that isn't installed</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">"0+unknown"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_molar_mass</span><span class="p">(</span><span class="n">mw</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return ``mw`` if it is a molar mass, else raise a TypeError that names it."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mw</span><span class="p">,</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">mw</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="s2">"[mass] / [substance]"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">"The mass_flux context needs mw, the molar mass as a quantity, "</span>
+            <span class="s2">"e.g. units.context('mass_flux', mw=16.04 * units('g/mol')); "</span>
+            <span class="sa">f</span><span class="s2">"got mw=</span><span class="si">{</span><span class="n">mw</span><span class="si">!r}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">mw</span>
+
+
+<span class="c1">#: The pint context that converts a flux between moles and mass, given ``mw``.</span>
+<span class="c1">#:</span>
+<span class="c1">#: It converts ``[substance]/[area]/[time]`` to ``[mass]/[area]/[time]`` and</span>
+<span class="c1">#: back, multiplying or dividing by ``mw``, the molar mass as a quantity in</span>
+<span class="c1">#: g/mol: ``units.context("mass_flux", mw=16.04 * units("g/mol"))``. Without</span>
+<span class="c1">#: ``mw``, or with a plain number, the conversion raises a ``TypeError`` that</span>
+<span class="c1">#: names ``mw``. Importing lair adds it to :data:`units`; :doc:`/examples/units`</span>
+<span class="c1">#: shows it on a methane flux.</span>
+<span class="c1">#:</span>
+<span class="c1">#: :meta hide-value:</span>
+<span class="n">mass_flux</span> <span class="o">=</span> <span class="n">pint</span><span class="o">.</span><span class="n">Context</span><span class="p">(</span><span class="s2">"mass_flux"</span><span class="p">)</span>
+<span class="n">mass_flux</span><span class="o">.</span><span class="n">add_transformation</span><span class="p">(</span>
+    <span class="s2">"[substance] / [area] / [time]"</span><span class="p">,</span>
+    <span class="s2">"[mass] / [area] / [time]"</span><span class="p">,</span>
+    <span class="c1"># pint types the callback narrowly; (units, value, mw) is what it calls</span>
+    <span class="c1"># pyrefly: ignore[bad-argument-type]</span>
+    <span class="k">lambda</span> <span class="n">units</span><span class="p">,</span> <span class="n">substance</span><span class="p">,</span> <span class="n">mw</span><span class="o">=</span><span class="kc">None</span><span class="p">:</span> <span class="n">substance</span> <span class="o">*</span> <span class="n">_molar_mass</span><span class="p">(</span><span class="n">mw</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">mass_flux</span><span class="o">.</span><span class="n">add_transformation</span><span class="p">(</span>
+    <span class="s2">"[mass] / [area] / [time]"</span><span class="p">,</span>
+    <span class="s2">"[substance] / [area] / [time]"</span><span class="p">,</span>
+    <span class="c1"># pyrefly: ignore[bad-argument-type]</span>
+    <span class="k">lambda</span> <span class="n">units</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">mw</span><span class="o">=</span><span class="kc">None</span><span class="p">:</span> <span class="n">mass</span> <span class="o">/</span> <span class="n">_molar_mass</span><span class="p">(</span><span class="n">mw</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">units</span><span class="o">.</span><span class="n">add_context</span><span class="p">(</span><span class="n">mass_flux</span><span class="p">)</span>
+
+<span class="c1"># Set default pint sorting function to sort by dimensionality.</span>
+<span class="c1"># Not cosmetic: inventories.Inventory.get_units splits a flux unit on "/"</span>
+<span class="c1"># and reads its parts in this order.</span>
+<span class="n">units</span><span class="o">.</span><span class="n">formatter</span><span class="o">.</span><span class="n">default_sort_func</span> <span class="o">=</span> <span class="n">sort_by_dimensionality</span>
+
+
+<div class="viewcode-block" id="setup_ccg_filter">
+<a class="viewcode-back" href="../_autosummary/lair.setup_ccg_filter.html#lair.setup_ccg_filter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup_ccg_filter</span><span class="p">(</span><span class="n">lair_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Set up the CCG filter module from NOAA GML.</span>
+
+<span class="sd">    Installs ``_ccg_filter.py`` into ``lair_dir``, from NOAA's ``ccg_filter.zip``,</span>
+<span class="sd">    unless the file is already there. ``import lair`` calls this function:</span>
+<span class="sd">    :ref:`first-import-download` says what is downloaded and why, what happens</span>
+<span class="sd">    without a network, and how to skip the download or place the file yourself.</span>
+
+<span class="sd">    Called on its own, it raises when the download fails or the zip holds no</span>
+<span class="sd">    ``ccg_filter.py``, and leaves no partial file behind. The file is moved into</span>
+<span class="sd">    place atomically, so concurrent first imports (a Slurm array, for example) are</span>
+<span class="sd">    safe: one that finds the file already installed uses it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lair_dir : str, optional</span>
+<span class="sd">        Directory to install ``_ccg_filter.py`` into. Defaults to the lair</span>
+<span class="sd">        package directory.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    lair.background.thoning : Fits NOAA's curve, which needs the filter.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import lair</span>
+<span class="sd">    &gt;&gt;&gt; lair.setup_ccg_filter()  # doctest: +SKIP</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+
+    <span class="k">if</span> <span class="n">lair_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lair_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+    <span class="n">ccg_filter_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lair_dir</span><span class="p">,</span> <span class="s2">"_ccg_filter.py"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ccg_filter_file</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"LAIR_SKIP_CCG_DOWNLOAD"</span><span class="p">):</span>
+        <span class="c1"># Offline/CI/read-only: skip the FTP download (see docstring)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># The temporary directory sits next to the target so os.replace stays on one</span>
+    <span class="c1"># filesystem (atomic); it is removed on exit, whether or not we succeed.</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">".ccg_filter-"</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">lair_dir</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+        <span class="n">ftp_download</span><span class="p">(</span><span class="s2">"ftp.gml.noaa.gov"</span><span class="p">,</span> <span class="s2">"user/thoning/ccgcrv/ccg_filter.zip"</span><span class="p">,</span> <span class="n">tmp</span><span class="p">)</span>
+        <span class="n">zf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">"ccg_filter.zip"</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">zf</span><span class="p">)</span> <span class="k">as</span> <span class="n">z</span><span class="p">:</span>
+            <span class="n">members</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"ccg_filter.py"</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">members</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"No ccg_filter.py in NOAA's </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">zf</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">members</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">staged</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">"_ccg_filter.py"</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">staged</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ccg_filter_file</span><span class="p">):</span>
+            <span class="c1"># Another process installed it while we were downloading</span>
+            <span class="k">return</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">staged</span><span class="p">,</span> <span class="n">ccg_filter_file</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_setup_ccg_filter_or_warn</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Install the CCG filter at import; a failure warns instead of raising.</span>
+
+<span class="sd">    Only ``lair.background`` needs the filter, so a NOAA outage or a node</span>
+<span class="sd">    without outbound FTP shouldn't break ``import lair``.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">setup_ccg_filter</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"Could not install NOAA's CCG filter (</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">). lair.background is "</span>
+            <span class="s2">"unavailable until lair.setup_ccg_filter() succeeds."</span><span class="p">,</span>
+            <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="n">e</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="n">_setup_ccg_filter_or_warn</span><span class="p">()</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, James Mineau.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

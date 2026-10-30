@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.soundings &#8212; lair 2026.12.10</title>
+    <title>lair.soundings &#8212; lair 2026.12.11</title>
   
   
   
@@ -25,29 +25,29 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=10d37c90"></script>
+    <script src="../../_static/documentation_options.js?v=b4abf889"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/lair/soundings';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.10';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -55,8 +55,9 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.10" />
+  <meta name="docsearch:version" content="2026.12.11" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -434,16 +435,16 @@
                 <article class="bd-article">
                   
   <h1>Source code for lair.soundings</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Upper-air soundings from the University of Wyoming&#39;s archive.</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Upper-air soundings from the University of Wyoming's archive.</span>
 
 <span class="sd">:class:`Sounding` reads one sounding file and interpolates it to regular</span>
-<span class="sd">heights; :func:`get_soundings` reads a station&#39;s soundings for a period, all</span>
+<span class="sd">heights; :func:`get_soundings` reads a station's soundings for a period, all</span>
 <span class="sd">on the same heights, and :func:`download_soundings` fetches them from Wyoming.</span>
 <span class="sd">The folder is an argument or ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
 <span class="sd">:doc:`/examples/soundings` reads two soundings and computes their potential</span>
 <span class="sd">temperature. The module needs the ``requests`` extra.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -461,8 +462,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_data_dir</span>
 
 <span class="c1"># Optional dependencies</span>
-<span class="n">requests</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;requests&quot;</span><span class="p">)</span>
-<span class="n">siphon</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">&quot;siphon&quot;</span><span class="p">)</span>
+<span class="n">requests</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"requests"</span><span class="p">)</span>
+<span class="n">siphon</span> <span class="o">=</span> <span class="n">import_optional_dependency</span><span class="p">(</span><span class="s2">"siphon"</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">siphon.simplewebservice.wyoming</span><span class="w"> </span><span class="kn">import</span> <span class="n">WyomingUpperAir</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -472,18 +473,18 @@
 <span class="c1">#:</span>
 <span class="c1">#: .. seealso:: :ref:`data-locations`, which lists every variable;</span>
 <span class="c1">#:    :doc:`/examples/soundings` shows the folder.</span>
-<span class="n">SOUNDING_DIR_ENV</span> <span class="o">=</span> <span class="s2">&quot;LAIR_SOUNDING_DIR&quot;</span>
+<span class="n">SOUNDING_DIR_ENV</span> <span class="o">=</span> <span class="s2">"LAIR_SOUNDING_DIR"</span>
 
 
 <div class="viewcode-block" id="Sounding">
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.Sounding.html#lair.soundings.Sounding">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Sounding</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Upper air sounding data.</span>
 
 <span class="sd">    One sounding file, as :func:`download_sounding` saves it: a CSV named</span>
 <span class="sd">    ``&lt;station&gt;_&lt;YYYYmmddHH&gt;.csv`` for the UTC hour of the sounding, one row per</span>
-<span class="sd">    level, with the station&#39;s attributes repeated in columns of their own.</span>
+<span class="sd">    level, with the station's attributes repeated in columns of their own.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -518,11 +519,11 @@
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    get_soundings : A station&#39;s soundings for a period, on the same heights.</span>
+<span class="sd">    get_soundings : A station's soundings for a period, on the same heights.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    A made-up sounding with two levels, saved as Wyoming&#39;s are:</span>
+<span class="sd">    A made-up sounding with two levels, saved as Wyoming's are:</span>
 
 <span class="sd">    &gt;&gt;&gt; import pathlib</span>
 <span class="sd">    &gt;&gt;&gt; import tempfile</span>
@@ -531,68 +532,68 @@
 <span class="sd">    &gt;&gt;&gt; folder = pathlib.Path(tempfile.mkdtemp())</span>
 <span class="sd">    &gt;&gt;&gt; levels = pd.DataFrame(</span>
 <span class="sd">    ...     {</span>
-<span class="sd">    ...         &quot;pressure&quot;: [870.0, 700.0],</span>
-<span class="sd">    ...         &quot;height&quot;: [1289.0, 3000.0],</span>
-<span class="sd">    ...         &quot;temperature&quot;: [-5.0, -12.0],</span>
-<span class="sd">    ...         &quot;dewpoint&quot;: [-8.0, -20.0],</span>
-<span class="sd">    ...         &quot;direction&quot;: [180.0, 270.0],</span>
-<span class="sd">    ...         &quot;speed&quot;: [5.0, 10.0],</span>
-<span class="sd">    ...         &quot;u_wind&quot;: [0.0, 10.0],</span>
-<span class="sd">    ...         &quot;v_wind&quot;: [5.0, 0.0],</span>
-<span class="sd">    ...         &quot;station&quot;: &quot;SLC&quot;,</span>
-<span class="sd">    ...         &quot;time&quot;: &quot;2024-01-15 12:00&quot;,</span>
-<span class="sd">    ...         &quot;elevation&quot;: 1289.0,</span>
+<span class="sd">    ...         "pressure": [870.0, 700.0],</span>
+<span class="sd">    ...         "height": [1289.0, 3000.0],</span>
+<span class="sd">    ...         "temperature": [-5.0, -12.0],</span>
+<span class="sd">    ...         "dewpoint": [-8.0, -20.0],</span>
+<span class="sd">    ...         "direction": [180.0, 270.0],</span>
+<span class="sd">    ...         "speed": [5.0, 10.0],</span>
+<span class="sd">    ...         "u_wind": [0.0, 10.0],</span>
+<span class="sd">    ...         "v_wind": [5.0, 0.0],</span>
+<span class="sd">    ...         "station": "SLC",</span>
+<span class="sd">    ...         "time": "2024-01-15 12:00",</span>
+<span class="sd">    ...         "elevation": 1289.0,</span>
 <span class="sd">    ...     }</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; levels.to_csv(folder / &quot;SLC_2024011512.csv&quot;, index=False)</span>
-<span class="sd">    &gt;&gt;&gt; sounding = Sounding(str(folder / &quot;SLC_2024011512.csv&quot;))</span>
+<span class="sd">    &gt;&gt;&gt; levels.to_csv(folder / "SLC_2024011512.csv", index=False)</span>
+<span class="sd">    &gt;&gt;&gt; sounding = Sounding(str(folder / "SLC_2024011512.csv"))</span>
 <span class="sd">    &gt;&gt;&gt; sounding.station, sounding.time, float(sounding.elevation)</span>
-<span class="sd">    (&#39;SLC&#39;, datetime.datetime(2024, 1, 15, 12, 0), 1289.0)</span>
+<span class="sd">    ('SLC', datetime.datetime(2024, 1, 15, 12, 0), 1289.0)</span>
 <span class="sd">    &gt;&gt;&gt; list(sounding.data.columns)</span>
-<span class="sd">    [&#39;pressure&#39;, &#39;height&#39;, &#39;temperature&#39;, &#39;dewpoint&#39;, &#39;direction&#39;, &#39;speed&#39;, &#39;u_wind&#39;, &#39;v_wind&#39;]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    ['pressure', 'height', 'temperature', 'dewpoint', 'direction', 'speed', 'u_wind', 'v_wind']</span>
+<span class="sd">    """</span>
 
     <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">&quot;station&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;station_number&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;latitude&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;longitude&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;elevation&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pw&quot;</span><span class="p">,</span>
+        <span class="s2">"station"</span><span class="p">,</span>
+        <span class="s2">"time"</span><span class="p">,</span>
+        <span class="s2">"station_number"</span><span class="p">,</span>
+        <span class="s2">"latitude"</span><span class="p">,</span>
+        <span class="s2">"longitude"</span><span class="p">,</span>
+        <span class="s2">"elevation"</span><span class="p">,</span>
+        <span class="s2">"pw"</span><span class="p">,</span>
     <span class="p">]</span>
 
     <span class="n">units</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;pressure&quot;</span><span class="p">:</span> <span class="s2">&quot;hPa&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="s2">&quot;degC&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dewpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;degC&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;degrees&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="s2">&quot;knot&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;u_wind&quot;</span><span class="p">:</span> <span class="s2">&quot;knot&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;v_wind&quot;</span><span class="p">:</span> <span class="s2">&quot;knot&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="s2">&quot;degrees&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="s2">&quot;degrees&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;elevation&quot;</span><span class="p">:</span> <span class="s2">&quot;meter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pw&quot;</span><span class="p">:</span> <span class="s2">&quot;millimeter&quot;</span><span class="p">,</span>
+        <span class="s2">"pressure"</span><span class="p">:</span> <span class="s2">"hPa"</span><span class="p">,</span>
+        <span class="s2">"height"</span><span class="p">:</span> <span class="s2">"meter"</span><span class="p">,</span>
+        <span class="s2">"temperature"</span><span class="p">:</span> <span class="s2">"degC"</span><span class="p">,</span>
+        <span class="s2">"dewpoint"</span><span class="p">:</span> <span class="s2">"degC"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"degrees"</span><span class="p">,</span>
+        <span class="s2">"speed"</span><span class="p">:</span> <span class="s2">"knot"</span><span class="p">,</span>
+        <span class="s2">"u_wind"</span><span class="p">:</span> <span class="s2">"knot"</span><span class="p">,</span>
+        <span class="s2">"v_wind"</span><span class="p">:</span> <span class="s2">"knot"</span><span class="p">,</span>
+        <span class="s2">"latitude"</span><span class="p">:</span> <span class="s2">"degrees"</span><span class="p">,</span>
+        <span class="s2">"longitude"</span><span class="p">:</span> <span class="s2">"degrees"</span><span class="p">,</span>
+        <span class="s2">"elevation"</span><span class="p">:</span> <span class="s2">"meter"</span><span class="p">,</span>
+        <span class="s2">"pw"</span><span class="p">:</span> <span class="s2">"millimeter"</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize a Sounding object; the class docstring describes the parameters.</span>
 
 <span class="sd">        Strips the station identifier and time from the filename and reads the data.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">station</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">station</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"%Y%m</span><span class="si">%d</span><span class="s2">%H"</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;station&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"station"</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
@@ -600,8 +601,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">attr</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_surface_height</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Station elevation [m], or the first level&#39;s height when the file has none.&quot;&quot;&quot;</span>
-        <span class="n">elevation</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;elevation&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Station elevation [m], or the first level's height when the file has none."""</span>
+        <span class="n">elevation</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"elevation"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">elevation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">elevation</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_first_level_height</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
@@ -609,7 +610,7 @@
 <div class="viewcode-block" id="Sounding.interpolate">
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.Sounding.interpolate.html#lair.soundings.Sounding.interpolate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Interpolate sounding data to regular height levels.</span>
 
 <span class="sd">        Parameters</span>
@@ -637,55 +638,55 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        Levels every 10 m from the station&#39;s ground up to 4999 m above sea</span>
-<span class="sd">        level (Salt Lake City&#39;s ground is 1289 m)::</span>
+<span class="sd">        Levels every 10 m from the station's ground up to 4999 m above sea</span>
+<span class="sd">        level (Salt Lake City's ground is 1289 m)::</span>
 
-<span class="sd">            ds = Sounding(&quot;SLC_2024011512.csv&quot;).interpolate()</span>
+<span class="sd">            ds = Sounding("SLC_2024011512.csv").interpolate()</span>
 <span class="sd">            ds.height.values[:3]  # array([1289., 1299., 1309.])</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_surface_height</span><span class="p">()</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="n">interval</span><span class="p">))</span>
         <span class="n">height</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span>
-            <span class="n">start</span> <span class="o">+</span> <span class="n">interval</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;height&quot;</span>
+            <span class="n">start</span> <span class="o">+</span> <span class="n">interval</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"height"</span>
         <span class="p">)</span>
-        <span class="c1"># A stable sort keeps repeated levels in file order, so &quot;last&quot; below</span>
+        <span class="c1"># A stable sort keeps repeated levels in file order, so "last" below</span>
         <span class="c1"># means the row that comes later in the file</span>
         <span class="n">raw</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;height&quot;</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s2">"height"</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"height"</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="c1"># One row per raw level (keep the last of any repeats) so a target</span>
         <span class="c1"># height that equals a raw level shares its row and takes its values.</span>
         <span class="c1"># A separate target row there would sort before or after the raw row</span>
         <span class="c1"># and be left NaN at the bottom or top level (#45).</span>
-        <span class="n">raw</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="o">~</span><span class="n">raw</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">)]</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="o">~</span><span class="n">raw</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s2">"last"</span><span class="p">)]</span>
 
         <span class="c1"># Only fill between observed levels, so heights above the sounding top</span>
         <span class="c1"># stay NaN instead of being extrapolated</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">height</span><span class="p">))</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="n">limit_area</span><span class="o">=</span><span class="s2">&quot;inside&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"index"</span><span class="p">,</span> <span class="n">limit_area</span><span class="o">=</span><span class="s2">"inside"</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
 
-        <span class="c1"># Direction can&#39;t be interpolated linearly (350 and 10 deg would give</span>
+        <span class="c1"># Direction can't be interpolated linearly (350 and 10 deg would give</span>
         <span class="c1"># 180), so rebuild direction and speed from the interpolated u/v</span>
-        <span class="k">if</span> <span class="s2">&quot;u_wind&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="s2">&quot;v_wind&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;direction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wind_direction</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;u_wind&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;v_wind&quot;</span><span class="p">])</span>
-            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;speed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;u_wind&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;v_wind&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">"u_wind"</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="s2">"v_wind"</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"direction"</span><span class="p">]</span> <span class="o">=</span> <span class="n">wind_direction</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"u_wind"</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">"v_wind"</span><span class="p">])</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"u_wind"</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">"v_wind"</span><span class="p">])</span>
 
         <span class="n">ds</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">()</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">])</span>
-        <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;pw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;time&quot;</span><span class="p">,),</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;pw&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">))])</span>
+        <span class="n">ds</span><span class="p">[</span><span class="s2">"pw"</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"time"</span><span class="p">,),</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"pw"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))])</span>
 
         <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">attr</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="ow">and</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;pw&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="ow">and</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"pw"</span><span class="p">]</span>
         <span class="p">}</span>
         <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
-        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;interpolation_interval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval</span>
-        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;notes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Interpolated to </span><span class="si">{</span><span class="n">start</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">stop</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">m at </span><span class="si">{</span><span class="n">interval</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">m intervals.&quot;</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"interpolation_interval"</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"notes"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Interpolated to </span><span class="si">{</span><span class="n">start</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">stop</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">m at </span><span class="si">{</span><span class="n">interval</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">m intervals."</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ds</span></div>
@@ -694,7 +695,7 @@
 <div class="viewcode-block" id="Sounding.plot">
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.Sounding.plot.html#lair.soundings.Sounding.plot">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Plot the sounding (not implemented yet).</span>
 
 <span class="sd">        Raises</span>
@@ -705,7 +706,7 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        Sounding.interpolate : The profiles to plot with xarray, for now.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 </div>
 
@@ -714,7 +715,7 @@
 <div class="viewcode-block" id="merge">
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.merge.html#lair.soundings.merge">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="n">soundings</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Merge a list of sounding data.</span>
 
 <span class="sd">    Parameters</span>
@@ -726,13 +727,13 @@
 <span class="sd">    -------</span>
 <span class="sd">    pd.DataFrame</span>
 <span class="sd">        The merged sounding data: the levels of every sounding, one row per</span>
-<span class="sd">        level, with each sounding&#39;s station attributes (``station``, ``time``,</span>
+<span class="sd">        level, with each sounding's station attributes (``station``, ``time``,</span>
 <span class="sd">        ``elevation``, ...) as columns.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    get_soundings : With ``driver=&quot;pandas&quot;``, merges a period&#39;s soundings.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    get_soundings : With ``driver="pandas"``, merges a period's soundings.</span>
+<span class="sd">    """</span>
     <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">sounding</span> <span class="ow">in</span> <span class="n">soundings</span><span class="p">:</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">sounding</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -746,31 +747,31 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_first_level_height</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Height [m] of the first level of a sounding that has one.</span>
 
 <span class="sd">    Wyoming lists the levels from the ground up, so this is the ground at the</span>
 <span class="sd">    station. The first level, not the lowest: a level can carry a wrong height</span>
 <span class="sd">    (one SLC file has 15 m).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"height"</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 
 <span class="c1">#: The columns of a saved sounding that are speeds, saved in knots</span>
-<span class="n">_WIND_COLUMNS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;speed&quot;</span><span class="p">,</span> <span class="s2">&quot;u_wind&quot;</span><span class="p">,</span> <span class="s2">&quot;v_wind&quot;</span><span class="p">)</span>
+<span class="n">_WIND_COLUMNS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"speed"</span><span class="p">,</span> <span class="s2">"u_wind"</span><span class="p">,</span> <span class="s2">"v_wind"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_winds_to_knots</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert the wind columns of a siphon response to knots.</span>
 
 <span class="sd">    siphon reports the unit of each column in ``df.units``. It sets them by its</span>
 <span class="sd">    own version, not from the response: 0.9 and 0.10 say knots (and send</span>
-<span class="sd">    ``elevation``), 0.11, for Wyoming&#39;s current service, says m/s. A wind</span>
+<span class="sd">    ``elevation``), 0.11, for Wyoming's current service, says m/s. A wind</span>
 <span class="sd">    column whose unit is missing, or is not a speed pint knows, raises a</span>
 <span class="sd">    ``ValueError`` that names the column and the unit.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">reported</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+<span class="sd">    """</span>
+    <span class="n">reported</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">_WIND_COLUMNS</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
@@ -778,45 +779,46 @@
         <span class="n">unit</span> <span class="o">=</span> <span class="n">reported</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">unit</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;siphon reports no unit for the sounding&#39;s </span><span class="si">{</span><span class="n">column</span><span class="si">!r}</span><span class="s2"> column &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;(units: </span><span class="si">{</span><span class="n">unit</span><span class="si">!r}</span><span class="s2">); it cannot be converted to knots.&quot;</span>
+                <span class="sa">f</span><span class="s2">"siphon reports no unit for the sounding's </span><span class="si">{</span><span class="n">column</span><span class="si">!r}</span><span class="s2"> column "</span>
+                <span class="sa">f</span><span class="s2">"(units: </span><span class="si">{</span><span class="n">unit</span><span class="si">!r}</span><span class="s2">); it cannot be converted to knots."</span>
             <span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;knot&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"knot"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># Not one error type: pint raises UndefinedUnitError for a name it</span>
             <span class="c1"># lacks, DimensionalityError for a unit that is not a speed, and</span>
             <span class="c1"># AssertionError, ValueError or TypeError for a malformed string</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;siphon reports the sounding&#39;s </span><span class="si">{</span><span class="n">column</span><span class="si">!r}</span><span class="s2"> column in </span><span class="si">{</span><span class="n">unit</span><span class="si">!r}</span><span class="s2">, &quot;</span>
-                <span class="s2">&quot;which is not a speed unit that pint knows; it cannot be &quot;</span>
-                <span class="s2">&quot;converted to knots.&quot;</span>
+                <span class="sa">f</span><span class="s2">"siphon reports the sounding's </span><span class="si">{</span><span class="n">column</span><span class="si">!r}</span><span class="s2"> column in </span><span class="si">{</span><span class="n">unit</span><span class="si">!r}</span><span class="s2">, "</span>
+                <span class="s2">"which is not a speed unit that pint knows; it cannot be "</span>
+                <span class="s2">"converted to knots."</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
         <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor</span>
     <span class="k">return</span> <span class="n">df</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_naive_utc</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Timestamp in naive UTC (the sounding file times); naive input is taken as UTC.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Timestamp in naive UTC (the sounding file times); naive input is taken as UTC."""</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">tz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">t</span>
+    <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">"UTC"</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">tz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">t</span>
 
 
 <div class="viewcode-block" id="download_sounding">
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.download_sounding.html#lair.soundings.download_sounding">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">download_sounding</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Download an upper air sounding from the Wyoming archive.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    station : str</span>
-<span class="sd">        The 3-letter station identifier (e.g. ``&#39;SLC&#39;``) passed to the Wyoming</span>
+<span class="sd">        The 3-letter station identifier (e.g. ``'SLC'``) passed to the Wyoming</span>
 <span class="sd">        service via siphon. Also used as the file-name prefix.</span>
 <span class="sd">    date : datetime</span>
-<span class="sd">        The date and time. Naive times are taken as UTC; tz-aware times are</span>
-<span class="sd">        converted to UTC. Wyoming reads the time as UTC, and the file is named</span>
-<span class="sd">        for the UTC hour (``SLC_2024011512.csv`` for 12 UTC).</span>
+<span class="sd">        The date and time. A time without a time zone follows :ref:`the UTC</span>
+<span class="sd">        rule &lt;utc-rule&gt;`; one with a time zone is converted to UTC. Wyoming</span>
+<span class="sd">        reads the time as UTC, and the file is named for the UTC hour</span>
+<span class="sd">        (``SLC_2024011512.csv`` for 12 UTC).</span>
 <span class="sd">    dst : str</span>
 <span class="sd">        The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
 
@@ -836,7 +838,7 @@
 <span class="sd">    Every file is saved in the units of ``Sounding.units``, whatever</span>
 <span class="sd">    Wyoming sent. Wyoming sends the winds in m/s today and sent knots before,</span>
 <span class="sd">    so ``speed``, ``u_wind`` and ``v_wind`` are converted to knots from the</span>
-<span class="sd">    unit siphon reports for each. Wyoming no longer sends the station&#39;s</span>
+<span class="sd">    unit siphon reports for each. Wyoming no longer sends the station's</span>
 <span class="sd">    ``elevation``, so it is saved as the height of the first level, the ground.</span>
 <span class="sd">    ``pw`` and ``station_number`` are saved only if Wyoming sends them, which</span>
 <span class="sd">    it no longer does. A file that is already in ``dst`` is not downloaded</span>
@@ -855,24 +857,24 @@
 <span class="sd">    &gt;&gt;&gt; import datetime as dt</span>
 <span class="sd">    &gt;&gt;&gt; from lair.soundings import download_sounding</span>
 <span class="sd">    &gt;&gt;&gt; download_sounding(  # doctest: +SKIP</span>
-<span class="sd">    ...     &quot;SLC&quot;, dt.datetime(2024, 1, 15, 12), dst=&quot;soundings/SLC&quot;</span>
+<span class="sd">    ...     "SLC", dt.datetime(2024, 1, 15, 12), dst="soundings/SLC"</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &#39;soundings/SLC/SLC_2024011512.csv&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    'soundings/SLC/SLC_2024011512.csv'</span>
+<span class="sd">    """</span>
     <span class="n">date</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">dst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_data_dir</span><span class="p">(</span><span class="n">SOUNDING_DIR_ENV</span><span class="p">),</span> <span class="n">station</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">station</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y%m%d%H</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">station</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y%m%d%H</span><span class="si">}</span><span class="s2">.csv"</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Downloading </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Downloading </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">..."</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">_winds_to_knots</span><span class="p">(</span><span class="n">WyomingUpperAir</span><span class="o">.</span><span class="n">request_data</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">station</span><span class="p">))</span>
-        <span class="k">if</span> <span class="s2">&quot;elevation&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;elevation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_first_level_height</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"elevation"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">"elevation"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_first_level_height</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2"> already exists.&quot;</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2"> already exists."</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">path</span></div>
 
@@ -881,7 +883,7 @@
 <div class="viewcode-block" id="download_soundings">
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.download_soundings.html#lair.soundings.download_soundings">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">download_soundings</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">months</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Download upper air soundings from the Wyoming archive.</span>
 
 <span class="sd">    Each one is saved as :func:`download_sounding` saves it, in the units of</span>
@@ -890,13 +892,14 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    station : str</span>
-<span class="sd">        The 3-letter station identifier (e.g. ``&#39;SLC&#39;``).</span>
+<span class="sd">        The 3-letter station identifier (e.g. ``'SLC'``).</span>
 <span class="sd">    start : datetime</span>
 <span class="sd">        The start date and time. Soundings are at 00 and 12 UTC, so the first</span>
-<span class="sd">        one requested is the first of those at or after ``start``.</span>
+<span class="sd">        one requested is the first of those at or after ``start``. A time</span>
+<span class="sd">        without a time zone follows :ref:`the UTC rule &lt;utc-rule&gt;`; one with a</span>
+<span class="sd">        time zone is converted to UTC.</span>
 <span class="sd">    end : datetime</span>
-<span class="sd">        The end date and time (inclusive). Naive times are taken as UTC;</span>
-<span class="sd">        tz-aware times are converted.</span>
+<span class="sd">        The end date and time (inclusive), read like ``start``.</span>
 <span class="sd">    dst : str</span>
 <span class="sd">        The destination directory. Defaults to ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
 <span class="sd">    months : list</span>
@@ -906,10 +909,10 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If the unit siphon reports for a wind is not one :func:`download_sounding`</span>
-<span class="sd">        can convert, or Wyoming answers with an error other than &quot;No data</span>
-<span class="sd">        available&quot; (a sounding Wyoming does not have is logged and skipped).</span>
+<span class="sd">        can convert, or Wyoming answers with an error other than "No data</span>
+<span class="sd">        available" (a sounding Wyoming does not have is logged and skipped).</span>
 <span class="sd">    requests.exceptions.HTTPError</span>
-<span class="sd">        For an HTTP error other than Wyoming&#39;s &quot;Please try again later&quot;, after</span>
+<span class="sd">        For an HTTP error other than Wyoming's "Please try again later", after</span>
 <span class="sd">        which the same sounding is asked for again 2 seconds later.</span>
 
 <span class="sd">    See Also</span>
@@ -924,16 +927,16 @@
 
 <span class="sd">    &gt;&gt;&gt; from lair.soundings import download_soundings</span>
 <span class="sd">    &gt;&gt;&gt; download_soundings(  # doctest: +SKIP</span>
-<span class="sd">    ...     &quot;SLC&quot;, &quot;2024-01-01&quot;, &quot;2024-01-31 12:00&quot;, dst=&quot;soundings/SLC&quot;</span>
+<span class="sd">    ...     "SLC", "2024-01-01", "2024-01-31 12:00", dst="soundings/SLC"</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Downloading soundings...&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Downloading soundings..."</span><span class="p">)</span>
 
     <span class="c1"># Snap to the 00/12 UTC synoptic times; date_range would otherwise anchor</span>
     <span class="c1"># on start (start=06:00 -&gt; 06Z, 18Z, ...)</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="s2">&quot;12h&quot;</span><span class="p">)</span>
-    <span class="n">end</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">end</span><span class="p">)</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="s2">&quot;12h&quot;</span><span class="p">)</span>
-    <span class="n">dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;12h&quot;</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="s2">"12h"</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">end</span><span class="p">)</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="s2">"12h"</span><span class="p">)</span>
+    <span class="n">dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"12h"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">months</span><span class="p">:</span>
         <span class="n">dates</span> <span class="o">=</span> <span class="n">dates</span><span class="p">[</span><span class="n">dates</span><span class="o">.</span><span class="n">month</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">months</span><span class="p">)]</span>
@@ -945,23 +948,23 @@
             <span class="n">download_sounding</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Error downloading </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span>
+                <span class="s2">"Error downloading </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">e</span>
             <span class="p">)</span>
             <span class="k">continue</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Error downloading </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span>
+                <span class="s2">"Error downloading </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">e</span>
             <span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;No data available&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">"No data available"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">e</span>
         <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Error downloading </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span>
+                <span class="s2">"Error downloading </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">date</span><span class="si">:</span><span class="s2">%Y-%m-%d %H:%M</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">e</span>
             <span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;Please try again later&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Trying again in 2 seconds...&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">"Please try again later"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Trying again in 2 seconds..."</span><span class="p">)</span>
                 <span class="n">to_download</span><span class="o">.</span><span class="n">appendleft</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
                 <span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -972,42 +975,41 @@
 <div class="viewcode-block" id="get_soundings">
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.get_soundings.html#lair.soundings.get_soundings">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_soundings</span><span class="p">(</span>
-    <span class="n">station</span><span class="o">=</span><span class="s2">&quot;SLC&quot;</span><span class="p">,</span>
+    <span class="n">station</span><span class="o">=</span><span class="s2">"SLC"</span><span class="p">,</span>
     <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">sounding_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">months</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;xarray&quot;</span><span class="p">,</span>
+    <span class="n">driver</span><span class="o">=</span><span class="s2">"xarray"</span><span class="p">,</span>
     <span class="n">download</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get upper air soundings from the Wyoming archive.</span>
 
-<span class="sd">    Reads the soundings that are in the station&#39;s folder. It downloads only</span>
+<span class="sd">    Reads the soundings that are in the station's folder. It downloads only</span>
 <span class="sd">    when asked: see :ref:`soundings-download`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    station : str</span>
-<span class="sd">        The 3-letter station identifier (e.g. ``&#39;SLC&#39;``). Names the</span>
+<span class="sd">        The 3-letter station identifier (e.g. ``'SLC'``). Names the</span>
 <span class="sd">        subdirectory of ``$LAIR_SOUNDING_DIR`` and the file prefix.</span>
 <span class="sd">    start : datetime | str, optional</span>
-<span class="sd">        The start date and time (inclusive). Naive times are taken as UTC;</span>
-<span class="sd">        tz-aware times are converted.</span>
+<span class="sd">        The start date and time (inclusive). A time without a time zone follows</span>
+<span class="sd">        :ref:`the UTC rule &lt;utc-rule&gt;`; one with a time zone is converted to</span>
+<span class="sd">        UTC.</span>
 <span class="sd">    end : datetime | str, optional</span>
 <span class="sd">        The end date and time (inclusive).</span>
 <span class="sd">    sounding_dir : str</span>
-<span class="sd">        The directory containing the station&#39;s sounding files. Defaults to</span>
+<span class="sd">        The directory containing the station's sounding files. Defaults to</span>
 <span class="sd">        ``$LAIR_SOUNDING_DIR/&lt;station&gt;``.</span>
 <span class="sd">    months : list[int], optional</span>
 <span class="sd">        Only use soundings from these months (with ``download``, only download</span>
 <span class="sd">        those).</span>
-<span class="sd">    driver : {&#39;xarray&#39;, &#39;pandas&#39;}, optional</span>
+<span class="sd">    driver : {'xarray', 'pandas'}, optional</span>
 <span class="sd">        Return interpolated profiles as an xarray Dataset (default), or the</span>
 <span class="sd">        merged raw soundings as a pandas DataFrame. The profiles share one set</span>
-<span class="sd">        of heights, every 10 m from the station&#39;s ground (its ``elevation``,</span>
-<span class="sd">        the lowest among the files if they differ; see</span>
-<span class="sd">        :meth:`Sounding.interpolate`) up to 5000 m, not included.</span>
+<span class="sd">        of heights (:ref:`soundings-heights` says which).</span>
 <span class="sd">    download : bool, optional</span>
 <span class="sd">        Download the soundings the folder lacks, from ``start`` to ``end``,</span>
 <span class="sd">        before reading them. The default, False, downloads nothing.</span>
@@ -1038,22 +1040,22 @@
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">    &gt;&gt;&gt; from lair.soundings import get_soundings</span>
 <span class="sd">    &gt;&gt;&gt; folder = pathlib.Path(tempfile.mkdtemp())</span>
-<span class="sd">    &gt;&gt;&gt; for hour, ground in [(&quot;2024011500&quot;, -8.0), (&quot;2024011512&quot;, -5.0)]:</span>
+<span class="sd">    &gt;&gt;&gt; for hour, ground in [("2024011500", -8.0), ("2024011512", -5.0)]:</span>
 <span class="sd">    ...     pd.DataFrame(</span>
 <span class="sd">    ...         {</span>
-<span class="sd">    ...             &quot;height&quot;: [1289.0, 5100.0],</span>
-<span class="sd">    ...             &quot;temperature&quot;: [ground, -30.0],</span>
-<span class="sd">    ...             &quot;station&quot;: &quot;SLC&quot;,</span>
-<span class="sd">    ...             &quot;time&quot;: pd.to_datetime(hour, format=&quot;%Y%m%d%H&quot;),</span>
-<span class="sd">    ...             &quot;elevation&quot;: 1289.0,</span>
+<span class="sd">    ...             "height": [1289.0, 5100.0],</span>
+<span class="sd">    ...             "temperature": [ground, -30.0],</span>
+<span class="sd">    ...             "station": "SLC",</span>
+<span class="sd">    ...             "time": pd.to_datetime(hour, format="%Y%m%d%H"),</span>
+<span class="sd">    ...             "elevation": 1289.0,</span>
 <span class="sd">    ...         }</span>
-<span class="sd">    ...     ).to_csv(folder / f&quot;SLC_{hour}.csv&quot;, index=False)</span>
+<span class="sd">    ...     ).to_csv(folder / f"SLC_{hour}.csv", index=False)</span>
 <span class="sd">    &gt;&gt;&gt; ds = get_soundings(sounding_dir=str(folder))</span>
 <span class="sd">    &gt;&gt;&gt; ds.temperature.sizes</span>
-<span class="sd">    Frozen({&#39;time&#39;: 2, &#39;height&#39;: 372})</span>
+<span class="sd">    Frozen({'time': 2, 'height': 372})</span>
 <span class="sd">    &gt;&gt;&gt; ds.temperature.sel(height=1289.0).values</span>
 <span class="sd">    array([-8., -5.])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># File times are naive UTC, so compare against naive UTC bounds</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span> <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="n">end</span> <span class="o">=</span> <span class="n">_naive_utc</span><span class="p">(</span><span class="n">end</span><span class="p">)</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span> <span class="k">if</span> <span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
@@ -1063,20 +1065,20 @@
 
     <span class="k">if</span> <span class="n">download</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;start and end must be specified to download soundings.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"start and end must be specified to download soundings."</span><span class="p">)</span>
         <span class="n">download_soundings</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">sounding_dir</span><span class="p">,</span> <span class="n">months</span><span class="p">)</span>
 
     <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">sounding_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">sounding_dir</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
 
     <span class="n">soundings</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-        <span class="c1"># Skip anything that isn&#39;t a &lt;station&gt;_&lt;YYYYmmddHH&gt;.csv sounding</span>
+        <span class="c1"># Skip anything that isn't a &lt;station&gt;_&lt;YYYYmmddHH&gt;.csv sounding</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">date</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H&quot;</span><span class="p">)</span>
+            <span class="n">date</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"%Y%m</span><span class="si">%d</span><span class="s2">%H"</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
             <span class="k">continue</span>
 
-        <span class="c1"># Skip files that don&#39;t match the date range</span>
+        <span class="c1"># Skip files that don't match the date range</span>
         <span class="k">if</span> <span class="n">start</span> <span class="ow">and</span> <span class="n">date</span> <span class="o">&lt;</span> <span class="n">start</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">if</span> <span class="n">end</span> <span class="ow">and</span> <span class="n">date</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">:</span>
@@ -1088,26 +1090,26 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">soundings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Sounding</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Error reading file </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Error reading file </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
             <span class="k">continue</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">soundings</span><span class="p">:</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;No soundings found in </span><span class="si">{</span><span class="n">sounding_dir</span><span class="si">}</span><span class="s2"> for the requested period.&quot;</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"No soundings found in </span><span class="si">{</span><span class="n">sounding_dir</span><span class="si">}</span><span class="s2"> for the requested period."</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">download</span><span class="p">:</span>
-            <span class="n">message</span> <span class="o">+=</span> <span class="s2">&quot; Pass download=True (with start and end) to download them.&quot;</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="s2">" Pass download=True (with start and end) to download them."</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">driver</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;xarray&quot;</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">driver</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"xarray"</span><span class="p">,</span> <span class="s2">"nc"</span><span class="p">]:</span>
         <span class="c1"># One set of heights for every sounding, from the lowest surface, so</span>
         <span class="c1"># the profiles line up and stay evenly spaced</span>
         <span class="n">lowest</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sounding</span><span class="o">.</span><span class="n">_surface_height</span><span class="p">()</span> <span class="k">for</span> <span class="n">sounding</span> <span class="ow">in</span> <span class="n">soundings</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">sounding</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">lowest</span><span class="p">)</span> <span class="k">for</span> <span class="n">sounding</span> <span class="ow">in</span> <span class="n">soundings</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">sortby</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">driver</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pandas&quot;</span><span class="p">,</span> <span class="s2">&quot;csv&quot;</span><span class="p">]:</span>
+            <span class="p">[</span><span class="n">sounding</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">lowest</span><span class="p">)</span> <span class="k">for</span> <span class="n">sounding</span> <span class="ow">in</span> <span class="n">soundings</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="s2">"time"</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">sortby</span><span class="p">(</span><span class="s2">"time"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">driver</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pandas"</span><span class="p">,</span> <span class="s2">"csv"</span><span class="p">]:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span><span class="n">soundings</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid driver: </span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid driver: </span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">data</span></div>
 
@@ -1140,8 +1142,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1161,7 +1163,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -1174,7 +1176,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>
