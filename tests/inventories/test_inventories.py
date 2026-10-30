@@ -1067,6 +1067,51 @@ class TestEDGARv7:
         e = inventories.EDGARv7("CH4", inventory_dir=tmp_path)
         assert set(e.data.data_vars) == {"Aviation_supersonic"}
 
+    @staticmethod
+    def _stray(root, *parts):
+        # A NetCDF file whose name is not one EDGAR v7 writes
+        f = root.joinpath("EDGAR", "v7", "CH4", *parts)
+        f.parent.mkdir(parents=True, exist_ok=True)
+        xr.Dataset(
+            {"emi_ch4": (("lat", "lon"), 5 * np.ones((2, 2)), {"units": "kg m-2 s-1"})},
+            coords={"lat": [40.05, 40.15], "lon": [-111.95, -111.85]},
+        ).to_netcdf(f)
+
+    def test_stray_file_is_left_out_and_named(self, tmp_path, caplog):
+        self._write(tmp_path, "CH4", "ENF")
+        self._stray(tmp_path, "ENF", "notes.nc")
+        self._stray(tmp_path, "v7.0_FT2021_CH4_2021_ENF.0.1x0.1_copy.nc")
+        with caplog.at_level("WARNING", logger="lair.inventories"):
+            e = inventories.EDGARv7("CH4", inventory_dir=tmp_path)
+        assert set(e.data.data_vars) == {"Enteric_fermentation"}
+        assert float(e.data["Enteric_fermentation"].max()) == pytest.approx(1.0)
+        assert "leaves out 2 file(s)" in caplog.text
+        assert "ENF/notes.nc" in caplog.text
+        assert "v7.0_FT2021_CH4_2021_ENF.0.1x0.1_copy.nc" in caplog.text
+
+    def test_stray_file_is_left_out_with_years(self, tmp_path, caplog):
+        self._write(tmp_path, "CH4", "ENF")
+        self._stray(tmp_path, "ENF", "notes_2021_x.nc")  # a year, but not v7's name
+        with caplog.at_level("WARNING", logger="lair.inventories"):
+            e = inventories.EDGARv7("CH4", inventory_dir=tmp_path, start=2021, end=2021)
+        assert set(e.data.data_vars) == {"Enteric_fermentation"}
+        assert "ENF/notes_2021_x.nc" in caplog.text
+
+    def test_only_stray_files_raises_file_not_found(self, tmp_path, caplog):
+        self._stray(tmp_path, "notes.nc")
+        with (
+            caplog.at_level("WARNING", logger="lair.inventories"),
+            pytest.raises(FileNotFoundError, match="No EDGARv7 files found"),
+        ):
+            inventories.EDGARv7("CH4", inventory_dir=tmp_path)
+        assert "notes.nc" in caplog.text
+
+    def test_no_warning_without_stray_files(self, tmp_path, caplog):
+        self._write(tmp_path, "CH4", "ENF")
+        with caplog.at_level("WARNING", logger="lair.inventories"):
+            inventories.EDGARv7("CH4", inventory_dir=tmp_path)
+        assert caplog.text == ""
+
 
 # --- The years to read -------------------------------------------------------
 

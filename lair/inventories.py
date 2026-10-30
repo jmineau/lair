@@ -1321,6 +1321,11 @@ class MultiModelInventory(Inventory):
 _EDGAR_YEAR = re.compile(r"_(\d{4})_")
 
 
+#: The end of an EDGAR v7 file's name: ``_<year>_<sector>.0.1x0.1.nc``
+#: (``v7.0_FT2021_CH4_2020_ENF.0.1x0.1.nc``).
+_EDGARV7_FILE = re.compile(r"_(\d{4})_([\w_]+)\.0\.1x0\.1\.nc$")
+
+
 def _year_spans(years: Sequence[int]) -> str:
     """
     Write sorted ``years`` as spans: ``[1970, 1971, 1972, 2020]`` is ``'1970 to 1972, 2020'``.
@@ -1552,6 +1557,10 @@ class EDGAR(Inventory, metaclass=ABCMeta):
         },
     }
 
+    # The pattern a data file's name must match; None accepts every name. A file
+    # that does not match is left out (get_files) rather than opened.
+    _file_name: re.Pattern[str] | None = None
+
     def _set_years(self, start: int | None, end: int | None) -> None:
         # Called by the subclasses before Inventory.__init__ reads the files
         for name, year in (("start", start), ("end", end)):
@@ -1567,7 +1576,8 @@ class EDGAR(Inventory, metaclass=ABCMeta):
 
         If the inventory was made with ``start`` or ``end``, only the files of
         those years are returned, chosen by the year in each file's name: no
-        file is opened.
+        file is opened. A file whose name is not one the version writes
+        (:class:`EDGARv7` checks this) is left out with a warning that names it.
 
         Returns
         -------
@@ -1583,7 +1593,21 @@ class EDGAR(Inventory, metaclass=ABCMeta):
         --------
         Inventory.get_files : The files of an inventory that is not EDGAR.
         """
-        files = [f for f in self._file_root().rglob("*.nc") if "TOTALS" not in f.stem]
+        root = self._file_root()
+        files = [f for f in root.rglob("*.nc") if "TOTALS" not in f.stem]
+        if self._file_name is not None:
+            stray = [f for f in files if not self._file_name.search(f.name)]
+            if stray:
+                logger.warning(
+                    "%s leaves out %d file(s) under %s whose name does not match "
+                    "%r: %s",
+                    type(self).__name__,
+                    len(stray),
+                    self.path,
+                    self._file_name.pattern,
+                    ", ".join(sorted(str(f.relative_to(root)) for f in stray)),
+                )
+                files = [f for f in files if f not in stray]
         if not files or (self._start is None and self._end is None):
             return files  # nothing to choose from (Inventory.__init__ raises) or all
 
@@ -1696,6 +1720,11 @@ class EDGARv7(EDGAR):
           AWB/v7.0_FT2021_CH4_2021_AWB.0.1x0.1.nc
           ...
 
+    A ``.nc`` file in the folder whose name does not end with
+    ``_<year>_<sector>.0.1x0.1.nc`` (a copy, a partial download) is left out,
+    and a warning names it; if no file is left, the class raises
+    ``FileNotFoundError``.
+
     See Also
     --------
     EDGARv8 : The next version, with monthly files too.
@@ -1712,6 +1741,7 @@ class EDGARv7(EDGAR):
     """
 
     version: str = "v7"
+    _file_name = _EDGARV7_FILE
 
     def __init__(
         self,
@@ -1730,19 +1760,16 @@ class EDGARv7(EDGAR):
             path, pollutant, src_units=self.src_units, version=self.version
         )
 
-    def _preprocess(self, ds: Dataset) -> Dataset | None:
-        # Need to strip year and sector name from filename
+    def _preprocess(self, ds: Dataset) -> Dataset:
+        # Need to strip year and sector name from filename (get_files leaves
+        # out the names that do not match)
         filename = ds.encoding["source"]
-
-        pattern = r"_(\d{4})_([\w_]+)\.0\.1x0\.1\.nc$"
-        match = re.search(pattern, filename)
-
-        if match:
-            # Extract the year and the text between the year and flx.nc
-            year = match.group(1)
-            sector_code = match.group(2)
-        else:
-            return None
+        match = _EDGARV7_FILE.search(filename)
+        if match is None:
+            raise ValueError(f"Not an EDGAR v7 file name: {filename}")
+        # The year, and the text between the year and .0.1x0.1.nc
+        year = match.group(1)
+        sector_code = match.group(2)
 
         var = self.get_sector_name(sector_code)
 
