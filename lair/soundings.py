@@ -38,6 +38,13 @@ logger = logging.getLogger(__name__)
 #:    :doc:`/examples/soundings` shows the folder.
 SOUNDING_DIR_ENV = "LAIR_SOUNDING_DIR"
 
+#: The height [m] at which some saved soundings' heights start again from 0
+_HEIGHT_WRAP = 10_000.0
+
+#: A fall [m] between two consecutive levels larger than this is a wrap, not
+#: a balloon pushed down (those fall 10 to 50 m)
+_WRAP_FALL = 9_000.0
+
 
 class Sounding:
     """
@@ -64,7 +71,9 @@ class Sounding:
     time : datetime
         The date and time of the sounding.
     data : pd.DataFrame
-        The sounding data.
+        The sounding data, one row per level in the order of the file.
+        Heights that wrap at 10 km are :ref:`unwrapped
+        <soundings-wrapped-heights>` as the file is read.
     units : dict[str, str]
         The unit of each column of ``data`` and of each station attribute,
         keyed by name: ``pressure`` in hPa; ``height`` and ``elevation`` in
@@ -155,6 +164,9 @@ class Sounding:
 
         self.data = pd.read_csv(path, parse_dates=["time"])
         self.data = self.data.drop(columns=["station", "time"])
+        # Undo heights that wrap at 10 km before anything sorts by height
+        if "height" in self.data.columns:
+            self.data["height"] = _unwrap_heights(self.data["height"], path)
 
         for attr in self._attrs:
             if attr in self.data.columns:
@@ -194,6 +206,13 @@ class Sounding:
         --------
         get_soundings : Interpolates every sounding of a period to the same
             heights.
+
+        Notes
+        -----
+        The levels are sorted by height before they are interpolated. Heights
+        that wrap at 10 km were :ref:`unwrapped <soundings-wrapped-heights>`
+        when the file was read; a level reported lower than the one before it,
+        by a balloon pushed down, keeps its height.
 
         Examples
         --------
@@ -295,6 +314,37 @@ def merge(soundings: list) -> pd.DataFrame:
         dfs.append(df)
 
     return pd.concat(dfs)
+
+
+def _unwrap_heights(height: pd.Series, source: str) -> pd.Series:
+    """
+    Heights [m] with any wrap at 10 km undone, the levels in file order.
+
+    A fall of more than 9 km from one level to the next is a wrap (9998 m,
+    then 96 m): 10 km is added to that level and every level after it, and
+    another 10 km after a second wrap. A smaller fall is kept as it is. A level
+    without a height stays NaN and is skipped. Logs a warning that names
+    ``source`` when a wrap is undone.
+    """
+    valid = height.dropna()
+    wraps = valid.diff() < -_WRAP_FALL
+    if not wraps.any():
+        return height
+    first = int(np.flatnonzero(wraps.to_numpy())[0])
+    logger.warning(
+        "%s: the heights fall from %g m to %g m between two levels, taken as a "
+        "wrap at %g m; %g m is added to every level after each wrap (%d in the "
+        "file).",
+        source,
+        valid.iloc[first - 1],
+        valid.iloc[first],
+        _HEIGHT_WRAP,
+        _HEIGHT_WRAP,
+        int(wraps.sum()),
+    )
+    unwrapped = height.astype(float)
+    unwrapped.loc[valid.index] = valid + _HEIGHT_WRAP * wraps.cumsum()
+    return unwrapped
 
 
 def _first_level_height(data: pd.DataFrame) -> float:
