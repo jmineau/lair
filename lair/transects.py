@@ -321,7 +321,9 @@ def profile(
     enh : np.ndarray
         Enhancement matrix ``enh[transit, point]``, as from :func:`enhancement`.
     times : pd.DatetimeIndex
-        One UTC time per transit, as from :func:`transit_times`.
+        One time per transit, as from :func:`transit_times`. A naive time is
+        UTC; a time-zone-aware time is converted to UTC first, so
+        ``tz_offset_hours`` is the only shift.
     by : str, optional
         The bins: ``"hour"`` (the default), ``"weekday"`` or ``"month"`` of the
         transit time.
@@ -363,7 +365,17 @@ def profile(
     >>> mag[[0, 12]]
     array([[ 1., nan],
            [nan, nan]])
+
+    A time with a time zone is converted to UTC first, so the same moments give
+    the same bins:
+
+    >>> local = times.tz_localize("UTC").tz_convert("America/Denver")
+    >>> bins, freq_local, mag_local = profile(enh, local, min_transits=1)
+    >>> bool(np.array_equal(freq, freq_local, equal_nan=True))
+    True
     """
+    if times.tz is not None:
+        times = times.tz_convert("UTC").tz_localize(None)
     t = times + pd.Timedelta(hours=tz_offset_hours)
     key = {"hour": t.hour, "weekday": t.day_of_week, "month": t.month}[by]
     bins = {"hour": np.arange(24), "weekday": np.arange(7), "month": np.arange(1, 13)}[
