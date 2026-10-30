@@ -620,7 +620,7 @@ class CarbonTracker(metaclass=ABCMeta):
                 {
                     "background_ppm": [ppm.mean()],
                     "sigma_ppm": [ppm.std()],
-                    "n_endpoints": [int(ppm.notna().sum())],
+                    "n_endpoints": [ppm.notna().sum()],
                 }
             )
         grouped = ppm.groupby(sampled[by].to_numpy())
