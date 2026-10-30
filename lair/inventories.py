@@ -1918,6 +1918,13 @@ class EPA(Inventory, metaclass=ABCMeta):
     consistent with methane emissions from the U.S. EPA Inventory of U.S.
     Greenhouse Gas Emissions and Sinks (U.S. GHGI).
 
+    A variable of the files whose name starts with the emissions prefix
+    (``emissions`` in v1, ``emi_ch4`` in v2) is a sector, named by the text
+    after its IPCC code (``emissions_1A_Combustion_Mobile`` is
+    ``Combustion_Mobile``). One that does not follow that form, such as a total,
+    is left out with a warning that names it, so it cannot enter
+    ``total_emissions`` twice.
+
     lair's totals differ a little from EPA's own. EPA's files give each cell's
     area on a sphere of 6371 km (their ``grid_cell_area``, which lair drops);
     lair uses the area on the WGS84 ellipsoid, as for every inventory
@@ -1974,12 +1981,16 @@ class EPA(Inventory, metaclass=ABCMeta):
 
         # Rename variables and add attributes
         name_dict = {}
+        unmatched = []
         for var in data.data_vars:
             attrs = data[var].attrs
             if str(var).startswith(self._emissions_prefix):
                 ipcc_code, short_name = self._extract_ipcc_code_and_short_name(
                     var, self._emissions_prefix
                 )
+                if short_name is None:
+                    unmatched.append(var)
+                    continue
                 attrs["IPCC_Code"] = ipcc_code
                 attrs["long_name"] = f"{short_name}_Emissions"
                 attrs["standard_name"] = self.get_standard_name()
@@ -1987,6 +1998,16 @@ class EPA(Inventory, metaclass=ABCMeta):
                     "source_category", None
                 )  # remove source_category attribute for v2 (same as IPCC code)
                 name_dict[var] = short_name
+        if unmatched:
+            # Not a sector (a total, a note): summing it would double count
+            logger.warning(
+                "%s leaves out %s: the name starts with %r but is not "
+                "<prefix>_<IPCC code>_<sector name>",
+                type(self).__name__,
+                unmatched,
+                self._emissions_prefix,
+            )
+            data = data.drop_vars(unmatched)
         data = data.rename(name_dict)
 
         # Round grid to nearest 0.1 degrees

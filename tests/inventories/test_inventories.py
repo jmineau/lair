@@ -1804,6 +1804,59 @@ class TestEPALoaders:
         assert epa._extract_ipcc_code_and_short_name(name, prefix) == expected
 
 
+def _epa_with_total(root, version):
+    """An EPA archive of one sector and a variable with the prefix that is not one."""
+    import pandas as pd
+
+    grid = {"lat": [40.05, 40.15], "lon": [-111.95, -111.85]}
+    ones = np.ones((2, 2))
+    if version == "v1":
+        prefix, file = "emissions", "GEPA_Annual.nc"
+        dims, values, coords = ("lat", "lon"), ones, grid
+    else:
+        prefix, file = "emi_ch4", "Gridded_GHGI_Methane_v2_2018.nc"
+        dims, values = ("time", "lat", "lon"), ones[None]
+        coords = {**grid, "time": [pd.Timestamp("2018-01-01")]}
+    d = root / "EPA" / version
+    d.mkdir(parents=True)
+    xr.Dataset(
+        {
+            f"{prefix}_1A_Combustion_Mobile": (dims, values),
+            f"{prefix}_total": (dims, 100 * values),
+        },
+        coords=coords,
+    ).to_netcdf(d / file)
+    return root
+
+
+class TestEPAUnmatchedName:
+    @pytest.mark.parametrize(
+        "version, load",
+        [
+            ("v1", lambda d: inventories.EPAv1(inventory_dir=d)),
+            ("v2", lambda d: inventories.EPAv2(inventory_dir=d)),
+        ],
+    )
+    def test_prefixed_variable_that_is_not_a_sector_is_left_out(
+        self, tmp_path, caplog, version, load
+    ):
+        _epa_with_total(tmp_path, version)
+        with caplog.at_level("WARNING", logger="lair.inventories"):
+            epa = load(tmp_path)
+        assert list(epa.data.data_vars) == ["Combustion_Mobile"]
+        assert epa.data["Combustion_Mobile"].attrs["IPCC_Code"] == "1A"
+        assert "total" in caplog.text
+        # the total of the sector alone, not 101 times it
+        assert float(epa.total_emissions.max()) == pytest.approx(
+            float(epa.data["Combustion_Mobile"].max())
+        )
+
+    def test_no_warning_when_every_variable_matches(self, epa_v1_dir, caplog):
+        with caplog.at_level("WARNING", logger="lair.inventories"):
+            inventories.EPAv1(inventory_dir=epa_v1_dir)
+        assert caplog.text == ""
+
+
 @pytest.fixture
 def gfei_v1_dir(tmp_path):
     """
