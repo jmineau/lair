@@ -757,6 +757,36 @@ class TestMolefractionsProperty:
         )
         xr.testing.assert_identical(again.molefractions, first)
 
+    def test_ch4_cache_notices_an_edited_preprocess_function(
+        self, ct_ch4, tmp_path, monkeypatch
+    ):
+        # #219: a release that edits the preprocess function must not be served
+        # the dataset an older one left in the cache
+        monkeypatch.setenv("LAIR_CACHE_DIR", str(tmp_path / "cache"))
+        ct_ch4.cache = True
+        first = ct_ch4.molefractions
+
+        original = CarbonTracker._preprocess_molefractions
+
+        def shifted(ds):
+            ds = original(ds)
+            return ds.assign_coords(time=ds.time + pd.Timedelta(hours=1))
+
+        shifted.__qualname__ = original.__qualname__  # the same name, other code
+        shifted.__module__ = original.__module__
+        monkeypatch.setattr(
+            CarbonTracker, "_preprocess_molefractions", staticmethod(shifted)
+        )
+        again = CarbonTrackerCH4(
+            version="CT-CH4-2023",
+            carbon_tracker_directory=tmp_path,
+            parallel_parse=False,
+        )
+        shift = pd.DatetimeIndex(again.molefractions.time.values) - pd.DatetimeIndex(
+            first.time.values
+        )
+        assert set(shift) == {pd.Timedelta(hours=1)}
+
     def test_co2_opens_only_its_grid(self, ct_co2):
         ds = ct_co2.molefractions
         assert ds.latitude.values.tolist() == [40.0, 41.0]  # nam1x1, not glb3x2

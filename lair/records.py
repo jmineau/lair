@@ -7,11 +7,16 @@ results in a pickle file (:class:`Cacher`).
 """
 
 import fnmatch
+import functools
+import hashlib
+import io
 import logging
 import os
+import pickle
+import types
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from lair._optional import import_optional_dependency
 
@@ -409,11 +414,148 @@ def ftp_download(
     return True
 
 
+# 0x4000000: Python 3.14's "has a docstring" flag, which has no other meaning in
+# 3.11 to 3.13, so a docstring edit does not change the digest in any of them.
+_CO_HAS_DOCSTRING = 0x4000000
+
+
+def _constant(value: Any) -> Any:
+    """Plain, order-stable form of a constant in a code object."""
+    if isinstance(value, types.CodeType):
+        return _code_parts(value)
+    if isinstance(value, tuple):
+        return tuple(_constant(v) for v in value)
+    if isinstance(value, frozenset):
+        # a frozenset's order depends on the process's string hash seed
+        return ("frozenset", sorted(repr(_constant(v)) for v in value))
+    return (type(value).__name__, repr(value))
+
+
+def _code_parts(code: types.CodeType, docstring: str | None = None) -> tuple:
+    """
+    Return what a code object does, not where it is or what its locals are called.
+
+    Left out: file name, line numbers, the function's own name, and the names of
+    local variables other than the arguments. ``docstring`` is the function's
+    docstring, which is the first constant and is left out too.
+    """
+    consts = code.co_consts
+    if docstring is not None and consts and consts[0] == docstring:
+        consts = consts[1:]
+    n_args = code.co_argcount + code.co_kwonlyargcount
+    n_args += bool(code.co_flags & 0x04) + bool(code.co_flags & 0x08)  # *args, **kw
+    return (
+        code.co_code,
+        code.co_exceptiontable,
+        tuple(_constant(c) for c in consts),
+        code.co_names,
+        code.co_freevars,
+        code.co_varnames[:n_args],
+        code.co_argcount,
+        code.co_posonlyargcount,
+        code.co_kwonlyargcount,
+        code.co_flags & ~_CO_HAS_DOCSTRING,
+    )
+
+
+def _value(value: Any, active: frozenset) -> Any:
+    """
+    Return a default argument or closure variable as far as it decides what runs.
+
+    A callable is its code. Numbers, strings, ``None`` and tuples of those are
+    themselves. Anything else (a list, an array, a dataset) is only its type,
+    because it may change while the code does not.
+    """
+    if isinstance(value, (types.FunctionType, types.MethodType, functools.partial)):
+        return _fingerprint(value, active)
+    if isinstance(value, tuple):
+        return tuple(_value(v, active) for v in value)
+    if value is None or isinstance(value, (bool, int, float, complex, str, bytes)):
+        return value
+    return ("type", type(value).__module__, type(value).__qualname__)
+
+
+def _fingerprint(func: Any, active: frozenset = frozenset()) -> Any:
+    """
+    Plain data that changes when ``func``'s code changes, never raising.
+
+    A function is its module, name, code, default arguments and closure; a
+    ``functools.partial`` is its function and arguments; a bound method is its
+    function (the instance is not part of it); an object with a ``__call__``
+    is its class's ``__call__``; anything else (a builtin, a class) is its name.
+    ``active`` holds the functions being described, so that a recursive closure
+    ends.
+    """
+    if isinstance(func, types.FunctionType):
+        name = (func.__module__, func.__qualname__)
+        if id(func) in active:
+            return ("function", *name)
+        active = active | {id(func)}
+        cells = []
+        for cell in func.__closure__ or ():
+            try:
+                cells.append(_value(cell.cell_contents, active))
+            except ValueError:  # empty cell: a name not yet assigned
+                cells.append(None)
+        kwdefaults = sorted((func.__kwdefaults__ or {}).items())
+        return (
+            "function",
+            *name,
+            hashlib.sha256(
+                repr(_code_parts(func.__code__, func.__doc__)).encode()
+            ).hexdigest(),
+            _value(func.__defaults__ or (), active),
+            tuple((k, _value(v, active)) for k, v in kwdefaults),
+            tuple(cells),
+        )
+    if isinstance(func, types.MethodType):
+        return ("method", _fingerprint(func.__func__, active))
+    if isinstance(func, functools.partial):
+        return (
+            "partial",
+            _fingerprint(func.func, active),
+            _value(func.args, active),
+            tuple((k, _value(v, active)) for k, v in sorted(func.keywords.items())),
+        )
+    kind = type(func)
+    if isinstance(kind.__call__, types.FunctionType):  # an object defining __call__
+        return (
+            "callable",
+            kind.__module__,
+            kind.__qualname__,
+            _fingerprint(kind.__call__, active),
+        )
+    name = getattr(func, "__qualname__", None) or kind.__qualname__
+    return ("named", getattr(func, "__module__", None) or kind.__module__, name)
+
+
+class _KeyPickler(pickle.Pickler):
+    """A pickler that writes a function as its code, not its name."""
+
+    def reducer_override(self, obj):
+        if isinstance(obj, types.FunctionType):
+            return tuple, (_fingerprint(obj),)
+        if isinstance(obj, types.MethodType):
+            # the code of the function, and the instance as it always was
+            return tuple, ((_fingerprint(obj.__func__), obj.__self__),)
+        return NotImplemented
+
+
+def _cache_key(func: Callable, args: tuple, kwargs: dict) -> bytes:
+    """Serialize what decides a cached result: ``func``'s code and the arguments."""
+    buffer = io.BytesIO()
+    _KeyPickler(buffer).dump((_fingerprint(func), args, kwargs))
+    return buffer.getvalue()
+
+
 class Cacher:
     """
     A class that caches function results to a file for future use.
 
-    Each parameter is also an attribute of the same name.
+    A result is stored under a key made of the function's code and the
+    arguments of the call, so editing the function (or a function passed in
+    the arguments) runs it again instead of returning the old result. Each
+    parameter is also an attribute of the same name.
 
     Parameters
     ----------
@@ -427,6 +569,45 @@ class Cacher:
         replaces the old one in the index and every other cached entry is
         kept. (The old result stays in ``cache_file`` but is no longer
         referenced.) Defaults to False.
+
+    Notes
+    -----
+    **What the key holds.** The arguments are pickled. The code of ``func``,
+    and of every function in the arguments (a ``preprocess=`` function, say),
+    goes in as its compiled bytecode, its constants (a unit factor of 1000
+    changed to 100 is an edit), the names it uses, its default arguments and
+    the functions it closes over (so a decorated function is the code of the
+    function inside). A comment, a blank line, a renamed local variable and
+    the function's own docstring are not part of it: those edits keep the
+    cached results. The key is the same in every process, on every run.
+
+    **What it does not see.** The key reaches only as far as the function
+    itself. An edit to a helper that the function calls, to a module-level
+    value it reads, to a variable it closes over (unless that is a number, a
+    string or a function), or to a file it reads leaves the key unchanged and
+    returns the old result. Delete the cache file, or pass ``reload=True``,
+    after such an edit.
+
+    **Rebuilds.** A cache file written by an earlier lair has keys of another
+    shape, so its results are not found: the function runs once for each set
+    of arguments and the results are added to the file, behind the old ones,
+    which stay in it. Bytecode differs between Python versions, so moving to
+    another one (3.11 to 3.12) does the same.
+
+    Examples
+    --------
+    >>> import os, tempfile
+    >>> from lair.records import Cacher
+    >>> def double(x):
+    ...     print("running")
+    ...     return 2 * x
+    >>> with tempfile.TemporaryDirectory() as folder:
+    ...     cached = Cacher(double, os.path.join(folder, "double.pkl"))
+    ...     print(cached(4))
+    ...     print(cached(4))  # not run again
+    running
+    8
+    8
     """
 
     import pickle as pkl
@@ -487,10 +668,11 @@ class Cacher:
         Any
             The result of the function call.
         """
-        key = self.pkl.dumps((args, kwargs))  # serialize func args
+        key = _cache_key(self.func, args, kwargs)
+        name = getattr(self.func, "__name__", type(self.func).__name__)
 
         if self.reload and key not in self._refreshed:
-            logger.info("Forcing %s to execute", self.func.__name__)
+            logger.info("Forcing %s to execute", name)
             cached = False
         else:
             cached = key in self.cache_index
@@ -499,7 +681,7 @@ class Cacher:
             # Load the result from the cache_file using its index
             logger.debug(
                 "Returning cached result for %s with args: %s %s",
-                self.func.__name__,
+                name,
                 args,
                 kwargs,
             )
