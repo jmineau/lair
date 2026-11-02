@@ -7,7 +7,11 @@ against an in-memory fake of ftplib.FTP. The pure filesystem helpers are tested
 against tmp_path fixtures.
 """
 
+import functools
 import os
+import subprocess
+import sys
+import threading
 import zipfile
 
 import pytest
@@ -148,6 +152,287 @@ class TestCacher:
     def test_requires_pkl_extension(self, tmp_path):
         with pytest.raises(ValueError, match=".pkl"):
             records.Cacher(lambda x: x, str(tmp_path / "cache.txt"))
+
+
+def run_count(tmp_path, source, *args, name="f", **kwargs):
+    """Cache ``source``'s function in a file shared by every call; return (result, ran)."""
+    ran = []
+    namespace = {"__name__": "edited_module", "ran": ran}
+    exec(compile(source, "edited_module.py", "exec"), namespace)
+    cached = records.Cacher(namespace[name], str(tmp_path / "cache.pkl"))
+    return cached(*args, **kwargs), len(ran)
+
+
+class TestCacherKeyHoldsTheCode:
+    """Editing a function runs it again (#219); an edit with no effect does not."""
+
+    BODY = "def f(x):\n    ran.append(1)\n    return x * {factor}\n"
+
+    def test_edited_body_runs_again(self, tmp_path):
+        assert run_count(tmp_path, self.BODY.format(factor=2), 3) == (6, 1)
+        assert run_count(tmp_path, self.BODY.format(factor=2), 3) == (6, 0)
+        assert run_count(tmp_path, self.BODY.format(factor=3), 3) == (9, 1)
+
+    def test_changed_constant_runs_again(self, tmp_path):
+        assert run_count(tmp_path, self.BODY.format(factor=1000), 1) == (1000, 1)
+        assert run_count(tmp_path, self.BODY.format(factor=100), 1) == (100, 1)
+
+    def test_changed_name_in_body_runs_again(self, tmp_path):
+        source = "def f(x):\n    ran.append(1)\n    return x.{attr}\n"
+        assert run_count(tmp_path, source.format(attr="real"), 3) == (3, 1)
+        assert run_count(tmp_path, source.format(attr="imag"), 3) == (0, 1)
+
+    def test_comment_blank_lines_and_local_names_keep_the_result(self, tmp_path):
+        first = "def f(x):\n    ran.append(1)\n    y = x * 2\n    return y\n"
+        second = (
+            "\n\n# a comment\ndef f(x):\n    ran.append(1)  # why\n"
+            "    z = x * 2\n\n    return z\n"
+        )
+        assert run_count(tmp_path, first, 3) == (6, 1)
+        assert run_count(tmp_path, second, 3) == (6, 0)
+
+    def test_docstring_edit_keeps_the_result(self, tmp_path):
+        source = 'def f(x):\n    """{doc}"""\n    ran.append(1)\n    return x\n'
+        assert run_count(tmp_path, source.format(doc="One."), 3) == (3, 1)
+        assert run_count(tmp_path, source.format(doc="Two, longer."), 3) == (3, 0)
+
+    def test_other_name_or_module_does_not_share_results(self, tmp_path):
+        source = "def {name}(x):\n    ran.append(1)\n    return x\n"
+        assert run_count(tmp_path, source.format(name="f"), 3, name="f") == (3, 1)
+        assert run_count(tmp_path, source.format(name="g"), 3, name="g") == (3, 1)
+
+    def test_function_in_the_arguments_is_keyed_on_its_code(self, tmp_path):
+        # the case in the issue: preprocess= edited without a rename
+        pre = "def preprocess(x):\n    return x * {factor}\n"
+        run = "def f(data, preprocess):\n    ran.append(1)\n    return [preprocess(v) for v in data]\n"
+
+        def go(factor):
+            ran = []
+            namespace = {"__name__": "edited_module", "ran": ran}
+            exec(
+                compile(pre.format(factor=factor) + run, "edited_module.py", "exec"),
+                namespace,
+            )
+            cached = records.Cacher(namespace["f"], str(tmp_path / "cache.pkl"))
+            return cached([1, 2], preprocess=namespace["preprocess"]), len(ran)
+
+        assert go(2) == ([2, 4], 1)
+        assert go(2) == ([2, 4], 0)
+        assert go(100) == ([100, 200], 1)
+
+    def test_default_argument_function_and_value(self, tmp_path):
+        source = (
+            "def helper(x):\n    return x + {offset}\n"
+            "def f(x, h=helper, scale={scale}):\n    ran.append(1)\n"
+            "    return h(x) * scale\n"
+        )
+        assert run_count(tmp_path, source.format(offset=1, scale=2), 1) == (4, 1)
+        assert run_count(tmp_path, source.format(offset=1, scale=2), 1) == (4, 0)
+        assert run_count(tmp_path, source.format(offset=5, scale=2), 1) == (12, 1)
+        assert run_count(tmp_path, source.format(offset=5, scale=3), 1) == (18, 1)
+
+    def test_nested_function_edit(self, tmp_path):
+        source = (
+            "def f(x):\n    ran.append(1)\n"
+            "    def inner(v):\n        return v + {offset}\n"
+            "    return inner(x)\n"
+        )
+        assert run_count(tmp_path, source.format(offset=1), 1) == (2, 1)
+        assert run_count(tmp_path, source.format(offset=1), 1) == (2, 0)
+        assert run_count(tmp_path, source.format(offset=7), 1) == (8, 1)
+
+    def test_decorated_function_edit(self, tmp_path):
+        source = (
+            "import functools\n"
+            "def deco(g):\n"
+            "    @functools.wraps(g)\n"
+            "    def wrapper(*a, **k):\n        ran.append(1)\n        return g(*a, **k)\n"
+            "    return wrapper\n"
+            "@deco\ndef f(x):\n    return x * {factor}\n"
+        )
+        assert run_count(tmp_path, source.format(factor=2), 3) == (6, 1)
+        assert run_count(tmp_path, source.format(factor=2), 3) == (6, 0)
+        assert run_count(tmp_path, source.format(factor=4), 3) == (12, 1)
+
+    def test_helper_edit_is_not_seen(self, tmp_path):
+        # the documented limit: only the function itself is in the key
+        source = (
+            "def helper(x):\n    return x * {factor}\n"
+            "def f(x):\n    ran.append(1)\n    return helper(x)\n"
+        )
+        assert run_count(tmp_path, source.format(factor=2), 3) == (6, 1)
+        assert run_count(tmp_path, source.format(factor=3), 3) == (6, 0)
+
+    def test_recursive_closure_ends(self, tmp_path):
+        source = (
+            "def f(n):\n    ran.append(1)\n"
+            "    def fact(k):\n        return 1 if k < 2 else k * fact(k - 1)\n"
+            "    return fact(n)\n"
+        )
+        assert run_count(tmp_path, source, 4) == (24, 1)
+        assert run_count(tmp_path, source, 4) == (24, 0)
+
+    def test_recursive_function_in_the_arguments(self, tmp_path):
+        def make():
+            def fact(k):
+                return 1 if k < 2 else k * fact(k - 1)
+
+            return fact
+
+        cached = records.Cacher(lambda fn: fn(4), str(tmp_path / "other.pkl"))
+        assert cached(make()) == 24
+        assert cached(make()) == 24
+
+    def test_function_with_an_empty_closure_cell(self, tmp_path):
+        def make():
+            def g():
+                return later
+
+            yield g  # `later` has no value yet
+            later = 1
+
+        cached = records.Cacher(lambda fn: "ok", str(tmp_path / "cache.pkl"))
+        assert cached(next(make())) == "ok"
+
+    def test_tuple_and_set_constants(self, tmp_path):
+        source = (
+            "def f(x):\n    ran.append(1)\n"
+            "    return x in ('a', 'b') or x in {{'c', 'd', {extra!r}}}\n"
+        )
+        assert run_count(tmp_path, source.format(extra="e"), "c") == (True, 1)
+        assert run_count(tmp_path, source.format(extra="e"), "c") == (True, 0)
+        assert run_count(tmp_path, source.format(extra="z"), "c") == (True, 1)
+
+    def test_set_constant_is_stable_across_processes(self, tmp_path):
+        # `in {...}` compiles to a frozenset constant, whose order depends on
+        # the string hash seed that differs between processes
+        script = tmp_path / "job.py"
+        script.write_text(
+            "import sys\n"
+            "from lair.records import Cacher\n"
+            "def f(x):\n"
+            "    print('ran')\n"
+            "    return x in {'north', 'south', 'east', 'west', 'up', 'down'}\n"
+            "print(Cacher(f, sys.argv[1])('up'))\n"
+        )
+        cache_file = str(tmp_path / "cache.pkl")
+
+        def run(seed):
+            env = dict(os.environ, PYTHONHASHSEED=str(seed))
+            out = subprocess.run(
+                [sys.executable, str(script), cache_file],
+                capture_output=True,
+                text=True,
+                env=env,
+                check=True,
+            )
+            return out.stdout.split()
+
+        assert run(1) == ["ran", "True"]
+        assert run(2) == ["True"]
+        assert run(3) == ["True"]
+
+
+class Doubler:
+    """An instance that pickles, for a method passed to a Cacher."""
+
+    def double(self, x):
+        return x * 2
+
+
+class TestCacherCallables:
+    """Callables with no plain code object are still cached."""
+
+    def cached(self, tmp_path, func, *args, **kwargs):
+        return records.Cacher(func, str(tmp_path / "cache.pkl"))(*args, **kwargs)
+
+    def test_lambda_builtin_and_class(self, tmp_path):
+        assert self.cached(tmp_path, lambda x: x + 1, 1) == 2
+        assert self.cached(tmp_path, len, "abc") == 3
+        assert self.cached(tmp_path, str, 5) == "5"
+
+    def test_partial_hits_and_depends_on_its_arguments(self, tmp_path):
+        calls = []
+
+        def power(x, p):
+            calls.append(p)
+            return x**p
+
+        cache_file = str(tmp_path / "cache.pkl")
+        square = functools.partial(power, p=2)
+        assert records.Cacher(square, cache_file)(3) == 9
+        assert records.Cacher(square, cache_file)(3) == 9  # also logs without __name__
+        assert records.Cacher(functools.partial(power, p=3), cache_file)(3) == 27
+        assert calls == [2, 3]
+
+    def test_bound_method(self, tmp_path):
+        class Scaler:
+            def __init__(self, k):
+                self.k = k
+                self.calls = 0
+
+            def scale(self, x):
+                self.calls += 1
+                return x * self.k
+
+        scaler = Scaler(5)
+        cache_file = str(tmp_path / "cache.pkl")
+        assert records.Cacher(scaler.scale, cache_file)(2) == 10
+        assert records.Cacher(scaler.scale, cache_file)(2) == 10
+        assert scaler.calls == 1
+
+    def test_bound_method_in_the_arguments(self, tmp_path):
+        cached = records.Cacher(lambda fn, x: fn(x), str(tmp_path / "cache.pkl"))
+        assert cached(Doubler().double, 4) == 8
+        assert cached(Doubler().double, 4) == 8
+
+    def test_callable_object_with_unpicklable_state(self, tmp_path):
+        class Doubler:
+            def __init__(self):
+                self.lock = threading.Lock()  # cannot be pickled
+                self.calls = 0
+
+            def __call__(self, x):
+                self.calls += 1
+                return 2 * x
+
+        doubler = Doubler()
+        cache_file = str(tmp_path / "cache.pkl")
+        assert records.Cacher(doubler, cache_file)(4) == 8
+        assert records.Cacher(doubler, cache_file)(4) == 8
+        assert doubler.calls == 1
+
+    def test_function_with_unpicklable_closure_and_default(self, tmp_path):
+        lock = threading.Lock()
+
+        def f(x, guard=lock):
+            with lock:
+                return x
+
+        assert self.cached(tmp_path, f, 1) == 1
+
+    def test_closure_variable_that_changes_does_not_change_the_key(self, tmp_path):
+        calls = {"n": 0}  # a dict is only its type in the key
+
+        def f(x):
+            calls["n"] += 1
+            return x
+
+        cache_file = str(tmp_path / "cache.pkl")
+        assert records.Cacher(f, cache_file)(1) == 1
+        assert records.Cacher(f, cache_file)(1) == 1
+        assert calls["n"] == 1
+
+    def test_closure_number_is_part_of_the_key(self, tmp_path):
+        def make(k):
+            def f(x):
+                return x * k
+
+            return f
+
+        cache_file = str(tmp_path / "cache.pkl")
+        assert records.Cacher(make(2), cache_file)(3) == 6
+        assert records.Cacher(make(5), cache_file)(3) == 15
 
 
 def test_read_kml(tmp_path):

@@ -147,8 +147,9 @@ environment only is usually a version difference. CI fails on a stale
 - **Opening many files:** call the module's `_open_mfdataset` (`inventories`,
   `noaa`), not `xr.open_mfdataset`: it names today's `compat`, `data_vars`,
   `coords` and `join`, which xarray is changing. In `noaa` it runs through
-  `records.Cacher`, keyed on the pickled call arguments, so changing what is
-  passed orphans every existing cache. Never open NetCDF files on threads
+  `records.Cacher`, keyed on the pickled call arguments and the code of the
+  functions (a helper they call is not seen), so changing either orphans
+  every existing cache. Never open NetCDF files on threads
   (dask's default for `parallel=True`): the process crashes. `noaa`'s
   `parallel=True` uses worker processes, which need a `__main__` guard in
   scripts (the docstring says why).

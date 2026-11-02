@@ -142,5 +142,13 @@ The file is for one list of files. When the folder gains or loses a file, the ne
 same file, and the old entry stays. To start again, delete the version's folder in
 the cache; lair makes it again the next time.
 
+The entry is also keyed on the code that opens the files. A lair release that
+changes how they are opened (the times, the variables kept, how the files are
+combined) therefore opens them again the first time, instead of returning what an
+older release saved, and that entry is added to the file too. A cache written by
+lair 2026.12.11 or earlier is read once more in this way, for each list of files it
+holds. What the key does and does not see is in the Notes of
+:class:`~lair.records.Cacher`.
+
 Measured on 2026-10-14, with files of CT-CH4-2025 (36 MB each), CT-CH4-2023 and
 CT2019B (18 MB).
