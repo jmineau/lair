@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=bfefdf61"></script>
+    <script src="../_static/documentation_options.js?v=72d03cd0"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev5+g0e9eb65b1" />
+  <meta name="docsearch:version" content="2026.12.12.dev7+g5ecd4b32d" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -826,7 +826,8 @@ name.</p>
 <li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The filename of the sounding data.</p></li>
 <li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The station identifier.</p></li>
 <li><p><strong>time</strong> (<em>datetime</em>) – The date and time of the sounding.</p></li>
-<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – The sounding data.</p></li>
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – The sounding data, one row per level in the order of the file.
+Heights that wrap at 10 km are <a class="reference internal" href="../examples/soundings.html#soundings-wrapped-heights"><span class="std std-ref">unwrapped</span></a> as the file is read.</p></li>
 <li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – The unit of each column of <code class="docutils literal notranslate"><span class="pre">data</span></code> and of each station attribute,
 keyed by name: <code class="docutils literal notranslate"><span class="pre">pressure</span></code> in hPa; <code class="docutils literal notranslate"><span class="pre">height</span></code> and <code class="docutils literal notranslate"><span class="pre">elevation</span></code> in
 meters; <code class="docutils literal notranslate"><span class="pre">temperature</span></code> and <code class="docutils literal notranslate"><span class="pre">dewpoint</span></code> in degrees Celsius
