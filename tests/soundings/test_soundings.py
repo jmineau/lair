@@ -161,6 +161,128 @@ class TestInterpolate:
         assert np.isnan(ds.pw.item())
 
 
+def _write_levels(dirpath, heights, pressures=None, name="SLC_2024031300.csv"):
+    """Write a sounding with these heights, in this order, with linear profiles."""
+    n = len(heights)
+    if pressures is None:
+        pressures = np.linspace(868.0, 200.0, n)
+    df = pd.DataFrame(
+        {
+            "pressure": pressures,
+            "height": heights,
+            "temperature": np.linspace(6.6, -56.0, n),
+            "dewpoint": -10.0,
+            "direction": 180.0,
+            "speed": 5.0,
+            "u_wind": 0.0,
+            "v_wind": -5.0,
+            "station": "SLC",
+            "time": "2024-03-13 00:00:00",
+            "elevation": 1289.0,
+        }
+    )
+    path = dirpath / name
+    df.to_csv(path, index=False)
+    return path
+
+
+def _wrap_warnings(caplog):
+    return [
+        r for r in caplog.records if r.levelname == "WARNING" and "wrap" in r.message
+    ]
+
+
+class TestWrappedHeights:
+    """Heights that wrap at 10 km are unwrapped as they are read (#179)."""
+
+    def test_one_wrap_adds_10_km_to_every_level_after_it(self, tmp_path, caplog):
+        heights = [1289.0, 1460.0, 5700.0, 9200.0, 9998.0, 96.0, 270.0, 1340.0]
+        path = _write_levels(tmp_path, heights)
+        snd = soundings.Sounding(str(path))
+        assert snd.data["height"].tolist() == [
+            1289.0, 1460.0, 5700.0, 9200.0, 9998.0, 10096.0, 10270.0, 11340.0,
+        ]  # fmt: skip
+        (record,) = _wrap_warnings(caplog)
+        assert "SLC_2024031300.csv" in record.message
+        assert "9998 m to 96 m" in record.message
+
+    def test_two_wraps_add_10_km_each(self, tmp_path, caplog):
+        heights = [1289.0, 9998.0, 96.0, 5000.0, 9990.0, 40.0, 500.0]
+        path = _write_levels(tmp_path, heights)
+        snd = soundings.Sounding(str(path))
+        assert snd.data["height"].tolist() == [
+            1289.0, 9998.0, 10096.0, 15000.0, 19990.0, 20040.0, 20500.0,
+        ]  # fmt: skip
+        (record,) = _wrap_warnings(caplog)
+        assert "(2 in the file)" in record.message
+
+    def test_small_falls_are_kept(self, tmp_path, caplog):
+        # A balloon pushed down: 10 to 50 m lower than the level before
+        heights = [1289.0, 2300.0, 2290.0, 2600.0, 2550.0, 3000.0]
+        path = _write_levels(tmp_path, heights)
+        snd = soundings.Sounding(str(path))
+        assert snd.data["height"].tolist() == heights
+        assert not _wrap_warnings(caplog)
+
+    @pytest.mark.parametrize(
+        ("fall", "wrapped"), [(8900.0, False), (9000.0, False), (9100.0, True)]
+    )
+    def test_a_wrap_is_a_fall_of_more_than_9_km(self, tmp_path, caplog, fall, wrapped):
+        heights = [1289.0, 9500.0, 9500.0 - fall, 1000.0]
+        path = _write_levels(tmp_path, heights)
+        snd = soundings.Sounding(str(path))
+        added = 10_000.0 if wrapped else 0.0
+        assert snd.data["height"].tolist() == [
+            1289.0, 9500.0, 9500.0 - fall + added, 1000.0 + added,
+        ]  # fmt: skip
+        assert len(_wrap_warnings(caplog)) == int(wrapped)
+
+    def test_rising_heights_are_unchanged(self, tmp_path, caplog):
+        path = _write_sounding(tmp_path, "SLC", pd.Timestamp("2024-01-01"))
+        snd = soundings.Sounding(str(path))
+        pd.testing.assert_series_equal(snd.data["height"], pd.read_csv(path)["height"])
+        assert not _wrap_warnings(caplog)
+
+    def test_a_level_without_a_height_is_skipped(self, tmp_path, caplog):
+        heights = [1289.0, np.nan, 9998.0, np.nan, 96.0, 270.0]
+        path = _write_levels(tmp_path, heights)
+        height = soundings.Sounding(str(path)).data["height"]
+        np.testing.assert_array_equal(
+            height.to_numpy(), [1289.0, np.nan, 9998.0, np.nan, 10096.0, 10270.0]
+        )
+        assert len(_wrap_warnings(caplog)) == 1
+
+    def test_interpolation_runs_through_the_levels_below_the_wrap(self, tmp_path):
+        # The issue's sounding: 1389 m lies between the 1289 m and 1460 m levels
+        rows = [
+            (868, 1289), (850, 1460), (800, 1948), (700, 3012), (500, 5700),
+            (300, 9200), (261, 9998), (257, 96), (250, 270), (230, 1340), (215, 1700),
+        ]  # fmt: skip
+        temperature = [6.6, 4.2, 1.1, -5.1, -20.0, -45.0, -50.0, -51.0, -52.0, -54.0, -56.0]  # fmt: skip
+        path = _write_levels(
+            tmp_path, [float(h) for _, h in rows], [float(p) for p, _ in rows]
+        )
+        df = pd.read_csv(path).assign(temperature=temperature)
+        df.to_csv(path, index=False)
+        ds = soundings.Sounding(str(path)).interpolate(stop=2000, interval=100)
+        at = ds.sel(height=1389.0).isel(time=0)
+        weight = 100.0 / 171.0
+        assert at.pressure.item() == pytest.approx(868 + weight * (850 - 868))
+        assert at.temperature.item() == pytest.approx(6.6 + weight * (4.2 - 6.6))
+
+    def test_get_soundings_reads_the_unwrapped_heights(self, tmp_path, caplog):
+        # Temperatures 6.6, -9.05, -24.7, -40.35 and -56 degC
+        heights = [1289.0, 3000.0, 9998.0, 96.0, 2000.0]
+        _write_levels(tmp_path, heights)
+        df = soundings.get_soundings("SLC", sounding_dir=str(tmp_path), driver="pandas")
+        assert df["height"].tolist() == [1289.0, 3000.0, 9998.0, 10096.0, 12000.0]
+        ds = soundings.get_soundings("SLC", sounding_dir=str(tmp_path))
+        # Read as 2000 m, the last level would sit between 1289 and 3000 m
+        expected = 6.6 + (1999.0 - 1289.0) / (3000.0 - 1289.0) * (-9.05 - 6.6)
+        assert ds.temperature.sel(height=1999.0).item() == pytest.approx(expected)
+        assert any("SLC_2024031300.csv" in r.message for r in _wrap_warnings(caplog))
+
+
 class TestInterpolateStart:
     """The levels start at each station's own ground (#117), not at SLC's."""
 
