@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=72d03cd0"></script>
+    <script src="../../_static/documentation_options.js?v=cfe5caa7"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev7+g5ecd4b32d" />
+  <meta name="docsearch:version" content="2026.12.12.dev8+g729f0c884" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1050,82 +1050,104 @@
 <div class="viewcode-block" id="add_locator_map">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.add_locator_map.html#lair.geo.add_locator_map">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_locator_map</span><span class="p">(</span>
-    <span class="n">fig</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span>
-    <span class="n">main_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">GeoAxes</span><span class="p">,</span>
+    <span class="n">main_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
     <span class="n">main_extent_crs</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">,</span>
-    <span class="n">locator_rect</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-    <span class="n">locator_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
-    <span class="n">locator_crs</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">,</span>
-    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">linewidth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">zorder</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+    <span class="n">locator_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="o">-</span><span class="mi">125</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">105</span><span class="p">,</span>
+        <span class="mi">30</span><span class="p">,</span>
+        <span class="mi">50</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">bounds</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">),</span>
+    <span class="n">locator_crs</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"red"</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">zorder</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GeoAxes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Add a small locator map to the figure that shows where the main map is.</span>
+<span class="sd">    Add a small locator map inside a map that shows where the main map is.</span>
 
-<span class="sd">    The locator map is a new axes with land, ocean and state boundaries, and</span>
-<span class="sd">    the extent of the main map drawn on it as an outline (no fill).</span>
+<span class="sd">    The locator map is an inset of ``ax``, placed by ``bounds`` as a fraction of</span>
+<span class="sd">    the main axes. It shows land, ocean and state boundaries (Natural Earth,</span>
+<span class="sd">    1:50 million) and the extent of the main map as an outline (no fill). The</span>
+<span class="sd">    defaults put a map of the western United States in the upper right corner.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fig : matplotlib.figure.Figure</span>
-<span class="sd">        Figure to add the locator map to</span>
+<span class="sd">    ax : cartopy.mpl.geoaxes.GeoAxes</span>
+<span class="sd">        The main map's axes, to add the locator map to</span>
 <span class="sd">    main_extent : list[float]</span>
 <span class="sd">        Extent of the main map, ``[minx, maxx, miny, maxy]``, in</span>
 <span class="sd">        ``main_extent_crs``</span>
 <span class="sd">    main_extent_crs : ccrs.CRS</span>
 <span class="sd">        CRS of the main extent</span>
-<span class="sd">    locator_rect : tuple[left, bottom, width, height]</span>
-<span class="sd">        Position of the locator map, in figure fractions (0 to 1) as for</span>
-<span class="sd">        ``Figure.add_axes``</span>
-<span class="sd">    locator_extent : list[float]</span>
+<span class="sd">    locator_extent : list[float], optional</span>
 <span class="sd">        Extent of the locator map, ``[west, east, south, north]`` in degrees</span>
-<span class="sd">        of longitude and latitude</span>
-<span class="sd">    locator_crs : ccrs.CRS</span>
-<span class="sd">        Projection of the locator map</span>
-<span class="sd">    color : str</span>
-<span class="sd">        Color of the main-extent outline drawn on the locator map</span>
-<span class="sd">    linewidth : int</span>
-<span class="sd">        Line width of the main-extent outline</span>
+<span class="sd">        of longitude and latitude, by default the western United States,</span>
+<span class="sd">        ``(-125, -105, 30, 50)``</span>
+<span class="sd">    bounds : tuple[left, bottom, width, height], optional</span>
+<span class="sd">        Position of the locator map as fractions (0 to 1) of ``ax``, as for</span>
+<span class="sd">        ``Axes.inset_axes``, by default the upper right corner,</span>
+<span class="sd">        ``(0.7, 0.7, 0.29, 0.29)``</span>
+<span class="sd">    locator_crs : ccrs.Projection, optional</span>
+<span class="sd">        Projection of the locator map, by default an Albers equal-area</span>
+<span class="sd">        projection centered at 111 degrees west</span>
+<span class="sd">    color : str, optional</span>
+<span class="sd">        Color of the main-extent outline drawn on the locator map, by default</span>
+<span class="sd">        ``"red"``</span>
+<span class="sd">    linewidth : float, optional</span>
+<span class="sd">        Line width of the main-extent outline, by default 2</span>
 <span class="sd">    zorder : int, optional</span>
-<span class="sd">        Zorder of the locator map, by default None</span>
+<span class="sd">        Zorder of the locator map, by default 8, above the main map's layers</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    plt.Axes</span>
+<span class="sd">    cartopy.mpl.geoaxes.GeoAxes</span>
 <span class="sd">        Axes object of the locator map</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    plot_grid : Draws a grid's cells on the main map.</span>
+<span class="sd">    add_latlon_ticks : Labels the main map's ticks in degrees.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Cartopy downloads the Natural Earth features the first time it draws them</span>
+<span class="sd">    (the internet is needed), and caches them.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    A locator map of Utah and its neighbors in the top left of ``fig``, with</span>
-<span class="sd">    the main map's extent outlined in red, as :doc:`/examples/maps` draws it::</span>
+<span class="sd">    A locator map of the western United States in the upper right corner of</span>
+<span class="sd">    ``ax``, with the main map's extent outlined in red (:doc:`/examples/maps`</span>
+<span class="sd">    draws one)::</span>
+
+<span class="sd">        main_extent = [-112.2, -111.5, 40.4, 41.0]</span>
+<span class="sd">        add_locator_map(ax, main_extent, PC)</span>
+
+<span class="sd">    A locator map of Utah and its neighbors in the upper left corner::</span>
 
 <span class="sd">        add_locator_map(</span>
-<span class="sd">            fig,</span>
-<span class="sd">            main_extent=[-112.2, -111.5, 40.4, 41.0],</span>
-<span class="sd">            main_extent_crs=PC,</span>
-<span class="sd">            locator_rect=(0.14, 0.58, 0.24, 0.26),</span>
+<span class="sd">            ax,</span>
+<span class="sd">            main_extent,</span>
+<span class="sd">            PC,</span>
 <span class="sd">            locator_extent=[-117, -106, 35, 43],</span>
+<span class="sd">            bounds=(0.02, 0.7, 0.29, 0.29),</span>
 <span class="sd">            locator_crs=PC,</span>
-<span class="sd">            color="red",</span>
-<span class="sd">            linewidth=1.5,</span>
 <span class="sd">        )</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.feature</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cfeature</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
 
-    <span class="n">locator_ax</span><span class="p">:</span> <span class="n">GeoAxes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">(</span>
-        <span class="n">locator_rect</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">locator_crs</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span>
-    <span class="p">)</span>
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">set_extent</span><span class="p">(</span><span class="n">locator_extent</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">locator_crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">locator_crs</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">AlbersEqualArea</span><span class="p">(</span><span class="n">central_longitude</span><span class="o">=-</span><span class="mi">111</span><span class="p">)</span>
 
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">LAND</span><span class="p">)</span>
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">OCEAN</span><span class="p">)</span>
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="p">)</span>
+    <span class="n">locator_ax</span><span class="p">:</span> <span class="n">GeoAxes</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">inset_axes</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">locator_crs</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">set_extent</span><span class="p">(</span><span class="n">locator_extent</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">OCEAN</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="s2">"50m"</span><span class="p">))</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">LAND</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="s2">"50m"</span><span class="p">))</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="s2">"50m"</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
 
     <span class="n">main_poly</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">extent2bbox</span><span class="p">(</span><span class="n">main_extent</span><span class="p">))</span>
 
