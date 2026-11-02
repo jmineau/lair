@@ -578,82 +578,104 @@ def add_latlon_ticks(
 
 
 def add_locator_map(
-    fig: plt.Figure,
-    main_extent: list[float],
+    ax: GeoAxes,
+    main_extent: list[float] | tuple[float, float, float, float],
     main_extent_crs: ccrs.CRS,
-    locator_rect: tuple[float, float, float, float],
-    locator_extent: list[float],
-    locator_crs: ccrs.CRS,
-    color: str,
-    linewidth: int,
-    zorder: int | None = None,
-) -> plt.Axes:
+    locator_extent: list[float] | tuple[float, float, float, float] = (
+        -125,
+        -105,
+        30,
+        50,
+    ),
+    bounds: tuple[float, float, float, float] = (0.7, 0.7, 0.29, 0.29),
+    locator_crs: ccrs.Projection | None = None,
+    color: str = "red",
+    linewidth: float = 2,
+    zorder: int = 8,
+) -> GeoAxes:
     """
-    Add a small locator map to the figure that shows where the main map is.
+    Add a small locator map inside a map that shows where the main map is.
 
-    The locator map is a new axes with land, ocean and state boundaries, and
-    the extent of the main map drawn on it as an outline (no fill).
+    The locator map is an inset of ``ax``, placed by ``bounds`` as a fraction of
+    the main axes. It shows land, ocean and state boundaries (Natural Earth,
+    1:50 million) and the extent of the main map as an outline (no fill). The
+    defaults put a map of the western United States in the upper right corner.
 
     Parameters
     ----------
-    fig : matplotlib.figure.Figure
-        Figure to add the locator map to
+    ax : cartopy.mpl.geoaxes.GeoAxes
+        The main map's axes, to add the locator map to
     main_extent : list[float]
         Extent of the main map, ``[minx, maxx, miny, maxy]``, in
         ``main_extent_crs``
     main_extent_crs : ccrs.CRS
         CRS of the main extent
-    locator_rect : tuple[left, bottom, width, height]
-        Position of the locator map, in figure fractions (0 to 1) as for
-        ``Figure.add_axes``
-    locator_extent : list[float]
+    locator_extent : list[float], optional
         Extent of the locator map, ``[west, east, south, north]`` in degrees
-        of longitude and latitude
-    locator_crs : ccrs.CRS
-        Projection of the locator map
-    color : str
-        Color of the main-extent outline drawn on the locator map
-    linewidth : int
-        Line width of the main-extent outline
+        of longitude and latitude, by default the western United States,
+        ``(-125, -105, 30, 50)``
+    bounds : tuple[left, bottom, width, height], optional
+        Position of the locator map as fractions (0 to 1) of ``ax``, as for
+        ``Axes.inset_axes``, by default the upper right corner,
+        ``(0.7, 0.7, 0.29, 0.29)``
+    locator_crs : ccrs.Projection, optional
+        Projection of the locator map, by default an Albers equal-area
+        projection centered at 111 degrees west
+    color : str, optional
+        Color of the main-extent outline drawn on the locator map, by default
+        ``"red"``
+    linewidth : float, optional
+        Line width of the main-extent outline, by default 2
     zorder : int, optional
-        Zorder of the locator map, by default None
+        Zorder of the locator map, by default 8, above the main map's layers
 
     Returns
     -------
-    plt.Axes
+    cartopy.mpl.geoaxes.GeoAxes
         Axes object of the locator map
 
     See Also
     --------
     plot_grid : Draws a grid's cells on the main map.
+    add_latlon_ticks : Labels the main map's ticks in degrees.
+
+    Notes
+    -----
+    Cartopy downloads the Natural Earth features the first time it draws them
+    (the internet is needed), and caches them.
 
     Examples
     --------
-    A locator map of Utah and its neighbors in the top left of ``fig``, with
-    the main map's extent outlined in red, as :doc:`/examples/maps` draws it::
+    A locator map of the western United States in the upper right corner of
+    ``ax``, with the main map's extent outlined in red (:doc:`/examples/maps`
+    draws one)::
+
+        main_extent = [-112.2, -111.5, 40.4, 41.0]
+        add_locator_map(ax, main_extent, PC)
+
+    A locator map of Utah and its neighbors in the upper left corner::
 
         add_locator_map(
-            fig,
-            main_extent=[-112.2, -111.5, 40.4, 41.0],
-            main_extent_crs=PC,
-            locator_rect=(0.14, 0.58, 0.24, 0.26),
+            ax,
+            main_extent,
+            PC,
             locator_extent=[-117, -106, 35, 43],
+            bounds=(0.02, 0.7, 0.29, 0.29),
             locator_crs=PC,
-            color="red",
-            linewidth=1.5,
         )
     """
     import cartopy.feature as cfeature
     from shapely.geometry import box
 
-    locator_ax: GeoAxes = fig.add_axes(
-        locator_rect, projection=locator_crs, zorder=zorder
-    )
-    locator_ax.set_extent(locator_extent)
+    if locator_crs is None:
+        locator_crs = ccrs.AlbersEqualArea(central_longitude=-111)
 
-    locator_ax.add_feature(cfeature.LAND)
-    locator_ax.add_feature(cfeature.OCEAN)
-    locator_ax.add_feature(cfeature.STATES)
+    locator_ax: GeoAxes = ax.inset_axes(bounds, projection=locator_crs, zorder=zorder)
+    locator_ax.set_extent(locator_extent, crs=ccrs.PlateCarree())
+
+    locator_ax.add_feature(cfeature.OCEAN.with_scale("50m"))
+    locator_ax.add_feature(cfeature.LAND.with_scale("50m"))
+    locator_ax.add_feature(cfeature.STATES.with_scale("50m"), linewidth=0.8)
 
     main_poly = box(*extent2bbox(main_extent))
 
