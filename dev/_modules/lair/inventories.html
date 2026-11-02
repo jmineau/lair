@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=9a74e13a"></script>
+    <script src="../../_static/documentation_options.js?v=bfefdf61"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev4+g2cb01231b" />
+  <meta name="docsearch:version" content="2026.12.12.dev5+g0e9eb65b1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -2417,6 +2417,13 @@
 <span class="sd">    consistent with methane emissions from the U.S. EPA Inventory of U.S.</span>
 <span class="sd">    Greenhouse Gas Emissions and Sinks (U.S. GHGI).</span>
 
+<span class="sd">    A variable of the files whose name starts with the emissions prefix</span>
+<span class="sd">    (``emissions`` in v1, ``emi_ch4`` in v2) is a sector, named by the text</span>
+<span class="sd">    after its IPCC code (``emissions_1A_Combustion_Mobile`` is</span>
+<span class="sd">    ``Combustion_Mobile``). One that does not follow that form, such as a total,</span>
+<span class="sd">    is left out with a warning that names it, so it cannot enter</span>
+<span class="sd">    ``total_emissions`` twice.</span>
+
 <span class="sd">    lair's totals differ a little from EPA's own. EPA's files give each cell's</span>
 <span class="sd">    area on a sphere of 6371 km (their ``grid_cell_area``, which lair drops);</span>
 <span class="sd">    lair uses the area on the WGS84 ellipsoid, as for every inventory</span>
@@ -2473,12 +2480,16 @@
 
         <span class="c1"># Rename variables and add attributes</span>
         <span class="n">name_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">unmatched</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
             <span class="n">attrs</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
             <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_emissions_prefix</span><span class="p">):</span>
                 <span class="n">ipcc_code</span><span class="p">,</span> <span class="n">short_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_ipcc_code_and_short_name</span><span class="p">(</span>
                     <span class="n">var</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_emissions_prefix</span>
                 <span class="p">)</span>
+                <span class="k">if</span> <span class="n">short_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">unmatched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+                    <span class="k">continue</span>
                 <span class="n">attrs</span><span class="p">[</span><span class="s2">"IPCC_Code"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ipcc_code</span>
                 <span class="n">attrs</span><span class="p">[</span><span class="s2">"long_name"</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">short_name</span><span class="si">}</span><span class="s2">_Emissions"</span>
                 <span class="n">attrs</span><span class="p">[</span><span class="s2">"standard_name"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_standard_name</span><span class="p">()</span>
@@ -2486,6 +2497,16 @@
                     <span class="s2">"source_category"</span><span class="p">,</span> <span class="kc">None</span>
                 <span class="p">)</span>  <span class="c1"># remove source_category attribute for v2 (same as IPCC code)</span>
                 <span class="n">name_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">short_name</span>
+        <span class="k">if</span> <span class="n">unmatched</span><span class="p">:</span>
+            <span class="c1"># Not a sector (a total, a note): summing it would double count</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">"</span><span class="si">%s</span><span class="s2"> leaves out </span><span class="si">%s</span><span class="s2">: the name starts with </span><span class="si">%r</span><span class="s2"> but is not "</span>
+                <span class="s2">"&lt;prefix&gt;_&lt;IPCC code&gt;_&lt;sector name&gt;"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">unmatched</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_emissions_prefix</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="n">unmatched</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">name_dict</span><span class="p">)</span>
 
         <span class="c1"># Round grid to nearest 0.1 degrees</span>
