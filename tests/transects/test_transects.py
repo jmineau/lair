@@ -68,6 +68,49 @@ def test_transit_times_and_profile(matrix):
     assert np.nanmin(freq[:, 10]) == pytest.approx(1.0)
 
 
+class TestProfileTimeZone:
+    """A time-zone-aware time is the moment it names, shifted once by tz_offset_hours."""
+
+    # three transits at 18:00 UTC, which is 11:00 in MST (UTC-7)
+    utc = pd.DatetimeIndex(["2020-01-01 18:00", "2020-01-02 18:00", "2020-01-03 18:00"])
+
+    @staticmethod
+    def _hours_with_data(times, tz_offset_hours):
+        enh = np.ones((3, 1))
+        bins, freq, _ = transects.profile(
+            enh, times, min_transits=1, tz_offset_hours=tz_offset_hours
+        )
+        return bins[~np.isnan(freq[:, 0])].tolist()
+
+    @pytest.mark.parametrize(
+        "times",
+        [
+            utc,
+            utc.tz_localize("UTC"),
+            utc.tz_localize("UTC").tz_convert("America/Denver"),
+            utc.tz_localize("UTC").tz_convert("Asia/Kolkata"),
+        ],
+        ids=["naive UTC", "UTC", "Denver", "Kolkata"],
+    )
+    def test_the_offset_shifts_the_utc_hour_once(self, times):
+        assert self._hours_with_data(times, 0) == [18]
+        assert self._hours_with_data(times, -7) == [11]
+
+    def test_other_bins_use_the_utc_moment_too(self):
+        # 2020-01-01 10:00 UTC is 03:00 on Wednesday 1 January in MST; shifted
+        # twice it would be Tuesday 31 December
+        local = pd.DatetimeIndex(["2020-01-01 10:00"]).tz_localize("UTC")
+        for by, expected in [("weekday", 2), ("month", 1)]:
+            bins, freq, _ = transects.profile(
+                np.ones((1, 1)),
+                local.tz_convert("America/Denver"),
+                by=by,
+                min_transits=1,
+                tz_offset_hours=-7,
+            )
+            assert bins[~np.isnan(freq[:, 0])].tolist() == [expected]
+
+
 def test_along_route_distance():
     pytest.importorskip("pyproj")
     d = transects.along_route_distance(
