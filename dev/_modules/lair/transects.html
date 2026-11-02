@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=6249b6a7"></script>
+    <script src="../../_static/documentation_options.js?v=9a74e13a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev3+g4c836d9c6" />
+  <meta name="docsearch:version" content="2026.12.12.dev4+g2cb01231b" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -775,7 +775,9 @@
 <span class="sd">    enh : np.ndarray</span>
 <span class="sd">        Enhancement matrix ``enh[transit, point]``, as from :func:`enhancement`.</span>
 <span class="sd">    times : pd.DatetimeIndex</span>
-<span class="sd">        One UTC time per transit, as from :func:`transit_times`.</span>
+<span class="sd">        One time per transit, as from :func:`transit_times`. A naive time is</span>
+<span class="sd">        UTC; a time-zone-aware time is converted to UTC first, so</span>
+<span class="sd">        ``tz_offset_hours`` is the only shift.</span>
 <span class="sd">    by : str, optional</span>
 <span class="sd">        The bins: ``"hour"`` (the default), ``"weekday"`` or ``"month"`` of the</span>
 <span class="sd">        transit time.</span>
@@ -817,7 +819,17 @@
 <span class="sd">    &gt;&gt;&gt; mag[[0, 12]]</span>
 <span class="sd">    array([[ 1., nan],</span>
 <span class="sd">           [nan, nan]])</span>
+
+<span class="sd">    A time with a time zone is converted to UTC first, so the same moments give</span>
+<span class="sd">    the same bins:</span>
+
+<span class="sd">    &gt;&gt;&gt; local = times.tz_localize("UTC").tz_convert("America/Denver")</span>
+<span class="sd">    &gt;&gt;&gt; bins, freq_local, mag_local = profile(enh, local, min_transits=1)</span>
+<span class="sd">    &gt;&gt;&gt; bool(np.array_equal(freq, freq_local, equal_nan=True))</span>
+<span class="sd">    True</span>
 <span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">times</span><span class="o">.</span><span class="n">tz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">times</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">"UTC"</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">times</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">tz_offset_hours</span><span class="p">)</span>
     <span class="n">key</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"hour"</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="s2">"weekday"</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">day_of_week</span><span class="p">,</span> <span class="s2">"month"</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">month</span><span class="p">}[</span><span class="n">by</span><span class="p">]</span>
     <span class="n">bins</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"hour"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">),</span> <span class="s2">"weekday"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span> <span class="s2">"month"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)}[</span>
