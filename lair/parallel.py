@@ -67,8 +67,8 @@ def parallelize(func: Callable, num_processes: int | Literal["max"] = 1) -> Call
     See Also
     --------
     lair.noaa.CarbonTracker.molefractions : Opens its files in worker processes
-        of its own; see the CarbonTracker example for the ``__main__`` guard a
-        script needs.
+        of its own (one at a time inside a worker of ``parallelize``); see the
+        CarbonTracker example for the ``__main__`` guard a script needs.
 
     Examples
     --------
