@@ -12,6 +12,8 @@ data roots are ``$LAIR_CARBONTRACKER_DIR`` and ``$LAIR_GML_DIR`` (see
 """
 
 import datetime as dt
+import logging
+import multiprocessing
 import re
 from abc import ABCMeta
 from collections.abc import Sequence
@@ -30,6 +32,8 @@ from xarray.backends.locks import HDF5_LOCK, NETCDFC_LOCK, combine_locks
 from lair.config import get_cache_dir, get_data_dir
 from lair.parallel import _allowed_cpus
 from lair.records import Cacher, ftp_download, list_files
+
+logger = logging.getLogger(__name__)
 
 #: Environment variable holding the CarbonTracker data root
 #:
@@ -66,7 +70,17 @@ def _open_mfdataset(files, preprocess=None, parallel: bool = False) -> xr.Datase
     worker comes back with the lock it was opened with, and each process's own
     lock is a different one, so without this the files from different workers
     would be read at once, and crash, when the data is loaded here.
+
+    A daemonic process, such as a worker of :func:`lair.parallel.parallelize`,
+    may not start processes of its own, so there the files are opened one at a
+    time, as with ``parallel=False``; the result is the same.
     """
+    if parallel and multiprocessing.current_process().daemon:
+        logger.info(
+            "Opening the files one at a time: this is a worker process, and a "
+            "worker may not start processes of its own."
+        )
+        parallel = False
     if parallel:
         # The lock xarray's netCDF4 backend uses for local files
         lock = combine_locks([NETCDFC_LOCK, HDF5_LOCK])
@@ -655,6 +669,9 @@ class CarbonTrackerCH4(CarbonTracker):
         each CPU this process may use (default True), or one at a time. The
         workers import the calling script again, so a script that reads
         ``molefractions`` needs the ``if __name__ == "__main__":`` guard.
+        Inside a worker process, such as one of
+        :func:`~lair.parallel.parallelize`, the files are opened one at a time
+        whatever this says.
 
     Methods
     -------
@@ -808,6 +825,9 @@ class CarbonTrackerCO2(CarbonTracker):
         each CPU this process may use (default True), or one at a time. The
         workers import the calling script again, so a script that reads
         ``molefractions`` needs the ``if __name__ == "__main__":`` guard.
+        Inside a worker process, such as one of
+        :func:`~lair.parallel.parallelize`, the files are opened one at a time
+        whatever this says.
 
     See Also
     --------

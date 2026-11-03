@@ -7,7 +7,9 @@ CarbonTracker-like grid, and sample()/background()/.molefractions/.data against
 small synthetic files shaped like the real releases.
 """
 
+import multiprocessing
 from concurrent.futures.process import BrokenProcessPool
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -912,6 +914,63 @@ class TestParallelParse:
         ct_ch4.parallel_parse = True
         with pytest.raises(RuntimeError, match="__main__.*parallel_parse=False"):
             _ = ct_ch4.molefractions
+
+
+def _read_molefractions_in_a_worker(root):
+    """Read ``molefractions`` with the default ``parallel_parse`` (module level to pickle)."""
+    ct = CarbonTrackerCH4(
+        version="CT-CH4-2023", carbon_tracker_directory=root, cache=False
+    )
+    assert ct.parallel_parse
+    ds = ct.molefractions.load()
+    return dict(ds.sizes), float(ds["ch4"].sum())
+
+
+class TestParallelParseInAWorker:
+    """A worker process may not start processes, so it opens the files itself (#221)."""
+
+    def test_default_works_in_a_pool_worker(self, ct_ch4, tmp_path):
+        # Pool workers are daemonic, as are those of lair.parallel.parallelize.
+        # They are spawned: forked from a process that has read netCDF files,
+        # a worker can hang in the HDF5 library.
+        context = multiprocessing.get_context("spawn")
+        with context.Pool(processes=2) as pool:
+            results = pool.map(_read_molefractions_in_a_worker, [tmp_path, tmp_path])
+        expected = _read_molefractions_in_a_worker(tmp_path)
+        assert results == [expected, expected]
+
+    def test_a_daemonic_process_opens_one_at_a_time(self, ct_ch4, monkeypatch, caplog):
+        calls = []
+        real = xr.open_mfdataset
+
+        def record(*args, **kwargs):
+            calls.append(kwargs["parallel"])
+            return real(*args, **kwargs)
+
+        monkeypatch.setattr(xr, "open_mfdataset", record)
+        monkeypatch.setattr(
+            multiprocessing,
+            "current_process",
+            lambda: SimpleNamespace(daemon=True, name="MainProcess"),
+        )
+        ct_ch4.parallel_parse = True
+        with caplog.at_level("INFO", logger="lair.noaa"):
+            _ = ct_ch4.molefractions
+        assert calls == [False]
+        assert "one at a time" in caplog.text
+
+    def test_a_main_process_still_opens_in_workers(self, ct_ch4, monkeypatch):
+        calls = []
+        real = xr.open_mfdataset
+
+        def record(*args, **kwargs):
+            calls.append(kwargs["parallel"])
+            return real(*args, **kwargs)
+
+        monkeypatch.setattr(xr, "open_mfdataset", record)
+        ct_ch4.parallel_parse = True
+        _ = ct_ch4.molefractions
+        assert calls == [True]
 
 
 class TestCacheFolder:
