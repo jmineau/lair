@@ -192,7 +192,10 @@ the CRS of that extent. The locator map shows the western United States
 outlines the main extent in red. ``locator_extent`` sets its view, in degrees;
 ``bounds`` its position, as fractions of the main axes (``Axes.inset_axes``'s
 rectangle, ``(left, bottom, width, height)``); ``locator_crs`` its projection
-(an Albers equal-area map by default); ``color`` and ``linewidth`` the outline:
+(an Albers equal-area map by default); ``color`` and ``linewidth`` the outline;
+``fill=True`` fills the box with ``color``; ``scale`` is the Natural Earth scale
+of the land, ocean and states (``"50m"`` by default, ``"110m"`` is coarser and
+quicker to draw):
 
 .. code-block:: ipython
 

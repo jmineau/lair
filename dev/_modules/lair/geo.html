@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=cfe5caa7"></script>
+    <script src="../../_static/documentation_options.js?v=18bc52f1"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev8+g729f0c884" />
+  <meta name="docsearch:version" content="2026.12.12.dev9+g44f4c974b" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1064,14 +1064,17 @@
     <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"red"</span><span class="p">,</span>
     <span class="n">linewidth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">zorder</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"50m"</span><span class="p">,</span>
+    <span class="n">fill</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GeoAxes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add a small locator map inside a map that shows where the main map is.</span>
 
 <span class="sd">    The locator map is an inset of ``ax``, placed by ``bounds`` as a fraction of</span>
 <span class="sd">    the main axes. It shows land, ocean and state boundaries (Natural Earth,</span>
-<span class="sd">    1:50 million) and the extent of the main map as an outline (no fill). The</span>
-<span class="sd">    defaults put a map of the western United States in the upper right corner.</span>
+<span class="sd">    1:50 million by default) and the extent of the main map as an outline, or</span>
+<span class="sd">    filled with ``fill=True``. The defaults put a map of the western United</span>
+<span class="sd">    States in the upper right corner.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1094,12 +1097,19 @@
 <span class="sd">        Projection of the locator map, by default an Albers equal-area</span>
 <span class="sd">        projection centered at 111 degrees west</span>
 <span class="sd">    color : str, optional</span>
-<span class="sd">        Color of the main-extent outline drawn on the locator map, by default</span>
-<span class="sd">        ``"red"``</span>
+<span class="sd">        Color of the main-extent box drawn on the locator map (its outline, and</span>
+<span class="sd">        its fill when ``fill=True``), by default ``"red"``</span>
 <span class="sd">    linewidth : float, optional</span>
 <span class="sd">        Line width of the main-extent outline, by default 2</span>
 <span class="sd">    zorder : int, optional</span>
 <span class="sd">        Zorder of the locator map, by default 8, above the main map's layers</span>
+<span class="sd">    scale : str, optional</span>
+<span class="sd">        Natural Earth scale of the ocean, land and state features: ``"10m"``,</span>
+<span class="sd">        ``"50m"`` or ``"110m"`` (1:10, 1:50 and 1:110 million), by default</span>
+<span class="sd">        ``"50m"``. A coarser scale is smaller to download and faster to draw.</span>
+<span class="sd">    fill : bool, optional</span>
+<span class="sd">        Fill the main-extent box with ``color``, by default False (outline</span>
+<span class="sd">        only)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1135,6 +1145,11 @@
 <span class="sd">            bounds=(0.02, 0.7, 0.29, 0.29),</span>
 <span class="sd">            locator_crs=PC,</span>
 <span class="sd">        )</span>
+
+<span class="sd">    The main map's extent as a filled red box, on the coarser 110 million</span>
+<span class="sd">    scale::</span>
+
+<span class="sd">        add_locator_map(ax, main_extent, PC, fill=True, scale="110m")</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.feature</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cfeature</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
@@ -1145,17 +1160,16 @@
     <span class="n">locator_ax</span><span class="p">:</span> <span class="n">GeoAxes</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">inset_axes</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">locator_crs</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span>
     <span class="n">locator_ax</span><span class="o">.</span><span class="n">set_extent</span><span class="p">(</span><span class="n">locator_extent</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
 
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">OCEAN</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="s2">"50m"</span><span class="p">))</span>
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">LAND</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="s2">"50m"</span><span class="p">))</span>
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="s2">"50m"</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">OCEAN</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">LAND</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
 
     <span class="n">main_poly</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">extent2bbox</span><span class="p">(</span><span class="n">main_extent</span><span class="p">))</span>
 
-    <span class="c1"># Outline only: `color=` would also fill the box</span>
     <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_geometries</span><span class="p">(</span>
         <span class="p">[</span><span class="n">main_poly</span><span class="p">],</span>
         <span class="n">crs</span><span class="o">=</span><span class="n">main_extent_crs</span><span class="p">,</span>
-        <span class="n">facecolor</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+        <span class="n">facecolor</span><span class="o">=</span><span class="n">color</span> <span class="k">if</span> <span class="n">fill</span> <span class="k">else</span> <span class="s2">"none"</span><span class="p">,</span>
         <span class="n">edgecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
         <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span>
     <span class="p">)</span>

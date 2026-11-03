@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=cfe5caa7"></script>
+    <script src="../_static/documentation_options.js?v=18bc52f1"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev8+g729f0c884" />
+  <meta name="docsearch:version" content="2026.12.12.dev9+g44f4c974b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -810,12 +810,13 @@
 <h1>lair.geo.add_locator_map<a class="headerlink" href="#lair-geo-add-locator-map" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.geo.add_locator_map">
-<span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">add_locator_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locator_extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-125,</span> <span class="pre">-105,</span> <span class="pre">30,</span> <span class="pre">50)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.7,</span> <span class="pre">0.7,</span> <span class="pre">0.29,</span> <span class="pre">0.29)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locator_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'red'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#add_locator_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.add_locator_map" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lair.geo.</span></span><span class="sig-name descname"><span class="pre">add_locator_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_extent_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locator_extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-125,</span> <span class="pre">-105,</span> <span class="pre">30,</span> <span class="pre">50)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.7,</span> <span class="pre">0.7,</span> <span class="pre">0.29,</span> <span class="pre">0.29)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locator_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'red'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'50m'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/geo.html#add_locator_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.geo.add_locator_map" title="Link to this definition">#</a></dt>
 <dd><p>Add a small locator map inside a map that shows where the main map is.</p>
 <p>The locator map is an inset of <code class="docutils literal notranslate"><span class="pre">ax</span></code>, placed by <code class="docutils literal notranslate"><span class="pre">bounds</span></code> as a fraction of
 the main axes. It shows land, ocean and state boundaries (Natural Earth,
-1:50 million) and the extent of the main map as an outline (no fill). The
-defaults put a map of the western United States in the upper right corner.</p>
+1:50 million by default) and the extent of the main map as an outline, or
+filled with <code class="docutils literal notranslate"><span class="pre">fill=True</span></code>. The defaults put a map of the western United
+States in the upper right corner.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -831,10 +832,15 @@ of longitude and latitude, by default the western United States,
 <code class="docutils literal notranslate"><span class="pre">(0.7,</span> <span class="pre">0.7,</span> <span class="pre">0.29,</span> <span class="pre">0.29)</span></code></p></li>
 <li><p><strong>locator_crs</strong> (<em>ccrs.Projection</em><em>, </em><em>optional</em>) – Projection of the locator map, by default an Albers equal-area
 projection centered at 111 degrees west</p></li>
-<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Color of the main-extent outline drawn on the locator map, by default
-<code class="docutils literal notranslate"><span class="pre">&quot;red&quot;</span></code></p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Color of the main-extent box drawn on the locator map (its outline, and
+its fill when <code class="docutils literal notranslate"><span class="pre">fill=True</span></code>), by default <code class="docutils literal notranslate"><span class="pre">&quot;red&quot;</span></code></p></li>
 <li><p><strong>linewidth</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Line width of the main-extent outline, by default 2</p></li>
 <li><p><strong>zorder</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Zorder of the locator map, by default 8, above the main map’s layers</p></li>
+<li><p><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Natural Earth scale of the ocean, land and state features: <code class="docutils literal notranslate"><span class="pre">&quot;10m&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;50m&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;110m&quot;</span></code> (1:10, 1:50 and 1:110 million), by default
+<code class="docutils literal notranslate"><span class="pre">&quot;50m&quot;</span></code>. A coarser scale is smaller to download and faster to draw.</p></li>
+<li><p><strong>fill</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Fill the main-extent box with <code class="docutils literal notranslate"><span class="pre">color</span></code>, by default False (outline
+only)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -873,6 +879,11 @@ draws one):</p>
     <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">),</span>
     <span class="n">locator_crs</span><span class="o">=</span><span class="n">PC</span><span class="p">,</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+<p>The main map’s extent as a filled red box, on the coarser 110 million
+scale:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">add_locator_map</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">main_extent</span><span class="p">,</span> <span class="n">PC</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="s2">"110m"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
