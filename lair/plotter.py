@@ -652,6 +652,12 @@ def polarFreq(
     plt.Axes
         Axis with the plot
 
+    See Also
+    --------
+    lair.air.bin_polar : Bins the data by wind direction and speed.
+    polarPlot : A statistic of a variable (its mean, say) in each bin, not the count.
+    create_polar_ax : The axis it draws on.
+
     Examples
     --------
     .. plot::
