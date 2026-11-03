@@ -1249,6 +1249,38 @@ class TestAddLocatorMap:
         assert feature.crs == main_crs
         assert next(iter(feature.geometries())).bounds == (-1.0e5, -2.0e5, 1.0e5, 2.0e5)
 
+    def test_fill_fills_the_box_with_the_color(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(
+            main_ax, self.MAIN_EXTENT, ccrs.PlateCarree(), color="blue", fill=True
+        )
+        box_artist = inset.collections[-1]
+        np.testing.assert_allclose(box_artist.get_facecolor(), [[0, 0, 1, 1]])
+        np.testing.assert_allclose(box_artist.get_edgecolor(), [[0, 0, 1, 1]])
+
+    def test_box_is_not_filled_by_default(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(
+            main_ax, self.MAIN_EXTENT, ccrs.PlateCarree(), color="blue"
+        )
+        face = np.asarray(inset.collections[-1].get_facecolor())
+        assert face.size == 0 or np.all(face[:, 3] == 0)
+
+    def test_scale_sets_the_scale_of_all_three_features(self, main_ax):
+        import cartopy.crs as ccrs
+
+        inset = geo.add_locator_map(
+            main_ax, self.MAIN_EXTENT, ccrs.PlateCarree(), scale="110m"
+        )
+        features = [(a._feature.name, a._feature.scale) for a in inset.collections[:3]]
+        assert features == [
+            ("ocean", "110m"),
+            ("land", "110m"),
+            ("admin_1_states_provinces_lakes", "110m"),
+        ]
+
     def test_default_outline_is_red(self, main_ax):
         import cartopy.crs as ccrs
 

@@ -592,14 +592,17 @@ def add_locator_map(
     color: str = "red",
     linewidth: float = 2,
     zorder: int = 8,
+    scale: str = "50m",
+    fill: bool = False,
 ) -> GeoAxes:
     """
     Add a small locator map inside a map that shows where the main map is.
 
     The locator map is an inset of ``ax``, placed by ``bounds`` as a fraction of
     the main axes. It shows land, ocean and state boundaries (Natural Earth,
-    1:50 million) and the extent of the main map as an outline (no fill). The
-    defaults put a map of the western United States in the upper right corner.
+    1:50 million by default) and the extent of the main map as an outline, or
+    filled with ``fill=True``. The defaults put a map of the western United
+    States in the upper right corner.
 
     Parameters
     ----------
@@ -622,12 +625,19 @@ def add_locator_map(
         Projection of the locator map, by default an Albers equal-area
         projection centered at 111 degrees west
     color : str, optional
-        Color of the main-extent outline drawn on the locator map, by default
-        ``"red"``
+        Color of the main-extent box drawn on the locator map (its outline, and
+        its fill when ``fill=True``), by default ``"red"``
     linewidth : float, optional
         Line width of the main-extent outline, by default 2
     zorder : int, optional
         Zorder of the locator map, by default 8, above the main map's layers
+    scale : str, optional
+        Natural Earth scale of the ocean, land and state features: ``"10m"``,
+        ``"50m"`` or ``"110m"`` (1:10, 1:50 and 1:110 million), by default
+        ``"50m"``. A coarser scale is smaller to download and faster to draw.
+    fill : bool, optional
+        Fill the main-extent box with ``color``, by default False (outline
+        only)
 
     Returns
     -------
@@ -663,6 +673,11 @@ def add_locator_map(
             bounds=(0.02, 0.7, 0.29, 0.29),
             locator_crs=PC,
         )
+
+    The main map's extent as a filled red box, on the coarser 110 million
+    scale::
+
+        add_locator_map(ax, main_extent, PC, fill=True, scale="110m")
     """
     import cartopy.feature as cfeature
     from shapely.geometry import box
@@ -673,17 +688,16 @@ def add_locator_map(
     locator_ax: GeoAxes = ax.inset_axes(bounds, projection=locator_crs, zorder=zorder)
     locator_ax.set_extent(locator_extent, crs=ccrs.PlateCarree())
 
-    locator_ax.add_feature(cfeature.OCEAN.with_scale("50m"))
-    locator_ax.add_feature(cfeature.LAND.with_scale("50m"))
-    locator_ax.add_feature(cfeature.STATES.with_scale("50m"), linewidth=0.8)
+    locator_ax.add_feature(cfeature.OCEAN.with_scale(scale))
+    locator_ax.add_feature(cfeature.LAND.with_scale(scale))
+    locator_ax.add_feature(cfeature.STATES.with_scale(scale), linewidth=0.8)
 
     main_poly = box(*extent2bbox(main_extent))
 
-    # Outline only: `color=` would also fill the box
     locator_ax.add_geometries(
         [main_poly],
         crs=main_extent_crs,
-        facecolor="none",
+        facecolor=color if fill else "none",
         edgecolor=color,
         linewidth=linewidth,
     )
