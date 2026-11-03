@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=1c2b6393"></script>
+    <script src="../_static/documentation_options.js?v=56577583"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev11+gcc42e70e8" />
+  <meta name="docsearch:version" content="2026.12.12.dev15+g8196e6a42" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -810,8 +810,17 @@
 <h1>lair.constants.sigma<a class="headerlink" href="#lair-constants-sigma" title="Link to this heading">#</a></h1>
 <dl class="py data">
 <dt class="sig sig-object py" id="lair.constants.sigma">
-<span class="sig-prename descclassname"><span class="pre">lair.constants.</span></span><span class="sig-name descname"><span class="pre">sigma</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Quantity(array(5.67e-08),</span> <span class="pre">&quot;watt</span> <span class="pre">/</span> <span class="pre">meter</span> <span class="pre">**</span> <span class="pre">2</span> <span class="pre">/</span> <span class="pre">kelvin</span> <span class="pre">**</span> <span class="pre">4&quot;)</span></span><a class="headerlink" href="#lair.constants.sigma" title="Link to this definition">#</a></dt>
-<dd><p>Stefan-Boltzmann constant [W/m^2/K^4]</p>
+<span class="sig-prename descclassname"><span class="pre">lair.constants.</span></span><span class="sig-name descname"><span class="pre">sigma</span></span><a class="headerlink" href="#lair.constants.sigma" title="Link to this definition">#</a></dt>
+<dd><p>The Stefan-Boltzmann constant, 5.67e-8 W/(m^2 K^4).</p>
+<p>The power a black body radiates per square meter is <code class="docutils literal notranslate"><span class="pre">sigma</span> <span class="pre">*</span> <span class="pre">T**4</span></code>. The
+precise value is 5.670374419e-8 (it follows from <a class="reference internal" href="lair.constants.kb.html#lair.constants.kb" title="lair.constants.kb"><code class="xref py py-data docutils literal notranslate"><span class="pre">kb</span></code></a>, <a class="reference internal" href="lair.constants.h.html#lair.constants.h" title="lair.constants.h"><code class="xref py py-data docutils literal notranslate"><span class="pre">h</span></code></a> and
+<a class="reference internal" href="lair.constants.c.html#lair.constants.c" title="lair.constants.c"><code class="xref py py-data docutils literal notranslate"><span class="pre">c</span></code></a>), so this one is 0.007% low. The functions of lair do not use it.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="lair.constants.kb.html#lair.constants.kb" title="lair.constants.kb"><code class="xref py py-data docutils literal notranslate"><span class="pre">kb</span></code></a>, <a class="reference internal" href="lair.constants.h.html#lair.constants.h" title="lair.constants.h"><code class="xref py py-data docutils literal notranslate"><span class="pre">h</span></code></a>, <a class="reference internal" href="lair.constants.c.html#lair.constants.c" title="lair.constants.c"><code class="xref py py-data docutils literal notranslate"><span class="pre">c</span></code></a></p>
+</div>
+<dl class="field-list simple">
+</dl>
 </dd></dl>
 
 </section>

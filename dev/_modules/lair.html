@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=1c2b6393"></script>
+    <script src="../_static/documentation_options.js?v=56577583"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev11+gcc42e70e8" />
+  <meta name="docsearch:version" content="2026.12.12.dev15+g8196e6a42" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -481,6 +481,26 @@
 <span class="c1">#: context.</span>
 <span class="c1">#: :doc:`/examples/units` converts a methane flux with it.</span>
 <span class="c1">#:</span>
+<span class="c1">#: See Also</span>
+<span class="c1">#: --------</span>
+<span class="c1">#: mass_flux : The context that converts between moles and mass.</span>
+<span class="c1">#: lair.inventories.convert_units : Converts an array's ``units`` attribute for a pollutant.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Examples</span>
+<span class="c1">#: --------</span>
+<span class="c1">#: A quantity is a number with a unit, and the registry reads the unit from</span>
+<span class="c1">#: text, CF spellings such as ``m-2 s-1`` included. ``to`` converts within one</span>
+<span class="c1">#: dimension; a flux in moles needs the ``mass_flux`` context to become a flux</span>
+<span class="c1">#: in mass.</span>
+<span class="c1">#:</span>
+<span class="c1">#: .. ipython:: python</span>
+<span class="c1">#:</span>
+<span class="c1">#:    from lair import units</span>
+<span class="c1">#:</span>
+<span class="c1">#:    flux = 10 * units("nmol m-2 s-1")</span>
+<span class="c1">#:    print(f"{flux:~P}")</span>
+<span class="c1">#:    print(f"{flux.to('mol km-2 d-1'):~P.3f}")</span>
+<span class="c1">#:</span>
 <span class="c1">#: :meta hide-value:</span>
 <span class="n">units</span> <span class="o">=</span> <span class="n">pint_xarray</span><span class="o">.</span><span class="n">unit_registry</span>
 
@@ -511,6 +531,28 @@
 <span class="c1">#: ``mw``, or with a plain number, the conversion raises a ``TypeError`` that</span>
 <span class="c1">#: names ``mw``. Importing lair adds it to :data:`units`; :doc:`/examples/units`</span>
 <span class="c1">#: shows it on a methane flux.</span>
+<span class="c1">#:</span>
+<span class="c1">#: See Also</span>
+<span class="c1">#: --------</span>
+<span class="c1">#: units : The registry that has the context.</span>
+<span class="c1">#: lair.inventories.molecular_weight : The molar mass of a pollutant, for ``mw``.</span>
+<span class="c1">#: lair.inventories.convert_units : Does this conversion for a pollutant's name.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Examples</span>
+<span class="c1">#: --------</span>
+<span class="c1">#: 10 nmol m-2 s-1 of methane (16.04 g/mol) is 13.86 kg km-2 d-1, and back:</span>
+<span class="c1">#:</span>
+<span class="c1">#: .. ipython:: python</span>
+<span class="c1">#:</span>
+<span class="c1">#:    from lair import units</span>
+<span class="c1">#:</span>
+<span class="c1">#:    mw = 16.04 * units("g/mol")</span>
+<span class="c1">#:    flux = 10 * units("nmol m-2 s-1")</span>
+<span class="c1">#:    with units.context("mass_flux", mw=mw):</span>
+<span class="c1">#:        kg = flux.to("kg km-2 d-1")</span>
+<span class="c1">#:        mol = kg.to("nmol m-2 s-1")</span>
+<span class="c1">#:    print(f"{kg:~P.2f}")</span>
+<span class="c1">#:    print(f"{mol:~P.2f}")</span>
 <span class="c1">#:</span>
 <span class="c1">#: :meta hide-value:</span>
 <span class="n">mass_flux</span> <span class="o">=</span> <span class="n">pint</span><span class="o">.</span><span class="n">Context</span><span class="p">(</span><span class="s2">"mass_flux"</span><span class="p">)</span>
