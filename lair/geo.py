@@ -49,6 +49,7 @@ from cartopy.mpl.ticker import (  # noqa: E402
     LongitudeFormatter,
     LongitudeLocator,
 )
+from rioxarray.exceptions import MissingCRS, NoDataInBounds  # noqa: E402
 from shapely import LineString, MultiLineString, Point, Polygon  # noqa: E402
 
 __all__ = [
@@ -837,9 +838,10 @@ class BaseGrid:
         Clip the data to the given bounds.
 
         .. note::
-            The result can be slightly different between supplying a geom and a bbox/extent.
-            Clipping with a geom seems to be exclusive of the bounds,
-            while clipping with a bbox/extent seems to be inclusive of the bounds.
+            A cell is kept when its center is inside the bounds or on them, with
+            a ``bbox``, an ``extent`` or a ``geom``, whichever way the
+            coordinates run. With a ``geom`` the cells outside it stay in the
+            grid as NaN; see :func:`lair.geo.clip`.
 
         Parameters
         ----------
@@ -855,7 +857,8 @@ class BaseGrid:
             Whether to modify the data in place. Default is False (returns a
             new copy with the clipped data).
         kwargs : Any
-            Additional keyword arguments to pass to the rioxarray clip method.
+            Additional keyword arguments for ``bbox`` and ``extent``, passed to
+            the rioxarray ``clip_box`` method; none are taken with ``geom``.
 
         Returns
         -------
@@ -1026,9 +1029,12 @@ def clip(
     Clip the data to the given bounds.
 
     .. note::
-        The result can be slightly different between supplying a geom and a bbox/extent.
-        Clipping with a geom seems to be exclusive of the outer bounds,
-        while clipping with a bbox/extent seems to be inclusive of the outer bounds.
+        A cell is kept when its center is inside the bounds or on them, with a
+        ``bbox``, an ``extent`` or a ``geom``, whichever way the coordinates
+        run. A center exactly on an edge of the polygon (or of a hole in it)
+        belongs to the polygon, on every side. A ``geom`` keeps the grid's cells
+        and sets those outside it to NaN; the grid is cut down to the window
+        around the cells it keeps.
 
     Parameters
     ----------
@@ -1044,7 +1050,8 @@ def clip(
     crs : Any, optional
         The CRS of the input geometries. Default is 'EPSG:4326'.
     kwargs : Any
-        Additional keyword arguments to pass to the rioxarray clip method.
+        Additional keyword arguments for ``bbox`` and ``extent``, passed to the
+        rioxarray ``clip_box`` method. None are taken with ``geom``.
 
     Returns
     -------
@@ -1055,6 +1062,10 @@ def clip(
     ------
     ValueError
         Unless exactly one of ``bbox``, ``extent`` and ``geom`` is given.
+    TypeError
+        If ``geom`` is given with keyword arguments.
+    rioxarray.exceptions.NoDataInBounds
+        If no cell center is inside ``geom`` or on it.
 
     See Also
     --------
@@ -1084,13 +1095,65 @@ def clip(
     if bbox is not None:
         data = data.rio.clip_box(*bbox, crs=crs, **kwargs)
     elif geom is not None:
-        # rio.clip takes a collection of geometries; wrap a single one
-        if isinstance(geom, shapely.Geometry):
-            geom = [geom]
-
-        data = data.rio.clip(geom, crs=crs, **kwargs)
+        if kwargs:
+            raise TypeError(
+                f"clip(geom=) takes no keyword arguments besides crs, got {sorted(kwargs)}"
+            )
+        data = _clip_to_geom(data, geom, crs)
 
     return data
+
+
+def _clip_to_geom(
+    data: DataArray | Dataset, geom: Polygon | Iterable[Polygon], crs: Any
+) -> DataArray | Dataset:
+    """
+    Keep the cells of ``data`` whose centers are in ``geom`` or on its edge.
+
+    rioxarray's ``clip`` rasterizes ``geom``, and a center exactly on an edge
+    then goes to one side or the other depending on which way the coordinates
+    run (issue #222). Testing the centers directly gives one rule: inside or on
+    the edge is in. The cells outside are set to NaN and the grid is cut down to
+    the window around the cells kept, as ``clip`` does.
+    """
+    if data.rio.crs is None:
+        raise MissingCRS("CRS not found. Please set the CRS with 'rio.write_crs()'.")
+    # A single geometry, or a collection of them (list, array, GeoSeries)
+    geoms = [geom] if isinstance(geom, shapely.Geometry) else list(geom)
+    region = shapely.union_all(geoms)
+
+    # Into the data's CRS, as rio.clip does
+    crs = pyproj.CRS.from_user_input(crs)
+    data_crs = pyproj.CRS.from_user_input(data.rio.crs)
+    if crs != data_crs:
+        to_data = pyproj.Transformer.from_crs(crs, data_crs, always_xy=True)
+        region = shapely.transform(
+            region, lambda xy: np.column_stack(to_data.transform(xy[:, 0], xy[:, 1]))
+        )
+
+    x = data[data.rio.x_dim].values
+    y = data[data.rio.y_dim].values
+    keep = shapely.intersects_xy(region, x[np.newaxis, :], y[:, np.newaxis])
+    if not keep.any():
+        raise NoDataInBounds("No data found in bounds.")
+
+    # The window around the kept cells, so that rows and columns of NaN
+    # between kept cells stay and those outside them go
+    rows = np.flatnonzero(keep.any(axis=1))
+    cols = np.flatnonzero(keep.any(axis=0))
+    window = {
+        data.rio.y_dim: slice(rows[0], rows[-1] + 1),
+        data.rio.x_dim: slice(cols[0], cols[-1] + 1),
+    }
+    mask = DataArray(keep, dims=(data.rio.y_dim, data.rio.x_dim))
+    if isinstance(data, Dataset):
+        # A variable without both spatial dimensions (a time series) is not masked
+        spatial = {data.rio.y_dim, data.rio.x_dim}
+        data = data.map(
+            lambda v: v.where(mask) if spatial <= set(v.dims) else v, keep_attrs=True
+        )
+        return data.isel(window)
+    return data.where(mask).isel(window)
 
 
 #: WGS84 semi-major axis [km] and flattening (NGA TR8350.2, table 3.1)

@@ -554,8 +554,8 @@ class TestClip:
         from shapely.geometry import box
 
         clipped = geo.clip(latlon_grid, geom=box(-113, 41, -110, 43), crs=4326)
-        # geom clipping is exclusive of the outer bounds -> smaller than bbox.
-        assert clipped.sizes["lat"] <= 3 and clipped.sizes["lon"] <= 4
+        # Cells centered on the polygon's edge are kept, as with a bbox
+        assert clipped.sizes == {"lat": 3, "lon": 4}
 
     @pytest.mark.parametrize("container", ["list", "ndarray", "geoseries"])
     def test_clip_geom_collections(self, latlon_grid, container):
@@ -570,6 +570,120 @@ class TestClip:
         clipped = geo.clip(latlon_grid, geom=geoms, crs=4326)
         single = geo.clip(latlon_grid, geom=box(-113, 41, -110, 43), crs=4326)
         assert clipped.sizes == single.sizes
+
+    @pytest.fixture
+    def edge_grid(self):
+        """4 by 4 cells, centers 40.65 to 40.95 N and -112.15 to -111.85 E."""
+        import xarray as xr
+
+        def make(lat_descending=False, lon_descending=False):
+            lat = np.array([40.65, 40.75, 40.85, 40.95])
+            lon = np.array([-112.15, -112.05, -111.95, -111.85])
+            lat = lat[::-1] if lat_descending else lat
+            lon = lon[::-1] if lon_descending else lon
+            da = xr.DataArray(
+                np.arange(16.0).reshape(4, 4),
+                coords={"lat": lat, "lon": lon},
+                dims=("lat", "lon"),
+            )
+            da = da.rio.set_spatial_dims(x_dim="lon", y_dim="lat")
+            return geo.write_rio_crs(da, 4326)
+
+        return make
+
+    @pytest.mark.parametrize("lat_descending", [False, True])
+    @pytest.mark.parametrize("lon_descending", [False, True])
+    def test_geom_keeps_cells_centered_on_its_edge(
+        self, edge_grid, lat_descending, lon_descending
+    ):
+        # A polygon whose corners are the outer centers keeps every cell, the
+        # same cells as the bbox, whichever way the coordinates run (#222)
+        import xarray as xr
+        from shapely.geometry import box
+
+        grid = edge_grid(lat_descending, lon_descending)
+        by_geom = geo.clip(grid, geom=box(-112.15, 40.65, -111.85, 40.95))
+        by_bbox = geo.clip(grid, bbox=(-112.15, 40.65, -111.85, 40.95))
+        assert by_geom.sizes == {"lat": 4, "lon": 4}
+        assert by_geom.notnull().all()
+        xr.testing.assert_equal(by_geom, by_bbox)
+
+    @pytest.mark.parametrize("lat_descending", [False, True])
+    def test_geom_edge_cells_on_every_side(self, edge_grid, lat_descending):
+        # Each side of the polygon on a row or column of centers keeps it
+        from shapely.geometry import box
+
+        grid = edge_grid(lat_descending)
+        for poly, lat, lon in [
+            (box(-112.05, 40.65, -111.85, 40.95), 4, 3),  # west side on a column
+            (box(-112.15, 40.65, -111.95, 40.95), 4, 3),  # east
+            (box(-112.15, 40.75, -111.85, 40.95), 3, 4),  # south
+            (box(-112.15, 40.65, -111.85, 40.85), 3, 4),  # north
+        ]:
+            clipped = geo.clip(grid, geom=poly)
+            assert clipped.sizes == {"lat": lat, "lon": lon}
+
+    @pytest.mark.parametrize("lat_descending", [False, True])
+    def test_geom_cell_on_a_hole_edge(self, edge_grid, lat_descending):
+        # The edge rule holds for a hole: a center on its edge is kept, one
+        # inside it is not
+        from shapely.geometry import box
+
+        grid = edge_grid(lat_descending)
+        outer = box(-112.3, 40.5, -111.7, 41.1)
+        hole = box(-112.05, 40.75, -111.95, 40.85)  # its corners are centers
+        clipped = geo.clip(grid, geom=outer.difference(hole))
+        assert clipped.sizes == {"lat": 4, "lon": 4}
+        assert clipped.notnull().all()
+        inside = box(-112.06, 40.74, -111.94, 40.86)  # no center on its edge
+        clipped = geo.clip(grid, geom=outer.difference(inside))
+        assert int(clipped.isnull().sum()) == 4
+
+    def test_geom_takes_no_keyword_arguments(self, edge_grid):
+        from shapely.geometry import box
+
+        with pytest.raises(TypeError, match="all_touched"):
+            geo.clip(
+                edge_grid(), geom=box(-112.2, 40.6, -111.8, 41.0), all_touched=True
+            )
+
+    def test_geom_outside_the_data_raises(self, edge_grid):
+        from rioxarray.exceptions import NoDataInBounds
+        from shapely.geometry import box
+
+        with pytest.raises(NoDataInBounds):
+            geo.clip(edge_grid(), geom=box(0, 0, 1, 1))
+
+    def test_geom_on_a_dataset_masks_only_the_grid_variables(self, edge_grid):
+        # A variable without latitude and longitude stays as it is, as with rio.clip
+        import xarray as xr
+        from shapely.geometry import box
+
+        grid = edge_grid().expand_dims(time=[0, 1]).rename("v")
+        ds = grid.to_dataset().assign(k=("time", [1.0, 2.0]))
+        ds = geo.write_rio_crs(ds.rio.set_spatial_dims(x_dim="lon", y_dim="lat"), 4326)
+        clipped = geo.clip(ds, geom=box(-112.05, 40.65, -111.85, 40.85))
+        assert clipped["k"].dims == ("time",)
+        assert clipped["v"].sizes == {"time": 2, "lat": 3, "lon": 3}
+        xr.testing.assert_equal(
+            clipped["v"], geo.clip(grid, geom=box(-112.05, 40.65, -111.85, 40.85))
+        )
+
+    def test_geom_in_another_crs(self, edge_grid):
+        import pyproj
+        import shapely
+        from shapely.geometry import box
+
+        to_utm = pyproj.Transformer.from_crs(
+            "EPSG:4326", "EPSG:32612", always_xy=True
+        ).transform
+        # Inside the middle four cells (0.1 degrees wide), nowhere near an edge
+        poly = shapely.transform(
+            box(-112.09, 40.71, -111.91, 40.89),
+            lambda xy: np.column_stack(to_utm(xy[:, 0], xy[:, 1])),
+        )
+        clipped = geo.clip(edge_grid(), geom=poly, crs="EPSG:32612")
+        assert clipped.sizes == {"lat": 2, "lon": 2}
 
     def test_requires_exactly_one_selector(self, latlon_grid):
         with pytest.raises(ValueError, match="Exactly one"):
