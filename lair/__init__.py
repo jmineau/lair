@@ -47,6 +47,26 @@ from .records import ftp_download, unzip
 #: context.
 #: :doc:`/examples/units` converts a methane flux with it.
 #:
+#: See Also
+#: --------
+#: mass_flux : The context that converts between moles and mass.
+#: lair.inventories.convert_units : Converts an array's ``units`` attribute for a pollutant.
+#:
+#: Examples
+#: --------
+#: A quantity is a number with a unit, and the registry reads the unit from
+#: text, CF spellings such as ``m-2 s-1`` included. ``to`` converts within one
+#: dimension; a flux in moles needs the ``mass_flux`` context to become a flux
+#: in mass.
+#:
+#: .. ipython:: python
+#:
+#:    from lair import units
+#:
+#:    flux = 10 * units("nmol m-2 s-1")
+#:    print(f"{flux:~P}")
+#:    print(f"{flux.to('mol km-2 d-1'):~P.3f}")
+#:
 #: :meta hide-value:
 units = pint_xarray.unit_registry
 
@@ -77,6 +97,28 @@ def _molar_mass(mw):
 #: ``mw``, or with a plain number, the conversion raises a ``TypeError`` that
 #: names ``mw``. Importing lair adds it to :data:`units`; :doc:`/examples/units`
 #: shows it on a methane flux.
+#:
+#: See Also
+#: --------
+#: units : The registry that has the context.
+#: lair.inventories.molecular_weight : The molar mass of a pollutant, for ``mw``.
+#: lair.inventories.convert_units : Does this conversion for a pollutant's name.
+#:
+#: Examples
+#: --------
+#: 10 nmol m-2 s-1 of methane (16.04 g/mol) is 13.86 kg km-2 d-1, and back:
+#:
+#: .. ipython:: python
+#:
+#:    from lair import units
+#:
+#:    mw = 16.04 * units("g/mol")
+#:    flux = 10 * units("nmol m-2 s-1")
+#:    with units.context("mass_flux", mw=mw):
+#:        kg = flux.to("kg km-2 d-1")
+#:        mol = kg.to("nmol m-2 s-1")
+#:    print(f"{kg:~P.2f}")
+#:    print(f"{mol:~P.2f}")
 #:
 #: :meta hide-value:
 mass_flux = pint.Context("mass_flux")
