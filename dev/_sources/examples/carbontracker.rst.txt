@@ -163,4 +163,6 @@ asks for:
        main()
 
 Without it, ``molefractions`` raises a ``RuntimeError`` that says so. A notebook
-needs no guard. ``parallel_parse=False`` opens the files one at a time.
+needs no guard. ``parallel_parse=False`` opens the files one at a time, and so
+does ``molefractions`` inside a worker process, such as one of
+:func:`lair.parallel.parallelize`, which may not start processes of its own.

@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=b4088d16"></script>
+    <script src="../../_static/documentation_options.js?v=1c2b6393"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev10+gd3b6628b3" />
+  <meta name="docsearch:version" content="2026.12.12.dev11+gcc42e70e8" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -449,6 +449,8 @@
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
@@ -467,6 +469,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cache_dir</span><span class="p">,</span> <span class="n">get_data_dir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">_allowed_cpus</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.records</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cacher</span><span class="p">,</span> <span class="n">ftp_download</span><span class="p">,</span> <span class="n">list_files</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="c1">#: Environment variable holding the CarbonTracker data root</span>
 <span class="c1">#:</span>
@@ -503,7 +507,17 @@
 <span class="sd">    worker comes back with the lock it was opened with, and each process's own</span>
 <span class="sd">    lock is a different one, so without this the files from different workers</span>
 <span class="sd">    would be read at once, and crash, when the data is loaded here.</span>
+
+<span class="sd">    A daemonic process, such as a worker of :func:`lair.parallel.parallelize`,</span>
+<span class="sd">    may not start processes of its own, so there the files are opened one at a</span>
+<span class="sd">    time, as with ``parallel=False``; the result is the same.</span>
 <span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">parallel</span> <span class="ow">and</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">current_process</span><span class="p">()</span><span class="o">.</span><span class="n">daemon</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Opening the files one at a time: this is a worker process, and a "</span>
+            <span class="s2">"worker may not start processes of its own."</span>
+        <span class="p">)</span>
+        <span class="n">parallel</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
         <span class="c1"># The lock xarray's netCDF4 backend uses for local files</span>
         <span class="n">lock</span> <span class="o">=</span> <span class="n">combine_locks</span><span class="p">([</span><span class="n">NETCDFC_LOCK</span><span class="p">,</span> <span class="n">HDF5_LOCK</span><span class="p">])</span>
@@ -1112,6 +1126,9 @@
 <span class="sd">        each CPU this process may use (default True), or one at a time. The</span>
 <span class="sd">        workers import the calling script again, so a script that reads</span>
 <span class="sd">        ``molefractions`` needs the ``if __name__ == "__main__":`` guard.</span>
+<span class="sd">        Inside a worker process, such as one of</span>
+<span class="sd">        :func:`~lair.parallel.parallelize`, the files are opened one at a time</span>
+<span class="sd">        whatever this says.</span>
 
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
@@ -1274,6 +1291,9 @@
 <span class="sd">        each CPU this process may use (default True), or one at a time. The</span>
 <span class="sd">        workers import the calling script again, so a script that reads</span>
 <span class="sd">        ``molefractions`` needs the ``if __name__ == "__main__":`` guard.</span>
+<span class="sd">        Inside a worker process, such as one of</span>
+<span class="sd">        :func:`~lair.parallel.parallelize`, the files are opened one at a time</span>
+<span class="sd">        whatever this says.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
