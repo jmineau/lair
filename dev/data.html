@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=18bc52f1"></script>
+    <script src="_static/documentation_options.js?v=b4088d16"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev9+g44f4c974b" />
+  <meta name="docsearch:version" content="2026.12.12.dev10+gd3b6628b3" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -585,6 +585,13 @@ a day has two).</p>
 <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> adds an entry for the new list, as large as the first, to the
 same file, and the old entry stays. To start again, delete the version’s folder in
 the cache; lair makes it again the next time.</p>
+<p>The entry is also keyed on the code that opens the files. A lair release that
+changes how they are opened (the times, the variables kept, how the files are
+combined) therefore opens them again the first time, instead of returning what an
+older release saved, and that entry is added to the file too. A cache written by
+lair 2026.12.11 or earlier is read once more in this way, for each list of files it
+holds. What the key does and does not see is in the Notes of
+<a class="reference internal" href="_autosummary/lair.records.Cacher.html#lair.records.Cacher" title="lair.records.Cacher"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cacher</span></code></a>.</p>
 <p>Measured on 2026-10-14, with files of CT-CH4-2025 (36 MB each), CT-CH4-2023 and
 CT2019B (18 MB).</p>
 </section>
