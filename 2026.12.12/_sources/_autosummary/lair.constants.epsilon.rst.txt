@@ -1,0 +1,6 @@
+lair.constants.epsilon
+======================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: epsilon

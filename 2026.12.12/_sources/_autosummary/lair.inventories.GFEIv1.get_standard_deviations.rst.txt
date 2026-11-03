@@ -1,0 +1,6 @@
+lair.inventories.GFEIv1.get\_standard\_deviations
+=================================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: GFEIv1.get_standard_deviations

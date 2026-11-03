@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.records &#8212; lair 2026.12.11</title>
+    <title>lair.records &#8212; lair 2026.12.12</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=b4abf889"></script>
+    <script src="../../_static/documentation_options.js?v=835372e3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.12';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11" />
+  <meta name="docsearch:version" content="2026.12.12" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -444,11 +444,16 @@
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair._optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional_dependency</span>
 
@@ -861,13 +866,150 @@
 
 
 
+<span class="c1"># 0x4000000: Python 3.14's "has a docstring" flag, which has no other meaning in</span>
+<span class="c1"># 3.11 to 3.13, so a docstring edit does not change the digest in any of them.</span>
+<span class="n">_CO_HAS_DOCSTRING</span> <span class="o">=</span> <span class="mh">0x4000000</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_constant</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Plain, order-stable form of a constant in a code object."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_code_parts</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_constant</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">):</span>
+        <span class="c1"># a frozenset's order depends on the process's string hash seed</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">"frozenset"</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">_constant</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_code_parts</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">,</span> <span class="n">docstring</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return what a code object does, not where it is or what its locals are called.</span>
+
+<span class="sd">    Left out: file name, line numbers, the function's own name, and the names of</span>
+<span class="sd">    local variables other than the arguments. ``docstring`` is the function's</span>
+<span class="sd">    docstring, which is the first constant and is left out too.</span>
+<span class="sd">    """</span>
+    <span class="n">consts</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span>
+    <span class="k">if</span> <span class="n">docstring</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">consts</span> <span class="ow">and</span> <span class="n">consts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">docstring</span><span class="p">:</span>
+        <span class="n">consts</span> <span class="o">=</span> <span class="n">consts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">n_args</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span> <span class="o">+</span> <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span>
+    <span class="n">n_args</span> <span class="o">+=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_flags</span> <span class="o">&amp;</span> <span class="mh">0x04</span><span class="p">)</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_flags</span> <span class="o">&amp;</span> <span class="mh">0x08</span><span class="p">)</span>  <span class="c1"># *args, **kw</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_exceptiontable</span><span class="p">,</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="n">_constant</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">consts</span><span class="p">),</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">[:</span><span class="n">n_args</span><span class="p">],</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_posonlyargcount</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">_CO_HAS_DOCSTRING</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_value</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">active</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a default argument or closure variable as far as it decides what runs.</span>
+
+<span class="sd">    A callable is its code. Numbers, strings, ``None`` and tuples of those are</span>
+<span class="sd">    themselves. Anything else (a list, an array, a dataset) is only its type,</span>
+<span class="sd">    because it may change while the code does not.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">,</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">_fingerprint</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">active</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_value</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">active</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">complex</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fingerprint</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">active</span><span class="p">:</span> <span class="nb">frozenset</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Plain data that changes when ``func``'s code changes, never raising.</span>
+
+<span class="sd">    A function is its module, name, code, default arguments and closure; a</span>
+<span class="sd">    ``functools.partial`` is its function and arguments; a bound method is its</span>
+<span class="sd">    function (the instance is not part of it); an object with a ``__call__``</span>
+<span class="sd">    is its class's ``__call__``; anything else (a builtin, a class) is its name.</span>
+<span class="sd">    ``active`` holds the functions being described, so that a recursive closure</span>
+<span class="sd">    ends.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="ow">in</span> <span class="n">active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s2">"function"</span><span class="p">,</span> <span class="o">*</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">active</span> <span class="o">=</span> <span class="n">active</span> <span class="o">|</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">func</span><span class="p">)}</span>
+        <span class="n">cells</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">func</span><span class="o">.</span><span class="vm">__closure__</span> <span class="ow">or</span> <span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cells</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_value</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">cell_contents</span><span class="p">,</span> <span class="n">active</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># empty cell: a name not yet assigned</span>
+                <span class="n">cells</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">kwdefaults</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">func</span><span class="o">.</span><span class="vm">__kwdefaults__</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">"function"</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span>
+                <span class="nb">repr</span><span class="p">(</span><span class="n">_code_parts</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__code__</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">))</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span>
+            <span class="n">_value</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__defaults__</span> <span class="ow">or</span> <span class="p">(),</span> <span class="n">active</span><span class="p">),</span>
+            <span class="nb">tuple</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">_value</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">active</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwdefaults</span><span class="p">),</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">cells</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">"method"</span><span class="p">,</span> <span class="n">_fingerprint</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__func__</span><span class="p">,</span> <span class="n">active</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">"partial"</span><span class="p">,</span>
+            <span class="n">_fingerprint</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">active</span><span class="p">),</span>
+            <span class="n">_value</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">active</span><span class="p">),</span>
+            <span class="nb">tuple</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">_value</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">active</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">items</span><span class="p">())),</span>
+        <span class="p">)</span>
+    <span class="n">kind</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kind</span><span class="o">.</span><span class="fm">__call__</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>  <span class="c1"># an object defining __call__</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">"callable"</span><span class="p">,</span>
+            <span class="n">kind</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span>
+            <span class="n">kind</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">,</span>
+            <span class="n">_fingerprint</span><span class="p">(</span><span class="n">kind</span><span class="o">.</span><span class="fm">__call__</span><span class="p">,</span> <span class="n">active</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">kind</span><span class="o">.</span><span class="vm">__qualname__</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">"named"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">"__module__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">kind</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_KeyPickler</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">Pickler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A pickler that writes a function as its code, not its name."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">reducer_override</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">,</span> <span class="p">(</span><span class="n">_fingerprint</span><span class="p">(</span><span class="n">obj</span><span class="p">),)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">):</span>
+            <span class="c1"># the code of the function, and the instance as it always was</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">,</span> <span class="p">((</span><span class="n">_fingerprint</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__func__</span><span class="p">),</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__self__</span><span class="p">),)</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cache_key</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Serialize what decides a cached result: ``func``'s code and the arguments."""</span>
+    <span class="n">buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+    <span class="n">_KeyPickler</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">_fingerprint</span><span class="p">(</span><span class="n">func</span><span class="p">),</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+
 <div class="viewcode-block" id="Cacher">
 <a class="viewcode-back" href="../../_autosummary/lair.records.Cacher.html#lair.records.Cacher">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Cacher</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A class that caches function results to a file for future use.</span>
 
-<span class="sd">    Each parameter is also an attribute of the same name.</span>
+<span class="sd">    A result is stored under a key made of the function's code and the</span>
+<span class="sd">    arguments of the call, so editing the function (or a function passed in</span>
+<span class="sd">    the arguments) runs it again instead of returning the old result. Each</span>
+<span class="sd">    parameter is also an attribute of the same name.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -881,6 +1023,45 @@
 <span class="sd">        replaces the old one in the index and every other cached entry is</span>
 <span class="sd">        kept. (The old result stays in ``cache_file`` but is no longer</span>
 <span class="sd">        referenced.) Defaults to False.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    **What the key holds.** The arguments are pickled. The code of ``func``,</span>
+<span class="sd">    and of every function in the arguments (a ``preprocess=`` function, say),</span>
+<span class="sd">    goes in as its compiled bytecode, its constants (a unit factor of 1000</span>
+<span class="sd">    changed to 100 is an edit), the names it uses, its default arguments and</span>
+<span class="sd">    the functions it closes over (so a decorated function is the code of the</span>
+<span class="sd">    function inside). A comment, a blank line, a renamed local variable and</span>
+<span class="sd">    the function's own docstring are not part of it: those edits keep the</span>
+<span class="sd">    cached results. The key is the same in every process, on every run.</span>
+
+<span class="sd">    **What it does not see.** The key reaches only as far as the function</span>
+<span class="sd">    itself. An edit to a helper that the function calls, to a module-level</span>
+<span class="sd">    value it reads, to a variable it closes over (unless that is a number, a</span>
+<span class="sd">    string or a function), or to a file it reads leaves the key unchanged and</span>
+<span class="sd">    returns the old result. Delete the cache file, or pass ``reload=True``,</span>
+<span class="sd">    after such an edit.</span>
+
+<span class="sd">    **Rebuilds.** A cache file written by an earlier lair has keys of another</span>
+<span class="sd">    shape, so its results are not found: the function runs once for each set</span>
+<span class="sd">    of arguments and the results are added to the file, behind the old ones,</span>
+<span class="sd">    which stay in it. Bytecode differs between Python versions, so moving to</span>
+<span class="sd">    another one (3.11 to 3.12) does the same.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import os, tempfile</span>
+<span class="sd">    &gt;&gt;&gt; from lair.records import Cacher</span>
+<span class="sd">    &gt;&gt;&gt; def double(x):</span>
+<span class="sd">    ...     print("running")</span>
+<span class="sd">    ...     return 2 * x</span>
+<span class="sd">    &gt;&gt;&gt; with tempfile.TemporaryDirectory() as folder:</span>
+<span class="sd">    ...     cached = Cacher(double, os.path.join(folder, "double.pkl"))</span>
+<span class="sd">    ...     print(cached(4))</span>
+<span class="sd">    ...     print(cached(4))  # not run again</span>
+<span class="sd">    running</span>
+<span class="sd">    8</span>
+<span class="sd">    8</span>
 <span class="sd">    """</span>
 
     <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pkl</span>
@@ -949,10 +1130,11 @@
 <span class="sd">        Any</span>
 <span class="sd">            The result of the function call.</span>
 <span class="sd">        """</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pkl</span><span class="o">.</span><span class="n">dumps</span><span class="p">((</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>  <span class="c1"># serialize func args</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">_cache_key</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="s2">"__name__"</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reload</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refreshed</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Forcing </span><span class="si">%s</span><span class="s2"> to execute"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Forcing </span><span class="si">%s</span><span class="s2"> to execute"</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
             <span class="n">cached</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cached</span> <span class="o">=</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_index</span>
@@ -961,7 +1143,7 @@
             <span class="c1"># Load the result from the cache_file using its index</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                 <span class="s2">"Returning cached result for </span><span class="si">%s</span><span class="s2"> with args: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">name</span><span class="p">,</span>
                 <span class="n">args</span><span class="p">,</span>
                 <span class="n">kwargs</span><span class="p">,</span>
             <span class="p">)</span>

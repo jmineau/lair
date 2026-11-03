@@ -1,0 +1,6 @@
+lair.geo.CRS.wkt
+================
+
+.. currentmodule:: lair.geo
+
+.. autoproperty:: CRS.wkt

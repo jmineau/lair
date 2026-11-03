@@ -111,6 +111,18 @@ The columns are otherwise whatever Wyoming sends, so a file downloaded today
 also has ``relative_humidity`` and ``mixing_ratio``, and no ``pw``
 (precipitable water).
 
+.. _soundings-wrapped-heights:
+
+**Heights that wrap at 10 km.** A few saved files have heights that start
+again from 0 at 10 km: after 9998 m the next level is 96 m, while the pressure
+keeps falling (four Salt Lake City soundings of March and April 2024).
+``Sounding`` reads a fall of more than 9 km from one level to the next as a
+wrap: it adds 10 km to that level and every level after it (another 10 km
+after a second wrap) and logs a warning that names the file. A smaller fall is
+kept as it is, since it is real: a balloon pushed down reports a level 10 to
+50 m lower than the one before (about half of the Salt Lake City files have
+one, all above 2200 m). ``data`` keeps every level, in the order of the file.
+
 .. _soundings-heights:
 
 Read many soundings

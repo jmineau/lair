@@ -1,0 +1,6 @@
+lair.mass\_flux
+===============
+
+.. currentmodule:: lair
+
+.. autodata:: mass_flux

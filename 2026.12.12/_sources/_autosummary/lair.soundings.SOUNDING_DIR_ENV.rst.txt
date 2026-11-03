@@ -1,0 +1,6 @@
+lair.soundings.SOUNDING\_DIR\_ENV
+=================================
+
+.. currentmodule:: lair.soundings
+
+.. autodata:: SOUNDING_DIR_ENV

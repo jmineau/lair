@@ -1,0 +1,26 @@
+lair.clock.Timer
+================
+
+.. currentmodule:: lair.clock
+
+.. autoclass:: Timer
+   :no-members:
+   :show-inheritance:
+
+
+
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~Timer.logger
+   ~Timer.reset_timers
+   ~Timer.start
+   ~Timer.stop
+
+
+

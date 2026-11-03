@@ -1,0 +1,6 @@
+lair.background.rolling\_baseline
+=================================
+
+.. currentmodule:: lair.background
+
+.. autofunction:: rolling_baseline

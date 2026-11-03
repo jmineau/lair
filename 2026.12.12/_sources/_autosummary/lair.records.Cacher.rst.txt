@@ -1,0 +1,24 @@
+lair.records.Cacher
+===================
+
+.. currentmodule:: lair.records
+
+.. autoclass:: Cacher
+   :no-members:
+
+
+
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~Cacher.__call__
+   ~Cacher.load_cache_index
+   ~Cacher.save_cache_index
+
+
+

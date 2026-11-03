@@ -1,0 +1,6 @@
+lair.air.sector\_radians
+========================
+
+.. currentmodule:: lair.air
+
+.. autofunction:: sector_radians

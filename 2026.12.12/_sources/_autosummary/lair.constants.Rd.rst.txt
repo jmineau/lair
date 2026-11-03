@@ -1,0 +1,6 @@
+lair.constants.Rd
+=================
+
+.. currentmodule:: lair.constants
+
+.. autodata:: Rd

@@ -1,0 +1,6 @@
+lair.inventories.EPAv2.get\_monthly\_scale\_factors
+===================================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: EPAv2.get_monthly_scale_factors

@@ -1,0 +1,6 @@
+lair.plotter.SEASON\_COLORS
+===========================
+
+.. currentmodule:: lair.plotter
+
+.. autodata:: SEASON_COLORS

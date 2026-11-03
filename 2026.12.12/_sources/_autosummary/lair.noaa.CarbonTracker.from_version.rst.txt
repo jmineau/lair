@@ -1,0 +1,6 @@
+lair.noaa.CarbonTracker.from\_version
+=====================================
+
+.. currentmodule:: lair.noaa
+
+.. automethod:: CarbonTracker.from_version

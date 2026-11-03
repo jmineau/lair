@@ -1,0 +1,6 @@
+lair.units
+==========
+
+.. currentmodule:: lair
+
+.. autodata:: units

@@ -1,0 +1,33 @@
+lair.geo.BaseGrid
+=================
+
+.. currentmodule:: lair.geo
+
+.. autoclass:: BaseGrid
+   :no-members:
+
+
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+
+   ~BaseGrid.gridcell_area
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~BaseGrid.clip
+   ~BaseGrid.copy
+   ~BaseGrid.regrid
+   ~BaseGrid.reproject
+   ~BaseGrid.resample
+
+
+

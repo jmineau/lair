@@ -1,0 +1,6 @@
+lair.inventories.Inventory.get\_files
+=====================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Inventory.get_files

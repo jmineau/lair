@@ -1,0 +1,6 @@
+lair.inventories.Inventory.integrate
+====================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Inventory.integrate

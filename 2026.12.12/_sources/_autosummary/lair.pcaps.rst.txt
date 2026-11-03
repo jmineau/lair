@@ -1,0 +1,28 @@
+﻿lair.pcaps
+==========
+
+.. automodule:: lair.pcaps
+   :no-members:
+
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   build_pcap_mask
+   determine_pcap_events
+   filter_pcap_events
+   valleyheatdeficit
+
+
+
+
+
+
+
+
+

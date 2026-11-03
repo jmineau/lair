@@ -1,0 +1,6 @@
+lair.transects.lag\_positions
+=============================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: lag_positions

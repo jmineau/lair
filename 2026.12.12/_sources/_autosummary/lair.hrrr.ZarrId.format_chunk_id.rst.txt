@@ -1,0 +1,6 @@
+lair.hrrr.ZarrId.format\_chunk\_id
+==================================
+
+.. currentmodule:: lair.hrrr
+
+.. automethod:: ZarrId.format_chunk_id

@@ -1,0 +1,6 @@
+lair.geo.dms2dd
+===============
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: dms2dd

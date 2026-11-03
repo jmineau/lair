@@ -1,0 +1,6 @@
+lair.inventories.EDGAR.get\_sector\_name
+========================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: EDGAR.get_sector_name

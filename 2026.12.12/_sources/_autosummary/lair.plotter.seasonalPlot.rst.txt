@@ -1,0 +1,6 @@
+lair.plotter.seasonalPlot
+=========================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: seasonalPlot

@@ -1,0 +1,6 @@
+lair.transects.transect\_matrix
+===============================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: transect_matrix

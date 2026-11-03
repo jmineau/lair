@@ -1,0 +1,6 @@
+lair.geo.BaseGrid.clip
+======================
+
+.. currentmodule:: lair.geo
+
+.. automethod:: BaseGrid.clip

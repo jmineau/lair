@@ -1,0 +1,23 @@
+lair.plotter.HandlerDashedLines
+===============================
+
+.. currentmodule:: lair.plotter
+
+.. autoclass:: HandlerDashedLines
+   :no-members:
+   :show-inheritance:
+
+
+
+
+
+
+.. rubric:: Methods
+
+.. autosummary::
+   :toctree:
+
+   ~HandlerDashedLines.create_artists
+
+
+

@@ -1,0 +1,6 @@
+lair.inventories.molecular\_weight
+==================================
+
+.. currentmodule:: lair.inventories
+
+.. autofunction:: molecular_weight

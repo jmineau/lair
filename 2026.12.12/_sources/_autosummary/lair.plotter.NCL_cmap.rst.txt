@@ -1,0 +1,6 @@
+lair.plotter.NCL\_cmap
+======================
+
+.. currentmodule:: lair.plotter
+
+.. autofunction:: NCL_cmap

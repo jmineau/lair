@@ -1,0 +1,6 @@
+lair.hrrr.get\_value
+====================
+
+.. currentmodule:: lair.hrrr
+
+.. autofunction:: get_value

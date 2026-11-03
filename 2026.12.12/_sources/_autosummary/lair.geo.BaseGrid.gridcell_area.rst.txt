@@ -1,0 +1,6 @@
+lair.geo.BaseGrid.gridcell\_area
+================================
+
+.. currentmodule:: lair.geo
+
+.. autoproperty:: BaseGrid.gridcell_area

@@ -1,0 +1,6 @@
+lair.geo.regrid
+===============
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: regrid

@@ -1,0 +1,6 @@
+lair.air.wind\_components
+=========================
+
+.. currentmodule:: lair.air
+
+.. autofunction:: wind_components

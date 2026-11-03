@@ -1,0 +1,6 @@
+lair.hrrr.decompress\_chunk
+===========================
+
+.. currentmodule:: lair.hrrr
+
+.. autofunction:: decompress_chunk

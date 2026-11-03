@@ -1,0 +1,6 @@
+lair.records.unzip
+==================
+
+.. currentmodule:: lair.records
+
+.. autofunction:: unzip

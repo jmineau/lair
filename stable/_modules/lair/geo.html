@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.geo &#8212; lair 2026.12.11</title>
+    <title>lair.geo &#8212; lair 2026.12.12</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=b4abf889"></script>
+    <script src="../../_static/documentation_options.js?v=835372e3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.12';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11" />
+  <meta name="docsearch:version" content="2026.12.12" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -486,6 +486,7 @@
     <span class="n">LongitudeFormatter</span><span class="p">,</span>
     <span class="n">LongitudeLocator</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rioxarray.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingCRS</span><span class="p">,</span> <span class="n">NoDataInBounds</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">shapely</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineString</span><span class="p">,</span> <span class="n">MultiLineString</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Polygon</span>  <span class="c1"># noqa: E402</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -1050,90 +1051,126 @@
 <div class="viewcode-block" id="add_locator_map">
 <a class="viewcode-back" href="../../_autosummary/lair.geo.add_locator_map.html#lair.geo.add_locator_map">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_locator_map</span><span class="p">(</span>
-    <span class="n">fig</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span>
-    <span class="n">main_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">GeoAxes</span><span class="p">,</span>
+    <span class="n">main_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
     <span class="n">main_extent_crs</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">,</span>
-    <span class="n">locator_rect</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-    <span class="n">locator_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
-    <span class="n">locator_crs</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">CRS</span><span class="p">,</span>
-    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">linewidth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">zorder</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+    <span class="n">locator_extent</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="o">-</span><span class="mi">125</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">105</span><span class="p">,</span>
+        <span class="mi">30</span><span class="p">,</span>
+        <span class="mi">50</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">bounds</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">),</span>
+    <span class="n">locator_crs</span><span class="p">:</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"red"</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">zorder</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"50m"</span><span class="p">,</span>
+    <span class="n">fill</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GeoAxes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Add a small locator map to the figure that shows where the main map is.</span>
+<span class="sd">    Add a small locator map inside a map that shows where the main map is.</span>
 
-<span class="sd">    The locator map is a new axes with land, ocean and state boundaries, and</span>
-<span class="sd">    the extent of the main map drawn on it as an outline (no fill).</span>
+<span class="sd">    The locator map is an inset of ``ax``, placed by ``bounds`` as a fraction of</span>
+<span class="sd">    the main axes. It shows land, ocean and state boundaries (Natural Earth,</span>
+<span class="sd">    1:50 million by default) and the extent of the main map as an outline, or</span>
+<span class="sd">    filled with ``fill=True``. The defaults put a map of the western United</span>
+<span class="sd">    States in the upper right corner.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fig : matplotlib.figure.Figure</span>
-<span class="sd">        Figure to add the locator map to</span>
+<span class="sd">    ax : cartopy.mpl.geoaxes.GeoAxes</span>
+<span class="sd">        The main map's axes, to add the locator map to</span>
 <span class="sd">    main_extent : list[float]</span>
 <span class="sd">        Extent of the main map, ``[minx, maxx, miny, maxy]``, in</span>
 <span class="sd">        ``main_extent_crs``</span>
 <span class="sd">    main_extent_crs : ccrs.CRS</span>
 <span class="sd">        CRS of the main extent</span>
-<span class="sd">    locator_rect : tuple[left, bottom, width, height]</span>
-<span class="sd">        Position of the locator map, in figure fractions (0 to 1) as for</span>
-<span class="sd">        ``Figure.add_axes``</span>
-<span class="sd">    locator_extent : list[float]</span>
+<span class="sd">    locator_extent : list[float], optional</span>
 <span class="sd">        Extent of the locator map, ``[west, east, south, north]`` in degrees</span>
-<span class="sd">        of longitude and latitude</span>
-<span class="sd">    locator_crs : ccrs.CRS</span>
-<span class="sd">        Projection of the locator map</span>
-<span class="sd">    color : str</span>
-<span class="sd">        Color of the main-extent outline drawn on the locator map</span>
-<span class="sd">    linewidth : int</span>
-<span class="sd">        Line width of the main-extent outline</span>
+<span class="sd">        of longitude and latitude, by default the western United States,</span>
+<span class="sd">        ``(-125, -105, 30, 50)``</span>
+<span class="sd">    bounds : tuple[left, bottom, width, height], optional</span>
+<span class="sd">        Position of the locator map as fractions (0 to 1) of ``ax``, as for</span>
+<span class="sd">        ``Axes.inset_axes``, by default the upper right corner,</span>
+<span class="sd">        ``(0.7, 0.7, 0.29, 0.29)``</span>
+<span class="sd">    locator_crs : ccrs.Projection, optional</span>
+<span class="sd">        Projection of the locator map, by default an Albers equal-area</span>
+<span class="sd">        projection centered at 111 degrees west</span>
+<span class="sd">    color : str, optional</span>
+<span class="sd">        Color of the main-extent box drawn on the locator map (its outline, and</span>
+<span class="sd">        its fill when ``fill=True``), by default ``"red"``</span>
+<span class="sd">    linewidth : float, optional</span>
+<span class="sd">        Line width of the main-extent outline, by default 2</span>
 <span class="sd">    zorder : int, optional</span>
-<span class="sd">        Zorder of the locator map, by default None</span>
+<span class="sd">        Zorder of the locator map, by default 8, above the main map's layers</span>
+<span class="sd">    scale : str, optional</span>
+<span class="sd">        Natural Earth scale of the ocean, land and state features: ``"10m"``,</span>
+<span class="sd">        ``"50m"`` or ``"110m"`` (1:10, 1:50 and 1:110 million), by default</span>
+<span class="sd">        ``"50m"``. A coarser scale is smaller to download and faster to draw.</span>
+<span class="sd">    fill : bool, optional</span>
+<span class="sd">        Fill the main-extent box with ``color``, by default False (outline</span>
+<span class="sd">        only)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    plt.Axes</span>
+<span class="sd">    cartopy.mpl.geoaxes.GeoAxes</span>
 <span class="sd">        Axes object of the locator map</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    plot_grid : Draws a grid's cells on the main map.</span>
+<span class="sd">    add_latlon_ticks : Labels the main map's ticks in degrees.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Cartopy downloads the Natural Earth features the first time it draws them</span>
+<span class="sd">    (the internet is needed), and caches them.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    A locator map of Utah and its neighbors in the top left of ``fig``, with</span>
-<span class="sd">    the main map's extent outlined in red, as :doc:`/examples/maps` draws it::</span>
+<span class="sd">    A locator map of the western United States in the upper right corner of</span>
+<span class="sd">    ``ax``, with the main map's extent outlined in red (:doc:`/examples/maps`</span>
+<span class="sd">    draws one)::</span>
+
+<span class="sd">        main_extent = [-112.2, -111.5, 40.4, 41.0]</span>
+<span class="sd">        add_locator_map(ax, main_extent, PC)</span>
+
+<span class="sd">    A locator map of Utah and its neighbors in the upper left corner::</span>
 
 <span class="sd">        add_locator_map(</span>
-<span class="sd">            fig,</span>
-<span class="sd">            main_extent=[-112.2, -111.5, 40.4, 41.0],</span>
-<span class="sd">            main_extent_crs=PC,</span>
-<span class="sd">            locator_rect=(0.14, 0.58, 0.24, 0.26),</span>
+<span class="sd">            ax,</span>
+<span class="sd">            main_extent,</span>
+<span class="sd">            PC,</span>
 <span class="sd">            locator_extent=[-117, -106, 35, 43],</span>
+<span class="sd">            bounds=(0.02, 0.7, 0.29, 0.29),</span>
 <span class="sd">            locator_crs=PC,</span>
-<span class="sd">            color="red",</span>
-<span class="sd">            linewidth=1.5,</span>
 <span class="sd">        )</span>
+
+<span class="sd">    The main map's extent as a filled red box, on the coarser 110 million</span>
+<span class="sd">    scale::</span>
+
+<span class="sd">        add_locator_map(ax, main_extent, PC, fill=True, scale="110m")</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.feature</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cfeature</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
 
-    <span class="n">locator_ax</span><span class="p">:</span> <span class="n">GeoAxes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">(</span>
-        <span class="n">locator_rect</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">locator_crs</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span>
-    <span class="p">)</span>
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">set_extent</span><span class="p">(</span><span class="n">locator_extent</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">locator_crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">locator_crs</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">AlbersEqualArea</span><span class="p">(</span><span class="n">central_longitude</span><span class="o">=-</span><span class="mi">111</span><span class="p">)</span>
 
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">LAND</span><span class="p">)</span>
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">OCEAN</span><span class="p">)</span>
-    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="p">)</span>
+    <span class="n">locator_ax</span><span class="p">:</span> <span class="n">GeoAxes</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">inset_axes</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">locator_crs</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">set_extent</span><span class="p">(</span><span class="n">locator_extent</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">OCEAN</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">LAND</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+    <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_feature</span><span class="p">(</span><span class="n">cfeature</span><span class="o">.</span><span class="n">STATES</span><span class="o">.</span><span class="n">with_scale</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
 
     <span class="n">main_poly</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">extent2bbox</span><span class="p">(</span><span class="n">main_extent</span><span class="p">))</span>
 
-    <span class="c1"># Outline only: `color=` would also fill the box</span>
     <span class="n">locator_ax</span><span class="o">.</span><span class="n">add_geometries</span><span class="p">(</span>
         <span class="p">[</span><span class="n">main_poly</span><span class="p">],</span>
         <span class="n">crs</span><span class="o">=</span><span class="n">main_extent_crs</span><span class="p">,</span>
-        <span class="n">facecolor</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+        <span class="n">facecolor</span><span class="o">=</span><span class="n">color</span> <span class="k">if</span> <span class="n">fill</span> <span class="k">else</span> <span class="s2">"none"</span><span class="p">,</span>
         <span class="n">edgecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
         <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span>
     <span class="p">)</span>
@@ -1281,9 +1318,10 @@
 <span class="sd">        Clip the data to the given bounds.</span>
 
 <span class="sd">        .. note::</span>
-<span class="sd">            The result can be slightly different between supplying a geom and a bbox/extent.</span>
-<span class="sd">            Clipping with a geom seems to be exclusive of the bounds,</span>
-<span class="sd">            while clipping with a bbox/extent seems to be inclusive of the bounds.</span>
+<span class="sd">            A cell is kept when its center is inside the bounds or on them, with</span>
+<span class="sd">            a ``bbox``, an ``extent`` or a ``geom``, whichever way the</span>
+<span class="sd">            coordinates run. With a ``geom`` the cells outside it stay in the</span>
+<span class="sd">            grid as NaN; see :func:`lair.geo.clip`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1299,7 +1337,8 @@
 <span class="sd">            Whether to modify the data in place. Default is False (returns a</span>
 <span class="sd">            new copy with the clipped data).</span>
 <span class="sd">        kwargs : Any</span>
-<span class="sd">            Additional keyword arguments to pass to the rioxarray clip method.</span>
+<span class="sd">            Additional keyword arguments for ``bbox`` and ``extent``, passed to</span>
+<span class="sd">            the rioxarray ``clip_box`` method; none are taken with ``geom``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1483,9 +1522,12 @@
 <span class="sd">    Clip the data to the given bounds.</span>
 
 <span class="sd">    .. note::</span>
-<span class="sd">        The result can be slightly different between supplying a geom and a bbox/extent.</span>
-<span class="sd">        Clipping with a geom seems to be exclusive of the outer bounds,</span>
-<span class="sd">        while clipping with a bbox/extent seems to be inclusive of the outer bounds.</span>
+<span class="sd">        A cell is kept when its center is inside the bounds or on them, with a</span>
+<span class="sd">        ``bbox``, an ``extent`` or a ``geom``, whichever way the coordinates</span>
+<span class="sd">        run. A center exactly on an edge of the polygon (or of a hole in it)</span>
+<span class="sd">        belongs to the polygon, on every side. A ``geom`` keeps the grid's cells</span>
+<span class="sd">        and sets those outside it to NaN; the grid is cut down to the window</span>
+<span class="sd">        around the cells it keeps.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1501,7 +1543,8 @@
 <span class="sd">    crs : Any, optional</span>
 <span class="sd">        The CRS of the input geometries. Default is 'EPSG:4326'.</span>
 <span class="sd">    kwargs : Any</span>
-<span class="sd">        Additional keyword arguments to pass to the rioxarray clip method.</span>
+<span class="sd">        Additional keyword arguments for ``bbox`` and ``extent``, passed to the</span>
+<span class="sd">        rioxarray ``clip_box`` method. None are taken with ``geom``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1512,6 +1555,10 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        Unless exactly one of ``bbox``, ``extent`` and ``geom`` is given.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If ``geom`` is given with keyword arguments.</span>
+<span class="sd">    rioxarray.exceptions.NoDataInBounds</span>
+<span class="sd">        If no cell center is inside ``geom`` or on it.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -1541,14 +1588,66 @@
     <span class="k">if</span> <span class="n">bbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">clip_box</span><span class="p">(</span><span class="o">*</span><span class="n">bbox</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">geom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># rio.clip takes a collection of geometries; wrap a single one</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">shapely</span><span class="o">.</span><span class="n">Geometry</span><span class="p">):</span>
-            <span class="n">geom</span> <span class="o">=</span> <span class="p">[</span><span class="n">geom</span><span class="p">]</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"clip(geom=) takes no keyword arguments besides crs, got </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_clip_to_geom</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">geom</span><span class="p">,</span> <span class="n">crs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">data</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_clip_to_geom</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">geom</span><span class="p">:</span> <span class="n">Polygon</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Polygon</span><span class="p">],</span> <span class="n">crs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataArray</span> <span class="o">|</span> <span class="n">Dataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Keep the cells of ``data`` whose centers are in ``geom`` or on its edge.</span>
+
+<span class="sd">    rioxarray's ``clip`` rasterizes ``geom``, and a center exactly on an edge</span>
+<span class="sd">    then goes to one side or the other depending on which way the coordinates</span>
+<span class="sd">    run (issue #222). Testing the centers directly gives one rule: inside or on</span>
+<span class="sd">    the edge is in. The cells outside are set to NaN and the grid is cut down to</span>
+<span class="sd">    the window around the cells kept, as ``clip`` does.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">MissingCRS</span><span class="p">(</span><span class="s2">"CRS not found. Please set the CRS with 'rio.write_crs()'."</span><span class="p">)</span>
+    <span class="c1"># A single geometry, or a collection of them (list, array, GeoSeries)</span>
+    <span class="n">geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">geom</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">shapely</span><span class="o">.</span><span class="n">Geometry</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+    <span class="n">region</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">union_all</span><span class="p">(</span><span class="n">geoms</span><span class="p">)</span>
+
+    <span class="c1"># Into the data's CRS, as rio.clip does</span>
+    <span class="n">crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
+    <span class="n">data_crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">crs</span> <span class="o">!=</span> <span class="n">data_crs</span><span class="p">:</span>
+        <span class="n">to_data</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">data_crs</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">region</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span>
+            <span class="n">region</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">to_data</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
+        <span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">x_dim</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">y_dim</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">intersects_xy</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">keep</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">NoDataInBounds</span><span class="p">(</span><span class="s2">"No data found in bounds."</span><span class="p">)</span>
+
+    <span class="c1"># The window around the kept cells, so that rows and columns of NaN</span>
+    <span class="c1"># between kept cells stay and those outside them go</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">keep</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">keep</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">y_dim</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rows</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">x_dim</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cols</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">DataArray</span><span class="p">(</span><span class="n">keep</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">y_dim</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">x_dim</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+        <span class="c1"># A variable without both spatial dimensions (a time series) is not masked</span>
+        <span class="n">spatial</span> <span class="o">=</span> <span class="p">{</span><span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">y_dim</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">x_dim</span><span class="p">}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="k">if</span> <span class="n">spatial</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">,</span> <span class="n">keep_attrs</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
 
 
 <span class="c1">#: WGS84 semi-major axis [km] and flattening (NGA TR8350.2, table 3.1)</span>

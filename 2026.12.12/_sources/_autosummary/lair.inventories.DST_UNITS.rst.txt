@@ -1,0 +1,6 @@
+lair.inventories.DST\_UNITS
+===========================
+
+.. currentmodule:: lair.inventories
+
+.. autodata:: DST_UNITS

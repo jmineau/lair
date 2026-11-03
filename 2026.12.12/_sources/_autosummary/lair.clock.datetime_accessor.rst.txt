@@ -1,0 +1,6 @@
+lair.clock.datetime\_accessor
+=============================
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: datetime_accessor

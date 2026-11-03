@@ -1,0 +1,6 @@
+lair.pollutants.Pollutant.label
+===============================
+
+.. currentmodule:: lair.pollutants
+
+.. automethod:: Pollutant.label

@@ -1,0 +1,6 @@
+lair.transects.along\_route\_distance
+=====================================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: along_route_distance

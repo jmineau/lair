@@ -1,0 +1,44 @@
+﻿lair.soundings
+==============
+
+.. automodule:: lair.soundings
+   :no-members:
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   SOUNDING_DIR_ENV
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   download_sounding
+   download_soundings
+   get_soundings
+   merge
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   Sounding
+
+
+
+
+
+
+

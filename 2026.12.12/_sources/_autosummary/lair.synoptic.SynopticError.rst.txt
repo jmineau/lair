@@ -1,0 +1,6 @@
+lair.synoptic.SynopticError
+===========================
+
+.. currentmodule:: lair.synoptic
+
+.. autoexception:: SynopticError

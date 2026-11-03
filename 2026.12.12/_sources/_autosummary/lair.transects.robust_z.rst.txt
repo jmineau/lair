@@ -1,0 +1,6 @@
+lair.transects.robust\_z
+========================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: robust_z

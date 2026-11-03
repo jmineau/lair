@@ -1,0 +1,6 @@
+lair.geo.generate\_regular\_grid
+================================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: generate_regular_grid

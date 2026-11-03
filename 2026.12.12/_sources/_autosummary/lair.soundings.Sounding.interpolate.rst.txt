@@ -1,0 +1,6 @@
+lair.soundings.Sounding.interpolate
+===================================
+
+.. currentmodule:: lair.soundings
+
+.. automethod:: Sounding.interpolate

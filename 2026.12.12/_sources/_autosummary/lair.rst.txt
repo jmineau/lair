@@ -1,0 +1,34 @@
+﻿lair
+====
+
+.. automodule:: lair
+   :no-members:
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   units
+   mass_flux
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   setup_ccg_filter
+
+
+
+
+
+
+
+
+

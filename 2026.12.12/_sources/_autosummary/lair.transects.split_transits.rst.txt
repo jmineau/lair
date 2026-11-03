@@ -1,0 +1,6 @@
+lair.transects.split\_transits
+==============================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: split_transits

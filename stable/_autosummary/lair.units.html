@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>lair.units &#8212; lair 2026.12.11</title>
+    <title>lair.units &#8212; lair 2026.12.12</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=b4abf889"></script>
+    <script src="../_static/documentation_options.js?v=835372e3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,7 +48,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.12';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11" />
+  <meta name="docsearch:version" content="2026.12.12" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -815,6 +815,31 @@
 xarray object and a plain quantity share it. It has the <a class="reference internal" href="lair.mass_flux.html#lair.mass_flux" title="lair.mass_flux"><code class="xref py py-data docutils literal notranslate"><span class="pre">mass_flux</span></code></a>
 context.
 <a class="reference internal" href="../examples/units.html"><span class="doc">Convert a methane flux from moles to mass</span></a> converts a methane flux with it.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="lair.mass_flux.html#lair.mass_flux" title="lair.mass_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mass_flux</span></code></a></dt><dd><p>The context that converts between moles and mass.</p>
+</dd>
+<dt><a class="reference internal" href="lair.inventories.convert_units.html#lair.inventories.convert_units" title="lair.inventories.convert_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.inventories.convert_units</span></code></a></dt><dd><p>Converts an array’s <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute for a pollutant.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>A quantity is a number with a unit, and the registry reads the unit from
+text, CF spellings such as <code class="docutils literal notranslate"><span class="pre">m-2</span> <span class="pre">s-1</span></code> included. <code class="docutils literal notranslate"><span class="pre">to</span></code> converts within one
+dimension; a flux in moles needs the <code class="docutils literal notranslate"><span class="pre">mass_flux</span></code> context to become a flux
+in mass.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span>
+
+<span class="gp">In [2]: </span><span class="n">flux</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">units</span><span class="p">(</span><span class="s2">"nmol m-2 s-1"</span><span class="p">)</span>
+
+<span class="gp">In [3]: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">flux</span><span class="si">:</span><span class="s2">~P</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">10.0 nmol/m²/s</span>
+
+<span class="gp">In [4]: </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">flux</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">'mol km-2 d-1'</span><span class="p">)</span><span class="si">:</span><span class="s2">~P.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">864.000 mol/km²/d</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 </dl>
 </dd></dl>

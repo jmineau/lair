@@ -1,0 +1,6 @@
+lair.geo.CRS.units
+==================
+
+.. currentmodule:: lair.geo
+
+.. autoproperty:: CRS.units

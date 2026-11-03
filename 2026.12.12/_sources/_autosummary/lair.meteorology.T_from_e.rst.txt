@@ -1,0 +1,6 @@
+lair.meteorology.T\_from\_e
+===========================
+
+.. currentmodule:: lair.meteorology
+
+.. autofunction:: T_from_e

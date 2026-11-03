@@ -1,0 +1,6 @@
+lair.geo.cosine\_weights
+========================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: cosine_weights

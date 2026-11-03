@@ -1,0 +1,6 @@
+lair.clock.UTC2
+===============
+
+.. currentmodule:: lair.clock
+
+.. autofunction:: UTC2

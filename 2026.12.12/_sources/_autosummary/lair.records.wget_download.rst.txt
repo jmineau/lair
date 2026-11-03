@@ -1,0 +1,6 @@
+lair.records.wget\_download
+===========================
+
+.. currentmodule:: lair.records
+
+.. autofunction:: wget_download

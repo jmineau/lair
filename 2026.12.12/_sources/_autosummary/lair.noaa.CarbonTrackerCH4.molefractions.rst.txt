@@ -1,0 +1,6 @@
+lair.noaa.CarbonTrackerCH4.molefractions
+========================================
+
+.. currentmodule:: lair.noaa
+
+.. autoproperty:: CarbonTrackerCH4.molefractions

@@ -1,0 +1,6 @@
+lair.setup\_ccg\_filter
+=======================
+
+.. currentmodule:: lair
+
+.. autofunction:: setup_ccg_filter

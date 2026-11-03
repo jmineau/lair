@@ -1,0 +1,6 @@
+lair.pollutants.get\_pollutant
+==============================
+
+.. currentmodule:: lair.pollutants
+
+.. autofunction:: get_pollutant

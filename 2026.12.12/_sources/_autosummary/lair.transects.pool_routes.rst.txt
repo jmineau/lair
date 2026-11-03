@@ -1,0 +1,6 @@
+lair.transects.pool\_routes
+===========================
+
+.. currentmodule:: lair.transects
+
+.. autofunction:: pool_routes

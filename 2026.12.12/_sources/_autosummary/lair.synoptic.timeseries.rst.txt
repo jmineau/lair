@@ -1,0 +1,6 @@
+lair.synoptic.timeseries
+========================
+
+.. currentmodule:: lair.synoptic
+
+.. autofunction:: timeseries

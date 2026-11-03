@@ -1,0 +1,6 @@
+lair.inventories.DEFAULT\_PINT\_FMT
+===================================
+
+.. currentmodule:: lair.inventories
+
+.. autodata:: DEFAULT_PINT_FMT

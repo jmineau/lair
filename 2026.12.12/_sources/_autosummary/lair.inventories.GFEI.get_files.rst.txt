@@ -1,0 +1,6 @@
+lair.inventories.GFEI.get\_files
+================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: GFEI.get_files

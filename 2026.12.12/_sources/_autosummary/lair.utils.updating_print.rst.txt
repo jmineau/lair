@@ -1,0 +1,6 @@
+lair.utils.updating\_print
+==========================
+
+.. currentmodule:: lair.utils
+
+.. autofunction:: updating_print

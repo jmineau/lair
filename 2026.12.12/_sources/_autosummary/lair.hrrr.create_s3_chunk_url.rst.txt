@@ -1,0 +1,6 @@
+lair.hrrr.create\_s3\_chunk\_url
+================================
+
+.. currentmodule:: lair.hrrr
+
+.. autofunction:: create_s3_chunk_url

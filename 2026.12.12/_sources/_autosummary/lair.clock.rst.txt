@@ -1,0 +1,53 @@
+﻿lair.clock
+==========
+
+.. automodule:: lair.clock
+   :no-members:
+
+
+.. rubric:: Attributes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   AFTERNOON
+   SEASONS
+
+
+
+.. rubric:: Functions
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   MST2UTC
+   MTN2UTC
+   UTC2
+   UTC2MST
+   UTC2MTN
+   convert_timezones
+   datetime_accessor
+   decimalDate2dt
+   diurnal
+   dt2decimalDate
+   regular_times_to_intervals
+   seasonal
+
+
+
+.. rubric:: Classes
+
+.. autosummary::
+   :toctree:
+   :nosignatures:
+
+   Timer
+
+
+
+
+
+
+

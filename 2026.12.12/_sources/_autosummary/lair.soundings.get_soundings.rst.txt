@@ -1,0 +1,6 @@
+lair.soundings.get\_soundings
+=============================
+
+.. currentmodule:: lair.soundings
+
+.. autofunction:: get_soundings

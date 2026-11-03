@@ -1,0 +1,6 @@
+lair.clock.AFTERNOON
+====================
+
+.. currentmodule:: lair.clock
+
+.. autodata:: AFTERNOON

@@ -1,0 +1,6 @@
+lair.clock.SEASONS
+==================
+
+.. currentmodule:: lair.clock
+
+.. autodata:: SEASONS

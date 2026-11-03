@@ -1,0 +1,6 @@
+lair.noaa.GML\_DIR\_ENV
+=======================
+
+.. currentmodule:: lair.noaa
+
+.. autodata:: GML_DIR_ENV

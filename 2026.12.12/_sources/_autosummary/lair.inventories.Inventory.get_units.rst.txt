@@ -1,0 +1,6 @@
+lair.inventories.Inventory.get\_units
+=====================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Inventory.get_units

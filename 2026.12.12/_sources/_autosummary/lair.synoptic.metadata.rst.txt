@@ -1,0 +1,6 @@
+lair.synoptic.metadata
+======================
+
+.. currentmodule:: lair.synoptic
+
+.. autofunction:: metadata

@@ -1,0 +1,6 @@
+lair.geo.round\_latlon
+======================
+
+.. currentmodule:: lair.geo
+
+.. autofunction:: round_latlon

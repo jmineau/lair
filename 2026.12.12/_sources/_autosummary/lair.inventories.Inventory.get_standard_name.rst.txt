@@ -1,0 +1,6 @@
+lair.inventories.Inventory.get\_standard\_name
+==============================================
+
+.. currentmodule:: lair.inventories
+
+.. automethod:: Inventory.get_standard_name

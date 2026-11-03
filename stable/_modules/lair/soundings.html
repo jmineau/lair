@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.soundings &#8212; lair 2026.12.11</title>
+    <title>lair.soundings &#8212; lair 2026.12.12</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=b4abf889"></script>
+    <script src="../../_static/documentation_options.js?v=835372e3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.12';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11" />
+  <meta name="docsearch:version" content="2026.12.12" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -475,6 +475,13 @@
 <span class="c1">#:    :doc:`/examples/soundings` shows the folder.</span>
 <span class="n">SOUNDING_DIR_ENV</span> <span class="o">=</span> <span class="s2">"LAIR_SOUNDING_DIR"</span>
 
+<span class="c1">#: The height [m] at which some saved soundings' heights start again from 0</span>
+<span class="n">_HEIGHT_WRAP</span> <span class="o">=</span> <span class="mf">10_000.0</span>
+
+<span class="c1">#: A fall [m] between two consecutive levels larger than this is a wrap, not</span>
+<span class="c1">#: a balloon pushed down (those fall 10 to 50 m)</span>
+<span class="n">_WRAP_FALL</span> <span class="o">=</span> <span class="mf">9_000.0</span>
+
 
 <div class="viewcode-block" id="Sounding">
 <a class="viewcode-back" href="../../_autosummary/lair.soundings.Sounding.html#lair.soundings.Sounding">[docs]</a>
@@ -503,7 +510,9 @@
 <span class="sd">    time : datetime</span>
 <span class="sd">        The date and time of the sounding.</span>
 <span class="sd">    data : pd.DataFrame</span>
-<span class="sd">        The sounding data.</span>
+<span class="sd">        The sounding data, one row per level in the order of the file.</span>
+<span class="sd">        Heights that wrap at 10 km are :ref:`unwrapped</span>
+<span class="sd">        &lt;soundings-wrapped-heights&gt;` as the file is read.</span>
 <span class="sd">    units : dict[str, str]</span>
 <span class="sd">        The unit of each column of ``data`` and of each station attribute,</span>
 <span class="sd">        keyed by name: ``pressure`` in hPa; ``height`` and ``elevation`` in</span>
@@ -594,6 +603,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"station"</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">])</span>
+        <span class="c1"># Undo heights that wrap at 10 km before anything sorts by height</span>
+        <span class="k">if</span> <span class="s2">"height"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"height"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_unwrap_heights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"height"</span><span class="p">],</span> <span class="n">path</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
@@ -635,6 +647,13 @@
 <span class="sd">        --------</span>
 <span class="sd">        get_soundings : Interpolates every sounding of a period to the same</span>
 <span class="sd">            heights.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The levels are sorted by height before they are interpolated. Heights</span>
+<span class="sd">        that wrap at 10 km were :ref:`unwrapped &lt;soundings-wrapped-heights&gt;`</span>
+<span class="sd">        when the file was read; a level reported lower than the one before it,</span>
+<span class="sd">        by a balloon pushed down, keeps its height.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -744,6 +763,37 @@
 
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_unwrap_heights</span><span class="p">(</span><span class="n">height</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Heights [m] with any wrap at 10 km undone, the levels in file order.</span>
+
+<span class="sd">    A fall of more than 9 km from one level to the next is a wrap (9998 m,</span>
+<span class="sd">    then 96 m): 10 km is added to that level and every level after it, and</span>
+<span class="sd">    another 10 km after a second wrap. A smaller fall is kept as it is. A level</span>
+<span class="sd">    without a height stays NaN and is skipped. Logs a warning that names</span>
+<span class="sd">    ``source`` when a wrap is undone.</span>
+<span class="sd">    """</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">height</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">wraps</span> <span class="o">=</span> <span class="n">valid</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">_WRAP_FALL</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">wraps</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">height</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">wraps</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+        <span class="s2">"</span><span class="si">%s</span><span class="s2">: the heights fall from </span><span class="si">%g</span><span class="s2"> m to </span><span class="si">%g</span><span class="s2"> m between two levels, taken as a "</span>
+        <span class="s2">"wrap at </span><span class="si">%g</span><span class="s2"> m; </span><span class="si">%g</span><span class="s2"> m is added to every level after each wrap (</span><span class="si">%d</span><span class="s2"> in the "</span>
+        <span class="s2">"file)."</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">,</span>
+        <span class="n">valid</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">first</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="n">valid</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">first</span><span class="p">],</span>
+        <span class="n">_HEIGHT_WRAP</span><span class="p">,</span>
+        <span class="n">_HEIGHT_WRAP</span><span class="p">,</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">wraps</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+    <span class="p">)</span>
+    <span class="n">unwrapped</span> <span class="o">=</span> <span class="n">height</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">unwrapped</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">valid</span><span class="o">.</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">valid</span> <span class="o">+</span> <span class="n">_HEIGHT_WRAP</span> <span class="o">*</span> <span class="n">wraps</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">unwrapped</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_first_level_height</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>

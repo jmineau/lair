@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lair.inventories &#8212; lair 2026.12.11</title>
+    <title>lair.inventories &#8212; lair 2026.12.12</title>
   
   
   
@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=b4abf889"></script>
+    <script src="../../_static/documentation_options.js?v=835372e3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -47,7 +47,7 @@
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://jmineau.github.io/lair/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.11';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2026.12.12';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             true;
         </script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.11" />
+  <meta name="docsearch:version" content="2026.12.12" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1803,6 +1803,11 @@
 <span class="n">_EDGAR_YEAR</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"_(\d</span><span class="si">{4}</span><span class="s2">)_"</span><span class="p">)</span>
 
 
+<span class="c1">#: The end of an EDGAR v7 file's name: ``_&lt;year&gt;_&lt;sector&gt;.0.1x0.1.nc``</span>
+<span class="c1">#: (``v7.0_FT2021_CH4_2020_ENF.0.1x0.1.nc``).</span>
+<span class="n">_EDGARV7_FILE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"_(\d</span><span class="si">{4}</span><span class="s2">)_([\w_]+)\.0\.1x0\.1\.nc$"</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_year_spans</span><span class="p">(</span><span class="n">years</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Write sorted ``years`` as spans: ``[1970, 1971, 1972, 2020]`` is ``'1970 to 1972, 2020'``.</span>
@@ -2036,6 +2041,10 @@
         <span class="p">},</span>
     <span class="p">}</span>
 
+    <span class="c1"># The pattern a data file's name must match; None accepts every name. A file</span>
+    <span class="c1"># that does not match is left out (get_files) rather than opened.</span>
+    <span class="n">_file_name</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">Pattern</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_years</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Called by the subclasses before Inventory.__init__ reads the files</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">year</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"start"</span><span class="p">,</span> <span class="n">start</span><span class="p">),</span> <span class="p">(</span><span class="s2">"end"</span><span class="p">,</span> <span class="n">end</span><span class="p">)):</span>
@@ -2053,7 +2062,8 @@
 
 <span class="sd">        If the inventory was made with ``start`` or ``end``, only the files of</span>
 <span class="sd">        those years are returned, chosen by the year in each file's name: no</span>
-<span class="sd">        file is opened.</span>
+<span class="sd">        file is opened. A file whose name is not one the version writes</span>
+<span class="sd">        (:class:`EDGARv7` checks this) is left out with a warning that names it.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -2069,7 +2079,21 @@
 <span class="sd">        --------</span>
 <span class="sd">        Inventory.get_files : The files of an inventory that is not EDGAR.</span>
 <span class="sd">        """</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_root</span><span class="p">()</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*.nc"</span><span class="p">)</span> <span class="k">if</span> <span class="s2">"TOTALS"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="p">]</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_root</span><span class="p">()</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s2">"*.nc"</span><span class="p">)</span> <span class="k">if</span> <span class="s2">"TOTALS"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stray</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_name</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">stray</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">"</span><span class="si">%s</span><span class="s2"> leaves out </span><span class="si">%d</span><span class="s2"> file(s) under </span><span class="si">%s</span><span class="s2"> whose name does not match "</span>
+                    <span class="s2">"</span><span class="si">%r</span><span class="s2">: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">stray</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_file_name</span><span class="o">.</span><span class="n">pattern</span><span class="p">,</span>
+                    <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">root</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">stray</span><span class="p">)),</span>
+                <span class="p">)</span>
+                <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stray</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">files</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">files</span>  <span class="c1"># nothing to choose from (Inventory.__init__ raises) or all</span>
 
@@ -2189,6 +2213,11 @@
 <span class="sd">          AWB/v7.0_FT2021_CH4_2021_AWB.0.1x0.1.nc</span>
 <span class="sd">          ...</span>
 
+<span class="sd">    A ``.nc`` file in the folder whose name does not end with</span>
+<span class="sd">    ``_&lt;year&gt;_&lt;sector&gt;.0.1x0.1.nc`` (a copy, a partial download) is left out,</span>
+<span class="sd">    and a warning names it; if no file is left, the class raises</span>
+<span class="sd">    ``FileNotFoundError``.</span>
+
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    EDGARv8 : The next version, with monthly files too.</span>
@@ -2205,6 +2234,7 @@
 <span class="sd">    """</span>
 
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"v7"</span>
+    <span class="n">_file_name</span> <span class="o">=</span> <span class="n">_EDGARV7_FILE</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2223,19 +2253,16 @@
             <span class="n">path</span><span class="p">,</span> <span class="n">pollutant</span><span class="p">,</span> <span class="n">src_units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">src_units</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Need to strip year and sector name from filename</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
+        <span class="c1"># Need to strip year and sector name from filename (get_files leaves</span>
+        <span class="c1"># out the names that do not match)</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span>
-
-        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"_(\d</span><span class="si">{4}</span><span class="s2">)_([\w_]+)\.0\.1x0\.1\.nc$"</span>
-        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
-            <span class="c1"># Extract the year and the text between the year and flx.nc</span>
-            <span class="n">year</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">sector_code</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">_EDGARV7_FILE</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Not an EDGAR v7 file name: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="c1"># The year, and the text between the year and .0.1x0.1.nc</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sector_code</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
         <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sector_name</span><span class="p">(</span><span class="n">sector_code</span><span class="p">)</span>
 
@@ -2417,6 +2444,13 @@
 <span class="sd">    consistent with methane emissions from the U.S. EPA Inventory of U.S.</span>
 <span class="sd">    Greenhouse Gas Emissions and Sinks (U.S. GHGI).</span>
 
+<span class="sd">    A variable of the files whose name starts with the emissions prefix</span>
+<span class="sd">    (``emissions`` in v1, ``emi_ch4`` in v2) is a sector, named by the text</span>
+<span class="sd">    after its IPCC code (``emissions_1A_Combustion_Mobile`` is</span>
+<span class="sd">    ``Combustion_Mobile``). One that does not follow that form, such as a total,</span>
+<span class="sd">    is left out with a warning that names it, so it cannot enter</span>
+<span class="sd">    ``total_emissions`` twice.</span>
+
 <span class="sd">    lair's totals differ a little from EPA's own. EPA's files give each cell's</span>
 <span class="sd">    area on a sphere of 6371 km (their ``grid_cell_area``, which lair drops);</span>
 <span class="sd">    lair uses the area on the WGS84 ellipsoid, as for every inventory</span>
@@ -2473,12 +2507,16 @@
 
         <span class="c1"># Rename variables and add attributes</span>
         <span class="n">name_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">unmatched</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
             <span class="n">attrs</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span>
             <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_emissions_prefix</span><span class="p">):</span>
                 <span class="n">ipcc_code</span><span class="p">,</span> <span class="n">short_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_ipcc_code_and_short_name</span><span class="p">(</span>
                     <span class="n">var</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_emissions_prefix</span>
                 <span class="p">)</span>
+                <span class="k">if</span> <span class="n">short_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">unmatched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+                    <span class="k">continue</span>
                 <span class="n">attrs</span><span class="p">[</span><span class="s2">"IPCC_Code"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ipcc_code</span>
                 <span class="n">attrs</span><span class="p">[</span><span class="s2">"long_name"</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">short_name</span><span class="si">}</span><span class="s2">_Emissions"</span>
                 <span class="n">attrs</span><span class="p">[</span><span class="s2">"standard_name"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_standard_name</span><span class="p">()</span>
@@ -2486,6 +2524,16 @@
                     <span class="s2">"source_category"</span><span class="p">,</span> <span class="kc">None</span>
                 <span class="p">)</span>  <span class="c1"># remove source_category attribute for v2 (same as IPCC code)</span>
                 <span class="n">name_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">short_name</span>
+        <span class="k">if</span> <span class="n">unmatched</span><span class="p">:</span>
+            <span class="c1"># Not a sector (a total, a note): summing it would double count</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">"</span><span class="si">%s</span><span class="s2"> leaves out </span><span class="si">%s</span><span class="s2">: the name starts with </span><span class="si">%r</span><span class="s2"> but is not "</span>
+                <span class="s2">"&lt;prefix&gt;_&lt;IPCC code&gt;_&lt;sector name&gt;"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">unmatched</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_emissions_prefix</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="n">unmatched</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">name_dict</span><span class="p">)</span>
 
         <span class="c1"># Round grid to nearest 0.1 degrees</span>
