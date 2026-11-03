@@ -9,6 +9,27 @@ file alone: the entries are written at release (`just changelog` drafts them).
 
 ## [Unreleased]
 
+## [2026.12.12] - 2026-11-03
+
+### Added
+
+- `add_locator_map` takes `scale` and `fill`. (geo)
+
+### Changed
+
+- **Breaking:** `add_locator_map` takes the main map's axes as its first argument and places the inset by `bounds` in them, through `ax.inset_axes`, so the inset stays put when the main axes move or are resized. (#218)
+- **Breaking:** `clip(geom=)` tests the cell centers itself and keeps one that lies on the polygon's edge (or a hole's edge), on every side, so it agrees with `clip(bbox=)` and no longer depends on which way the coordinates run. It used to leave rioxarray's rasterization to decide, which kept the 40.95 row of a 4 by 4 grid only when latitude descended. Cells well inside or outside the polygon are the same. (#222, #233)
+- `transects.profile` converts a time-zone-aware `times` to UTC before it adds `tz_offset_hours`. A local time plus the offset to local used to be shifted twice. Naive times, the documented input, give the same bins. Local-aware times with the default `tz_offset_hours=0` now bin by the UTC hour, not the local hour. (#220, #223)
+- A `Cacher` keys its results on the compiled code of the functions it was given (the cached function and any passed in the arguments, such as `preprocess=`), not on their names. Editing a function now runs it again. Cache files written before this change are not found once: the function runs again for each set of arguments and the results are added behind the old ones. So does moving to another Python version. A helper the function calls is not seen.
+- `CarbonTracker.background` drops an unnecessary `int()`. (#224)
+
+### Fixed
+
+- `Sounding` undoes a height that starts again from 0 at 10 km (9998 m, then 96 m): a fall of more than 9 km from one level to the next adds 10 km to that level and every level after it, and a warning names the file. A smaller fall, such as a balloon pushed down, is real and kept. Heights wrapped this way used to put levels in the wrong order and make the interpolated profile wrong. (#179, #215)
+- `CarbonTracker.molefractions` works inside a `parallelize` worker, or any `multiprocessing.Pool` worker, where it used to fail with `daemonic processes are not allowed to have children`: a daemonic process opens the files one at a time and logs one line saying why. The dataset is the same. (#221, #232)
+- `EPAv1` and `EPAv2` leave out a variable that has the emissions prefix but is not a sector, with a warning that names it, where it used to be used under a `None` name. (#186, #217)
+- `EDGARv7` leaves out files whose name it cannot read, with one warning that names them, where one stray `.nc` file made the whole inventory fail with a `TypeError`. (#185, #216)
+
 ## [2026.12.11] - 2026-10-29
 
 ### Added
