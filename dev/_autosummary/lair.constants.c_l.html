@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=b7fa5f65"></script>
+    <script src="../_static/documentation_options.js?v=ba543a2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev16+g9701e2e0e" />
+  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -812,9 +812,14 @@
 <dt class="sig sig-object py" id="lair.constants.c_l">
 <span class="sig-prename descclassname"><span class="pre">lair.constants.</span></span><span class="sig-name descname"><span class="pre">c_l</span></span><a class="headerlink" href="#lair.constants.c_l" title="Link to this definition">#</a></dt>
 <dd><p>The specific heat of liquid water, 4186 J/(kg K).</p>
-<p>The heat that warms 1 kg of liquid water by 1 K. This is the value near
-15 degC; at 25 degC it is 4182, and it changes by about 1% between 0 and
-100 degC. The functions of lair do not use it.</p>
+<p>The heat that warms 1 kg of liquid water by 1 K. At 0.101325 MPa, water has
+4188 at 15 degC and 4181 at 25 degC, so this value is 0.06% below the first.
+Between 0 and 100 degC it goes from 4219 at 0 degC down to 4179 near 40 degC
+and back up to 4216 at 100 degC: it changes by about 1%. The functions of
+lair do not use it.</p>
+<p>Source: the NIST Chemistry WebBook, “Thermophysical Properties of Fluid
+Systems”, water at 0.101325 MPa (IAPWS-95, Wagner and Pruss, 2002),
+<a class="reference external" href="https://webbook.nist.gov/chemistry/fluid/">https://webbook.nist.gov/chemistry/fluid/</a>.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="lair.constants.cp.html#lair.constants.cp" title="lair.constants.cp"><code class="xref py py-data docutils literal notranslate"><span class="pre">cp</span></code></a>, <a class="reference internal" href="lair.constants.rho_w.html#lair.constants.rho_w" title="lair.constants.rho_w"><code class="xref py py-data docutils literal notranslate"><span class="pre">rho_w</span></code></a>, <a class="reference internal" href="lair.constants.L_f.html#lair.constants.L_f" title="lair.constants.L_f"><code class="xref py py-data docutils literal notranslate"><span class="pre">L_f</span></code></a></p>

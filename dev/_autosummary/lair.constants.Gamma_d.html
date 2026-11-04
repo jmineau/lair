@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=b7fa5f65"></script>
+    <script src="../_static/documentation_options.js?v=ba543a2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.12.dev16+g9701e2e0e" />
+  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -812,11 +812,12 @@
 <dt class="sig sig-object py" id="lair.constants.Gamma_d">
 <span class="sig-prename descclassname"><span class="pre">lair.constants.</span></span><span class="sig-name descname"><span class="pre">Gamma_d</span></span><a class="headerlink" href="#lair.constants.Gamma_d" title="Link to this definition">#</a></dt>
 <dd><p>The dry adiabatic lapse rate, 9.8 K/km.</p>
-<p>How fast a rising parcel of dry air cools as it expands. The textbook
-value is <code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">/</span> <span class="pre">cp</span></code> rounded to two digits. With the <a class="reference internal" href="lair.constants.g.html#lair.constants.g" title="lair.constants.g"><code class="xref py py-data docutils literal notranslate"><span class="pre">g</span></code></a> and
-<a class="reference internal" href="lair.constants.cp.html#lair.constants.cp" title="lair.constants.cp"><code class="xref py py-data docutils literal notranslate"><span class="pre">cp</span></code></a> of this module, <code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">/</span> <span class="pre">cp</span></code> is 9.76 K/km, so 9.8 is 0.4% above it:
-a calculation that needs constants that agree with each other should use
-<code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">/</span> <span class="pre">cp</span></code>. The functions of lair do not use this constant.</p>
+<p>How fast a rising parcel of dry air cools as it expands: <code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">/</span> <span class="pre">cp</span></code>, which
+the textbooks give as about 9.8 K/km. With the <a class="reference internal" href="lair.constants.g.html#lair.constants.g" title="lair.constants.g"><code class="xref py py-data docutils literal notranslate"><span class="pre">g</span></code></a> and <a class="reference internal" href="lair.constants.cp.html#lair.constants.cp" title="lair.constants.cp"><code class="xref py py-data docutils literal notranslate"><span class="pre">cp</span></code></a> of
+this module, <code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">/</span> <span class="pre">cp</span></code> is 9.76 K/km (the example on the page of
+<a class="reference internal" href="lair.constants.html#module-lair.constants" title="lair.constants"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.constants</span></code></a> computes it), so 9.8 is 0.4% above it: a calculation
+that needs constants that agree with each other should use <code class="docutils literal notranslate"><span class="pre">g</span> <span class="pre">/</span> <span class="pre">cp</span></code>. The
+functions of lair do not use this constant.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="lair.constants.g.html#lair.constants.g" title="lair.constants.g"><code class="xref py py-data docutils literal notranslate"><span class="pre">g</span></code></a>, <a class="reference internal" href="lair.constants.cp.html#lair.constants.cp" title="lair.constants.cp"><code class="xref py py-data docutils literal notranslate"><span class="pre">cp</span></code></a>, <a class="reference internal" href="lair.meteorology.poisson.html#lair.meteorology.poisson" title="lair.meteorology.poisson"><code class="xref py py-func docutils literal notranslate"><span class="pre">lair.meteorology.poisson()</span></code></a></p>
