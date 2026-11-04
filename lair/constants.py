@@ -32,6 +32,13 @@ The scale height of the atmosphere, ``Rd * T / g``, at 250 K:
 >>> H = constants.Rd * (250 * units.K) / constants.g
 >>> round(float(H.m_as("km")), 2)
 7.32
+
+The dry adiabatic lapse rate, ``g / cp``, with these two constants:
+
+>>> round(float((constants.g / constants.cp).m_as("K/km")), 2)
+9.76
+
+That is a little below the 9.8 K/km of :data:`Gamma_d`.
 """
 
 from lair import units
@@ -60,10 +67,14 @@ kb = 1.380649e-23 * units("J / K")
 
 #: The density of liquid water, 997 kg/m^3.
 #:
-#: This is its density at about 25 degC (997.05 kg/m^3); at 0 degC it is
-#: 999.84 and at 4 degC, where it is greatest, about 1000. Use it for rain or
-#: cloud water near room temperature; it is not a function of temperature
-#: here. The functions of lair do not use it.
+#: This is its density at 25 degC (997.05 kg/m^3); at 0 degC it is 999.84, and
+#: it is greatest near 4 degC, where it is 999.97. Use it for rain or cloud
+#: water near room temperature; it is not a function of temperature here. The
+#: functions of lair do not use it.
+#:
+#: Source: the NIST Chemistry WebBook, "Thermophysical Properties of Fluid
+#: Systems", water at 0.101325 MPa (the IAPWS-95 equation of state of Wagner
+#: and Pruss, 2002), https://webbook.nist.gov/chemistry/fluid/.
 #:
 #: .. seealso:: :data:`c_l`, :data:`L`
 #:
@@ -72,11 +83,12 @@ rho_w = 997 * units("kg / m**3")
 
 #: The dry adiabatic lapse rate, 9.8 K/km.
 #:
-#: How fast a rising parcel of dry air cools as it expands. The textbook
-#: value is ``g / cp`` rounded to two digits. With the :data:`g` and
-#: :data:`cp` of this module, ``g / cp`` is 9.76 K/km, so 9.8 is 0.4% above it:
-#: a calculation that needs constants that agree with each other should use
-#: ``g / cp``. The functions of lair do not use this constant.
+#: How fast a rising parcel of dry air cools as it expands: ``g / cp``, which
+#: the textbooks give as about 9.8 K/km. With the :data:`g` and :data:`cp` of
+#: this module, ``g / cp`` is 9.76 K/km (the example on the page of
+#: :mod:`lair.constants` computes it), so 9.8 is 0.4% above it: a calculation
+#: that needs constants that agree with each other should use ``g / cp``. The
+#: functions of lair do not use this constant.
 #:
 #: .. seealso:: :data:`g`, :data:`cp`, :func:`lair.meteorology.poisson`
 #:
@@ -124,11 +136,22 @@ g = 9.81 * units("m / s**2")
 #: The specific heat of dry air at constant pressure, 1005 J/(kg K).
 #:
 #: The heat that warms 1 kg of dry air by 1 K while its pressure stays the
-#: same. It changes very little over the temperatures of the troposphere, so
-#: a constant is enough there. :func:`lair.meteorology.poisson` and
+#: same. It changes very little over the temperatures and pressures of the
+#: troposphere, so a constant is enough there: the equation of state of air of
+#: Lemmon et al. (2000) gives 1003.2 to 1006.8 J/(kg K) for 210 to 310 K and
+#: 200 to 1000 hPa, so 1005 is within 0.2% of it everywhere. (The tables of
+#: that paper give 29.13 to 29.16 J/(mol K) at 0.101325 MPa, which is 1006 to
+#: 1007 J/(kg K) for its molar mass of air, 28.9586 g/mol.)
+#: :func:`lair.meteorology.poisson` and
 #: :func:`~lair.meteorology.inv_poisson` use ``Rd / cp`` as the exponent, and
 #: :func:`lair.pcaps.valleyheatdeficit` uses it to turn a potential
 #: temperature deficit into heat.
+#:
+#: Source: E. W. Lemmon, R. T Jacobsen, S. G. Penoncello and D. G. Friend,
+#: "Thermodynamic Properties of Air and Mixtures of Nitrogen, Argon, and
+#: Oxygen From 60 to 2000 K at Pressures to 2000 MPa", J. Phys. Chem. Ref.
+#: Data 29, 331 (2000), https://doi.org/10.1063/1.1285884 (Table A2; the
+#: range above is computed from the equation of state with CoolProp).
 #:
 #: .. seealso:: :data:`cv`, :data:`Rd`, :data:`Gamma_d`, :func:`lair.meteorology.poisson`
 #:
@@ -137,9 +160,15 @@ cp = 1005 * units("J / kg / K")
 
 #: The specific heat of liquid water, 4186 J/(kg K).
 #:
-#: The heat that warms 1 kg of liquid water by 1 K. This is the value near
-#: 15 degC; at 25 degC it is 4182, and it changes by about 1% between 0 and
-#: 100 degC. The functions of lair do not use it.
+#: The heat that warms 1 kg of liquid water by 1 K. At 0.101325 MPa, water has
+#: 4188 at 15 degC and 4181 at 25 degC, so this value is 0.06% below the first.
+#: Between 0 and 100 degC it goes from 4219 at 0 degC down to 4179 near 40 degC
+#: and back up to 4216 at 100 degC: it changes by about 1%. The functions of
+#: lair do not use it.
+#:
+#: Source: the NIST Chemistry WebBook, "Thermophysical Properties of Fluid
+#: Systems", water at 0.101325 MPa (IAPWS-95, Wagner and Pruss, 2002),
+#: https://webbook.nist.gov/chemistry/fluid/.
 #:
 #: .. seealso:: :data:`cp`, :data:`rho_w`, :data:`L_f`
 #:
@@ -149,9 +178,15 @@ c_l = 4186 * units("J / kg / K")
 #: The specific heat of dry air at constant volume, 718 J/(kg K).
 #:
 #: The heat that warms 1 kg of dry air by 1 K while its volume stays the same.
-#: Mayer's relation ties it to :data:`cp`: ``cp - cv`` is :data:`Rd`, and
-#: 1005 - 287.05 is 717.95, which rounds to this value. The functions of lair
-#: do not use it.
+#: Mayer's relation ties it to :data:`cp`: for an ideal gas ``cp - cv`` is
+#: :data:`Rd`, and 1005 - 287.05 is 717.95, which rounds to this value. Real
+#: air has 715.6 to 718.5 J/(kg K) for 210 to 310 K and 200 to 1000 hPa (the
+#: warm end is the larger), and its ``cp - cv`` at 1000 hPa is 0.4 to 0.7%
+#: above :data:`Rd`. The functions of lair do not use it.
+#:
+#: Source: E. W. Lemmon et al., J. Phys. Chem. Ref. Data 29, 331 (2000),
+#: https://doi.org/10.1063/1.1285884 (see :data:`cp`; Table A2 gives 20.74 to
+#: 20.81 J/(mol K) at 0.101325 MPa, 716 to 719 J/(kg K) for its molar mass).
 #:
 #: .. seealso:: :data:`cp`, :data:`Rd`
 #:
@@ -172,9 +207,15 @@ L_f = 3.337e5 * units("J / kg")
 
 #: The latent heat of vaporization of water, 2.501e6 J/kg.
 #:
-#: The heat that evaporates 1 kg of liquid water at 0 degC. It decreases as
-#: the water is warmer: at the boiling point it is 2.257e6, so for air near
-#: the surface the error is a few percent at most. The functions of lair do not use it.
+#: The heat that evaporates 1 kg of liquid water at 0 degC (2500.9 kJ/kg).
+#: It decreases as the water is warmer: it is 2.430e6 at 30 degC (2.8% below
+#: this value) and 2.256e6 at the boiling point, so for air near the surface
+#: the error is a few percent at most. The functions of lair do not use it.
+#:
+#: Source: the difference of the vapor and liquid enthalpies on the saturation
+#: curve of water in the NIST Chemistry WebBook, "Thermophysical Properties of
+#: Fluid Systems" (IAPWS-95, Wagner and Pruss, 2002),
+#: https://webbook.nist.gov/chemistry/fluid/.
 #:
 #: .. seealso:: :data:`L_f`, :data:`L_s`, :data:`c_l`
 #:
