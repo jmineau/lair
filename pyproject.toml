@@ -119,6 +119,7 @@ dev = [
   "sphinx-autobuild>=2024.10",  # `just docs-serve`
   "sphinx-copybutton>=0.5",
   "twine>=6.0",  # `just dist`
+  "tzdata",  # the clock tests name legacy zones such as 'MST'; the system database of a CI image may lack them
 ]
 
 [tool.uv]
