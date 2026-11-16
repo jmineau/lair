@@ -5,8 +5,9 @@ lair is a toolkit, one module per topic: import the module you need, as in
 ``from lair.meteorology import poisson`` (the API reference lists them). The
 package itself holds what the modules share: the unit registry
 :data:`units` with its :data:`mass_flux` context, and
-:func:`setup_ccg_filter`, which ``import lair`` calls. It also re-exports
-:mod:`lair.config`, :func:`~lair.records.ftp_download` and
+:func:`setup_ccg_filter`, which fetches NOAA's CCG filter when
+:mod:`lair.background` first needs it (``import lair`` downloads nothing). It
+also re-exports :mod:`lair.config`, :func:`~lair.records.ftp_download` and
 :func:`~lair.records.unzip`, and ``__version__``.
 
 Importing lair changes pint for the whole process: it adds the
@@ -14,10 +15,16 @@ Importing lair changes pint for the whole process: it adds the
 in the order of their dimensions (``kg/km**2/d``).
 """
 
+import hashlib
+import importlib
+import importlib.util
 import logging
 import os
+import sys
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
+from pathlib import Path
+from types import ModuleType
 
 import cf_xarray.units  # must be imported before pint_xarray
 import pint
@@ -143,51 +150,103 @@ units.add_context(mass_flux)
 units.formatter.default_sort_func = sort_by_dimensionality
 
 
-def setup_ccg_filter(lair_dir: str | None = None) -> None:
+#: SHA-256 of NOAA's ``ccg_filter.py`` (the file inside ``ccg_filter.zip``, dated
+#: 2024-07-08 in the zip). The zip itself is not hashed: it holds two other
+#: files lair does not use, and a repackaged zip would change its hash without
+#: changing the code that runs. When NOAA publishes a new filter, this changes.
+_CCG_FILTER_SHA256 = "e651b787e438ae74e0f4d13336311ed07a2a876b19dc7213d4650618b39ea6a6"
+
+# The name the filter is imported under; no file by this name exists, so the
+# import system finds it only when a stand-in (the docs build's mock) is there.
+_CCG_FILTER_MODULE = "lair._noaa_ccg_filter"
+
+
+def _has_ccg_checksum(path: Path) -> bool:
+    """Return whether ``path`` is a file with the expected SHA-256."""
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest() == _CCG_FILTER_SHA256
+    except OSError:
+        return False
+
+
+def setup_ccg_filter(directory: str | os.PathLike | None = None) -> Path | None:
     """
-    Set up the CCG filter module from NOAA GML.
+    Fetch the CCG filter from NOAA GML into the cache folder.
 
-    Installs ``_ccg_filter.py`` into ``lair_dir``, from NOAA's ``ccg_filter.zip``,
-    unless the file is already there. ``import lair`` calls this function:
-    :ref:`first-import-download` says what is downloaded and why, what happens
-    without a network, and how to skip the download or place the file yourself.
+    Downloads NOAA's ``ccg_filter.zip`` and saves ``ccg_filter.py`` from it,
+    unless a copy with the expected SHA-256 is already there. ``lair.background``
+    calls this function the first time it is imported (``import lair`` does
+    not): :ref:`ccg-filter-download` says what is downloaded and why, what
+    happens without a network, and how to skip the download or place the file
+    yourself.
 
-    Called on its own, it raises when the download fails or the zip holds no
-    ``ccg_filter.py``, and leaves no partial file behind. The file is moved into
-    place atomically, so concurrent first imports (a Slurm array, for example) are
-    safe: one that finds the file already installed uses it.
+    The download is checked against the SHA-256 of the ``ccg_filter.py`` that
+    lair was written against before it is saved; a different file raises a
+    ``ValueError`` and nothing is kept. A file already in the folder is checked
+    the same way before it is used, and replaced by a fresh download when it
+    does not match.
+
+    Called on its own, it raises when the download fails, the zip holds no
+    ``ccg_filter.py`` or the checksum does not match, and leaves no partial file
+    behind. The file is moved into place atomically, so concurrent first uses
+    (a Slurm array, for example) are safe: one that finds the file already
+    installed uses it.
 
     Parameters
     ----------
-    lair_dir : str, optional
-        Directory to install ``_ccg_filter.py`` into. Defaults to the lair
-        package directory.
+    directory : str or os.PathLike, optional
+        Folder to save ``ccg_filter.py`` into, made if needed. Defaults to the
+        ``ccg_filter`` folder inside :func:`lair.config.get_cache_dir`.
+
+    Returns
+    -------
+    pathlib.Path or None
+        The path of ``ccg_filter.py``, or None when it is not there and
+        ``LAIR_SKIP_CCG_DOWNLOAD`` forbids the download.
+
+    Raises
+    ------
+    ValueError
+        If the file NOAA serves does not have the expected checksum.
 
     See Also
     --------
     lair.background.thoning : Fits NOAA's curve, which needs the filter.
+    lair.config.get_cache_dir : The cache folder.
 
     Examples
     --------
     >>> import lair
     >>> lair.setup_ccg_filter()  # doctest: +SKIP
+    PosixPath('/home/me/.cache/lair/ccg_filter/ccg_filter.py')
     """
     import tempfile
     import zipfile
 
-    if lair_dir is None:
-        lair_dir = os.path.dirname(__file__)
-    ccg_filter_file = os.path.join(lair_dir, "_ccg_filter.py")
+    if directory is None:
+        directory = config.get_cache_dir() / "ccg_filter"
+    ccg_filter_file = Path(directory) / "ccg_filter.py"
 
-    if os.path.exists(ccg_filter_file):
-        return
+    if _has_ccg_checksum(ccg_filter_file):
+        return ccg_filter_file
     if os.getenv("LAIR_SKIP_CCG_DOWNLOAD"):
         # Offline/CI/read-only: skip the FTP download (see docstring)
-        return
+        if ccg_filter_file.exists():
+            logger.warning(
+                "Not using %s: its checksum is not NOAA's current filter, and "
+                "LAIR_SKIP_CCG_DOWNLOAD forbids fetching a new copy.",
+                ccg_filter_file,
+            )
+        return None
+    if ccg_filter_file.exists():
+        logger.warning("Replacing %s: its checksum does not match.", ccg_filter_file)
 
     # The temporary directory sits next to the target so os.replace stays on one
     # filesystem (atomic); it is removed on exit, whether or not we succeed.
-    with tempfile.TemporaryDirectory(prefix=".ccg_filter-", dir=lair_dir) as tmp:
+    ccg_filter_file.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(
+        prefix=".ccg_filter-", dir=ccg_filter_file.parent
+    ) as tmp:
         ftp_download("ftp.gml.noaa.gov", "user/thoning/ccgcrv/ccg_filter.zip", tmp)
         zf = os.path.join(tmp, "ccg_filter.zip")
 
@@ -201,32 +260,67 @@ def setup_ccg_filter(lair_dir: str | None = None) -> None:
                 )
             source = z.read(members[0])
 
-        staged = os.path.join(tmp, "_ccg_filter.py")
+        digest = hashlib.sha256(source).hexdigest()
+        if digest != _CCG_FILTER_SHA256:
+            raise ValueError(
+                "The ccg_filter.py that NOAA GML serves has SHA-256 "
+                f"{digest}, not the {_CCG_FILTER_SHA256} this version of lair "
+                "was written against, so lair will not use it. NOAA may have "
+                "published a new filter (check "
+                "https://gml.noaa.gov/ccgg/mbl/crvfit/crvfit.html and open an "
+                "issue at https://github.com/jmineau/lair/issues), or the "
+                "download was altered."
+            )
+
+        staged = os.path.join(tmp, "ccg_filter.py")
         with open(staged, "wb") as f:
             f.write(source)
 
-        if os.path.exists(ccg_filter_file):
+        if _has_ccg_checksum(ccg_filter_file):
             # Another process installed it while we were downloading
-            return
+            return ccg_filter_file
         os.replace(staged, ccg_filter_file)
+    return ccg_filter_file
 
 
-def _setup_ccg_filter_or_warn() -> None:
+def _load_ccg_filter() -> ModuleType:
     """
-    Install the CCG filter at import; a failure warns instead of raising.
+    Return the CCG filter module, fetching it into the cache folder if needed.
 
-    Only ``lair.background`` needs the filter, so a NOAA outage or a node
-    without outbound FTP shouldn't break ``import lair``.
+    What ``lair.background`` imports ``ccgFilter`` from. A failure to get the
+    file (skipped, no network, bad checksum) raises an ``ImportError`` that
+    names :func:`setup_ccg_filter`; an error inside NOAA's code, such as a missing
+    ``scipy``, is raised as it is.
     """
     try:
-        setup_ccg_filter()
+        return importlib.import_module(_CCG_FILTER_MODULE)
+    except ModuleNotFoundError as e:
+        if e.name != _CCG_FILTER_MODULE:
+            raise
+
+    try:
+        path = setup_ccg_filter()
     except Exception as e:
-        logger.warning(
-            "Could not install NOAA's CCG filter (%s: %s). lair.background is "
-            "unavailable until lair.setup_ccg_filter() succeeds.",
-            type(e).__name__,
-            e,
+        raise ImportError(
+            "lair.background needs NOAA's CCG filter, which could not be set up "
+            f"({type(e).__name__}: {e}). Run lair.setup_ccg_filter() once the "
+            "cause is fixed (it needs outbound FTP to ftp.gml.noaa.gov)."
+        ) from e
+    if path is None:
+        raise ImportError(
+            "lair.background needs NOAA's CCG filter, which isn't installed, "
+            "and LAIR_SKIP_CCG_DOWNLOAD is set, so lair did not download it. "
+            "Unset the variable and run lair.setup_ccg_filter()."
         )
 
-
-_setup_ccg_filter_or_warn()
+    spec = importlib.util.spec_from_file_location(_CCG_FILTER_MODULE, path)
+    if spec is None or spec.loader is None:  # not a .py file we can load
+        raise ImportError(f"Cannot load NOAA's CCG filter from {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[_CCG_FILTER_MODULE] = module
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        del sys.modules[_CCG_FILTER_MODULE]
+        raise
+    return module

@@ -30,14 +30,14 @@ pixi run pytest -n auto --maxprocesses=8 -m "not network and not slow"
 pixi run pyrefly check   # the type check, in the same environment
 ```
 
-CI runs the tests in both environments. The first `import lair` in an
-environment downloads NOAA's CCG filter (the
-[installation page](https://jmineau.github.io/lair/#installation) says why),
-and `LAIR_SKIP_CCG_DOWNLOAD` (any non-empty value, `0` included) skips that.
-`tests/conftest.py` and the Tests, Code Quality and Documentation workflows set
-it. The Tests workflow's `pixi` job clears it for one step to download the
-filter (cached by month), so `tests/background` runs there; it is the only CI
-job that reaches NOAA.
+CI runs the tests in both environments. The first `import lair.background` in
+an environment downloads NOAA's CCG filter into the cache folder (the
+[installation page](https://jmineau.github.io/lair/#installation) says why;
+`import lair` itself downloads nothing), and `LAIR_SKIP_CCG_DOWNLOAD` (any
+non-empty value, `0` included) skips that. `tests/conftest.py` and the Tests,
+Code Quality and Documentation workflows set it. The Tests workflow's `pixi` job
+clears it for one step to download the filter (cached by month), so
+`tests/background` runs there; it is the only CI job that reaches NOAA.
 
 ## Checks
 
@@ -79,8 +79,7 @@ The package is flat (`lair/`, not `src/lair/`): one module per topic, no
 subpackages, and one test directory per module (`tests/README.md`).
 
 ```
-__init__.py      pint setup and the CCG filter download (AGENTS.md, "Import side effects")
-_ccg_filter.py   NOAA's CCG filter, downloaded on first import; gitignored, never commit
+__init__.py      pint setup and the CCG filter fetch (AGENTS.md, "Import side effects")
 _optional.py     import_optional_dependency()
 config.py        get_data_dir(), get_cache_dir(); no file-system work
 constants.py     physical constants (pint has no constants support; issue linked inside)

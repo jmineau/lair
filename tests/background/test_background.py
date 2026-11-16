@@ -2,8 +2,8 @@
 Tests for lair.background.
 
 Scaffold only (see tests/README.md). Importing lair.background requires the
-NOAA GML CCG filter (lair/_ccg_filter.py, fetched on first `import lair` unless
-LAIR_SKIP_CCG_DOWNLOAD is set) and the `science` extra (scipy). When either is
+NOAA GML CCG filter (fetched into the cache folder on the first import of
+lair.background unless LAIR_SKIP_CCG_DOWNLOAD is set) and the `science` extra (scipy). When either is
 missing, this module is skipped.
 """
 
@@ -11,7 +11,7 @@ import pytest
 
 background = pytest.importorskip(
     "lair.background",
-    reason="requires the CCG filter (_ccg_filter.py) and scipy",
+    reason="requires the CCG filter (in the cache folder) and scipy",
     exc_type=ImportError,
 )
 

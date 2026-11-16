@@ -190,7 +190,6 @@ ignore = [
 [tool.coverage.run]
 source = ["lair"]
 branch = true
-omit = ["lair/_ccg_filter.py"]  # vendored from NOAA GML, not authored here
 
 [tool.coverage.report]
 show_missing = true
@@ -210,7 +209,6 @@ exclude_also = [
 project-includes = ["lair"]
 python-version = "3.11"  # as CI checks, against the oldest supported Python
 project-excludes = [
-    "lair/_ccg_filter.py",  # vendored from NOAA GML
     "**/__pycache__",
 ]
 # Optional extras (and their transitive helpers) are typed as Any so the result
@@ -220,7 +218,6 @@ project-excludes = [
 # attributes typed more loosely (`str | None`); that's intended here.
 errors = { bad-override-mutable-attribute = false }
 replace-imports-with-any = [
-    "lair._ccg_filter",  # downloaded from NOAA GML on first import; absent in CI
     "boto3.*", "botocore.*", "cartopy.*", "fastkml.*", "molmass.*",
     "networkx.*", "numcodecs.*", "pyproj.*", "rasterio.*", "requests.*",
     "rioxarray.*", "s3fs.*", "scipy.*", "shapely.*", "siphon.*",
@@ -229,11 +226,6 @@ replace-imports-with-any = [
 
 [tool.ruff]
 # target-version comes from project.requires-python
-# Generated / vendored modules are not linted.
-extend-exclude = [
-    "lair/_ccg_filter.py", # vendored from NOAA GML
-]
-
 [tool.ruff.format]
 docstring-code-format = true
 # ruff also formats code blocks in Markdown; these keep their examples as written

@@ -80,7 +80,9 @@ extras; for full coverage run the suite in the pixi environment
 
 ## Offline import
 
-`import lair` will FTP-download the NOAA GML CCG filter on first import if
-`lair/_ccg_filter.py` is missing. `tests/conftest.py` sets
-`LAIR_SKIP_CCG_DOWNLOAD=1` so the suite never does network I/O at import time;
-`lair.background` is then only importable when the file is already present.
+`import lair` does no network I/O. `lair.background` FTP-downloads NOAA's CCG
+filter into the cache folder (`config.get_cache_dir()`) the first time it is
+imported, unless a copy is already there. `tests/conftest.py` sets
+`LAIR_SKIP_CCG_DOWNLOAD=1` so the suite never does network I/O for it;
+`lair.background` is then only importable when the file is already in the cache
+folder with the right checksum (the Tests workflow's `pixi` job puts it there).
