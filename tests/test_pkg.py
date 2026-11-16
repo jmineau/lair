@@ -264,6 +264,8 @@ class TestSetupCcgFilter:
         monkeypatch.delenv("LAIR_SKIP_CCG_DOWNLOAD", raising=False)
         monkeypatch.setattr(lair, "_CCG_FILTER_SHA256", self._sha(self.SOURCE))
 
+    # Files are written as bytes: write_text() would turn "\n" into "\r\n" on
+    # Windows and change the hash.
     @staticmethod
     def _sha(text):
         return hashlib.sha256(text.encode()).hexdigest()
@@ -370,7 +372,7 @@ class TestSetupCcgFilter:
     def test_existing_target_is_kept(self, tmp_path, monkeypatch):
         calls = []
         self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE}, calls)
-        self._target(tmp_path).write_text(self.SOURCE)
+        self._target(tmp_path).write_bytes(self.SOURCE.encode())
         assert lair.setup_ccg_filter(directory=tmp_path) == self._target(tmp_path)
         assert calls == []
 
@@ -389,7 +391,7 @@ class TestSetupCcgFilter:
     def test_target_written_meanwhile_is_used(self, tmp_path, monkeypatch):
         # Another process (e.g. a SLURM array task) finishes first
         def other_process_wins():
-            self._target(tmp_path).write_text(self.SOURCE)
+            self._target(tmp_path).write_bytes(self.SOURCE.encode())
 
         self._stub_ftp(
             monkeypatch, {"ccg_filter.py": self.SOURCE}, side_effect=other_process_wins
@@ -409,7 +411,7 @@ class TestSetupCcgFilter:
     def test_skip_env_var_still_uses_a_good_copy(self, tmp_path, monkeypatch):
         calls = []
         self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE}, calls)
-        self._target(tmp_path).write_text(self.SOURCE)
+        self._target(tmp_path).write_bytes(self.SOURCE.encode())
         monkeypatch.setenv("LAIR_SKIP_CCG_DOWNLOAD", "0")  # any text skips
         assert lair.setup_ccg_filter(directory=tmp_path) == self._target(tmp_path)
         assert calls == []
