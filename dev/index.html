@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=ba543a2e"></script>
+    <script src="_static/documentation_options.js?v=adba23b2"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
+  <meta name="docsearch:version" content="2026.12.13.dev2+g476e2c06b" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -553,39 +553,51 @@ extra and the command that installs it.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import lair; print(lair.__version__)"</span>
 </pre></div>
 </div>
-<p>This prints the version, such as <code class="docutils literal notranslate"><span class="pre">2026.12.10</span></code>. The first import in a new
-environment also downloads a file; the next section says which.</p>
+<p>This prints the version, such as <code class="docutils literal notranslate"><span class="pre">2026.12.10</span></code>. <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> downloads
+nothing; the next section says what <code class="docutils literal notranslate"><span class="pre">lair.background</span></code> fetches.</p>
 </section>
-<section id="the-first-import-downloads-a-file">
-<span id="first-import-download"></span><h3>The first import downloads a file<a class="headerlink" href="#the-first-import-downloads-a-file" title="Link to this heading">#</a></h3>
+<section id="lair-background-downloads-a-file">
+<span id="ccg-filter-download"></span><h3><code class="docutils literal notranslate"><span class="pre">lair.background</span></code> downloads a file<a class="headerlink" href="#lair-background-downloads-a-file" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">lair.background</span></code> uses the CCG filter, curve-fitting code that NOAA’s Global
 Monitoring Laboratory publishes. It is not part of lair’s repository. The first
-time you <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> in an environment, lair downloads NOAA’s
-<code class="docutils literal notranslate"><span class="pre">ccg_filter.zip</span></code> from <code class="docutils literal notranslate"><span class="pre">ftp.gml.noaa.gov</span></code> and saves <code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code> from it
-as <code class="docutils literal notranslate"><span class="pre">_ccg_filter.py</span></code> inside the installed <code class="docutils literal notranslate"><span class="pre">lair</span></code> folder. Each environment
-downloads it once. The filter also needs <code class="docutils literal notranslate"><span class="pre">scipy</span></code> (the <code class="docutils literal notranslate"><span class="pre">science</span></code> extra).</p>
+time you <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair.background</span></code> (or call <code class="docutils literal notranslate"><span class="pre">lair.setup_ccg_filter()</span></code>), lair
+downloads NOAA’s <code class="docutils literal notranslate"><span class="pre">ccg_filter.zip</span></code> from <code class="docutils literal notranslate"><span class="pre">ftp.gml.noaa.gov</span></code>, checks that
+<code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code> inside it is the file lair was written against (by its
+SHA-256), and saves it as <code class="docutils literal notranslate"><span class="pre">ccg_filter/ccg_filter.py</span></code> in lair’s cache folder
+(<code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code>, <code class="docutils literal notranslate"><span class="pre">~/.cache/lair</span></code> by default; see <a class="reference internal" href="data.html#data-cache"><span class="std std-ref">What lair caches</span></a>). Later
+imports use that file, after checking it again. The filter also needs <code class="docutils literal notranslate"><span class="pre">scipy</span></code>
+(the <code class="docutils literal notranslate"><span class="pre">science</span></code> extra).</p>
+<p>If the file NOAA serves is different (NOAA published a new filter, or the
+transfer was altered), lair refuses it: <code class="docutils literal notranslate"><span class="pre">lair.setup_ccg_filter()</span></code> raises a
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code> that gives both checksums, and <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair.background</span></code> raises
+an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> that carries the same message. A file left by an older lair
+in the installed <code class="docutils literal notranslate"><span class="pre">lair</span></code> folder (<code class="docutils literal notranslate"><span class="pre">_ccg_filter.py</span></code>) is not used; it is safe to
+delete.</p>
 <p>Only <code class="docutils literal notranslate"><span class="pre">lair.background</span></code> uses the file. Without it, the rest of lair works as
-usual. There are three ways to be without it:</p>
+usual, and <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> never touches the network. There are three ways to be
+without it:</p>
 <ul>
-<li><p><strong>No network.</strong> <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> still works. It logs a warning, <code class="docutils literal notranslate"><span class="pre">Could</span> <span class="pre">not</span>
-<span class="pre">install</span> <span class="pre">NOAA's</span> <span class="pre">CCG</span> <span class="pre">filter</span> <span class="pre">(...).</span> <span class="pre">lair.background</span> <span class="pre">is</span> <span class="pre">unavailable</span> <span class="pre">until</span>
-<span class="pre">lair.setup_ccg_filter()</span> <span class="pre">succeeds.</span></code>, and <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair.background</span></code> raises an
-<code class="docutils literal notranslate"><span class="pre">ImportError</span></code> that says the filter is not installed. The next <code class="docutils literal notranslate"><span class="pre">import</span>
-<span class="pre">lair</span></code> tries the download again.</p></li>
-<li><p><strong>Skip the download.</strong> Set <code class="docutils literal notranslate"><span class="pre">LAIR_SKIP_CCG_DOWNLOAD</span></code> before importing, for
-example in a script that runs offline:</p>
+<li><p><strong>No network.</strong> <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair.background</span></code> raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> that says
+the filter could not be set up and why, and to run <code class="docutils literal notranslate"><span class="pre">lair.setup_ccg_filter()</span></code>
+once the cause is fixed. The next import tries the download again.</p></li>
+<li><p><strong>Skip the download.</strong> Set <code class="docutils literal notranslate"><span class="pre">LAIR_SKIP_CCG_DOWNLOAD</span></code>, for example in a script
+that runs offline:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">LAIR_SKIP_CCG_DOWNLOAD</span><span class="o">=</span><span class="m">1</span>
 </pre></div>
 </div>
-<p>Any text counts, including <code class="docutils literal notranslate"><span class="pre">0</span></code>. An empty value does not.</p>
+<p>Any text counts, including <code class="docutils literal notranslate"><span class="pre">0</span></code>. An empty value does not. With it set,
+<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair.background</span></code> uses a copy that is already in the cache folder,
+and otherwise raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> that says the download was skipped.</p>
 </li>
 <li><p><strong>Place the file yourself,</strong> for example when your network allows HTTPS but
-not FTP. NOAA serves the same zip over HTTPS. The last two lines copy the file
-into the installed <code class="docutils literal notranslate"><span class="pre">lair</span></code> folder (this does not import lair):</p>
+not FTP. NOAA serves the same zip over HTTPS. The commands below put the file
+where lair looks for it (the cache folder; <code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code> if you set it).
+It must be the file lair expects, or lair will not use it:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-O<span class="w"> </span>https://gml.noaa.gov/aftp/user/thoning/ccgcrv/ccg_filter.zip
 python<span class="w"> </span>-m<span class="w"> </span>zipfile<span class="w"> </span>-e<span class="w"> </span>ccg_filter.zip<span class="w"> </span>ccg_filter
-<span class="nv">LAIR_DIR</span><span class="o">=</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import importlib.util as u, os; print(os.path.dirname(u.find_spec('lair').origin))"</span><span class="k">)</span>
-cp<span class="w"> </span>ccg_filter/ccg_filter.py<span class="w"> </span><span class="s2">"</span><span class="nv">$LAIR_DIR</span><span class="s2">/_ccg_filter.py"</span>
+<span class="nv">CACHE</span><span class="o">=</span><span class="si">${</span><span class="nv">LAIR_CACHE_DIR</span><span class="k">:-</span><span class="nv">$HOME</span><span class="p">/.cache/lair</span><span class="si">}</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="nv">$CACHE</span><span class="s2">/ccg_filter"</span>
+cp<span class="w"> </span>ccg_filter/ccg_filter.py<span class="w"> </span><span class="s2">"</span><span class="nv">$CACHE</span><span class="s2">/ccg_filter/"</span>
 </pre></div>
 </div>
 </li>
@@ -719,7 +731,7 @@ software and/or acknowledge me.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-release-or-no-git">A release, or no git</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-dependencies">Optional dependencies</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-the-install">Check the install</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-first-import-downloads-a-file">The first import downloads a file</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lair-background-downloads-a-file"><code class="docutils literal notranslate"><span class="pre">lair.background</span></code> downloads a file</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#on-chpc-university-of-utah">On CHPC (University of Utah)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#import-cartopy-prints-a-proj-error"><code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">cartopy</span></code> prints a PROJ error</a></li>
 </ul>

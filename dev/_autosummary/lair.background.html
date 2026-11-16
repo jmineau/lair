@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=ba543a2e"></script>
+    <script src="../_static/documentation_options.js?v=adba23b2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
+  <meta name="docsearch:version" content="2026.12.13.dev2+g476e2c06b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -812,8 +812,9 @@ quantile of a moving window; <a class="reference internal" href="lair.background
 boundary layer is deep; <a class="reference internal" href="lair.clock.AFTERNOON.html#lair.clock.AFTERNOON" title="lair.clock.AFTERNOON"><code class="xref py py-data docutils literal notranslate"><span class="pre">lair.clock.AFTERNOON</span></code></a> lists its hours).
 CarbonTracker’s background is in <a class="reference internal" href="lair.noaa.html#module-lair.noaa" title="lair.noaa"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.noaa</span></code></a>.
 <a class="reference internal" href="../examples/background.html"><span class="doc">Estimate a background</span></a> shows the methods side by side and when to use
-which. The module needs NOAA’s CCG filter, which the first <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code>
-downloads (see <a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a>), and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>.</p>
+which. The module needs NOAA’s CCG filter, which lair
+downloads into its cache folder the first time this module is imported (see
+<a class="reference internal" href="../index.html#ccg-filter-download"><span class="std std-ref">lair.background downloads a file</span></a>), and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>.</p>
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>

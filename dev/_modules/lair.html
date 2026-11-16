@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=ba543a2e"></script>
+    <script src="../_static/documentation_options.js?v=adba23b2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
+  <meta name="docsearch:version" content="2026.12.13.dev2+g476e2c06b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -439,8 +439,9 @@
 <span class="sd">``from lair.meteorology import poisson`` (the API reference lists them). The</span>
 <span class="sd">package itself holds what the modules share: the unit registry</span>
 <span class="sd">:data:`units` with its :data:`mass_flux` context, and</span>
-<span class="sd">:func:`setup_ccg_filter`, which ``import lair`` calls. It also re-exports</span>
-<span class="sd">:mod:`lair.config`, :func:`~lair.records.ftp_download` and</span>
+<span class="sd">:func:`setup_ccg_filter`, which fetches NOAA's CCG filter when</span>
+<span class="sd">:mod:`lair.background` first needs it (``import lair`` downloads nothing). It</span>
+<span class="sd">also re-exports :mod:`lair.config`, :func:`~lair.records.ftp_download` and</span>
 <span class="sd">:func:`~lair.records.unzip`, and ``__version__``.</span>
 
 <span class="sd">Importing lair changes pint for the whole process: it adds the</span>
@@ -448,10 +449,16 @@
 <span class="sd">in the order of their dimensions (``kg/km**2/d``).</span>
 <span class="sd">"""</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">PackageNotFoundError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span> <span class="k">as</span> <span class="n">_version</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModuleType</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">cf_xarray.units</span>  <span class="c1"># must be imported before pint_xarray</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pint</span>
@@ -577,53 +584,105 @@
 <span class="n">units</span><span class="o">.</span><span class="n">formatter</span><span class="o">.</span><span class="n">default_sort_func</span> <span class="o">=</span> <span class="n">sort_by_dimensionality</span>
 
 
+<span class="c1">#: SHA-256 of NOAA's ``ccg_filter.py`` (the file inside ``ccg_filter.zip``, dated</span>
+<span class="c1">#: 2024-07-08 in the zip). The zip itself is not hashed: it holds two other</span>
+<span class="c1">#: files lair does not use, and a repackaged zip would change its hash without</span>
+<span class="c1">#: changing the code that runs. When NOAA publishes a new filter, this changes.</span>
+<span class="n">_CCG_FILTER_SHA256</span> <span class="o">=</span> <span class="s2">"e651b787e438ae74e0f4d13336311ed07a2a876b19dc7213d4650618b39ea6a6"</span>
+
+<span class="c1"># The name the filter is imported under; no file by this name exists, so the</span>
+<span class="c1"># import system finds it only when a stand-in (the docs build's mock) is there.</span>
+<span class="n">_CCG_FILTER_MODULE</span> <span class="o">=</span> <span class="s2">"lair._noaa_ccg_filter"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_has_ccg_checksum</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return whether ``path`` is a file with the expected SHA-256."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span> <span class="o">==</span> <span class="n">_CCG_FILTER_SHA256</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
 <div class="viewcode-block" id="setup_ccg_filter">
 <a class="viewcode-back" href="../_autosummary/lair.setup_ccg_filter.html#lair.setup_ccg_filter">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">setup_ccg_filter</span><span class="p">(</span><span class="n">lair_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup_ccg_filter</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Set up the CCG filter module from NOAA GML.</span>
+<span class="sd">    Fetch the CCG filter from NOAA GML into the cache folder.</span>
 
-<span class="sd">    Installs ``_ccg_filter.py`` into ``lair_dir``, from NOAA's ``ccg_filter.zip``,</span>
-<span class="sd">    unless the file is already there. ``import lair`` calls this function:</span>
-<span class="sd">    :ref:`first-import-download` says what is downloaded and why, what happens</span>
-<span class="sd">    without a network, and how to skip the download or place the file yourself.</span>
+<span class="sd">    Downloads NOAA's ``ccg_filter.zip`` and saves ``ccg_filter.py`` from it,</span>
+<span class="sd">    unless a copy with the expected SHA-256 is already there. ``lair.background``</span>
+<span class="sd">    calls this function the first time it is imported (``import lair`` does</span>
+<span class="sd">    not): :ref:`ccg-filter-download` says what is downloaded and why, what</span>
+<span class="sd">    happens without a network, and how to skip the download or place the file</span>
+<span class="sd">    yourself.</span>
 
-<span class="sd">    Called on its own, it raises when the download fails or the zip holds no</span>
-<span class="sd">    ``ccg_filter.py``, and leaves no partial file behind. The file is moved into</span>
-<span class="sd">    place atomically, so concurrent first imports (a Slurm array, for example) are</span>
-<span class="sd">    safe: one that finds the file already installed uses it.</span>
+<span class="sd">    The download is checked against the SHA-256 of the ``ccg_filter.py`` that</span>
+<span class="sd">    lair was written against before it is saved; a different file raises a</span>
+<span class="sd">    ``ValueError`` and nothing is kept. A file already in the folder is checked</span>
+<span class="sd">    the same way before it is used, and replaced by a fresh download when it</span>
+<span class="sd">    does not match.</span>
+
+<span class="sd">    Called on its own, it raises when the download fails, the zip holds no</span>
+<span class="sd">    ``ccg_filter.py`` or the checksum does not match, and leaves no partial file</span>
+<span class="sd">    behind. The file is moved into place atomically, so concurrent first uses</span>
+<span class="sd">    (a Slurm array, for example) are safe: one that finds the file already</span>
+<span class="sd">    installed uses it.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    lair_dir : str, optional</span>
-<span class="sd">        Directory to install ``_ccg_filter.py`` into. Defaults to the lair</span>
-<span class="sd">        package directory.</span>
+<span class="sd">    directory : str or os.PathLike, optional</span>
+<span class="sd">        Folder to save ``ccg_filter.py`` into, made if needed. Defaults to the</span>
+<span class="sd">        ``ccg_filter`` folder inside :func:`lair.config.get_cache_dir`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pathlib.Path or None</span>
+<span class="sd">        The path of ``ccg_filter.py``, or None when it is not there and</span>
+<span class="sd">        ``LAIR_SKIP_CCG_DOWNLOAD`` forbids the download.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the file NOAA serves does not have the expected checksum.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    lair.background.thoning : Fits NOAA's curve, which needs the filter.</span>
+<span class="sd">    lair.config.get_cache_dir : The cache folder.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import lair</span>
 <span class="sd">    &gt;&gt;&gt; lair.setup_ccg_filter()  # doctest: +SKIP</span>
+<span class="sd">    PosixPath('/home/me/.cache/lair/ccg_filter/ccg_filter.py')</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 
-    <span class="k">if</span> <span class="n">lair_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">lair_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
-    <span class="n">ccg_filter_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lair_dir</span><span class="p">,</span> <span class="s2">"_ccg_filter.py"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">directory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_cache_dir</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"ccg_filter"</span>
+    <span class="n">ccg_filter_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"ccg_filter.py"</span>
 
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ccg_filter_file</span><span class="p">):</span>
-        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">_has_ccg_checksum</span><span class="p">(</span><span class="n">ccg_filter_file</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ccg_filter_file</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"LAIR_SKIP_CCG_DOWNLOAD"</span><span class="p">):</span>
         <span class="c1"># Offline/CI/read-only: skip the FTP download (see docstring)</span>
-        <span class="k">return</span>
+        <span class="k">if</span> <span class="n">ccg_filter_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">"Not using </span><span class="si">%s</span><span class="s2">: its checksum is not NOAA's current filter, and "</span>
+                <span class="s2">"LAIR_SKIP_CCG_DOWNLOAD forbids fetching a new copy."</span><span class="p">,</span>
+                <span class="n">ccg_filter_file</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">ccg_filter_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Replacing </span><span class="si">%s</span><span class="s2">: its checksum does not match."</span><span class="p">,</span> <span class="n">ccg_filter_file</span><span class="p">)</span>
 
     <span class="c1"># The temporary directory sits next to the target so os.replace stays on one</span>
     <span class="c1"># filesystem (atomic); it is removed on exit, whether or not we succeed.</span>
-    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">".ccg_filter-"</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">lair_dir</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+    <span class="n">ccg_filter_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span>
+        <span class="n">prefix</span><span class="o">=</span><span class="s2">".ccg_filter-"</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">ccg_filter_file</span><span class="o">.</span><span class="n">parent</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
         <span class="n">ftp_download</span><span class="p">(</span><span class="s2">"ftp.gml.noaa.gov"</span><span class="p">,</span> <span class="s2">"user/thoning/ccgcrv/ccg_filter.zip"</span><span class="p">,</span> <span class="n">tmp</span><span class="p">)</span>
         <span class="n">zf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">"ccg_filter.zip"</span><span class="p">)</span>
 
@@ -637,36 +696,71 @@
                 <span class="p">)</span>
             <span class="n">source</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">members</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="n">staged</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">"_ccg_filter.py"</span><span class="p">)</span>
+        <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">digest</span> <span class="o">!=</span> <span class="n">_CCG_FILTER_SHA256</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"The ccg_filter.py that NOAA GML serves has SHA-256 "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">digest</span><span class="si">}</span><span class="s2">, not the </span><span class="si">{</span><span class="n">_CCG_FILTER_SHA256</span><span class="si">}</span><span class="s2"> this version of lair "</span>
+                <span class="s2">"was written against, so lair will not use it. NOAA may have "</span>
+                <span class="s2">"published a new filter (check "</span>
+                <span class="s2">"https://gml.noaa.gov/ccgg/mbl/crvfit/crvfit.html and open an "</span>
+                <span class="s2">"issue at https://github.com/jmineau/lair/issues), or the "</span>
+                <span class="s2">"download was altered."</span>
+            <span class="p">)</span>
+
+        <span class="n">staged</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">"ccg_filter.py"</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">staged</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ccg_filter_file</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_has_ccg_checksum</span><span class="p">(</span><span class="n">ccg_filter_file</span><span class="p">):</span>
             <span class="c1"># Another process installed it while we were downloading</span>
-            <span class="k">return</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">staged</span><span class="p">,</span> <span class="n">ccg_filter_file</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">ccg_filter_file</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">staged</span><span class="p">,</span> <span class="n">ccg_filter_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ccg_filter_file</span></div>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_setup_ccg_filter_or_warn</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_ccg_filter</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ModuleType</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Install the CCG filter at import; a failure warns instead of raising.</span>
+<span class="sd">    Return the CCG filter module, fetching it into the cache folder if needed.</span>
 
-<span class="sd">    Only ``lair.background`` needs the filter, so a NOAA outage or a node</span>
-<span class="sd">    without outbound FTP shouldn't break ``import lair``.</span>
+<span class="sd">    What ``lair.background`` imports ``ccgFilter`` from. A failure to get the</span>
+<span class="sd">    file (skipped, no network, bad checksum) raises an ``ImportError`` that</span>
+<span class="sd">    names :func:`setup_ccg_filter`; an error inside NOAA's code, such as a missing</span>
+<span class="sd">    ``scipy``, is raised as it is.</span>
 <span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">setup_ccg_filter</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">_CCG_FILTER_MODULE</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">_CCG_FILTER_MODULE</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">setup_ccg_filter</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-            <span class="s2">"Could not install NOAA's CCG filter (</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">). lair.background is "</span>
-            <span class="s2">"unavailable until lair.setup_ccg_filter() succeeds."</span><span class="p">,</span>
-            <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-            <span class="n">e</span><span class="p">,</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">"lair.background needs NOAA's CCG filter, which could not be set up "</span>
+            <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). Run lair.setup_ccg_filter() once the "</span>
+            <span class="s2">"cause is fixed (it needs outbound FTP to ftp.gml.noaa.gov)."</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">"lair.background needs NOAA's CCG filter, which isn't installed, "</span>
+            <span class="s2">"and LAIR_SKIP_CCG_DOWNLOAD is set, so lair did not download it. "</span>
+            <span class="s2">"Unset the variable and run lair.setup_ccg_filter()."</span>
         <span class="p">)</span>
 
-
-<span class="n">_setup_ccg_filter_or_warn</span><span class="p">()</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="n">_CCG_FILTER_MODULE</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spec</span><span class="o">.</span><span class="n">loader</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># not a .py file we can load</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cannot load NOAA's CCG filter from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">_CCG_FILTER_MODULE</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">_CCG_FILTER_MODULE</span><span class="p">]</span>
+        <span class="k">raise</span>
+    <span class="k">return</span> <span class="n">module</span>
 </pre></div>
 
                 </article>

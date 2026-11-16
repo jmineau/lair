@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=ba543a2e"></script>
+    <script src="../_static/documentation_options.js?v=adba23b2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
+  <meta name="docsearch:version" content="2026.12.13.dev2+g476e2c06b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -810,8 +810,9 @@
 <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">lair.meteorology</span> <span class="pre">import</span> <span class="pre">poisson</span></code> (the API reference lists them). The
 package itself holds what the modules share: the unit registry
 <a class="reference internal" href="lair.units.html#lair.units" title="lair.units"><code class="xref py py-data docutils literal notranslate"><span class="pre">units</span></code></a> with its <a class="reference internal" href="lair.mass_flux.html#lair.mass_flux" title="lair.mass_flux"><code class="xref py py-data docutils literal notranslate"><span class="pre">mass_flux</span></code></a> context, and
-<a class="reference internal" href="lair.setup_ccg_filter.html#lair.setup_ccg_filter" title="lair.setup_ccg_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">setup_ccg_filter()</span></code></a>, which <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> calls. It also re-exports
-<a class="reference internal" href="lair.config.html#module-lair.config" title="lair.config"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.config</span></code></a>, <a class="reference internal" href="lair.records.ftp_download.html#lair.records.ftp_download" title="lair.records.ftp_download"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftp_download()</span></code></a> and
+<a class="reference internal" href="lair.setup_ccg_filter.html#lair.setup_ccg_filter" title="lair.setup_ccg_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">setup_ccg_filter()</span></code></a>, which fetches NOAA’s CCG filter when
+<a class="reference internal" href="lair.background.html#module-lair.background" title="lair.background"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.background</span></code></a> first needs it (<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> downloads nothing). It
+also re-exports <a class="reference internal" href="lair.config.html#module-lair.config" title="lair.config"><code class="xref py py-mod docutils literal notranslate"><span class="pre">lair.config</span></code></a>, <a class="reference internal" href="lair.records.ftp_download.html#lair.records.ftp_download" title="lair.records.ftp_download"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftp_download()</span></code></a> and
 <a class="reference internal" href="lair.records.unzip.html#lair.records.unzip" title="lair.records.unzip"><code class="xref py py-func docutils literal notranslate"><span class="pre">unzip()</span></code></a>, and <code class="docutils literal notranslate"><span class="pre">__version__</span></code>.</p>
 <p>Importing lair changes pint for the whole process: it adds the
 <a class="reference internal" href="lair.mass_flux.html#lair.mass_flux" title="lair.mass_flux"><code class="xref py py-data docutils literal notranslate"><span class="pre">mass_flux</span></code></a> context to the registry and makes pint write a unit’s parts
@@ -832,7 +833,7 @@ in the order of their dimensions (<code class="docutils literal notranslate"><sp
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="lair.setup_ccg_filter.html#lair.setup_ccg_filter" title="lair.setup_ccg_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ccg_filter</span></code></a></p></td>
-<td><p>Set up the CCG filter module from NOAA GML.</p></td>
+<td><p>Fetch the CCG filter from NOAA GML into the cache folder.</p></td>
 </tr>
 </tbody>
 </table>

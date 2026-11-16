@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=ba543a2e"></script>
+    <script src="../_static/documentation_options.js?v=adba23b2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
+  <meta name="docsearch:version" content="2026.12.13.dev2+g476e2c06b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -485,8 +485,8 @@ hours of the day at the site: put the data in local time first (see the
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This page does not run when the docs build. <code class="docutils literal notranslate"><span class="pre">lair.background</span></code> needs NOAA’s
-CCG filter, which lair downloads the first time it is imported (see
-<a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a>), and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>, from the <code class="docutils literal notranslate"><span class="pre">science</span></code> extra
+CCG filter, which lair downloads the first time the module is imported (see
+<a class="reference internal" href="../index.html#ccg-filter-download"><span class="std std-ref">lair.background downloads a file</span></a>), and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>, from the <code class="docutils literal notranslate"><span class="pre">science</span></code> extra
 (see <a class="reference internal" href="../index.html#optional-dependencies"><span class="std std-ref">Optional dependencies</span></a>). The output below was recorded from one
 run of this code on 2026-10-29, with lair 2026.12.11.dev9+g55e932b18.</p>
 </div>
@@ -609,7 +609,7 @@ on either side.</p>
 <section id="afternoon-means-and-a-smooth-curve">
 <h2>Afternoon means and a smooth curve<a class="headerlink" href="#afternoon-means-and-a-smooth-curve" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../_autosummary/lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-func docutils literal notranslate"><span class="pre">thoning()</span></code></a> fits NOAA’s curve (see
-<a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a> for where it comes from) through every value it is
+<a class="reference internal" href="../index.html#ccg-filter-download"><span class="std std-ref">lair.background downloads a file</span></a> for where it comes from) through every value it is
 given. Given every hour, it follows the mean of the data, enhancements
 included. Given afternoon means, it follows the afternoon, when the city’s
 methane is mixed through a deep boundary layer.

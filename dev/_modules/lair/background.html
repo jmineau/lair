@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=ba543a2e"></script>
+    <script src="../../_static/documentation_options.js?v=adba23b2"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
+  <meta name="docsearch:version" content="2026.12.13.dev2+g476e2c06b" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -444,8 +444,9 @@
 <span class="sd">boundary layer is deep; :data:`lair.clock.AFTERNOON` lists its hours).</span>
 <span class="sd">CarbonTracker's background is in :mod:`lair.noaa`.</span>
 <span class="sd">:doc:`/examples/background` shows the methods side by side and when to use</span>
-<span class="sd">which. The module needs NOAA's CCG filter, which the first ``import lair``</span>
-<span class="sd">downloads (see :ref:`first-import-download`), and ``scipy``.</span>
+<span class="sd">which. The module needs NOAA's CCG filter, which lair</span>
+<span class="sd">downloads into its cache folder the first time this module is imported (see</span>
+<span class="sd">:ref:`ccg-filter-download`), and ``scipy``.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
@@ -455,16 +456,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">lair._ccg_filter</span><span class="w"> </span><span class="kn">import</span> <span class="n">ccgFilter</span>  <span class="c1"># make available to user</span>
-<span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">"lair._ccg_filter"</span><span class="p">:</span>
-        <span class="k">raise</span>
-    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-        <span class="s2">"lair.background needs NOAA's CCG filter, which isn't installed. Run "</span>
-        <span class="s2">"lair.setup_ccg_filter() (needs outbound FTP to ftp.gml.noaa.gov)."</span>
-    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lair</span><span class="w"> </span><span class="kn">import</span> <span class="n">_load_ccg_filter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lair.clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">dt2decimalDate</span>
+
+<span class="c1"># Fetches the filter into the cache folder on first use (lair.setup_ccg_filter)</span>
+<span class="c1"># and raises an ImportError that says why when it cannot.</span>
+<span class="n">ccgFilter</span> <span class="o">=</span> <span class="n">_load_ccg_filter</span><span class="p">()</span><span class="o">.</span><span class="n">ccgFilter</span>  <span class="c1"># make available to user</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 

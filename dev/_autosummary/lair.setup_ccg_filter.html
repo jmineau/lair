@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=ba543a2e"></script>
+    <script src="../_static/documentation_options.js?v=adba23b2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
+  <meta name="docsearch:version" content="2026.12.13.dev2+g476e2c06b" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -810,23 +810,38 @@
 <h1>lair.setup_ccg_filter<a class="headerlink" href="#lair-setup-ccg-filter" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.setup_ccg_filter">
-<span class="sig-prename descclassname"><span class="pre">lair.</span></span><span class="sig-name descname"><span class="pre">setup_ccg_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lair_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair.html#setup_ccg_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.setup_ccg_filter" title="Link to this definition">#</a></dt>
-<dd><p>Set up the CCG filter module from NOAA GML.</p>
-<p>Installs <code class="docutils literal notranslate"><span class="pre">_ccg_filter.py</span></code> into <code class="docutils literal notranslate"><span class="pre">lair_dir</span></code>, from NOAA’s <code class="docutils literal notranslate"><span class="pre">ccg_filter.zip</span></code>,
-unless the file is already there. <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> calls this function:
-<a class="reference internal" href="../index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a> says what is downloaded and why, what happens
-without a network, and how to skip the download or place the file yourself.</p>
-<p>Called on its own, it raises when the download fails or the zip holds no
-<code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code>, and leaves no partial file behind. The file is moved into
-place atomically, so concurrent first imports (a Slurm array, for example) are
-safe: one that finds the file already installed uses it.</p>
+<span class="sig-prename descclassname"><span class="pre">lair.</span></span><span class="sig-name descname"><span class="pre">setup_ccg_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair.html#setup_ccg_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.setup_ccg_filter" title="Link to this definition">#</a></dt>
+<dd><p>Fetch the CCG filter from NOAA GML into the cache folder.</p>
+<p>Downloads NOAA’s <code class="docutils literal notranslate"><span class="pre">ccg_filter.zip</span></code> and saves <code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code> from it,
+unless a copy with the expected SHA-256 is already there. <code class="docutils literal notranslate"><span class="pre">lair.background</span></code>
+calls this function the first time it is imported (<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> does
+not): <a class="reference internal" href="../index.html#ccg-filter-download"><span class="std std-ref">lair.background downloads a file</span></a> says what is downloaded and why, what
+happens without a network, and how to skip the download or place the file
+yourself.</p>
+<p>The download is checked against the SHA-256 of the <code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code> that
+lair was written against before it is saved; a different file raises a
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code> and nothing is kept. A file already in the folder is checked
+the same way before it is used, and replaced by a fresh download when it
+does not match.</p>
+<p>Called on its own, it raises when the download fails, the zip holds no
+<code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code> or the checksum does not match, and leaves no partial file
+behind. The file is moved into place atomically, so concurrent first uses
+(a Slurm array, for example) are safe: one that finds the file already
+installed uses it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>lair_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Directory to install <code class="docutils literal notranslate"><span class="pre">_ccg_filter.py</span></code> into. Defaults to the lair
-package directory.</p>
+<dd class="field-odd"><p><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.15)"><em>os.PathLike</em></a><em>, </em><em>optional</em>) – Folder to save <code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code> into, made if needed. Defaults to the
+<code class="docutils literal notranslate"><span class="pre">ccg_filter</span></code> folder inside <a class="reference internal" href="lair.config.get_cache_dir.html#lair.config.get_cache_dir" title="lair.config.get_cache_dir"><code class="xref py py-func docutils literal notranslate"><span class="pre">lair.config.get_cache_dir()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>pathlib.Path or None</em> – The path of <code class="docutils literal notranslate"><span class="pre">ccg_filter.py</span></code>, or None when it is not there and
+<code class="docutils literal notranslate"><span class="pre">LAIR_SKIP_CCG_DOWNLOAD</span></code> forbids the download.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the file NOAA serves does not have the expected checksum.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>Path</em></a> | None</p>
 </dd>
 </dl>
 <div class="admonition seealso">
@@ -834,11 +849,14 @@ package directory.</p>
 <dl class="simple">
 <dt><a class="reference internal" href="lair.background.thoning.html#lair.background.thoning" title="lair.background.thoning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.background.thoning</span></code></a></dt><dd><p>Fits NOAA’s curve, which needs the filter.</p>
 </dd>
+<dt><a class="reference internal" href="lair.config.get_cache_dir.html#lair.config.get_cache_dir" title="lair.config.get_cache_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lair.config.get_cache_dir</span></code></a></dt><dd><p>The cache folder.</p>
+</dd>
 </dl>
 </div>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">lair</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lair</span><span class="o">.</span><span class="n">setup_ccg_filter</span><span class="p">()</span>
+<span class="go">PosixPath('/home/me/.cache/lair/ccg_filter/ccg_filter.py')</span>
 </pre></div>
 </div>
 </dd></dl>

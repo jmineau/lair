@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=ba543a2e"></script>
+    <script src="_static/documentation_options.js?v=adba23b2"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev1+gb6f9cd470" />
+  <meta name="docsearch:version" content="2026.12.13.dev2+g476e2c06b" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -518,7 +518,7 @@ in, so they need no <code class="docutils literal notranslate"><span class="pre"
 <code class="docutils literal notranslate"><span class="pre">meteorology</span></code>, <code class="docutils literal notranslate"><span class="pre">pcaps</span></code>, <code class="docutils literal notranslate"><span class="pre">plotter</span></code>, <code class="docutils literal notranslate"><span class="pre">pollutants</span></code>, <code class="docutils literal notranslate"><span class="pre">records</span></code>,
 <code class="docutils literal notranslate"><span class="pre">transects</span></code>, <code class="docutils literal notranslate"><span class="pre">parallel</span></code> and <code class="docutils literal notranslate"><span class="pre">utils</span></code>, and <code class="docutils literal notranslate"><span class="pre">lair.units</span></code> (the pint unit
 registry). So does <code class="docutils literal notranslate"><span class="pre">background</span></code>, which also needs the CCG filter and <code class="docutils literal notranslate"><span class="pre">scipy</span></code>
-(see <a class="reference internal" href="index.html#first-import-download"><span class="std std-ref">The first import downloads a file</span></a>). Some of their functions need an extra.</p>
+(see <a class="reference internal" href="index.html#ccg-filter-download"><span class="std std-ref">lair.background downloads a file</span></a>). Some of their functions need an extra.</p>
 <p>These get data from somewhere else:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">inventories</span></code> reads <code class="docutils literal notranslate"><span class="pre">LAIR_INVENTORY_DIR</span></code>. lair does not download
@@ -562,26 +562,29 @@ fails when lair needs its formula).</p></li>
 </section>
 <section id="what-lair-caches">
 <span id="data-cache"></span><h2>What lair caches<a class="headerlink" href="#what-lair-caches" title="Link to this heading">#</a></h2>
-<p>One thing: the <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> attribute of <a class="reference internal" href="_autosummary/lair.noaa.CarbonTrackerCH4.html#lair.noaa.CarbonTrackerCH4" title="lair.noaa.CarbonTrackerCH4"><code class="xref py py-class docutils literal notranslate"><span class="pre">CarbonTrackerCH4</span></code></a>
+<p>Two things. The <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> attribute of <a class="reference internal" href="_autosummary/lair.noaa.CarbonTrackerCH4.html#lair.noaa.CarbonTrackerCH4" title="lair.noaa.CarbonTrackerCH4"><code class="xref py py-class docutils literal notranslate"><span class="pre">CarbonTrackerCH4</span></code></a>
 and <a class="reference internal" href="_autosummary/lair.noaa.CarbonTrackerCO2.html#lair.noaa.CarbonTrackerCO2" title="lair.noaa.CarbonTrackerCO2"><code class="xref py py-class docutils literal notranslate"><span class="pre">CarbonTrackerCO2</span></code></a>, which opens every file of a version at
-once. <code class="docutils literal notranslate"><span class="pre">sample()</span></code> and <code class="docutils literal notranslate"><span class="pre">background()</span></code> save nothing, and nothing else in lair
-writes to the cache folder. The cache is a file in <code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code>, with a
-hidden index file beside it:</p>
+once, is saved as a file in <code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code>, with a hidden index file beside
+it. <code class="docutils literal notranslate"><span class="pre">sample()</span></code> and <code class="docutils literal notranslate"><span class="pre">background()</span></code> save nothing. The other is NOAA’s CCG
+filter, which <code class="docutils literal notranslate"><span class="pre">lair.background</span></code> needs (<a class="reference internal" href="index.html#ccg-filter-download"><span class="std std-ref">lair.background downloads a file</span></a>). Nothing
+else in lair writes to the cache folder:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$LAIR_CACHE_DIR/
   carbontracker/
     ch4/CT-CH4-2025/molefractions.pkl
     co2/CT2019B/molefractions_nam1x1.pkl
+  ccg_filter/
+    ccg_filter.py
 </pre></div>
 </div>
 <p>lair makes the folder the first time it saves something there, not when it is
 imported, so <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">lair</span></code> works with a read-only home directory. If the folder
 cannot be made, the error names it and <code class="docutils literal notranslate"><span class="pre">LAIR_CACHE_DIR</span></code>: set the variable to a
 folder you can write to, or pass <code class="docutils literal notranslate"><span class="pre">cache=False</span></code>, which saves nothing.</p>
-<p>The file holds how to open the files, not their values: 8 to 15 KB for each daily
+<p>The <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> file holds how to open the files, not their values: 8 to 15 KB for each daily
 file, so 3.2 MB for the 366 days of a year, whose files add up to 13 GB. That
 needs one file for each day (<a class="reference internal" href="examples/carbontracker.html#carbontracker-data"><span class="std std-ref">The data</span></a> says what happens when
 a day has two).</p>
-<p>The file is for one list of files. When the folder gains or loses a file, the next
+<p>That file is for one list of files. When the folder gains or loses a file, the next
 <code class="docutils literal notranslate"><span class="pre">molefractions</span></code> adds an entry for the new list, as large as the first, to the
 same file, and the old entry stays. To start again, delete the version’s folder in
 the cache; lair makes it again the next time.</p>
