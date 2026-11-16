@@ -148,8 +148,6 @@ def test_table_matches_pyproject():
 def test_every_call_in_lair_names_a_package_in_the_table():
     calls = []
     for path in sorted(Path(lair.__file__).parent.glob("*.py")):
-        if path.name == "_ccg_filter.py":  # NOAA's code, downloaded
-            continue
         for node in ast.walk(ast.parse(path.read_bytes())):
             if (
                 isinstance(node, ast.Call)

@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "_ext"))  # api_pages
 
 # Never reach for the NOAA GML FTP download (CCG filter) while building docs;
-# lair._ccg_filter is mocked below instead.
+# lair._noaa_ccg_filter (what lair.background imports it as) is mocked below.
 os.environ.setdefault("LAIR_SKIP_CCG_DOWNLOAD", "1")
 
 # -- Project information -----------------------------------------------------
@@ -80,7 +80,7 @@ autodoc_mock_imports = [
     "botocore",
     "cartopy",
     "fastkml",
-    "lair._ccg_filter",
+    "lair._noaa_ccg_filter",
     "molmass",
     "networkx",
     "numcodecs",

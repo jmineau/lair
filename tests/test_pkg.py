@@ -5,6 +5,7 @@ These guard the public surface set up in ``lair/__init__.py`` and the
 import-time side effects documented in AGENTS.md.
 """
 
+import hashlib
 import logging
 import os
 import subprocess
@@ -215,12 +216,44 @@ def test_version_from_metadata():
     assert isinstance(lair.__version__, str) and lair.__version__
 
 
+def test_import_makes_no_network_connection_and_no_files(tmp_path):
+    """
+    ``import lair`` fetches nothing, even with the download allowed.
+
+    A fresh interpreter, with every socket connection made to fail and an empty
+    cache folder: the import must still succeed, leave the cache folder absent
+    and not import ``lair.background`` (which fetches the CCG filter).
+    """
+    cache = tmp_path / "cache"
+    code = (
+        "import socket, sys\n"
+        "def refuse(*args, **kwargs):\n"
+        "    raise AssertionError('import lair opened a network connection')\n"
+        "socket.socket.connect = refuse\n"
+        "socket.create_connection = refuse\n"
+        "import lair\n"
+        "assert 'lair.background' not in sys.modules\n"
+    )
+    env = {k: v for k, v in os.environ.items() if k != "LAIR_SKIP_CCG_DOWNLOAD"}
+    env["LAIR_CACHE_DIR"] = str(cache)
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        env=env,
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert not cache.exists()
+
+
 class TestSetupCcgFilter:
     """
     ``setup_ccg_filter`` with the NOAA FTP download stubbed out.
 
-    Each test installs into a temporary directory (``lair_dir=``), never into
-    the package itself.
+    Each test installs into a temporary directory (``directory=`` or
+    ``LAIR_CACHE_DIR``), never into the real cache. The checksum constant is
+    replaced by the hash of a small stand-in source, so the stand-in passes.
     """
 
     REMOTE = "user/thoning/ccgcrv/ccg_filter.zip"
@@ -229,6 +262,13 @@ class TestSetupCcgFilter:
     @pytest.fixture(autouse=True)
     def _allow_download(self, monkeypatch):
         monkeypatch.delenv("LAIR_SKIP_CCG_DOWNLOAD", raising=False)
+        monkeypatch.setattr(lair, "_CCG_FILTER_SHA256", self._sha(self.SOURCE))
+
+    # Files are written as bytes: write_text() would turn "\n" into "\r\n" on
+    # Windows and change the hash.
+    @staticmethod
+    def _sha(text):
+        return hashlib.sha256(text.encode()).hexdigest()
 
     @classmethod
     def _stub_ftp(cls, monkeypatch, members, calls=None, side_effect=None):
@@ -249,8 +289,8 @@ class TestSetupCcgFilter:
         monkeypatch.setattr(lair, "ftp_download", fake_ftp_download)
 
     @staticmethod
-    def _target(lair_dir):
-        return lair_dir / "_ccg_filter.py"
+    def _target(directory):
+        return directory / "ccg_filter.py"
 
     def test_installs_only_the_filter_module(self, tmp_path, monkeypatch):
         calls = []
@@ -260,14 +300,33 @@ class TestSetupCcgFilter:
             "ccgcrv.py": "# crv\n",
         }
         self._stub_ftp(monkeypatch, members, calls)
-        lair.setup_ccg_filter(lair_dir=str(tmp_path))
+        path = lair.setup_ccg_filter(directory=tmp_path)
+        assert path == self._target(tmp_path)
         assert len(calls) == 1
         assert calls[0][:2] == ("ftp.gml.noaa.gov", self.REMOTE)
-        # Downloaded into a temporary directory, not straight into lair_dir
+        # Downloaded into a temporary directory, not straight into the folder
         assert calls[0][2] != str(tmp_path)
         assert self._target(tmp_path).read_text() == self.SOURCE
         # No zip, companion files or temporary directory left behind
-        assert sorted(p.name for p in tmp_path.iterdir()) == ["_ccg_filter.py"]
+        assert sorted(p.name for p in tmp_path.iterdir()) == ["ccg_filter.py"]
+
+    def test_lands_in_the_cache_folder_by_default(self, tmp_path, monkeypatch):
+        cache = tmp_path / "cache"
+        monkeypatch.setenv("LAIR_CACHE_DIR", str(cache))
+        self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE})
+        path = lair.setup_ccg_filter()
+        assert path == cache / "ccg_filter" / "ccg_filter.py"
+        assert path.read_text() == self.SOURCE
+        assert [p.name for p in (cache / "ccg_filter").iterdir()] == ["ccg_filter.py"]
+
+    def test_cache_folder_is_read_when_called(self, tmp_path, monkeypatch):
+        # LAIR_CACHE_DIR set after `import lair` is honored
+        self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE})
+        for name in ("first", "second"):
+            monkeypatch.setenv("LAIR_CACHE_DIR", str(tmp_path / name))
+            path = lair.setup_ccg_filter()
+            assert path is not None
+            assert path.is_relative_to(tmp_path / name)
 
     @pytest.mark.parametrize(
         "members",
@@ -286,37 +345,84 @@ class TestSetupCcgFilter:
     )
     def test_tolerates_changed_zip_contents(self, tmp_path, monkeypatch, members):
         self._stub_ftp(monkeypatch, members)
-        lair.setup_ccg_filter(lair_dir=str(tmp_path))
+        lair.setup_ccg_filter(directory=tmp_path)
         assert self._target(tmp_path).read_text() == self.SOURCE
-        assert sorted(p.name for p in tmp_path.iterdir()) == ["_ccg_filter.py"]
+        assert sorted(p.name for p in tmp_path.iterdir()) == ["ccg_filter.py"]
+
+    def test_bad_checksum_is_refused(self, tmp_path, monkeypatch):
+        # What NOAA serves is not the file lair was written against
+        other = "def ccgFilter():\n    return 'changed'\n"
+        self._stub_ftp(monkeypatch, {"ccg_filter.py": other})
+        with pytest.raises(ValueError, match="SHA-256") as info:
+            lair.setup_ccg_filter(directory=tmp_path)
+        assert self._sha(other) in str(info.value)
+        assert self._sha(self.SOURCE) in str(info.value)
+        assert list(tmp_path.iterdir()) == []
+
+    def test_real_checksum_refuses_a_stand_in(self, tmp_path, monkeypatch):
+        # With lair's own constant, none of these tests' sources would pass
+        monkeypatch.undo()
+        monkeypatch.delenv("LAIR_SKIP_CCG_DOWNLOAD", raising=False)
+        self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE})
+        assert len(lair._CCG_FILTER_SHA256) == 64
+        with pytest.raises(ValueError, match="SHA-256"):
+            lair.setup_ccg_filter(directory=tmp_path)
+        assert list(tmp_path.iterdir()) == []
 
     def test_existing_target_is_kept(self, tmp_path, monkeypatch):
         calls = []
         self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE}, calls)
-        self._target(tmp_path).write_text("# already installed\n")
-        lair.setup_ccg_filter(lair_dir=str(tmp_path))
+        self._target(tmp_path).write_bytes(self.SOURCE.encode())
+        assert lair.setup_ccg_filter(directory=tmp_path) == self._target(tmp_path)
         assert calls == []
-        assert self._target(tmp_path).read_text() == "# already installed\n"
+
+    def test_existing_target_with_wrong_checksum_is_replaced(
+        self, tmp_path, monkeypatch, caplog
+    ):
+        calls = []
+        self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE}, calls)
+        self._target(tmp_path).write_text("# edited or truncated\n")
+        with caplog.at_level(logging.WARNING, logger="lair"):
+            lair.setup_ccg_filter(directory=tmp_path)
+        assert len(calls) == 1
+        assert self._target(tmp_path).read_text() == self.SOURCE
+        assert "checksum" in caplog.text
 
     def test_target_written_meanwhile_is_used(self, tmp_path, monkeypatch):
         # Another process (e.g. a SLURM array task) finishes first
         def other_process_wins():
-            self._target(tmp_path).write_text("# from another process\n")
+            self._target(tmp_path).write_bytes(self.SOURCE.encode())
 
         self._stub_ftp(
             monkeypatch, {"ccg_filter.py": self.SOURCE}, side_effect=other_process_wins
         )
-        lair.setup_ccg_filter(lair_dir=str(tmp_path))
-        assert self._target(tmp_path).read_text() == "# from another process\n"
-        assert sorted(p.name for p in tmp_path.iterdir()) == ["_ccg_filter.py"]
+        assert lair.setup_ccg_filter(directory=tmp_path) == self._target(tmp_path)
+        assert self._target(tmp_path).read_text() == self.SOURCE
+        assert sorted(p.name for p in tmp_path.iterdir()) == ["ccg_filter.py"]
 
     def test_skip_env_var(self, tmp_path, monkeypatch):
         calls = []
         self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE}, calls)
         monkeypatch.setenv("LAIR_SKIP_CCG_DOWNLOAD", "1")
-        lair.setup_ccg_filter(lair_dir=str(tmp_path))
+        assert lair.setup_ccg_filter(directory=tmp_path) is None
         assert calls == []
         assert list(tmp_path.iterdir()) == []
+
+    def test_skip_env_var_still_uses_a_good_copy(self, tmp_path, monkeypatch):
+        calls = []
+        self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE}, calls)
+        self._target(tmp_path).write_bytes(self.SOURCE.encode())
+        monkeypatch.setenv("LAIR_SKIP_CCG_DOWNLOAD", "0")  # any text skips
+        assert lair.setup_ccg_filter(directory=tmp_path) == self._target(tmp_path)
+        assert calls == []
+
+    def test_skip_env_var_does_not_use_a_bad_copy(self, tmp_path, monkeypatch, caplog):
+        self._target(tmp_path).write_text("# edited\n")
+        monkeypatch.setenv("LAIR_SKIP_CCG_DOWNLOAD", "1")
+        with caplog.at_level(logging.WARNING, logger="lair"):
+            assert lair.setup_ccg_filter(directory=tmp_path) is None
+        assert "Not using" in caplog.text
+        assert self._target(tmp_path).read_text() == "# edited\n"
 
     def test_download_failure_leaves_nothing(self, tmp_path, monkeypatch):
         def fail():
@@ -324,13 +430,13 @@ class TestSetupCcgFilter:
 
         self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE}, side_effect=fail)
         with pytest.raises(OSError, match="FTP unreachable"):
-            lair.setup_ccg_filter(lair_dir=str(tmp_path))
+            lair.setup_ccg_filter(directory=tmp_path)
         assert list(tmp_path.iterdir()) == []
 
     def test_zip_without_filter_leaves_nothing(self, tmp_path, monkeypatch):
         self._stub_ftp(monkeypatch, {"ccgcrv.py": "", "README.txt": ""})
         with pytest.raises(FileNotFoundError, match="ccg_filter.py"):
-            lair.setup_ccg_filter(lair_dir=str(tmp_path))
+            lair.setup_ccg_filter(directory=tmp_path)
         assert list(tmp_path.iterdir()) == []
 
     def test_corrupt_zip_leaves_nothing(self, tmp_path, monkeypatch):
@@ -342,16 +448,13 @@ class TestSetupCcgFilter:
         import zipfile
 
         with pytest.raises(zipfile.BadZipFile):
-            lair.setup_ccg_filter(lair_dir=str(tmp_path))
+            lair.setup_ccg_filter(directory=tmp_path)
         assert list(tmp_path.iterdir()) == []
 
-    def test_failure_at_import_warns_instead_of_raising(self, monkeypatch, caplog):
-        # import lair must survive a NOAA outage; only lair.background needs it
-        def fail(lair_dir=None):
-            raise OSError("FTP unreachable")
-
-        monkeypatch.setattr(lair, "setup_ccg_filter", fail)
-        with caplog.at_level(logging.WARNING, logger="lair"):
-            lair._setup_ccg_filter_or_warn()
-        assert "FTP unreachable" in caplog.text
-        assert "lair.setup_ccg_filter()" in caplog.text
+    def test_unwritable_cache_folder_raises(self, tmp_path, monkeypatch):
+        # A path that cannot be made (a file is in the way), as in a read-only home
+        blocker = tmp_path / "blocker"
+        blocker.write_text("")
+        self._stub_ftp(monkeypatch, {"ccg_filter.py": self.SOURCE})
+        with pytest.raises(OSError):
+            lair.setup_ccg_filter(directory=blocker / "ccg_filter")

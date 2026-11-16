@@ -7,8 +7,9 @@ quantile of a moving window; :func:`thoning` fits NOAA's curve (Thoning et al.,
 boundary layer is deep; :data:`lair.clock.AFTERNOON` lists its hours).
 CarbonTracker's background is in :mod:`lair.noaa`.
 :doc:`/examples/background` shows the methods side by side and when to use
-which. The module needs NOAA's CCG filter, which the first ``import lair``
-downloads (see :ref:`first-import-download`), and ``scipy``.
+which. The module needs NOAA's CCG filter, which lair
+downloads into its cache folder the first time this module is imported (see
+:ref:`ccg-filter-download`), and ``scipy``.
 """
 
 import datetime as dt
@@ -18,16 +19,12 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-try:
-    from lair._ccg_filter import ccgFilter  # make available to user
-except ModuleNotFoundError as e:
-    if e.name != "lair._ccg_filter":
-        raise
-    raise ImportError(
-        "lair.background needs NOAA's CCG filter, which isn't installed. Run "
-        "lair.setup_ccg_filter() (needs outbound FTP to ftp.gml.noaa.gov)."
-    ) from e
+from lair import _load_ccg_filter
 from lair.clock import dt2decimalDate
+
+# Fetches the filter into the cache folder on first use (lair.setup_ccg_filter)
+# and raises an ImportError that says why when it cannot.
+ccgFilter = _load_ccg_filter().ccgFilter  # make available to user
 
 logger = logging.getLogger(__name__)
 

@@ -8,8 +8,8 @@ the module is extracted into its own package (see ``tests/README.md``).
 
 import os
 
-# Make `import lair` hermetic: never reach for the NOAA GML FTP download during
-# tests. If lair/_ccg_filter.py is absent (fresh checkout / CI), importing lair
+# Never reach for the NOAA GML FTP download during tests. If the CCG filter is
+# absent from the cache folder (fresh checkout / CI), importing lair.background
 # would otherwise try to fetch it over FTP. This only takes effect when the file
 # is missing; when present (the usual case on CHPC) the real module is used.
 os.environ.setdefault("LAIR_SKIP_CCG_DOWNLOAD", "1")

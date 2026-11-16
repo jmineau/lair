@@ -65,7 +65,7 @@ in, so they need no ``LAIR_*`` variable: ``air``, ``clock``, ``constants``,
 ``meteorology``, ``pcaps``, ``plotter``, ``pollutants``, ``records``,
 ``transects``, ``parallel`` and ``utils``, and ``lair.units`` (the pint unit
 registry). So does ``background``, which also needs the CCG filter and ``scipy``
-(see :ref:`first-import-download`). Some of their functions need an extra.
+(see :ref:`ccg-filter-download`). Some of their functions need an extra.
 
 These get data from somewhere else:
 
@@ -114,11 +114,12 @@ and WetCHARTs hold methane, and Vulcan carbon dioxide.
 What lair caches
 ----------------
 
-One thing: the ``molefractions`` attribute of :class:`~lair.noaa.CarbonTrackerCH4`
+Two things. The ``molefractions`` attribute of :class:`~lair.noaa.CarbonTrackerCH4`
 and :class:`~lair.noaa.CarbonTrackerCO2`, which opens every file of a version at
-once. ``sample()`` and ``background()`` save nothing, and nothing else in lair
-writes to the cache folder. The cache is a file in ``LAIR_CACHE_DIR``, with a
-hidden index file beside it:
+once, is saved as a file in ``LAIR_CACHE_DIR``, with a hidden index file beside
+it. ``sample()`` and ``background()`` save nothing. The other is NOAA's CCG
+filter, which ``lair.background`` needs (:ref:`ccg-filter-download`). Nothing
+else in lair writes to the cache folder:
 
 .. code-block:: text
 
@@ -126,18 +127,20 @@ hidden index file beside it:
      carbontracker/
        ch4/CT-CH4-2025/molefractions.pkl
        co2/CT2019B/molefractions_nam1x1.pkl
+     ccg_filter/
+       ccg_filter.py
 
 lair makes the folder the first time it saves something there, not when it is
 imported, so ``import lair`` works with a read-only home directory. If the folder
 cannot be made, the error names it and ``LAIR_CACHE_DIR``: set the variable to a
 folder you can write to, or pass ``cache=False``, which saves nothing.
 
-The file holds how to open the files, not their values: 8 to 15 KB for each daily
+The ``molefractions`` file holds how to open the files, not their values: 8 to 15 KB for each daily
 file, so 3.2 MB for the 366 days of a year, whose files add up to 13 GB. That
 needs one file for each day (:ref:`carbontracker-data` says what happens when
 a day has two).
 
-The file is for one list of files. When the folder gains or loses a file, the next
+That file is for one list of files. When the folder gains or loses a file, the next
 ``molefractions`` adds an entry for the new list, as large as the first, to the
 same file, and the old entry stays. To start again, delete the version's folder in
 the cache; lair makes it again the next time.

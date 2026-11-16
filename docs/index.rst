@@ -157,47 +157,60 @@ Check the install
 
    python -c "import lair; print(lair.__version__)"
 
-This prints the version, such as ``2026.12.10``. The first import in a new
-environment also downloads a file; the next section says which.
+This prints the version, such as ``2026.12.10``. ``import lair`` downloads
+nothing; the next section says what ``lair.background`` fetches.
 
-.. _first-import-download:
+.. _ccg-filter-download:
 
-The first import downloads a file
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``lair.background`` downloads a file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``lair.background`` uses the CCG filter, curve-fitting code that NOAA's Global
 Monitoring Laboratory publishes. It is not part of lair's repository. The first
-time you ``import lair`` in an environment, lair downloads NOAA's
-``ccg_filter.zip`` from ``ftp.gml.noaa.gov`` and saves ``ccg_filter.py`` from it
-as ``_ccg_filter.py`` inside the installed ``lair`` folder. Each environment
-downloads it once. The filter also needs ``scipy`` (the ``science`` extra).
+time you ``import lair.background`` (or call ``lair.setup_ccg_filter()``), lair
+downloads NOAA's ``ccg_filter.zip`` from ``ftp.gml.noaa.gov``, checks that
+``ccg_filter.py`` inside it is the file lair was written against (by its
+SHA-256), and saves it as ``ccg_filter/ccg_filter.py`` in lair's cache folder
+(``LAIR_CACHE_DIR``, ``~/.cache/lair`` by default; see :ref:`data-cache`). Later
+imports use that file, after checking it again. The filter also needs ``scipy``
+(the ``science`` extra).
+
+If the file NOAA serves is different (NOAA published a new filter, or the
+transfer was altered), lair refuses it: ``lair.setup_ccg_filter()`` raises a
+``ValueError`` that gives both checksums, and ``import lair.background`` raises
+an ``ImportError`` that carries the same message. A file left by an older lair
+in the installed ``lair`` folder (``_ccg_filter.py``) is not used; it is safe to
+delete.
 
 Only ``lair.background`` uses the file. Without it, the rest of lair works as
-usual. There are three ways to be without it:
+usual, and ``import lair`` never touches the network. There are three ways to be
+without it:
 
-* **No network.** ``import lair`` still works. It logs a warning, ``Could not
-  install NOAA's CCG filter (...). lair.background is unavailable until
-  lair.setup_ccg_filter() succeeds.``, and ``import lair.background`` raises an
-  ``ImportError`` that says the filter is not installed. The next ``import
-  lair`` tries the download again.
-* **Skip the download.** Set ``LAIR_SKIP_CCG_DOWNLOAD`` before importing, for
-  example in a script that runs offline:
+* **No network.** ``import lair.background`` raises an ``ImportError`` that says
+  the filter could not be set up and why, and to run ``lair.setup_ccg_filter()``
+  once the cause is fixed. The next import tries the download again.
+* **Skip the download.** Set ``LAIR_SKIP_CCG_DOWNLOAD``, for example in a script
+  that runs offline:
 
   .. code-block:: bash
 
      export LAIR_SKIP_CCG_DOWNLOAD=1
 
-  Any text counts, including ``0``. An empty value does not.
+  Any text counts, including ``0``. An empty value does not. With it set,
+  ``import lair.background`` uses a copy that is already in the cache folder,
+  and otherwise raises an ``ImportError`` that says the download was skipped.
 * **Place the file yourself,** for example when your network allows HTTPS but
-  not FTP. NOAA serves the same zip over HTTPS. The last two lines copy the file
-  into the installed ``lair`` folder (this does not import lair):
+  not FTP. NOAA serves the same zip over HTTPS. The commands below put the file
+  where lair looks for it (the cache folder; ``LAIR_CACHE_DIR`` if you set it).
+  It must be the file lair expects, or lair will not use it:
 
   .. code-block:: bash
 
      curl -O https://gml.noaa.gov/aftp/user/thoning/ccgcrv/ccg_filter.zip
      python -m zipfile -e ccg_filter.zip ccg_filter
-     LAIR_DIR=$(python -c "import importlib.util as u, os; print(os.path.dirname(u.find_spec('lair').origin))")
-     cp ccg_filter/ccg_filter.py "$LAIR_DIR/_ccg_filter.py"
+     CACHE=${LAIR_CACHE_DIR:-$HOME/.cache/lair}
+     mkdir -p "$CACHE/ccg_filter"
+     cp ccg_filter/ccg_filter.py "$CACHE/ccg_filter/"
 
 On CHPC (University of Utah)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

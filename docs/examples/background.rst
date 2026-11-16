@@ -21,8 +21,8 @@ against the background the data were made from. Three rules come out of it:
 .. note::
 
    This page does not run when the docs build. ``lair.background`` needs NOAA's
-   CCG filter, which lair downloads the first time it is imported (see
-   :ref:`first-import-download`), and ``scipy``, from the ``science`` extra
+   CCG filter, which lair downloads the first time the module is imported (see
+   :ref:`ccg-filter-download`), and ``scipy``, from the ``science`` extra
    (see :ref:`optional-dependencies`). The output below was recorded from one
    run of this code on 2026-10-29, with lair 2026.12.11.dev9+g55e932b18.
 
@@ -138,7 +138,7 @@ Afternoon means and a smooth curve
 ----------------------------------
 
 :func:`~lair.background.thoning` fits NOAA's curve (see
-:ref:`first-import-download` for where it comes from) through every value it is
+:ref:`ccg-filter-download` for where it comes from) through every value it is
 given. Given every hour, it follows the mean of the data, enhancements
 included. Given afternoon means, it follows the afternoon, when the city's
 methane is mixed through a deep boundary layer.

@@ -29,9 +29,9 @@ project). Docs: <https://jmineau.github.io/lair/>.
 ## Layout
 
 Flat (`lair/`, not `src/lair/`), one module per topic, no subpackages; the
-tour of the modules is in CONTRIBUTING.md, "Code layout". `_ccg_filter.py` is
-NOAA's CCG filter, downloaded on first import; it is gitignored, never commit
-it. Instrument and archive specifics stay out: pollutant column naming is in
+tour of the modules is in CONTRIBUTING.md, "Code layout". NOAA's CCG
+filter is not in the repository: it is fetched on first use (see "Import side
+effects"). Instrument and archive specifics stay out: pollutant column naming is in
 `uataq.pollutants`, and readers of one site's archive or one platform (such as
 TRAX transects) belong in the downstream packages. `lair` re-exports only
 `units` (pint-xarray's registry), `config`, `ftp_download`, `unzip`,
@@ -54,23 +54,36 @@ module (`from lair.meteorology import poisson`).
    lair` raises `ImportError` on purpose. Which pint versions have it, and why
    the floor is `pint>=0.24.4`, are in the comments in `lair/__init__.py` and
    `pyproject.toml`; `tests/test_pkg.py` checks both imports.
-4. Calls `setup_ccg_filter()`. If `lair/_ccg_filter.py` is absent, it
-   downloads NOAA's `ccg_filter.zip` and installs the file atomically (the
-   docstring has the steps). At import a failure (or a read-only lair
-   folder) only logs a WARNING; `lair.background` then raises an `ImportError`
-   saying to run `lair.setup_ccg_filter()`, which raises when called.
+
+`import lair` does no network I/O and writes no file.
 
 Consequences:
 
+- **NOAA's CCG filter is fetched when `lair.background` is first imported**
+  (or `lair.setup_ccg_filter()` is called), not at `import lair`.
+  `background.py` calls `lair._load_ccg_filter()`, which runs
+  `setup_ccg_filter()`: it downloads NOAA's `ccg_filter.zip` over FTP, checks
+  the SHA-256 of the `ccg_filter.py` inside it against `_CCG_FILTER_SHA256`
+  (the `.py`, not the zip: the zip holds two files lair does not use and its
+  hash would change when NOAA repackages it), and installs the file atomically
+  as `<get_cache_dir()>/ccg_filter/ccg_filter.py`. A mismatch raises a
+  `ValueError` and keeps nothing. A file already there is checked again before
+  each use and replaced when it fails. The module is loaded from that path as
+  `lair._noaa_ccg_filter` (no file has that name, so the docs build mocks it).
+  A failure raises an `ImportError` from `lair.background` that names
+  `lair.setup_ccg_filter()`; an error inside NOAA's code (no `scipy`) is not
+  masked. A new NOAA filter means a new constant and a new lair release. A
+  `lair/_ccg_filter.py` left by an older lair is ignored.
 - **`LAIR_SKIP_CCG_DOWNLOAD`** skips the download; any non-empty value skips,
-  `0` included. `tests/conftest.py` and the Tests, Code Quality and
+  `0` included. A copy already in the cache folder with the right checksum is
+  still used. `tests/conftest.py` and the Tests, Code Quality and
   Documentation workflows set it (CONTRIBUTING.md, "Setup", names the one CI
   job that clears it).
 - **The cache folder is made on first use, never at import.**
   `config.get_cache_dir()` reads `LAIR_CACHE_DIR` at each call (no
-  module-level constant). `lair.noaa._cache_file` makes the folder when it
-  first writes; a new cache user calls it. `tests/config` and `tests/noaa`
-  check a read-only home.
+  module-level constant). `lair.noaa._cache_file` and `setup_ccg_filter()`
+  make the folder when they first write; a new cache user does the same.
+  `tests/config` and `tests/noaa` check a read-only home.
 - **No global xarray options.** Code that needs attributes kept scopes it
   (`@_keep_attrs` in `inventories`, or `with xr.set_options(keep_attrs=True):`).
   The locked xarray keeps attributes by default, so `TestAttributes` passes
