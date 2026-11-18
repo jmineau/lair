@@ -49,6 +49,7 @@ shows them all).
 |---|---|
 | `just quality-check` | `lint`, `type-check` (pyrefly), `docstr` (docstring coverage of at least 88%) and `test`: what CI checks |
 | `just test` | pytest in parallel, skipping tests marked `network` or `slow`; it also runs the `>>>` examples in the docstrings under `lair/` (extra args go to pytest; plain `uv run pytest` runs serially, for debugging) |
+| `just sync-floors` | install every dependency at the minimum `pyproject.toml` declares (then `just test`); CI does this in its "minimum dependencies" job, so give each direct dependency a minimum; lair's job passes `""` to leave the extras out |
 | `just format` | fix lint and format the code with ruff |
 | `just build-docs` | build the HTML docs into `docs/_build/`, running every example (warnings are errors) |
 | `just docs-serve` | preview the docs at <http://127.0.0.1:8000>, rebuilt on every save (on a remote machine, forward the port, e.g. VS Code's Ports panel) |
