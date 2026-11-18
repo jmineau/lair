@@ -9,6 +9,7 @@ import os
 import sys
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
+from pathlib import Path
 
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "_ext"))  # api_pages
@@ -57,8 +58,6 @@ extensions = [
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", ".ipynb_checkpoints"]
-
-# -- Extension configuration -------------------------------------------------
 
 # Docstrings are numpydoc style
 napoleon_google_docstring = False
@@ -128,6 +127,18 @@ todo_include_todos = True
 html_theme = "pydata_sphinx_theme"
 html_title = f"lair {version_match}"
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
+# The link preview (Open Graph) tags in _templates/layout.html. The preview image is
+# the picture Slack, Discord and the like show for a link; it needs a full URL, so it
+# is read from the main branch on GitHub, and left out until docs/_static/ has one.
+html_context = {
+    "og_description": "Python package for land-air interactions research.",
+    "og_image": (
+        "https://raw.githubusercontent.com/jmineau/lair/main/docs/_static/social-preview.png"
+        if (Path(__file__).parent / "_static" / "social-preview.png").exists()
+        else ""
+    ),
+}
 html_theme_options = {
     "github_url": "https://github.com/jmineau/lair",
     "show_toc_level": 2,

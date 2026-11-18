@@ -14,6 +14,7 @@
 [![Code Quality](https://github.com/jmineau/lair/actions/workflows/quality.yml/badge.svg)](https://github.com/jmineau/lair/actions/workflows/quality.yml)
 [![codecov](https://codecov.io/gh/jmineau/lair/branch/main/graph/badge.svg)](https://codecov.io/gh/jmineau/lair)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Pyrefly](https://img.shields.io/badge/types-pyrefly-blue.svg)](https://pyrefly.org)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22900040.svg)](https://doi.org/10.5281/zenodo.22900040)
 
 </div>

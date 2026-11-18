@@ -99,8 +99,9 @@ modules behind a missing extra `importorskip` and skip. The pixi
 environment has every extra (CONTRIBUTING.md, "Setup"): `pixi run pytest ...`
 or `pixi run pyrefly check` (the recipes use uv). After editing dependencies,
 run `uv lock` **and** `pixi lock` and commit both. A failure in one
-environment only is usually a version difference. CI fails on a stale
-`pixi.lock`, which is `merge=binary`: after a conflict, rerun `pixi lock`.
+environment only is usually a version difference. `just sync-floors ""` (then
+`just test`) runs the tests at every dependency's minimum, as the CI floors job
+does. CI fails on a stale `pixi.lock`, which is `merge=binary`: after a conflict, rerun `pixi lock`.
 
 ## Conventions
 
