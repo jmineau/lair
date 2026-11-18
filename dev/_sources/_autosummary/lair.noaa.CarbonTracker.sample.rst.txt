@@ -2,5 +2,4 @@ lair.noaa.CarbonTracker.sample
 ==============================
 
 .. currentmodule:: lair.noaa
-
 .. automethod:: CarbonTracker.sample

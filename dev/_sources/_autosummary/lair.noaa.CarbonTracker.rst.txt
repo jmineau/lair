@@ -9,10 +9,13 @@ lair.noaa.CarbonTracker
 
 
 
+
+
 .. rubric:: Attributes
 
 .. autosummary::
    :toctree:
+   :nosignatures:
 
    ~CarbonTracker.molefractions_dir
    ~CarbonTracker.units

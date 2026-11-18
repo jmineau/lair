@@ -1,0 +1,6 @@
+lair.noaa.CarbonTrackerCO2.units
+================================
+
+.. currentmodule:: lair.noaa
+
+.. autoattribute:: CarbonTrackerCO2.units

@@ -9,10 +9,13 @@ lair.geo.BaseGrid
 
 
 
+
+
 .. rubric:: Attributes
 
 .. autosummary::
    :toctree:
+   :nosignatures:
 
    ~BaseGrid.gridcell_area
 

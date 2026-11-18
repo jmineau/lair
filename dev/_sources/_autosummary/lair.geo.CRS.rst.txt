@@ -9,10 +9,13 @@ lair.geo.CRS
 
 
 
+
+
 .. rubric:: Attributes
 
 .. autosummary::
    :toctree:
+   :nosignatures:
 
    ~CRS.epsg
    ~CRS.proj4

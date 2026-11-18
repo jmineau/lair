@@ -9,10 +9,13 @@ lair.pollutants.Pollutant
 
 
 
+
+
 .. rubric:: Attributes
 
 .. autosummary::
    :toctree:
+   :nosignatures:
 
    ~Pollutant.molar_mass
 

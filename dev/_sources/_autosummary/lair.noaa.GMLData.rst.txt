@@ -9,10 +9,13 @@ lair.noaa.GMLData
 
 
 
+
+
 .. rubric:: Attributes
 
 .. autosummary::
    :toctree:
+   :nosignatures:
 
    ~GMLData.data
 

@@ -2,5 +2,4 @@ lair.inventories.Inventory.resample
 ===================================
 
 .. currentmodule:: lair.inventories
-
 .. automethod:: Inventory.resample

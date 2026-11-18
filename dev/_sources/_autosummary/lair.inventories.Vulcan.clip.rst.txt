@@ -2,5 +2,4 @@ lair.inventories.Vulcan.clip
 ============================
 
 .. currentmodule:: lair.inventories
-
 .. automethod:: Vulcan.clip

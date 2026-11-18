@@ -1,6 +1,0 @@
-lair.clock.Timer.logger
-=======================
-
-.. currentmodule:: lair.clock
-
-.. automethod:: Timer.logger

@@ -2,5 +2,4 @@ lair.noaa.CarbonTrackerCH4.calc\_molefractions\_pressure
 ========================================================
 
 .. currentmodule:: lair.noaa
-
 .. automethod:: CarbonTrackerCH4.calc_molefractions_pressure

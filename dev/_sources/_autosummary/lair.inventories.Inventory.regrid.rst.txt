@@ -2,5 +2,4 @@ lair.inventories.Inventory.regrid
 =================================
 
 .. currentmodule:: lair.inventories
-
 .. automethod:: Inventory.regrid

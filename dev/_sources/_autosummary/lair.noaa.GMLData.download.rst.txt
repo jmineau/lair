@@ -2,5 +2,4 @@ lair.noaa.GMLData.download
 ==========================
 
 .. currentmodule:: lair.noaa
-
 .. automethod:: GMLData.download

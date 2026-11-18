@@ -12,6 +12,8 @@ lair.inventories.Vulcan
 
 
 
+
+
 .. rubric:: Methods
 
 .. autosummary::

@@ -2,5 +2,4 @@ lair.records.Cacher.load\_cache\_index
 ======================================
 
 .. currentmodule:: lair.records
-
 .. automethod:: Cacher.load_cache_index

@@ -10,12 +10,17 @@ lair.noaa.CarbonTrackerCH4
 
 
 
+
+
 .. rubric:: Attributes
 
 .. autosummary::
    :toctree:
+   :nosignatures:
 
    ~CarbonTrackerCH4.molefractions
+   ~CarbonTrackerCH4.specie
+   ~CarbonTrackerCH4.units
 
 
 
@@ -32,6 +37,6 @@ lair.noaa.CarbonTrackerCH4
 .. rubric:: Inherited
 
 
-From :class:`~.CarbonTracker`: :py:obj:`~.CarbonTracker.background`, :py:obj:`~.CarbonTracker.download`, :py:obj:`~.CarbonTracker.from_version`, :py:obj:`~.CarbonTracker.get_specie_from_version`, :py:obj:`~.CarbonTracker.molefractions_dir`, :py:obj:`~.CarbonTracker.sample`, :py:obj:`~.CarbonTracker.units`
+From :class:`~.CarbonTracker`: :py:obj:`~.CarbonTracker.background`, :py:obj:`~.CarbonTracker.download`, :py:obj:`~.CarbonTracker.from_version`, :py:obj:`~.CarbonTracker.get_specie_from_version`, :py:obj:`~.CarbonTracker.molefractions_dir`, :py:obj:`~.CarbonTracker.sample`
 
 

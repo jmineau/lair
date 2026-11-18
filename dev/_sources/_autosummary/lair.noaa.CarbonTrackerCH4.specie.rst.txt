@@ -1,0 +1,6 @@
+lair.noaa.CarbonTrackerCH4.specie
+=================================
+
+.. currentmodule:: lair.noaa
+
+.. autoattribute:: CarbonTrackerCH4.specie

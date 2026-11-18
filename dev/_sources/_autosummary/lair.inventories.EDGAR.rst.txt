@@ -12,6 +12,8 @@ lair.inventories.EDGAR
 
 
 
+
+
 .. rubric:: Methods
 
 .. autosummary::

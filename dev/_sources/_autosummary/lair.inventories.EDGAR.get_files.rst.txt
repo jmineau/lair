@@ -2,5 +2,4 @@ lair.inventories.EDGAR.get\_files
 =================================
 
 .. currentmodule:: lair.inventories
-
 .. automethod:: EDGAR.get_files

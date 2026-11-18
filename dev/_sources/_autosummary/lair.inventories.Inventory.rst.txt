@@ -10,10 +10,13 @@ lair.inventories.Inventory
 
 
 
+
+
 .. rubric:: Attributes
 
 .. autosummary::
    :toctree:
+   :nosignatures:
 
    ~Inventory.absolute_emissions
    ~Inventory.collapsed

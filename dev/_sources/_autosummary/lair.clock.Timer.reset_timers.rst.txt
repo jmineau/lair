@@ -2,5 +2,4 @@ lair.clock.Timer.reset\_timers
 ==============================
 
 .. currentmodule:: lair.clock
-
 .. automethod:: Timer.reset_timers
