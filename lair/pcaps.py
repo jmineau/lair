@@ -8,6 +8,8 @@ the periods when the deficit stays above a threshold. :func:`build_pcap_mask`
 and :func:`filter_pcap_events` mark or drop the times inside them.
 """
 
+from typing import TypeVar
+
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -307,16 +309,17 @@ def build_pcap_mask(index: pd.Index, events: pd.DataFrame) -> pd.Series:
     return mask
 
 
-def filter_pcap_events(
-    data: pd.DataFrame, events: pd.DataFrame, level=None
-) -> pd.DataFrame:
+_Data = TypeVar("_Data", pd.DataFrame, pd.Series)
+
+
+def filter_pcap_events(data: _Data, events: pd.DataFrame, level=None) -> _Data:
     """
-    Filter a DataFrame to exclude rows within PCAP events.
+    Filter a DataFrame or Series to exclude rows within PCAP events.
 
     Parameters
     ----------
-    data : pd.DataFrame
-        The DataFrame to filter.
+    data : pd.DataFrame | pd.Series
+        The data to filter, with a datetime index.
     events : pd.DataFrame
         The DataFrame of PCAP events.
     level : str, optional
@@ -324,8 +327,8 @@ def filter_pcap_events(
 
     Returns
     -------
-    pd.DataFrame
-        The DataFrame without the rows that fall within PCAP events.
+    pd.DataFrame | pd.Series
+        ``data`` without the rows that fall within PCAP events, of the same type.
 
     See Also
     --------
@@ -346,7 +349,14 @@ def filter_pcap_events(
     >>> data = pd.DataFrame({"ch4": range(6)}, index=times)
     >>> filter_pcap_events(data, events)["ch4"].tolist()
     [0, 5]
+
+    A Series is filtered the same way:
+
+    >>> filter_pcap_events(data["ch4"], events).tolist()
+    [0, 5]
     """
     index = data.index.get_level_values(level) if level is not None else data.index
     mask = build_pcap_mask(index, events)
+    # pandas-stubs type a boolean-array selection of either as `DataFrame | Series`.
+    # pyrefly: ignore[bad-return]
     return data[~mask.to_numpy(dtype=bool)].copy()

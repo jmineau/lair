@@ -267,6 +267,14 @@ class TestFilterPcapEvents:
         assert len(filtered) == 7
         assert filtered.index.tolist() == vhd.index.delete([2, 3, 4]).tolist()
 
+    def test_a_series_comes_back_a_series(self, vhd):
+        events = pcaps.determine_pcap_events(vhd, threshold=5.0, min_periods=3)
+        s = pd.Series(range(len(vhd)), index=vhd.index, name="x")
+        filtered = pcaps.filter_pcap_events(s, events)
+        assert isinstance(filtered, pd.Series)
+        assert filtered.name == "x"
+        assert filtered.index.tolist() == vhd.index.delete([2, 3, 4]).tolist()
+
 
 # TODO: valleyheatdeficit() — needs a pint-quantified sounding xr.Dataset
 # (temperature/pressure/elevation/interpolation_interval); add a small fixture.
