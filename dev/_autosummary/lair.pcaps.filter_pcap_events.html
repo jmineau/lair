@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=916ba75f"></script>
+    <script src="../_static/documentation_options.js?v=1231be0e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev3+g40243a947" />
+  <meta name="docsearch:version" content="2026.12.13.dev4+g668d6fe54" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -821,20 +821,20 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.pcaps.filter_pcap_events">
 <span class="sig-prename descclassname"><span class="pre">lair.pcaps.</span></span><span class="sig-name descname"><span class="pre">filter_pcap_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/pcaps.html#filter_pcap_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.pcaps.filter_pcap_events" title="Link to this definition">#</a></dt>
-<dd><p>Filter a DataFrame to exclude rows within PCAP events.</p>
+<dd><p>Filter a DataFrame or Series to exclude rows within PCAP events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – The DataFrame to filter.</p></li>
+<li><p><strong>data</strong> (<em>pd.DataFrame</em><em> | </em><em>pd.Series</em>) – The data to filter, with a datetime index.</p></li>
 <li><p><strong>events</strong> (<em>pd.DataFrame</em>) – The DataFrame of PCAP events.</p></li>
 <li><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – If the DataFrame has a MultiIndex, the level to apply the mask to.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>pd.DataFrame</em> – The DataFrame without the rows that fall within PCAP events.</p>
+<dd class="field-even"><p><em>pd.DataFrame | pd.Series</em> – <code class="docutils literal notranslate"><span class="pre">data</span></code> without the rows that fall within PCAP events, of the same type.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>DataFrame</em></a></p>
+<dd class="field-odd"><p><em>_Data</em></p>
 </dd>
 </dl>
 <div class="admonition seealso">
@@ -858,6 +858,11 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">times</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">"2024-01-01 00:00"</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">"12h"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"ch4"</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)},</span> <span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filter_pcap_events</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">events</span><span class="p">)[</span><span class="s2">"ch4"</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="go">[0, 5]</span>
+</pre></div>
+</div>
+<p>A Series is filtered the same way:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filter_pcap_events</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"ch4"</span><span class="p">],</span> <span class="n">events</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 <span class="go">[0, 5]</span>
 </pre></div>
 </div>
