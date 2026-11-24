@@ -125,8 +125,8 @@ else in lair writes to the cache folder:
 
    $LAIR_CACHE_DIR/
      carbontracker/
-       ch4/CT-CH4-2025/molefractions.pkl
-       co2/CT2019B/molefractions_nam1x1.pkl
+       ch4/CT-CH4-2025/molefractions/<key>.pkl
+       co2/CT2019B/molefractions_nam1x1/<key>.pkl
      ccg_filter/
        ccg_filter.py
 
@@ -135,22 +135,23 @@ imported, so ``import lair`` works with a read-only home directory. If the folde
 cannot be made, the error names it and ``LAIR_CACHE_DIR``: set the variable to a
 folder you can write to, or pass ``cache=False``, which saves nothing.
 
-The ``molefractions`` file holds how to open the files, not their values: 8 to 15 KB for each daily
+A ``molefractions`` entry holds how to open the files, not their values: 8 to 15 KB for each daily
 file, so 3.2 MB for the 366 days of a year, whose files add up to 13 GB. That
 needs one file for each day (:ref:`carbontracker-data` says what happens when
 a day has two).
 
-That file is for one list of files. When the folder gains or loses a file, the next
-``molefractions`` adds an entry for the new list, as large as the first, to the
-same file, and the old entry stays. To start again, delete the version's folder in
-the cache; lair makes it again the next time.
+An entry is one ``.pkl`` file, for one list of files. When the data folder gains or
+loses a file, the next ``molefractions`` adds an entry for the new list, as large as
+the first, and the old one stays. Processes that read the same version at once (the
+tasks of a Slurm array) share the folder safely. To start again, delete the
+version's folder in the cache; lair makes it again the next time. A
+``molefractions.pkl`` file and its hidden ``.index`` file beside the folder were
+written by lair 2026.12.12 or earlier and are no longer read: delete them.
 
 The entry is also keyed on the code that opens the files. A lair release that
 changes how they are opened (the times, the variables kept, how the files are
 combined) therefore opens them again the first time, instead of returning what an
-older release saved, and that entry is added to the file too. A cache written by
-lair 2026.12.11 or earlier is read once more in this way, for each list of files it
-holds. What the key does and does not see is in the Notes of
+older release saved, and that entry is added to the folder too. What the key does and does not see is in the Notes of
 :class:`~lair.records.Cacher`.
 
 Measured on 2026-10-14, with files of CT-CH4-2025 (36 MB each), CT-CH4-2023 and
