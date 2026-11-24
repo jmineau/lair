@@ -742,10 +742,8 @@ class TestMolefractionsProperty:
         monkeypatch.setenv("LAIR_CACHE_DIR", str(cache_dir))
         ct_ch4.cache = True
         first = ct_ch4.molefractions
-        cache_file = (
-            cache_dir / "carbontracker" / "ch4" / "CT-CH4-2023" / "molefractions.pkl"
-        )
-        assert cache_file.is_file()
+        folder = cache_dir / "carbontracker" / "ch4" / "CT-CH4-2023" / "molefractions"
+        assert len(list(folder.glob("*.pkl"))) == 1
 
         # A new object with the same files must not reopen them
         def fail(*args, **kwargs):
@@ -799,9 +797,8 @@ class TestMolefractionsProperty:
         monkeypatch.setenv("LAIR_CACHE_DIR", str(tmp_path / "cache"))
         ct_co2.cache = True
         _ = ct_co2.molefractions
-        assert (
-            tmp_path / "cache/carbontracker/co2/CT2019B/molefractions_nam1x1.pkl"
-        ).is_file()
+        folder = tmp_path / "cache/carbontracker/co2/CT2019B/molefractions_nam1x1"
+        assert len(list(folder.glob("*.pkl"))) == 1
 
     def test_co2_without_files_raises(self, tmp_path):
         ct = CarbonTrackerCO2("CT2019B", carbon_tracker_directory=tmp_path)

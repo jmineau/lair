@@ -154,7 +154,7 @@ def _check_one_file_per_day(files: Sequence[str]) -> None:
 
 def _cache_file(*parts: str) -> Path:
     """
-    Path of a file in the lair cache, with its folder made.
+    Path of a file or folder in the lair cache, with its parent folder made.
 
     The cache folder (``LAIR_CACHE_DIR``, default ``~/.cache/lair``) is read
     and made here, the first time something is cached, and not when lair is
@@ -168,7 +168,7 @@ def _cache_file(*parts: str) -> Path:
     Returns
     -------
     Path
-        The cache file (not created).
+        The path (not created).
 
     Raises
     ------
@@ -735,10 +735,10 @@ class CarbonTrackerCH4(CarbonTracker):
         _check_one_file_per_day(files)
 
         if self.cache:
-            cache_file = _cache_file(
-                "carbontracker", self.specie, self.version, "molefractions.pkl"
+            cache_dir = _cache_file(
+                "carbontracker", self.specie, self.version, "molefractions"
             )
-            open_mfdataset = Cacher(_open_mfdataset, str(cache_file))
+            open_mfdataset = Cacher(_open_mfdataset, cache_dir)
         else:
             open_mfdataset = _open_mfdataset
         ds = open_mfdataset(
@@ -907,13 +907,13 @@ class CarbonTrackerCO2(CarbonTracker):
         _check_one_file_per_day(files)
 
         if self.cache:
-            cache_file = _cache_file(
+            cache_dir = _cache_file(
                 "carbontracker",
                 self.specie,
                 self.version,
-                f"molefractions_{self.grid}.pkl",
+                f"molefractions_{self.grid}",
             )
-            open_mfdataset = Cacher(_open_mfdataset, str(cache_file))
+            open_mfdataset = Cacher(_open_mfdataset, cache_dir)
         else:
             open_mfdataset = _open_mfdataset
         return open_mfdataset(
