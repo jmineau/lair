@@ -82,6 +82,33 @@ class TestPhaseShiftIndex:
         assert b.index.equals(idx)
         assert b.notna().all()
 
+    def test_times_off_the_whole_second(self):
+        # a logger's milliseconds left almost every value NaN (#241)
+        import numpy as np
+        import pandas as pd
+
+        rng = np.random.default_rng(0)
+        jitter = pd.to_timedelta(rng.uniform(0, 0.9, 600), unit="s")
+        idx = pd.date_range("2024-06-01 12:00", periods=600, freq="s") + jitter
+        x = pd.Series(2.0 + rng.normal(0, 0.01, 600), index=idx)
+        b = background.phase_shift_corrected_baseline(x, n=61)
+        assert b.index.equals(idx)
+        assert b.notna().all()
+        on_grid = background.phase_shift_corrected_baseline(
+            x.set_axis(idx.floor("s")), n=61
+        )
+        assert np.allclose(b, on_grid)
+
+    def test_times_in_one_second_share_their_mean(self):
+        import numpy as np
+        import pandas as pd
+
+        idx = pd.DatetimeIndex(["2024-06-01 12:00:00.1", "2024-06-01 12:00:00.6"])
+        b = background.phase_shift_corrected_baseline(
+            pd.Series([1.0, 3.0], index=idx), n=1, q=0.5
+        )
+        assert np.allclose(b, [2.0, 2.0])
+
 
 class TestThoning:
     @pytest.fixture
