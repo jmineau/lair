@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=4e11938b"></script>
+    <script src="../_static/documentation_options.js?v=68c88860"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev5+g2e6b823d6" />
+  <meta name="docsearch:version" content="2026.12.13.dev7+gcafb027db" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -835,16 +835,16 @@ See supplementary material in: <a class="reference external" href="https://doi.o
 separately for each calendar day of the index, in the index’s own time
 zone (the function does no time zone conversion), so pass local time to
 get local days.
-The windows are counted on a one-second grid that starts at each
-day’s first time, so the times must fall on whole seconds from it
-(one-second data, or a slower rate on whole seconds).</p></li>
+The windows are counted on a one-second grid: each time is floored
+to its second (a logger’s milliseconds are dropped), and times in the
+same second are averaged.</p></li>
 <li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Window size in seconds. Default is 3600.</p></li>
 <li><p><strong>q</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Quantile to extract from signal. Default is 0.01.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><em>pd.Series</em> – Baseline concentration at the times of <code class="docutils literal notranslate"><span class="pre">data</span></code>, so <code class="docutils literal notranslate"><span class="pre">data</span> <span class="pre">-</span> <span class="pre">baseline</span></code>
-lines up row for row. A time off the one-second grid gets NaN.</p>
+lines up row for row; times in the same second get the same value.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.1)"><em>Series</em></a></p>
