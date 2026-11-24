@@ -87,6 +87,23 @@ class TestValleyHeatDeficit:
         assert vhd.iloc[0] == pytest.approx(_reference_vhd(z, T, p), rel=1e-3)
         assert np.isnan(vhd.iloc[1])
 
+    def test_each_sounding_starts_at_its_own_ground(self):
+        # get_soundings puts every sounding on one grid from the lowest ground,
+        # so a higher station's lowest levels are NaN, and the dataset's
+        # elevation is one sounding's only (#242)
+        times = pd.date_range("2024-01-01", periods=2, freq="12h")
+        ds, z, T, p = _sounding(times)
+        ds["temperature"][1, :2] = np.nan  # ground 20 m higher at 12 UTC
+        ds["pressure"][1, :2] = np.nan
+        for elevation in (z[0], z[2]):  # whichever file was listed first
+            ds.attrs["elevation"] = elevation
+            vhd = pcaps.valleyheatdeficit(ds)
+            np.testing.assert_allclose(
+                vhd.to_numpy(),
+                [_reference_vhd(z, T, p), _reference_vhd(z[2:], T[2:], p[2:])],
+                rtol=1e-3,
+            )
+
     def test_all_missing_single_sounding_is_nan(self):
         ds, *_ = _sounding(pd.DatetimeIndex(["2024-01-01"]))
         ds["temperature"][:] = np.nan
