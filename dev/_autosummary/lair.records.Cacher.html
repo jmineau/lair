@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=1231be0e"></script>
+    <script src="../_static/documentation_options.js?v=4e11938b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev4+g668d6fe54" />
+  <meta name="docsearch:version" content="2026.12.13.dev5+g2e6b823d6" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -742,8 +742,6 @@
 <li class="toctree-l2"><a class="reference internal" href="lair.records.wget_download.html">lair.records.wget_download</a></li>
 <li class="toctree-l2 current active has-children"><a aria-current="page" class="current reference internal" href="#">lair.records.Cacher</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="lair.records.Cacher.__call__.html">lair.records.Cacher.__call__</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lair.records.Cacher.load_cache_index.html">lair.records.Cacher.load_cache_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lair.records.Cacher.save_cache_index.html">lair.records.Cacher.save_cache_index</a></li>
 </ul>
 </details></li>
 </ul>
@@ -820,8 +818,8 @@
 <h1>lair.records.Cacher<a class="headerlink" href="#lair-records-cacher" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="lair.records.Cacher">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lair.records.</span></span><span class="sig-name descname"><span class="pre">Cacher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/records.html#Cacher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.records.Cacher" title="Link to this definition">#</a></dt>
-<dd><p>A class that caches function results to a file for future use.</p>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lair.records.</span></span><span class="sig-name descname"><span class="pre">Cacher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/records.html#Cacher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.records.Cacher" title="Link to this definition">#</a></dt>
+<dd><p>A class that caches function results to a folder for future use.</p>
 <p>A result is stored under a key made of the function’s code and the
 arguments of the call, so editing the function (or a function passed in
 the arguments) runs it again instead of returning the old result. Each
@@ -830,12 +828,12 @@ parameter is also an attribute of the same name.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>func</strong> (<em>function</em>) – The function to be cached.</p></li>
-<li><p><strong>cache_file</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The name of the file to cache results to; it must end in <code class="docutils literal notranslate"><span class="pre">.pkl</span></code>.</p></li>
+<li><p><strong>cache_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.15)"><em>os.PathLike</em></a>) – The folder to cache results in, made if needed. Each result is one
+file in it, <code class="docutils literal notranslate"><span class="pre">&lt;SHA-256</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">key&gt;.pkl</span></code>.</p></li>
 <li><p><strong>reload</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to re-run the function instead of returning cached results.
-Each set of arguments is re-run once per Cacher; the fresh result
-replaces the old one in the index and every other cached entry is
-kept. (The old result stays in <code class="docutils literal notranslate"><span class="pre">cache_file</span></code> but is no longer
-referenced.) Defaults to False.</p></li>
+Each set of arguments is re-run once per Cacher, and the fresh result
+replaces the old one; every other cached result is kept. Defaults to
+False.</p></li>
 </ul>
 </dd>
 </dl>
@@ -852,21 +850,25 @@ cached results. The key is the same in every process, on every run.</p>
 itself. An edit to a helper that the function calls, to a module-level
 value it reads, to a variable it closes over (unless that is a number, a
 string or a function), or to a file it reads leaves the key unchanged and
-returns the old result. Delete the cache file, or pass <code class="docutils literal notranslate"><span class="pre">reload=True</span></code>,
+returns the old result. Delete the cache folder, or pass <code class="docutils literal notranslate"><span class="pre">reload=True</span></code>,
 after such an edit.</p>
-<p><strong>Rebuilds.</strong> A cache file written by an earlier lair has keys of another
-shape, so its results are not found: the function runs once for each set
-of arguments and the results are added to the file, behind the old ones,
-which stay in it. Bytecode differs between Python versions, so moving to
-another one (3.11 to 3.12) does the same.</p>
+<p><strong>Many processes at once.</strong> Each result is written to a temporary file in
+the folder and renamed into place, so a reader sees a whole result or
+none, and processes that share the folder (the tasks of a Slurm array)
+neither lose nor corrupt each other’s results. Two that miss the same key
+at the same time both run the function; the last one to finish leaves its
+result.</p>
+<p><strong>Rebuilds.</strong> Bytecode differs between Python versions, so moving to
+another one (3.11 to 3.12) runs the function again once for each set of
+arguments; the old results stay in the folder until it is deleted.</p>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">tempfile</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.records</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cacher</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">double</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">"running"</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">folder</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">cached</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">double</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">"double.pkl"</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="n">cached</span> <span class="o">=</span> <span class="n">Cacher</span><span class="p">(</span><span class="n">double</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">cached</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">cached</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>  <span class="c1"># not run again</span>
 <span class="go">running</span>
@@ -881,12 +883,6 @@ another one (3.11 to 3.12) does the same.</p>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="lair.records.Cacher.__call__.html#lair.records.Cacher.__call__" title="lair.records.Cacher.__call__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Return the cached result, or call the function and cache its result.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="lair.records.Cacher.load_cache_index.html#lair.records.Cacher.load_cache_index" title="lair.records.Cacher.load_cache_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_cache_index</span></code></a>()</p></td>
-<td><p>Load the cache index from a file.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="lair.records.Cacher.save_cache_index.html#lair.records.Cacher.save_cache_index" title="lair.records.Cacher.save_cache_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_cache_index</span></code></a>()</p></td>
-<td><p>Save the cache index to a file.</p></td>
 </tr>
 </tbody>
 </table>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=1231be0e"></script>
+    <script src="../../_static/documentation_options.js?v=4e11938b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev4+g668d6fe54" />
+  <meta name="docsearch:version" content="2026.12.13.dev5+g2e6b823d6" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -447,7 +447,7 @@
 
 <span class="sd">Download by FTP (:func:`ftp_download`) or with ``wget``, unzip, list the files</span>
 <span class="sd">in a folder that match a pattern, read a KML file, and cache a function's</span>
-<span class="sd">results in a pickle file (:class:`Cacher`).</span>
+<span class="sd">results in a folder of pickle files (:class:`Cacher`).</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
@@ -457,6 +457,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -1011,7 +1012,7 @@
 <a class="viewcode-back" href="../../_autosummary/lair.records.Cacher.html#lair.records.Cacher">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Cacher</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    A class that caches function results to a file for future use.</span>
+<span class="sd">    A class that caches function results to a folder for future use.</span>
 
 <span class="sd">    A result is stored under a key made of the function's code and the</span>
 <span class="sd">    arguments of the call, so editing the function (or a function passed in</span>
@@ -1022,14 +1023,14 @@
 <span class="sd">    ----------</span>
 <span class="sd">    func : function</span>
 <span class="sd">        The function to be cached.</span>
-<span class="sd">    cache_file : str</span>
-<span class="sd">        The name of the file to cache results to; it must end in ``.pkl``.</span>
+<span class="sd">    cache_dir : str or os.PathLike</span>
+<span class="sd">        The folder to cache results in, made if needed. Each result is one</span>
+<span class="sd">        file in it, ``&lt;SHA-256 of the key&gt;.pkl``.</span>
 <span class="sd">    reload : bool, optional</span>
 <span class="sd">        Whether to re-run the function instead of returning cached results.</span>
-<span class="sd">        Each set of arguments is re-run once per Cacher; the fresh result</span>
-<span class="sd">        replaces the old one in the index and every other cached entry is</span>
-<span class="sd">        kept. (The old result stays in ``cache_file`` but is no longer</span>
-<span class="sd">        referenced.) Defaults to False.</span>
+<span class="sd">        Each set of arguments is re-run once per Cacher, and the fresh result</span>
+<span class="sd">        replaces the old one; every other cached result is kept. Defaults to</span>
+<span class="sd">        False.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -1046,24 +1047,29 @@
 <span class="sd">    itself. An edit to a helper that the function calls, to a module-level</span>
 <span class="sd">    value it reads, to a variable it closes over (unless that is a number, a</span>
 <span class="sd">    string or a function), or to a file it reads leaves the key unchanged and</span>
-<span class="sd">    returns the old result. Delete the cache file, or pass ``reload=True``,</span>
+<span class="sd">    returns the old result. Delete the cache folder, or pass ``reload=True``,</span>
 <span class="sd">    after such an edit.</span>
 
-<span class="sd">    **Rebuilds.** A cache file written by an earlier lair has keys of another</span>
-<span class="sd">    shape, so its results are not found: the function runs once for each set</span>
-<span class="sd">    of arguments and the results are added to the file, behind the old ones,</span>
-<span class="sd">    which stay in it. Bytecode differs between Python versions, so moving to</span>
-<span class="sd">    another one (3.11 to 3.12) does the same.</span>
+<span class="sd">    **Many processes at once.** Each result is written to a temporary file in</span>
+<span class="sd">    the folder and renamed into place, so a reader sees a whole result or</span>
+<span class="sd">    none, and processes that share the folder (the tasks of a Slurm array)</span>
+<span class="sd">    neither lose nor corrupt each other's results. Two that miss the same key</span>
+<span class="sd">    at the same time both run the function; the last one to finish leaves its</span>
+<span class="sd">    result.</span>
+
+<span class="sd">    **Rebuilds.** Bytecode differs between Python versions, so moving to</span>
+<span class="sd">    another one (3.11 to 3.12) runs the function again once for each set of</span>
+<span class="sd">    arguments; the old results stay in the folder until it is deleted.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; import os, tempfile</span>
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
 <span class="sd">    &gt;&gt;&gt; from lair.records import Cacher</span>
 <span class="sd">    &gt;&gt;&gt; def double(x):</span>
 <span class="sd">    ...     print("running")</span>
 <span class="sd">    ...     return 2 * x</span>
 <span class="sd">    &gt;&gt;&gt; with tempfile.TemporaryDirectory() as folder:</span>
-<span class="sd">    ...     cached = Cacher(double, os.path.join(folder, "double.pkl"))</span>
+<span class="sd">    ...     cached = Cacher(double, folder)</span>
 <span class="sd">    ...     print(cached(4))</span>
 <span class="sd">    ...     print(cached(4))  # not run again</span>
 <span class="sd">    running</span>
@@ -1071,55 +1077,12 @@
 <span class="sd">    8</span>
 <span class="sd">    """</span>
 
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pkl</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">cache_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span> <span class="n">reload</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Initialize a Cacher; the class docstring describes the parameters."""</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".pkl"</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cache_file must end in .pkl: </span><span class="si">{</span><span class="n">cache_file</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cache_file</span> <span class="o">=</span> <span class="n">cache_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reload</span> <span class="o">=</span> <span class="n">reload</span>
-
-        <span class="c1"># Make sure the directory exists for the cache file</span>
-        <span class="n">head</span><span class="p">,</span> <span class="n">tail</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">head</span> <span class="ow">or</span> <span class="s2">"."</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">index_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">.index"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cache_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_cache_index</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_refreshed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># keys re-run by this Cacher when reload=True</span>
-
-<div class="viewcode-block" id="Cacher.load_cache_index">
-<a class="viewcode-back" href="../../_autosummary/lair.records.Cacher.load_cache_index.html#lair.records.Cacher.load_cache_index">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load_cache_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Load the cache index from a file.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">            A dictionary of cached results and their corresponding file</span>
-<span class="sd">            positions.</span>
-<span class="sd">        """</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_file</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">cache_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pkl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-            <span class="n">cache_index</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">return</span> <span class="n">cache_index</span></div>
-
-
-<div class="viewcode-block" id="Cacher.save_cache_index">
-<a class="viewcode-back" href="../../_autosummary/lair.records.Cacher.save_cache_index.html#lair.records.Cacher.save_cache_index">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">save_cache_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Save the cache index to a file.</span>
-<span class="sd">        """</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_file</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pkl</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_index</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pkl</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span></div>
-
 
 <div class="viewcode-block" id="Cacher.__call__">
 <a class="viewcode-back" href="../../_autosummary/lair.records.Cacher.__call__.html#lair.records.Cacher.__call__">[docs]</a>
@@ -1138,44 +1101,40 @@
 <span class="sd">            The result of the function call.</span>
 <span class="sd">        """</span>
         <span class="n">key</span> <span class="o">=</span> <span class="n">_cache_key</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span><span class="si">}</span><span class="s2">.pkl"</span>
         <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="s2">"__name__"</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reload</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refreshed</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Forcing </span><span class="si">%s</span><span class="s2"> to execute"</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-            <span class="n">cached</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">cached</span> <span class="o">=</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_index</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">"Returning cached result for </span><span class="si">%s</span><span class="s2"> with args: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="n">name</span><span class="p">,</span>
+                    <span class="n">args</span><span class="p">,</span>
+                    <span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">result</span>
 
-        <span class="k">if</span> <span class="n">cached</span><span class="p">:</span>
-            <span class="c1"># Load the result from the cache_file using its index</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="s2">"Returning cached result for </span><span class="si">%s</span><span class="s2"> with args: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span>
-                <span class="n">name</span><span class="p">,</span>
-                <span class="n">args</span><span class="p">,</span>
-                <span class="n">kwargs</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_file</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_index</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>  <span class="c1"># go to index in cache_file</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pkl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Call the function and update the cache</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_file</span><span class="p">,</span> <span class="s2">"ab"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># go to the end of the pickle file</span>
-                <span class="n">pos</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>  <span class="c1"># get position of the end</span>
-
-                <span class="c1"># dump result to the end of the pickle</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">pkl</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pkl</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">cache_index</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">pos</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_refreshed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Added </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> to cache"</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">save_cache_index</span><span class="p">()</span>  <span class="c1"># update cache_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Write beside the target and rename: a reader never sees half a file</span>
+        <span class="n">fd</span><span class="p">,</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">"."</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">".tmp"</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">os</span><span class="o">.</span><span class="n">fdopen</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refreshed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Added </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> to cache"</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span></div>
 </div>
 

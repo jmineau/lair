@@ -19,8 +19,6 @@ lair.records.Cacher
    :toctree:
 
    ~Cacher.__call__
-   ~Cacher.load_cache_index
-   ~Cacher.save_cache_index
 
 
 
