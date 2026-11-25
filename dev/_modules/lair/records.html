@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=5ac3c2ed"></script>
+    <script src="../../_static/documentation_options.js?v=729ddf47"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev16+g0d735313e" />
+  <meta name="docsearch:version" content="2026.12.13.dev17+g2aafe10ea" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -751,6 +751,7 @@
     <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Recursively download files from an FTP server.</span>
@@ -778,6 +779,9 @@
 <span class="sd">        ``?``, ``[``) it is a glob against the full remote path (e.g.</span>
 <span class="sd">        ``'*2015-06*.nc'``); otherwise any path containing it matches.</span>
 <span class="sd">        Defaults to None (all files).</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        Fetch every file again, even one already in ``download_dir`` with the</span>
+<span class="sd">        size the server reports. Defaults to False.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -789,6 +793,17 @@
 <span class="sd">    wget_download : The same for URLs.</span>
 <span class="sd">    lair.noaa.CarbonTracker.download : Calls it with NOAA's CarbonTracker folders.</span>
 <span class="sd">    lair.noaa.GMLData.download : Calls it with NOAA GML's data folders.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Each file is written to ``&lt;name&gt;.part`` and renamed once it is whole, so a</span>
+<span class="sd">    transfer that fails leaves nothing under the file's name. A file already in</span>
+<span class="sd">    ``download_dir`` with the size the server reports is skipped, so running the</span>
+<span class="sd">    download again fetches only what is missing. A server that does not report</span>
+<span class="sd">    sizes (no ``SIZE`` command) has every file fetched again. Only the size is</span>
+<span class="sd">    compared: a file replaced on the server by one of the same size is not</span>
+<span class="sd">    detected unless ``overwrite=True``, which skips the check and fetches every</span>
+<span class="sd">    file.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -850,12 +865,44 @@
                     <span class="n">local</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">download_dir</span><span class="p">,</span> <span class="n">common</span><span class="p">)</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">local</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-                    <span class="c1"># Download the file</span>
-                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">local_file</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                            <span class="s2">"Downloading </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
-                        <span class="p">)</span>
-                        <span class="n">ftp</span><span class="o">.</span><span class="n">retrbinary</span><span class="p">(</span><span class="sa">f</span><span class="s2">"RETR </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">local_file</span><span class="o">.</span><span class="n">write</span><span class="p">)</span>
+                    <span class="c1"># A file already there with the size the server reports is whole:</span>
+                    <span class="c1"># downloads are renamed into place only when complete</span>
+                    <span class="c1"># ftplib's size() runs in ASCII mode on a session's first file, which</span>
+                    <span class="c1"># some servers refuse with 550: switch to binary first</span>
+                    <span class="n">ftp</span><span class="o">.</span><span class="n">voidcmd</span><span class="p">(</span><span class="s2">"TYPE I"</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">remote_size</span> <span class="o">=</span> <span class="n">ftp</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">ftplib</span><span class="o">.</span><span class="n">error_perm</span><span class="p">:</span>  <span class="c1"># the server has no SIZE</span>
+                        <span class="n">remote_size</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="ow">not</span> <span class="n">overwrite</span>
+                        <span class="ow">and</span> <span class="n">remote_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
+                        <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">local</span><span class="p">)</span> <span class="o">==</span> <span class="n">remote_size</span>
+                    <span class="p">):</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Skipping </span><span class="si">%s</span><span class="s2"> - already downloaded"</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="s2">"f"</span>
+
+                    <span class="c1"># Write beside the final name and rename when complete, so a</span>
+                    <span class="c1"># failed transfer never leaves a truncated file under it</span>
+                    <span class="n">partial</span> <span class="o">=</span> <span class="n">local</span> <span class="o">+</span> <span class="s2">".part"</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Downloading </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">local</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">partial</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">local_file</span><span class="p">:</span>
+                            <span class="n">ftp</span><span class="o">.</span><span class="n">retrbinary</span><span class="p">(</span><span class="sa">f</span><span class="s2">"RETR </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">local_file</span><span class="o">.</span><span class="n">write</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="n">remote_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                            <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span> <span class="o">!=</span> <span class="n">remote_size</span>
+                        <span class="p">):</span>
+                            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">"Incomplete transfer of </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: got "</span>
+                                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">remote_size</span><span class="si">}</span><span class="s2"> bytes"</span>
+                            <span class="p">)</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">partial</span><span class="p">,</span> <span class="n">local</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">partial</span><span class="p">):</span>
+                            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span>
+                        <span class="k">raise</span>
 
                     <span class="k">return</span> <span class="s2">"f"</span>
 
