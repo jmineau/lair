@@ -170,7 +170,8 @@ class _FakeS3:
 
 
 class _FakeS3Client:
-    """Minimal stand-in for ``boto3.client('s3')``: serves bytes by key.
+    """
+    Minimal stand-in for ``boto3.client('s3')``: serves bytes by key.
 
     ``delay(key)`` gives seconds to wait before answering, to make requests
     finish out of order.
