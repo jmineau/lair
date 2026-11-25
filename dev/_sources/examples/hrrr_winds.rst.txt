@@ -5,8 +5,8 @@ This example downloads six hours of HRRR's 10 m winds over the University of
 Utah campus. Two rules come out of it:
 
 * **Winds downloads as it is created.** :class:`~lair.hrrr.Winds` fetches the
-  wind analysis at the HRRR grid point nearest to the point you give, one hour
-  at a time, from a public archive on AWS. Nothing is saved to disk, and no
+  wind analysis at the HRRR grid point nearest to the point you give, several
+  hours at once (``max_workers``), from a public archive on AWS. Nothing is saved to disk, and no
   ``LAIR_*`` variable is needed.
 * **Times follow** :ref:`the UTC rule <utc-rule>`. A time with a time zone is
   converted to UTC to choose the hour, and ``data`` keeps it as you gave it, so

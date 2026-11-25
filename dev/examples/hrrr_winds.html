@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=1f9ba764"></script>
+    <script src="../_static/documentation_options.js?v=5ac3c2ed"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev15+gbcab14bf8" />
+  <meta name="docsearch:version" content="2026.12.13.dev16+g0d735313e" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -476,8 +476,8 @@
 Utah campus. Two rules come out of it:</p>
 <ul class="simple">
 <li><p><strong>Winds downloads as it is created.</strong> <a class="reference internal" href="../_autosummary/lair.hrrr.Winds.html#lair.hrrr.Winds" title="lair.hrrr.Winds"><code class="xref py py-class docutils literal notranslate"><span class="pre">Winds</span></code></a> fetches the
-wind analysis at the HRRR grid point nearest to the point you give, one hour
-at a time, from a public archive on AWS. Nothing is saved to disk, and no
+wind analysis at the HRRR grid point nearest to the point you give, several
+hours at once (<code class="docutils literal notranslate"><span class="pre">max_workers</span></code>), from a public archive on AWS. Nothing is saved to disk, and no
 <code class="docutils literal notranslate"><span class="pre">LAIR_*</span></code> variable is needed.</p></li>
 <li><p><strong>Times follow</strong> <a class="reference internal" href="clock.html#utc-rule"><span class="std std-ref">the UTC rule</span></a>. A time with a time zone is
 converted to UTC to choose the hour, and <code class="docutils literal notranslate"><span class="pre">data</span></code> keeps it as you gave it, so
