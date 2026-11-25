@@ -98,7 +98,7 @@ def ideal_gas_law(
     N: Numeric = None,
     rho: Numeric = None,
     alpha: Numeric = None,
-    R: Numeric = None,
+    R: Numeric = Rd,
 ) -> Numeric:
     """
     Solve the ideal gas law for one variable.
@@ -140,7 +140,8 @@ def ideal_gas_law(
     alpha : Numeric, optional
         Specific volume (m^3/kg).
     R : Numeric, optional
-        Specific gas constant (J/kg/K): 287.05 for dry air.
+        Specific gas constant (J/kg/K). Default is dry air, ``Rd``
+        (287.05 J/kg/K).
 
     Returns
     -------
@@ -162,6 +163,11 @@ def ideal_gas_law(
 
     >>> from lair.meteorology import ideal_gas_law
     >>> round(float(ideal_gas_law("rho", p=101325.0, T=288.15, R=287.05)), 3)
+    1.225
+
+    ``R`` is dry air's when it is not given:
+
+    >>> round(float(ideal_gas_law("rho", p=101325.0, T=288.15)), 3)
     1.225
     """
     # Compare against None (not truthiness) so array inputs and zero values

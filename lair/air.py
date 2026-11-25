@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from numpy.typing import ArrayLike
 
 # %% Polar
 
@@ -39,7 +40,10 @@ WIND_SECTORS = {
 
 
 def bin_polar(
-    data: pd.DataFrame, x: str = "ws", wd: str = "wd", xbins: int = 30
+    data: pd.DataFrame,
+    x: str = "ws",
+    wd: str = "wd",
+    xbins: int | ArrayLike = 30,
 ) -> pd.DataFrame:
     """
     Bin data into polar coordinates.
@@ -52,10 +56,10 @@ def bin_polar(
         Variable to bin. Default is 'ws'.
     wd : str, optional
         Wind direction column name. Default is 'wd'.
-    xbins : int | list, optional
+    xbins : int | array-like, optional
         Bin edges for x. An int is the number of evenly spaced edges from the
-        minimum to the maximum of x (so ``xbins - 1`` bins); a list gives the
-        edges explicitly. Default is 30.
+        minimum to the maximum of x (so ``xbins - 1`` bins); a 1-D array-like
+        (list, tuple, range or array) gives the edges explicitly. Default is 30.
 
     Returns
     -------
@@ -63,6 +67,13 @@ def bin_polar(
         A copy of ``data`` with binned wind direction and speed added as
         ``wd_bin`` (compass sector), ``radian_bin`` and ``x_bin``. The
         caller's frame is not modified.
+
+    Raises
+    ------
+    ValueError
+        If ``xbins`` is neither an int nor a 1-D array-like of edges, or if it
+        is an int and ``x`` has no range (every value equal, or none present),
+        so there are no distinct edges to put between its minimum and maximum.
 
     See Also
     --------
@@ -103,10 +114,16 @@ def bin_polar(
     data["radian_bin"] = np.deg2rad(degrees)
 
     # Bin x (speed); Series.min/max skip NaN, the builtins do not
-    if isinstance(xbins, int):
-        x_bins = np.linspace(data[x].min(), data[x].max(), xbins)
-    elif isinstance(xbins, (list, tuple, range)):
-        x_bins = xbins
+    if isinstance(xbins, (int, np.integer)):
+        x_min, x_max = data[x].min(), data[x].max()
+        if not x_min < x_max:
+            raise ValueError(
+                f"Cannot make {xbins} evenly spaced edges for '{x}': its values do "
+                f"not vary (minimum {x_min}, maximum {x_max}). Pass explicit edges."
+            )
+        x_bins = np.linspace(x_min, x_max, xbins)
+    elif np.ndim(xbins) == 1:
+        x_bins = np.asarray(xbins)
     else:
         raise ValueError("Invalid xbins")
     # pyrefly: ignore[no-matching-overload]

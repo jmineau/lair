@@ -901,7 +901,7 @@ class TestDownloadSoundingsErrors:
         noon = pd.Timestamp("2024-01-01 12:00")
         busy = requests.exceptions.HTTPError("503: Please try again later.")
         fake, sleeps = self._run(tmp_path, monkeypatch, {noon: [busy, busy]})
-        # Retried in place (same time, before moving on), after a pause each time
+        # Retried in place (same time, before moving on), after a pause that doubles
         assert [t for t, _ in fake.requests] == [
             pd.Timestamp("2024-01-01 00:00"),
             noon,
@@ -909,8 +909,32 @@ class TestDownloadSoundingsErrors:
             noon,
             pd.Timestamp("2024-01-02 00:00"),
         ]
-        assert sleeps == [2, 2]
+        assert sleeps == [2, 4]
         assert len(self._saved(tmp_path)) == 3
+
+    def test_server_busy_for_good_raises_after_ten_requests(
+        self, tmp_path, monkeypatch
+    ):
+        import requests
+
+        noon = pd.Timestamp("2024-01-01 12:00")
+        busy = requests.exceptions.HTTPError("503: Please try again later.")
+        fake = _FakeWyoming({noon: [busy] * 50})  # never stops saying so
+        monkeypatch.setattr(soundings, "WyomingUpperAir", fake)
+        sleeps = []
+        monkeypatch.setattr(soundings, "sleep", sleeps.append)
+
+        with pytest.raises(
+            requests.exceptions.HTTPError, match="SLC.*2024-01-01 12:00"
+        ):
+            soundings.download_soundings("SLC", self.START, self.END, str(tmp_path))
+
+        # 10 requests for the noon sounding, a doubling pause between them, and
+        # the one after it never asked for
+        requested = [t for t, _ in fake.requests]
+        assert requested.count(noon) == 10
+        assert pd.Timestamp("2024-01-02 00:00") not in requested
+        assert sleeps == [2**n for n in range(1, 10)]
 
     def test_other_http_error_is_raised(self, tmp_path, monkeypatch):
         import requests

@@ -117,7 +117,11 @@ def list_files(
     if recursive:
         walk = os.walk(path, followlinks=followlinks)
     else:
-        walk = [(path, None, os.listdir(path))]
+        # Only files, as os.walk lists: a folder is not a file
+        files = [
+            f for f in os.listdir(path) if not os.path.isdir(os.path.join(path, f))
+        ]
+        walk = [(path, None, files)]
 
     if ignore_case and pattern is not None:
         pattern = pattern.lower()

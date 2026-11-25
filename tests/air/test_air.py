@@ -183,6 +183,36 @@ def test_bin_polar_nan_speed_first():
     assert out["x_bin"].iloc[1:].tolist() == [2.0, 2.0, 4.0]
 
 
+def test_bin_polar_numpy_edges():
+    # Any 1-D array of edges works, as a list does.
+    df = pd.DataFrame({"ws": [1.0, 2.0, 3.0, 4.0], "wd": [10.0, 100.0, 190.0, 280.0]})
+    out = air.bin_polar(df, xbins=np.array([0, 2, 4]))
+    assert out["x_bin"].tolist() == [2, 2, 4, 4]
+    out = air.bin_polar(df, xbins=pd.Index([0, 2, 4]))
+    assert out["x_bin"].tolist() == [2, 2, 4, 4]
+
+
+def test_bin_polar_numpy_integer_xbins():
+    df = pd.DataFrame({"ws": [0.0, 1.0, 2.0, 3.0, 4.0], "wd": [10.0] * 5})
+    out = air.bin_polar(df, xbins=np.int64(5))
+    assert list(out["x_bin"].cat.categories) == [1.0, 2.0, 3.0, 4.0]
+
+
+def test_bin_polar_equal_speeds_with_explicit_edges():
+    # A calm period bins fine when the edges are given.
+    df = pd.DataFrame({"ws": [0.0, 0.0, 0.0], "wd": [10.0, 20.0, 30.0]})
+    out = air.bin_polar(df, xbins=[0, 1, 2])
+    assert out["x_bin"].tolist() == [1, 1, 1]
+
+
+def test_bin_polar_equal_speeds_with_int_xbins_raises():
+    # Evenly spaced edges between a minimum and a maximum that are equal
+    # repeat, so the error says why instead of pandas' "Bin edges must be unique".
+    df = pd.DataFrame({"ws": [0.0, 0.0, 0.0], "wd": [10.0, 20.0, 30.0]})
+    with pytest.raises(ValueError, match="do not vary"):
+        air.bin_polar(df)
+
+
 def test_bin_polar_invalid_xbins_raises():
     df = pd.DataFrame({"ws": [1.0], "wd": [10.0]})
     with pytest.raises(ValueError):

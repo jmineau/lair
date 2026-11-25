@@ -12,7 +12,6 @@ temperature. The module needs the ``requests`` extra.
 import datetime as dt
 import logging
 import os
-from collections import deque
 from time import sleep
 
 import numpy as np
@@ -478,6 +477,9 @@ def download_sounding(station, date, dst=None) -> str:
     return path
 
 
+_MAX_ATTEMPTS = 10  # requests per sounding while Wyoming says "try again later"
+
+
 def download_soundings(station, start, end, dst=None, months=None):
     """
     Download upper air soundings from the Wyoming archive.
@@ -508,8 +510,10 @@ def download_soundings(station, start, end, dst=None, months=None):
         can convert, or Wyoming answers with an error other than "No data
         available" (a sounding Wyoming does not have is logged and skipped).
     requests.exceptions.HTTPError
-        For an HTTP error other than Wyoming's "Please try again later", after
-        which the same sounding is asked for again 2 seconds later.
+        For an HTTP error other than Wyoming's "Please try again later". That
+        answer asks for the same sounding again after 2 seconds, then 4, 8 and so
+        on; the error is raised, naming the sounding, if the 10th request is
+        still told to try again later.
 
     See Also
     --------
@@ -537,34 +541,32 @@ def download_soundings(station, start, end, dst=None, months=None):
     if months:
         dates = dates[dates.month.isin(months)]
 
-    to_download = deque(dates)
-    while len(to_download) > 0:
-        date = to_download.popleft()
-        try:
-            download_sounding(station, date, dst)
-        except IndexError as e:
-            logger.warning(
-                "Error downloading %s on %s: %s", station, f"{date:%Y-%m-%d %H:%M}", e
-            )
-            continue
-        except ValueError as e:
-            logger.warning(
-                "Error downloading %s on %s: %s", station, f"{date:%Y-%m-%d %H:%M}", e
-            )
-            if "No data available" in str(e):
+    for date in dates:
+        stamp = f"{date:%Y-%m-%d %H:%M}"
+        for attempt in range(1, _MAX_ATTEMPTS + 1):
+            try:
+                download_sounding(station, date, dst)
+            except IndexError as e:
+                logger.warning("Error downloading %s on %s: %s", station, stamp, e)
+            except ValueError as e:
+                logger.warning("Error downloading %s on %s: %s", station, stamp, e)
+                if "No data available" not in str(e):
+                    raise
+            except requests.exceptions.HTTPError as e:
+                logger.warning("Error downloading %s on %s: %s", station, stamp, e)
+                if "Please try again later" not in str(e):
+                    raise
+                if attempt == _MAX_ATTEMPTS:
+                    raise requests.exceptions.HTTPError(
+                        f"Wyoming still answered 'Please try again later' for {station} "
+                        f"on {stamp} after {_MAX_ATTEMPTS} attempts"
+                    ) from e
+                # Wait longer each time: 2, 4, 8, ... seconds
+                wait = 2**attempt
+                logger.info("Trying again in %d seconds...", wait)
+                sleep(wait)
                 continue
-            else:
-                raise e
-        except requests.exceptions.HTTPError as e:
-            logger.warning(
-                "Error downloading %s on %s: %s", station, f"{date:%Y-%m-%d %H:%M}", e
-            )
-            if "Please try again later" in str(e):
-                logger.info("Trying again in 2 seconds...")
-                to_download.appendleft(date)
-                sleep(2)
-            else:
-                raise e
+            break
 
 
 def get_soundings(

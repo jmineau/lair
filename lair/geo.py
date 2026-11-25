@@ -15,6 +15,7 @@ from __future__ import (
     annotations,
 )  # keep optional-dep annotations (e.g. shapely Polygon) lazy
 
+import contextlib
 import copy
 import math
 from collections import deque
@@ -24,6 +25,7 @@ from typing import Any, Literal, Self, TypeVar, cast
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
+import xarray as xr
 from matplotlib.figure import Figure
 from numpy.typing import ArrayLike
 from xarray import DataArray, Dataset
@@ -49,7 +51,12 @@ from cartopy.mpl.ticker import (  # noqa: E402
     LongitudeFormatter,
     LongitudeLocator,
 )
-from rioxarray.exceptions import MissingCRS, NoDataInBounds  # noqa: E402
+from rasterio.transform import Affine  # noqa: E402
+from rioxarray.exceptions import (  # noqa: E402
+    MissingCRS,
+    NoDataInBounds,
+    OneDimensionalRaster,
+)
 from shapely import LineString, MultiLineString, Point, Polygon  # noqa: E402
 
 __all__ = [
@@ -1092,6 +1099,10 @@ def clip(
     if extent is not None:
         # Convert extent to bbox
         bbox = extent2bbox(extent)
+    # Store the cell size, so a clip one cell wide still has it (#244). A grid
+    # already one cell wide keeps whatever transform it has.
+    with contextlib.suppress(OneDimensionalRaster):
+        data = data.rio.write_transform(data.rio.transform(recalc=True))
     if bbox is not None:
         data = data.rio.clip_box(*bbox, crs=crs, **kwargs)
     elif geom is not None:
@@ -1246,13 +1257,12 @@ def gridcell_area(
             raise ValueError(
                 "gridcell_area needs 1-D lat and lon coordinates on a lat-lon grid."
             )
-        bounds = grid.cf.add_bounds(["lat", "lon"])
         # Each cell's edges, halfway between the centers (a pole stays a pole)
-        lat_b = bounds.lat_bounds.clip(-90, 90)
+        lat_b = _cell_bounds(grid, "lat").clip(-90, 90)
         lat_lo = lat_b.isel(bounds=0, drop=True)
         lat_hi = lat_b.isel(bounds=1, drop=True)
         dlon = np.deg2rad(
-            abs(bounds.lon_bounds.diff("bounds").squeeze("bounds", drop=True))
+            abs(_cell_bounds(grid, "lon").diff("bounds").squeeze("bounds", drop=True))
         )
         # abs: north-up rasters store lat descending. The latitude term comes
         # first, so the result is (y, x) like the data.
@@ -1262,11 +1272,13 @@ def gridcell_area(
         else:
             dsin = abs(np.sin(np.deg2rad(lat_hi)) - np.sin(np.deg2rad(lat_lo)))
             area = R**2 * dsin * dlon
-        area = area.drop_vars(["lat_bounds", "lon_bounds"], errors="ignore")
+        # _authalic_q is typed for arrays; given DataArrays it returns one
+        area = cast(DataArray, area).drop_vars(
+            ["lat_bounds", "lon_bounds"], errors="ignore"
+        )
     elif crs.linear_units == "metre":
-        bounds = grid.cf.add_bounds(["x", "y"])
-        dx = bounds.x_bounds.diff("bounds").squeeze("bounds", drop=True)
-        dy = bounds.y_bounds.diff("bounds").squeeze("bounds", drop=True)
+        dx = _cell_bounds(grid, "x").diff("bounds").squeeze("bounds", drop=True)
+        dy = _cell_bounds(grid, "y").diff("bounds").squeeze("bounds", drop=True)
         # abs: north-up rasters store y descending (negative dy).
         # dy first so the result is (y, x) like the data.
         cell_area_m2 = abs(dy * dx)
@@ -1277,6 +1289,43 @@ def gridcell_area(
     # which keep its attributes: keep only the units (issue #136).
     area.attrs = {"units": "km2"}
     return area
+
+
+def _cell_bounds(grid: Dataset, name: str) -> DataArray:
+    """
+    Return the edges of the cells along the 1-D coordinate ``name``.
+
+    The edges are halfway between the centers (cf_xarray's ``add_bounds``).
+    A coordinate of one cell takes its size from the grid's transform, which
+    :func:`clip` stores; without one it raises a ``ValueError``.
+    """
+    if grid.sizes[name] > 1:
+        return grid.cf.add_bounds([name])[f"{name}_bounds"]
+    try:
+        x_res, y_res = grid.rio.resolution()
+    except OneDimensionalRaster:
+        raise ValueError(
+            f"The grid is one cell wide along {name!r}, so the size of its cells "
+            "is not known. Clip with lair.geo.clip (or BaseGrid.clip), which "
+            "keeps it, or write the transform of the grid it came from with "
+            "data.rio.write_transform()."
+        ) from None
+    half = abs(x_res if name == grid.rio.x_dim else y_res) / 2
+    center = grid[name]
+    return xr.concat([center - half, center + half], dim="bounds").transpose(
+        name, "bounds"
+    )
+
+
+def _with_bounds(ds: Dataset, names: list[str]) -> Dataset:
+    """Return ``ds`` with cf bounds (``<name>_bounds``) for each coordinate in ``names``."""
+    if any(n not in ds.dims for n in names):  # 2-D lat/lon of a projected grid
+        return ds.cf.add_bounds(names)
+    bounds = {f"{n}_bounds": _cell_bounds(ds, n) for n in names}
+    out = ds.assign_coords({k: (b.dims, b.values) for k, b in bounds.items()})
+    for n in names:
+        out[n].attrs["bounds"] = f"{n}_bounds"
+    return out
 
 
 def plot_grid(
@@ -1532,7 +1581,7 @@ def regrid(
 
     # Use cf-xarray to calculate the bounds of the grid cells (Dataset only;
     # a DataArray is turned back into one at the end)
-    ds = _as_dataset(data).cf.add_bounds(["lat", "lon"])
+    ds = _with_bounds(_as_dataset(data), ["lat", "lon"])
 
     # Regrid the data using `xesmf`. An output cell the source does not reach is
     # NaN: xesmf's default leaves it 0, a plausible value for any field.
@@ -1556,6 +1605,8 @@ def regrid(
     # Regridding drops rioxarray info - reattach
     regridded.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=True)
     regridded = write_rio_crs(regridded, out_crs)
+    # A transform carried over from the input describes the old cells
+    regridded[regridded.rio.grid_mapping].attrs.pop("GeoTransform", None)
 
     return _like_input(regridded, data)
 
@@ -1638,7 +1689,7 @@ def resample(
     # Calculate the new grid. A conservative regrid must cover the whole source or
     # the strip left over by a resolution that does not divide it is lost
     cover = regrid_method == "conservative"
-    bounds = _as_dataset(data).cf.add_bounds(["lat", "lon"])
+    bounds = _with_bounds(_as_dataset(data), ["lat", "lon"])
     xmin = bounds.lon_bounds.min()
     xmax = bounds.lon_bounds.max()
     ymin = bounds.lat_bounds.min()
@@ -1660,8 +1711,25 @@ def resample(
         )
         out_grid.lat.attrs["units"] = "degrees_north"
         out_grid.lon.attrs["units"] = "degrees_east"
+        # The cells' edges are known; xesmf cannot guess them for one row
+        out_grid = _as_dataset(out_grid)
+        for name, d in (("lat", dy), ("lon", dx)):
+            center = out_grid[name]
+            out_grid = out_grid.assign_coords(
+                {
+                    f"{name}_bounds": (
+                        (name, "bounds"),
+                        np.stack([center - d / 2, center + d / 2], axis=-1),
+                    )
+                }
+            )
+            out_grid[name].attrs["bounds"] = f"{name}_bounds"
 
-    return regrid(data, out_grid=out_grid, method=regrid_method)
+    out = regrid(data, out_grid=out_grid, method=regrid_method)
+    if len(data.lon.dims) == 2:
+        return out
+    # Store the cell size, which a grid one cell wide cannot show (#244)
+    return out.rio.write_transform(Affine(dx, 0, float(xmin), 0, dy, float(ymin)))
 
 
 def round_latlon(
