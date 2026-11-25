@@ -684,6 +684,39 @@ class TestClipToPolygonThenRegrid:
         np.testing.assert_allclose(after, before, rtol=1e-3)
 
 
+class TestOneCellWideClip:
+    def test_integrate_a_row_clipped_by_polygon(self):
+        # gridcell_area could not size a grid one cell wide (#244)
+        import pandas as pd
+
+        shapely = pytest.importorskip("shapely")
+        lat = np.round(np.arange(40.05, 41, 0.1), 2)
+        lon = np.round(np.arange(-112.45, -111.5, 0.1), 2)
+        ds = xr.Dataset(
+            {
+                "e": (
+                    ("time", "lat", "lon"),
+                    np.full((1, lat.size, lon.size), 1e-9),
+                    {"units": "kg m-2 s-1"},
+                )
+            },
+            coords={
+                "time": pd.date_range("2020-01-01", periods=1, freq="YS"),
+                "lat": lat,
+                "lon": lon,
+            },
+        )
+        inv = inventories.Inventory(ds, "CH4")
+        row = inv.clip(geom=shapely.box(-112.3, 40.5, -111.7, 40.6))
+        assert row.data.sizes["lat"] == 1
+        # a uniform flux: the row's share of the total is its share of the area
+        area = inv.gridcell_area
+        share = float(area.sel(lat=row.data.lat, lon=row.data.lon).sum() / area.sum())
+        np.testing.assert_allclose(
+            row.integrate().values, inv.integrate().values * share, rtol=1e-9
+        )
+
+
 class TestInventoryDir:
     def test_unset_env_raises(self, monkeypatch):
         monkeypatch.delenv("LAIR_INVENTORY_DIR", raising=False)

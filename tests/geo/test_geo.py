@@ -1402,3 +1402,42 @@ class TestAddLocatorMap:
         box_artist = inset.collections[-1]
         np.testing.assert_allclose(box_artist.get_edgecolor(), [[1, 0, 0, 1]])
         assert box_artist.get_linewidth() == [2]
+
+
+class TestOneCellWide:
+    """A grid one cell wide keeps the size of its cells (#244)."""
+
+    @pytest.fixture
+    def grid(self):
+        lat = np.round(np.arange(40.05, 41, 0.1), 2)
+        lon = np.round(np.arange(-112.45, -111.5, 0.1), 2)
+        data = DataArray(
+            np.ones((lat.size, lon.size)),
+            coords={"lat": lat, "lon": lon},
+            dims=("lat", "lon"),
+        ).rio.set_spatial_dims(x_dim="lon", y_dim="lat")
+        data.lat.attrs["units"] = "degrees_north"
+        data.lon.attrs["units"] = "degrees_east"
+        return geo.write_rio_crs(data, "EPSG:4326")
+
+    @pytest.fixture
+    def row(self, grid):
+        shapely = pytest.importorskip("shapely")
+        return geo.clip(grid, geom=shapely.box(-112.3, 40.5, -111.7, 40.6))
+
+    def test_area_of_a_row_clipped_by_polygon(self, grid, row):
+        assert dict(row.sizes) == {"lat": 1, "lon": 6}
+        expected = geo.gridcell_area(grid).sel(lat=row.lat, lon=row.lon)
+        np.testing.assert_allclose(geo.gridcell_area(row), expected)
+
+    def test_resample_of_a_row_keeps_the_total(self, row):
+        pytest.importorskip("xesmf")
+        total = float((row * geo.gridcell_area(row)).sum())
+        for resolution in (0.2, 0.05):
+            out = geo.resample(row, resolution, regrid_method="conservative")
+            out_total = float((out * geo.gridcell_area(out)).sum())
+            assert out_total == pytest.approx(total, rel=1e-3)
+
+    def test_without_a_cell_size_raises(self):
+        with pytest.raises(ValueError, match="one cell wide along 'lat'"):
+            geo.gridcell_area_from_latlon([40.65], [-111.95, -111.85])
