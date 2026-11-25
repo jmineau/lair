@@ -53,14 +53,21 @@ class TestListFiles:
         return tmp_path
 
     def test_lists_visible_entries_excluding_hidden(self, tree):
-        # Non-recursive list returns visible entries (incl. subdir names);
-        # dotfiles are excluded by default.
+        # Non-recursive list returns visible files; dotfiles are excluded by default.
         names = records.list_files(tree)
         assert {"a.txt", "b.csv"} <= set(names)
         assert ".hidden" not in names
 
     def test_pattern_filter(self, tree):
         assert records.list_files(tree, pattern="*.txt") == ["a.txt"]
+
+    def test_folders_are_not_listed(self, tree):
+        # A folder whose name matches the pattern is not a file, as when recursive
+        (tree / "dir.txt").mkdir()
+        assert "sub" not in records.list_files(tree)
+        assert records.list_files(tree, pattern="*.txt") == ["a.txt"]
+        found = records.list_files(tree, pattern="*.txt", recursive=True)
+        assert sorted(found) == ["a.txt", "c.txt"]
 
     def test_all_files_includes_hidden(self, tree):
         assert ".hidden" in records.list_files(tree, all_files=True)
