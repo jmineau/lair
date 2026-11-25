@@ -626,10 +626,13 @@ class TestAttributes:
 
     def test_epa_v2_monthly(self, epa_v2_dir):
         monthly = inventories.EPAv2(scale_by_month=True, inventory_dir=epa_v2_dir)
+        assert monthly.time_step == "monthly"
         for var in monthly.data.data_vars:
             attrs = monthly.data[var].attrs
             assert attrs["long_name"] == f"{var}_Emissions", var
             assert attrs["IPCC_Code"], var
+            # The data are monthly, so is their name (#256)
+            assert attrs["standard_name"] == "monthly_CH4_emissions", var
 
 
 class TestClipToPolygonThenRegrid:

@@ -2268,8 +2268,14 @@ class EPAv2(EPA):
         self.scale_by_month = scale_by_month
 
         path = os.path.join(self.epa_dir, self.version, "express" if express else "")
+        # _process names the variables after time_step (get_standard_name), and
+        # it runs inside super().__init__, so the time step is set here
         super().__init__(
-            path, self.pollutant, src_units=self.src_units, version=self.version
+            path,
+            self.pollutant,
+            src_units=self.src_units,
+            time_step="monthly" if scale_by_month else "annual",
+            version=self.version,
         )
 
     def get_monthly_scale_factors(self) -> Dataset:
