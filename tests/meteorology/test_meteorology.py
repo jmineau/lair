@@ -89,6 +89,12 @@ class TestIdealGasLaw:
         rho = met.ideal_gas_law("density", p=1e5, R=287.05, T=300.0)
         assert rho == pytest.approx(1e5 / (287.05 * 300.0))
 
+    def test_r_defaults_to_dry_air(self):
+        rho = met.ideal_gas_law("density", p=1e5, T=300.0)
+        assert rho == pytest.approx(1e5 / (met.Rd * 300.0))
+        T = met.ideal_gas_law("temp", p=1e5, rho=1.2)
+        assert pytest.approx(1e5 / (1.2 * met.Rd)) == T
+
     def test_temperature_from_density(self):
         T = met.ideal_gas_law("temp", p=1e5, rho=1.2, R=287.05)
         assert pytest.approx(1e5 / (1.2 * 287.05)) == T
