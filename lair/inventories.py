@@ -1322,6 +1322,16 @@ class MultiModelInventory(Inventory):
     ) -> None:
         """Initialize the inventory; the class docstring describes the parameters."""
         self.model = model or "mean"
+        if isinstance(data, Dataset):
+            # A Dataset skips _process (it is taken as already processed), but
+            # the model is still selected here
+            if "model" not in data.dims:
+                raise ValueError(
+                    "A Dataset for a multi-model inventory needs a 'model' "
+                    f"dimension (it has {list(data.dims)})"
+                )
+            with xr.set_options(keep_attrs=True):
+                data = self._select_model(data)
         super().__init__(
             data,
             pollutant,
@@ -1332,6 +1342,10 @@ class MultiModelInventory(Inventory):
         )
 
     def _process(self, data: Dataset) -> Dataset:
+        return self._select_model(data)
+
+    def _select_model(self, data: Dataset) -> Dataset:
+        # Keep the whole ensemble, and return the model, mean or median asked for
         self.multimodel_data = data
 
         if self.model == "mean":

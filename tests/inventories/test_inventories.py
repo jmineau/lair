@@ -1902,6 +1902,55 @@ class TestMultiModelLabels:
         assert inv.multimodel_data.sizes["model"] == 2
 
 
+class TestMultiModelDataset:
+    """A Dataset with a model dimension is treated as a file's data is."""
+
+    @staticmethod
+    def _ensemble():
+        import pandas as pd
+
+        values = np.ones((2, 1, 2, 2))
+        values[1] = 3.0
+        return xr.Dataset(
+            {
+                "wetlands": (
+                    ("model", "time", "lat", "lon"),
+                    values,
+                    {"units": "kg/m**2/s"},
+                )
+            },
+            coords={
+                "model": ["a", "b"],
+                "time": pd.date_range("2020-01-01", periods=1, freq="YS"),
+                "lat": [40.05, 40.15],
+                "lon": [-111.95, -111.85],
+            },
+        )
+
+    def test_the_named_model_is_selected_and_the_ensemble_kept(self):
+        inv = inventories.MultiModelInventory(self._ensemble(), "CH4", model="b")
+        assert "model" not in inv.data.dims
+        assert (inv.data["wetlands"].pint.dequantify() == 3.0).all()
+        assert inv.multimodel_data.sizes["model"] == 2
+        assert inv.integrate().dims == ("time",)
+
+    @pytest.mark.parametrize("statistic", [None, "mean", "median"])
+    def test_the_default_and_the_statistics_reduce_the_models(self, statistic):
+        inv = inventories.MultiModelInventory(self._ensemble(), "CH4", model=statistic)
+        assert "model" not in inv.data.dims
+        assert (inv.data["wetlands"].pint.dequantify() == 2.0).all()
+        assert inv.multimodel_data.sizes["model"] == 2
+
+    def test_units_survive_the_selection(self):
+        inv = inventories.MultiModelInventory(self._ensemble(), "CH4", model="a")
+        assert inv.get_units() == ("kg", "m**2", "s")
+
+    def test_a_dataset_without_a_model_dimension_raises(self):
+        ds = self._ensemble().isel(model=0, drop=True)
+        with pytest.raises(ValueError, match="'model' dimension"):
+            inventories.MultiModelInventory(ds, "CH4")
+
+
 # --- Loaders ----------------------------------------------------------------
 
 
