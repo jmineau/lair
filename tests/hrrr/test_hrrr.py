@@ -169,6 +169,27 @@ class _FakeS3:
         return type("Obj", (), {"get": lambda self: {"Body": body}})()
 
 
+class _FakeS3Client:
+    """Minimal stand-in for ``boto3.client('s3')``: serves bytes by key.
+
+    ``delay(key)`` gives seconds to wait before answering, to make requests
+    finish out of order.
+    """
+
+    def __init__(self, objects, delay=lambda key: 0.0):
+        self.objects = objects
+        self.delay = delay
+        self.requested = []
+
+    def get_object(self, Bucket, Key):
+        import io
+        import time
+
+        self.requested.append((Bucket, Key))
+        time.sleep(self.delay(Key))
+        return {"Body": io.BytesIO(self.objects[Key])}
+
+
 def _anl_id(var_name="UGRD", var_level="10m_above_ground", model_type="anl"):
     return hrrr.ZarrId(
         run_hour=dt.datetime(2024, 1, 1, 6),
@@ -328,7 +349,7 @@ def test_winds_end_to_end(monkeypatch):
             grid[20, 20] = value
             zid = hrrr.ZarrId(t, "sfc", "10m_above_ground", var, "anl")
             objects[hrrr.create_s3_chunk_url(zid, "2.2")] = _blosc(grid)
-    s3 = _FakeS3(objects)
+    s3 = _FakeS3Client(objects)
 
     opened = []
     monkeypatch.setattr(hrrr.s3fs, "S3FileSystem", lambda anon: "fs")
@@ -336,7 +357,7 @@ def test_winds_end_to_end(monkeypatch):
     monkeypatch.setattr(
         xr, "open_zarr", lambda store: opened.append(store) or index, raising=True
     )
-    monkeypatch.setattr(hrrr.boto3, "resource", lambda **kwargs: s3)
+    monkeypatch.setattr(hrrr.boto3, "client", lambda **kwargs: s3)
 
     winds = hrrr.Winds(lat=lat, lon=lon, times=times)
 
@@ -373,12 +394,12 @@ def test_winds_reads_utc_hour_for_aware_times(monkeypatch):
             grid[20, 20] = value
             zid = hrrr.ZarrId(t, "sfc", "10m_above_ground", var, "anl")
             objects[hrrr.create_s3_chunk_url(zid, "2.2")] = _blosc(grid)
-    s3 = _FakeS3(objects)
+    s3 = _FakeS3Client(objects)
 
     monkeypatch.setattr(hrrr.s3fs, "S3FileSystem", lambda anon: "fs")
     monkeypatch.setattr(hrrr.s3fs, "S3Map", lambda url, s3: url)
     monkeypatch.setattr(xr, "open_zarr", lambda store: index, raising=True)
-    monkeypatch.setattr(hrrr.boto3, "resource", lambda **kwargs: s3)
+    monkeypatch.setattr(hrrr.boto3, "client", lambda **kwargs: s3)
 
     winds = hrrr.Winds(lat=lat, lon=lon, times=times)
 
@@ -423,14 +444,53 @@ class TestRunHourOnTheHour:
     def test_winds_rejects_minutes(self, monkeypatch):
         import xarray as xr
 
-        s3 = _FakeS3({})
+        s3 = _FakeS3Client({})
         monkeypatch.setattr(hrrr.s3fs, "S3FileSystem", lambda anon: "fs")
         monkeypatch.setattr(hrrr.s3fs, "S3Map", lambda url, s3: url)
         monkeypatch.setattr(
             xr, "open_zarr", lambda store: _chunk_index(-97.5, 38.5), raising=True
         )
-        monkeypatch.setattr(hrrr.boto3, "resource", lambda **kwargs: s3)
+        monkeypatch.setattr(hrrr.boto3, "client", lambda **kwargs: s3)
 
         with pytest.raises(ValueError, match="13:45"):
             hrrr.Winds(lat=38.5, lon=-97.5, times=[dt.datetime(2024, 1, 15, 13, 45)])
         assert s3.requested == []
+
+
+def test_retrieve_object_with_client():
+    s3 = _FakeS3Client({"a/b": b"payload"})
+    assert hrrr.retrieve_object(s3, "a/b") == b"payload"
+    assert s3.requested == [("hrrrzarr", "a/b")]
+
+
+@pytest.mark.parametrize("max_workers", [1, 8])
+def test_winds_keeps_time_order_on_threads(monkeypatch, max_workers):
+    """Downloads on threads finish out of order; the values keep the times' order."""
+    import xarray as xr
+
+    lon, lat = -97.5, 38.5
+    times = [dt.datetime(2024, 1, 1, h) for h in range(12)]
+    objects, delays = {}, {}
+    for var, sign in (("UGRD", 1.0), ("VGRD", -1.0)):
+        for i, t in enumerate(times):
+            grid = np.full((150, 150), 99.0, dtype="<f2")
+            grid[20, 20] = sign * i
+            zid = hrrr.ZarrId(t, "sfc", "10m_above_ground", var, "anl")
+            key = hrrr.create_s3_chunk_url(zid, "2.2")
+            objects[key] = _blosc(grid)
+            delays[key] = 0.002 * (len(times) - i)  # the first hour answers last
+    s3 = _FakeS3Client(objects, delay=delays.__getitem__)
+
+    monkeypatch.setattr(hrrr.s3fs, "S3FileSystem", lambda anon: "fs")
+    monkeypatch.setattr(hrrr.s3fs, "S3Map", lambda url, s3: url)
+    monkeypatch.setattr(
+        xr, "open_zarr", lambda store: _chunk_index(lon, lat), raising=True
+    )
+    monkeypatch.setattr(hrrr.boto3, "client", lambda **kwargs: s3)
+
+    winds = hrrr.Winds(lat=lat, lon=lon, times=times, max_workers=max_workers)
+
+    assert len(s3.requested) == 2 * len(times)
+    assert list(winds.data.index) == times
+    np.testing.assert_allclose(winds.data["u"], np.arange(12), atol=1e-6)
+    np.testing.assert_allclose(winds.data["v"], -np.arange(12), atol=1e-6)

@@ -14,6 +14,7 @@ https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/python_data_loading.
 
 import dataclasses
 import datetime as dt
+from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
 import numpy as np
@@ -227,6 +228,9 @@ class Winds:
         analysis, so 05:00 in ``America/Denver`` in January reads the 12 UTC
         analysis. Each must fall on a UTC hour; a time such as 13:45 raises a
         ``ValueError`` before any wind is downloaded.
+    max_workers : int, default 16
+        Number of S3 objects downloaded at once, on threads. ``1`` downloads
+        them one at a time.
 
     Attributes
     ----------
@@ -262,13 +266,14 @@ class Winds:
     lat: float
     lon: float
     times: list[dt.datetime]
+    max_workers: int = 16
 
     def __post_init__(self):
         # Connect to AWS servers
         fs = s3fs.S3FileSystem(anon=True)
-        # Don't recreate this resource in a loop! That caused a 3-4x slowdown for me.
-        # Not sure who the above is, but should be listened to.
-        s3 = boto3.resource(
+        # One client for every request: a boto3 client is thread-safe (a
+        # resource is not), and making one per request is slow.
+        s3 = boto3.client(
             service_name="s3",
             region_name="us-west-1",
             config=Config(signature_version=UNSIGNED),
@@ -288,13 +293,18 @@ class Winds:
             times=self.times, level_type="sfc", variables=variables, model_type="anl"
         )
 
-        # Download variables
+        # Download variables on threads; map keeps the order of the ids
         var_data = {}
-        for (var_name, _), ids in self.zarr_ids.items():
-            var_data[var_name] = [
-                get_value(s3, zarr_id, self.chunk_id, self.nearest_point)
-                for zarr_id in ids
-            ]
+        with ThreadPoolExecutor(max_workers=self.max_workers) as pool:
+            for (var_name, _), ids in self.zarr_ids.items():
+                var_data[var_name] = list(
+                    pool.map(
+                        lambda zarr_id: get_value(
+                            s3, zarr_id, self.chunk_id, self.nearest_point
+                        ),
+                        ids,
+                    )
+                )
 
         self.data = winds_frame(
             var_data["UGRD"], var_data["VGRD"], self.lon, self.times
@@ -490,8 +500,9 @@ def retrieve_object(s3, s3_url: str):
 
     Parameters
     ----------
-    s3 : boto3.resource
-        s3 resource
+    s3 : boto3 client or resource
+        An S3 client (``boto3.client("s3")``, safe to share between threads)
+        or resource (``boto3.resource("s3")``, not safe on threads).
     s3_url : str
         s3 url
 
@@ -513,14 +524,15 @@ def retrieve_object(s3, s3_url: str):
     >>> from botocore import UNSIGNED
     >>> from botocore.config import Config
     >>> from lair.hrrr import retrieve_object
-    >>> s3 = boto3.resource(
+    >>> s3 = boto3.client(
     ...     "s3", region_name="us-west-1", config=Config(signature_version=UNSIGNED)
     ... )  # doctest: +SKIP
     >>> key = "sfc/20240115/20240115_12z_anl.zarr/10m_above_ground/UGRD/10m_above_ground/UGRD/4.5"
     >>> data = retrieve_object(s3, key)  # doctest: +SKIP
     """
-    obj = s3.Object("hrrrzarr", s3_url)
-    return obj.get()["Body"].read()
+    if hasattr(s3, "get_object"):  # a client
+        return s3.get_object(Bucket="hrrrzarr", Key=s3_url)["Body"].read()
+    return s3.Object("hrrrzarr", s3_url).get()["Body"].read()
 
 
 def generate_zarr_ids(
@@ -650,8 +662,8 @@ def get_value(s3, zarr_id: ZarrId, chunk_id, nearest_point: xr.Dataset):
 
     Parameters
     ----------
-    s3 : boto3.resource
-        s3 resource
+    s3 : boto3 client or resource
+        As in :func:`retrieve_object`.
     zarr_id : ZarrId
         ZarrId instance
     chunk_id : str
