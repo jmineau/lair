@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=0ec962cf"></script>
+    <script src="../_static/documentation_options.js?v=e85d47cf"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev9+ga6dc03fcc" />
+  <meta name="docsearch:version" content="2026.12.13.dev10+gc58789067" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -840,8 +840,10 @@ time zone is converted to UTC.</p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the unit siphon reports for a wind is not one <a class="reference internal" href="lair.soundings.download_sounding.html#lair.soundings.download_sounding" title="lair.soundings.download_sounding"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_sounding()</span></code></a>
     can convert, or Wyoming answers with an error other than “No data
     available” (a sounding Wyoming does not have is logged and skipped).</p></li>
-<li><p><strong>requests.exceptions.HTTPError</strong> – For an HTTP error other than Wyoming’s “Please try again later”, after
-    which the same sounding is asked for again 2 seconds later.</p></li>
+<li><p><strong>requests.exceptions.HTTPError</strong> – For an HTTP error other than Wyoming’s “Please try again later”. That
+    answer asks for the same sounding again after 2 seconds, then 4, 8 and so
+    on; the error is raised, naming the sounding, if the 10th request is
+    still told to try again later.</p></li>
 </ul>
 </dd>
 </dl>
