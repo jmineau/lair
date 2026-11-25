@@ -387,3 +387,50 @@ def test_winds_reads_utc_hour_for_aware_times(monkeypatch):
     assert str(winds.data.index.tz) == "America/Denver"
     np.testing.assert_allclose(winds.data["u"], [3.0, -2.0], atol=1e-6)
     np.testing.assert_allclose(winds.data["v"], [4.0, 0.5], atol=1e-6)
+
+
+class TestRunHourOnTheHour:
+    """A run time off the hour would read the hour before's run (#251)."""
+
+    @pytest.mark.parametrize(
+        "t",
+        [
+            dt.datetime(2024, 1, 15, 13, 45),
+            dt.datetime(2024, 1, 15, 13, 0, 30),
+            dt.datetime(2024, 1, 15, 13, 0, 0, 1),
+        ],
+    )
+    def test_off_the_hour_raises(self, t):
+        with pytest.raises(ValueError, match="not on the hour"):
+            hrrr.ZarrId(t, "sfc", "10m_above_ground", "UGRD", "anl")
+
+    def test_aware_on_a_utc_hour_is_accepted(self):
+        from zoneinfo import ZoneInfo
+
+        # 18:30 in India (+05:30) is 13:00 UTC
+        t = dt.datetime(2024, 1, 15, 18, 30, tzinfo=ZoneInfo("Asia/Kolkata"))
+        zid = hrrr.ZarrId(t, "sfc", "10m_above_ground", "UGRD", "anl")
+        assert _group_key(zid.run_hour) == "sfc/20240115/20240115_13z_anl"
+
+    def test_aware_off_a_utc_hour_raises(self):
+        from zoneinfo import ZoneInfo
+
+        # 13:00 in India is 07:30 UTC
+        t = dt.datetime(2024, 1, 15, 13, tzinfo=ZoneInfo("Asia/Kolkata"))
+        with pytest.raises(ValueError, match="not on the hour"):
+            hrrr.ZarrId(t, "sfc", "10m_above_ground", "UGRD", "anl")
+
+    def test_winds_rejects_minutes(self, monkeypatch):
+        import xarray as xr
+
+        s3 = _FakeS3({})
+        monkeypatch.setattr(hrrr.s3fs, "S3FileSystem", lambda anon: "fs")
+        monkeypatch.setattr(hrrr.s3fs, "S3Map", lambda url, s3: url)
+        monkeypatch.setattr(
+            xr, "open_zarr", lambda store: _chunk_index(-97.5, 38.5), raising=True
+        )
+        monkeypatch.setattr(hrrr.boto3, "resource", lambda **kwargs: s3)
+
+        with pytest.raises(ValueError, match="13:45"):
+            hrrr.Winds(lat=38.5, lon=-97.5, times=[dt.datetime(2024, 1, 15, 13, 45)])
+        assert s3.requested == []
