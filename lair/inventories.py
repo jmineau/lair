@@ -26,7 +26,7 @@ import re
 from abc import ABCMeta
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
-from typing import Any, Literal, ParamSpec, Self, TypeVar
+from typing import Any, Literal, ParamSpec, Self, TypeVar, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1044,6 +1044,9 @@ class Inventory(BaseGrid):
         """
         Regrid the data to a new grid. Uses `xesmf` for regridding.
 
+        A cell with NaN counts as no emissions (0), so an inventory clipped to
+        a polygon (``clip(geom=)``) keeps its total.
+
         .. note::
             At present, `xesmf` only supports regridding lat-lon grids. self.data must be on a lat-lon grid.
             Possibly could use `xesmf.frontend.BaseRegridder` to regrid to a generic grid.
@@ -1081,7 +1084,8 @@ class Inventory(BaseGrid):
         :doc:`The inventory example </examples/inventory>` checks that a
         conservative regrid keeps the total.
         """
-        return super().regrid(out_grid, method=method, inplace=inplace)
+        grid = self._nan_as_zero(inplace)
+        return cast(Self, BaseGrid.regrid(grid, out_grid, method=method, inplace=True))
 
     # Emission inventories only allow mass-conserving (conservative) regridding
     # pyrefly: ignore[bad-override]
@@ -1093,6 +1097,9 @@ class Inventory(BaseGrid):
     ) -> Self:
         """
         Resample the data to a new resolution.
+
+        A cell with NaN counts as no emissions (0), so an inventory clipped to
+        a polygon (``clip(geom=)``) keeps its total.
 
         The new grid covers the whole inventory. When the resolution does not
         divide its width, the last row or column reaches past the edge and holds
@@ -1127,7 +1134,10 @@ class Inventory(BaseGrid):
 
             fine = inv.resample(0.01)
         """
-        return super().resample(resolution, regrid_method, inplace=inplace)
+        grid = self._nan_as_zero(inplace)
+        return cast(
+            Self, BaseGrid.resample(grid, resolution, regrid_method, inplace=True)
+        )
 
     # Emission inventories only allow mass-conserving (conservative) regridding
     # pyrefly: ignore[bad-override]
@@ -1139,6 +1149,9 @@ class Inventory(BaseGrid):
     ) -> Self:
         """
         Reproject the data to a lat lon rectilinear grid.
+
+        A cell with NaN counts as no emissions (0), so an inventory clipped to
+        a polygon (``clip(geom=)``) keeps its total.
 
         Parameters
         ----------
@@ -1161,7 +1174,23 @@ class Inventory(BaseGrid):
         Vulcan.reproject : The one inventory not on lat/lon (it is on a Lambert
             conformal grid).
         """
-        return super().reproject(resolution, regrid_method, inplace=inplace)
+        grid = self._nan_as_zero(inplace)
+        return cast(
+            Self, BaseGrid.reproject(grid, resolution, regrid_method, inplace=True)
+        )
+
+    def _nan_as_zero(self, inplace: bool) -> Self:
+        """
+        Return self (or a copy) with NaN cells as 0, for the regrids.
+
+        A NaN cell has no emissions here, as after ``clip(geom=)``; xesmf's
+        conservative regrid would turn every target cell touching one into NaN
+        and lose its emissions (#243).
+        """
+        grid = self if inplace else self.copy()
+        with xr.set_options(keep_attrs=True):
+            grid.data = grid.data.fillna(0)
+        return grid
 
     @_keep_attrs
     def plot(

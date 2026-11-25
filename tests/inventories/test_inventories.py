@@ -632,6 +632,58 @@ class TestAttributes:
             assert attrs["IPCC_Code"], var
 
 
+class TestClipToPolygonThenRegrid:
+    """A polygon clip leaves NaN outside it; the regrids count those as 0 (#243)."""
+
+    @pytest.fixture
+    def clipped(self):
+        import pandas as pd
+
+        shapely = pytest.importorskip("shapely")
+        lat = np.round(np.arange(40.05, 41, 0.1), 2)
+        lon = np.round(np.arange(-112.45, -111.5, 0.1), 2)
+        ds = xr.Dataset(
+            {
+                "e": (
+                    ("time", "lat", "lon"),
+                    np.full((1, lat.size, lon.size), 1e-9),
+                    {"units": "kg m-2 s-1"},
+                )
+            },
+            coords={
+                "time": pd.date_range("2020-01-01", periods=1, freq="YS"),
+                "lat": lat,
+                "lon": lon,
+            },
+        )
+        inv = inventories.Inventory(ds, "CH4")
+        return inv.clip(geom=shapely.Point(-112.0, 40.5).buffer(0.3))
+
+    def test_resample_keeps_the_total(self, clipped):
+        pytest.importorskip("xesmf")
+        before = clipped.integrate().values
+        assert clipped.data["e"].isnull().any()  # the cells outside the polygon
+        after = clipped.resample(0.2).integrate().values
+        np.testing.assert_allclose(after, before, rtol=1e-3)
+        assert clipped.data["e"].isnull().any()  # the original is not changed
+
+    def test_regrid_keeps_the_total(self, clipped):
+        pytest.importorskip("xesmf")
+        out_grid = xr.Dataset(
+            coords={
+                "lat": ("lat", np.arange(39.9, 41.2, 0.2), {"units": "degrees_north"}),
+                "lon": (
+                    "lon",
+                    np.arange(-112.6, -111.3, 0.2),
+                    {"units": "degrees_east"},
+                ),
+            }
+        )
+        before = clipped.integrate().values
+        after = clipped.regrid(out_grid).integrate().values
+        np.testing.assert_allclose(after, before, rtol=1e-3)
+
+
 class TestOneCellWideClip:
     def test_integrate_a_row_clipped_by_polygon(self):
         # gridcell_area could not size a grid one cell wide (#244)

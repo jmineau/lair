@@ -113,9 +113,9 @@ def phase_shift_corrected_baseline(
         separately for each calendar day of the index, in the index's own time
         zone (the function does no time zone conversion), so pass local time to
         get local days.
-        The windows are counted on a one-second grid that starts at each
-        day's first time, so the times must fall on whole seconds from it
-        (one-second data, or a slower rate on whole seconds).
+        The windows are counted on a one-second grid: each time is floored
+        to its second (a logger's milliseconds are dropped), and times in the
+        same second are averaged.
     n : int, optional
         Window size in seconds. Default is 3600.
     q : float, optional
@@ -125,7 +125,7 @@ def phase_shift_corrected_baseline(
     -------
     pd.Series
         Baseline concentration at the times of ``data``, so ``data - baseline``
-        lines up row for row. A time off the one-second grid gets NaN.
+        lines up row for row; times in the same second get the same value.
 
     See Also
     --------
@@ -150,8 +150,12 @@ def phase_shift_corrected_baseline(
     if not n % 2:
         n += 1
 
+    # asfreq keeps only times on its grid, so put every time on a whole second
+    seconds = pd.DatetimeIndex(data.index).floor("s")
+    per_second = data.groupby(seconds).mean()
+
     b = []
-    for _, y in data.groupby(pd.DatetimeIndex(data.index).floor("D")):
+    for _, y in per_second.groupby(pd.DatetimeIndex(per_second.index).floor("D")):
         hz = y.asfreq("s")
         left = hz.rolling(n, min_periods=1).quantile(q)
         right = hz.iloc[::-1].rolling(n, min_periods=1).quantile(q).iloc[::-1]
@@ -167,7 +171,7 @@ def phase_shift_corrected_baseline(
         )
 
     # the windows run on the one-second grid; give the baseline at the input's times
-    return pd.concat(b).reindex(data.index)
+    return pd.concat(b).reindex(seconds).set_axis(data.index)
 
 
 def thoning_filter(data: pd.Series, **kwargs) -> ccgFilter:

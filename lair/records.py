@@ -3,7 +3,7 @@ Files, downloads and caching.
 
 Download by FTP (:func:`ftp_download`) or with ``wget``, unzip, list the files
 in a folder that match a pattern, read a KML file, and cache a function's
-results in a pickle file (:class:`Cacher`).
+results in a folder of pickle files (:class:`Cacher`).
 """
 
 import fnmatch
@@ -13,6 +13,7 @@ import io
 import logging
 import os
 import pickle
+import tempfile
 import types
 from collections.abc import Callable
 from pathlib import Path
@@ -550,7 +551,7 @@ def _cache_key(func: Callable, args: tuple, kwargs: dict) -> bytes:
 
 class Cacher:
     """
-    A class that caches function results to a file for future use.
+    A class that caches function results to a folder for future use.
 
     A result is stored under a key made of the function's code and the
     arguments of the call, so editing the function (or a function passed in
@@ -561,14 +562,14 @@ class Cacher:
     ----------
     func : function
         The function to be cached.
-    cache_file : str
-        The name of the file to cache results to; it must end in ``.pkl``.
+    cache_dir : str or os.PathLike
+        The folder to cache results in, made if needed. Each result is one
+        file in it, ``<SHA-256 of the key>.pkl``.
     reload : bool, optional
         Whether to re-run the function instead of returning cached results.
-        Each set of arguments is re-run once per Cacher; the fresh result
-        replaces the old one in the index and every other cached entry is
-        kept. (The old result stays in ``cache_file`` but is no longer
-        referenced.) Defaults to False.
+        Each set of arguments is re-run once per Cacher, and the fresh result
+        replaces the old one; every other cached result is kept. Defaults to
+        False.
 
     Notes
     -----
@@ -585,24 +586,29 @@ class Cacher:
     itself. An edit to a helper that the function calls, to a module-level
     value it reads, to a variable it closes over (unless that is a number, a
     string or a function), or to a file it reads leaves the key unchanged and
-    returns the old result. Delete the cache file, or pass ``reload=True``,
+    returns the old result. Delete the cache folder, or pass ``reload=True``,
     after such an edit.
 
-    **Rebuilds.** A cache file written by an earlier lair has keys of another
-    shape, so its results are not found: the function runs once for each set
-    of arguments and the results are added to the file, behind the old ones,
-    which stay in it. Bytecode differs between Python versions, so moving to
-    another one (3.11 to 3.12) does the same.
+    **Many processes at once.** Each result is written to a temporary file in
+    the folder and renamed into place, so a reader sees a whole result or
+    none, and processes that share the folder (the tasks of a Slurm array)
+    neither lose nor corrupt each other's results. Two that miss the same key
+    at the same time both run the function; the last one to finish leaves its
+    result.
+
+    **Rebuilds.** Bytecode differs between Python versions, so moving to
+    another one (3.11 to 3.12) runs the function again once for each set of
+    arguments; the old results stay in the folder until it is deleted.
 
     Examples
     --------
-    >>> import os, tempfile
+    >>> import tempfile
     >>> from lair.records import Cacher
     >>> def double(x):
     ...     print("running")
     ...     return 2 * x
     >>> with tempfile.TemporaryDirectory() as folder:
-    ...     cached = Cacher(double, os.path.join(folder, "double.pkl"))
+    ...     cached = Cacher(double, folder)
     ...     print(cached(4))
     ...     print(cached(4))  # not run again
     running
@@ -610,49 +616,12 @@ class Cacher:
     8
     """
 
-    import pickle as pkl
-
-    def __init__(self, func: Callable, cache_file: str, reload=False):
+    def __init__(self, func: Callable, cache_dir: str | os.PathLike, reload=False):
         """Initialize a Cacher; the class docstring describes the parameters."""
-        if not cache_file.endswith(".pkl"):
-            raise ValueError(f"cache_file must end in .pkl: {cache_file!r}")
-
         self.func = func
-        self.cache_file = cache_file
+        self.cache_dir = Path(cache_dir)
         self.reload = reload
-
-        # Make sure the directory exists for the cache file
-        head, tail = os.path.split(cache_file)
-        os.makedirs(head or ".", exist_ok=True)
-
-        self.index_file = os.path.join(head, f".{tail}.index")
-        self.cache_index = self.load_cache_index()
         self._refreshed = set()  # keys re-run by this Cacher when reload=True
-
-    def load_cache_index(self):
-        """
-        Load the cache index from a file.
-
-        Returns
-        -------
-        dict
-            A dictionary of cached results and their corresponding file
-            positions.
-        """
-        try:
-            with open(self.index_file, "rb") as f:
-                cache_index = self.pkl.load(f)
-        except FileNotFoundError:
-            cache_index = {}
-
-        return cache_index
-
-    def save_cache_index(self):
-        """
-        Save the cache index to a file.
-        """
-        with open(self.index_file, "wb") as f:
-            self.pkl.dump(self.cache_index, f, protocol=self.pkl.HIGHEST_PROTOCOL)
 
     def __call__(self, *args, **kwargs):
         """
@@ -669,42 +638,38 @@ class Cacher:
             The result of the function call.
         """
         key = _cache_key(self.func, args, kwargs)
+        path = self.cache_dir / f"{hashlib.sha256(key).hexdigest()}.pkl"
         name = getattr(self.func, "__name__", type(self.func).__name__)
 
         if self.reload and key not in self._refreshed:
             logger.info("Forcing %s to execute", name)
-            cached = False
         else:
-            cached = key in self.cache_index
+            try:
+                with open(path, "rb") as f:
+                    result = pickle.load(f)
+            except FileNotFoundError:
+                pass
+            else:
+                logger.debug(
+                    "Returning cached result for %s with args: %s %s",
+                    name,
+                    args,
+                    kwargs,
+                )
+                return result
 
-        if cached:
-            # Load the result from the cache_file using its index
-            logger.debug(
-                "Returning cached result for %s with args: %s %s",
-                name,
-                args,
-                kwargs,
-            )
+        result = self.func(*args, **kwargs)
 
-            with open(self.cache_file, "rb") as f:
-                f.seek(self.cache_index[key])  # go to index in cache_file
-                result = self.pkl.load(f)
-
-        else:
-            # Call the function and update the cache
-            result = self.func(*args, **kwargs)
-
-            with open(self.cache_file, "ab") as f:
-                f.seek(0, 2)  # go to the end of the pickle file
-                pos = f.tell()  # get position of the end
-
-                # dump result to the end of the pickle
-                self.pkl.dump(result, f, protocol=self.pkl.HIGHEST_PROTOCOL)
-
-            self.cache_index[key] = pos
-            self._refreshed.add(key)
-
-            logger.debug("Added %s %s to cache", args, kwargs)
-
-            self.save_cache_index()  # update cache_index
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        # Write beside the target and rename: a reader never sees half a file
+        fd, tmp = tempfile.mkstemp(dir=self.cache_dir, prefix=".", suffix=".tmp")
+        try:
+            with os.fdopen(fd, "wb") as f:
+                pickle.dump(result, f, protocol=pickle.HIGHEST_PROTOCOL)
+            os.replace(tmp, path)
+        except BaseException:
+            os.unlink(tmp)
+            raise
+        self._refreshed.add(key)
+        logger.debug("Added %s %s to cache", args, kwargs)
         return result

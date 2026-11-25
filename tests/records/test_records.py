@@ -87,8 +87,8 @@ class TestCacher:
             calls["n"] += 1
             return x * x
 
-        cache_file = str(tmp_path / "cache.pkl")
-        cached = records.Cacher(square, cache_file)
+        cache_dir = str(tmp_path / "cache")
+        cached = records.Cacher(square, cache_dir)
 
         assert cached(3) == 9
         assert calls["n"] == 1
@@ -106,11 +106,11 @@ class TestCacher:
             calls["n"] += 1
             return x * x
 
-        cache_file = str(tmp_path / "cache.pkl")
-        records.Cacher(square, cache_file)(5)
+        cache_dir = str(tmp_path / "cache")
+        records.Cacher(square, cache_dir)(5)
         assert calls["n"] == 1
-        # A fresh Cacher over the same file reloads the index and reuses results.
-        assert records.Cacher(square, cache_file)(5) == 25
+        # A fresh Cacher over the same folder reuses the results.
+        assert records.Cacher(square, cache_dir)(5) == 25
         assert calls["n"] == 1
 
     def test_reload_reruns_once_and_keeps_other_entries(self, tmp_path):
@@ -120,38 +120,73 @@ class TestCacher:
             calls.append(x)
             return x * x
 
-        cache_file = str(tmp_path / "cache.pkl")
-        cached = records.Cacher(square, cache_file)
+        cache_dir = str(tmp_path / "cache")
+        cached = records.Cacher(square, cache_dir)
         cached(1)
         cached(2)
 
         # reload=True re-runs each set of args once, then serves the fresh result.
-        reloaded = records.Cacher(square, cache_file, reload=True)
+        reloaded = records.Cacher(square, cache_dir, reload=True)
         assert reloaded(1) == 1
         assert reloaded(1) == 1
         assert calls == [1, 2, 1]
 
         # Entries that were not refreshed are still readable afterwards (#26).
-        assert records.Cacher(square, cache_file)(2) == 4
+        assert records.Cacher(square, cache_dir)(2) == 4
         assert calls == [1, 2, 1]
 
     def test_reload_result_replaces_old_one(self, tmp_path):
         value = {"v": "old"}
-        cache_file = str(tmp_path / "cache.pkl")
-        records.Cacher(lambda: value["v"], cache_file)()
+        cache_dir = str(tmp_path / "cache")
+        records.Cacher(lambda: value["v"], cache_dir)()
 
         value["v"] = "new"
-        assert records.Cacher(lambda: value["v"], cache_file, reload=True)() == "new"
-        assert records.Cacher(lambda: value["v"], cache_file)() == "new"
+        assert records.Cacher(lambda: value["v"], cache_dir, reload=True)() == "new"
+        assert records.Cacher(lambda: value["v"], cache_dir)() == "new"
 
-    def test_bare_filename_uses_cwd(self, tmp_path, monkeypatch):
+    def test_bare_folder_name_uses_cwd(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        cacher = records.Cacher(lambda x: x, "cache.pkl")
-        assert cacher.index_file == ".cache.pkl.index"
+        records.Cacher(lambda x: x, "cache")(1)
+        assert len(list((tmp_path / "cache").glob("*.pkl"))) == 1
 
-    def test_requires_pkl_extension(self, tmp_path):
-        with pytest.raises(ValueError, match=".pkl"):
-            records.Cacher(lambda x: x, str(tmp_path / "cache.txt"))
+    def test_failed_call_writes_nothing(self, tmp_path):
+        def fail():
+            raise RuntimeError("boom")
+
+        with pytest.raises(RuntimeError):
+            records.Cacher(fail, tmp_path / "cache")()
+        assert not (tmp_path / "cache").exists()
+
+    def test_processes_sharing_a_folder_keep_every_result(self, tmp_path):
+        # The tasks of a Slurm array write one folder at once (#240)
+        script = tmp_path / "job.py"
+        script.write_text(
+            "import sys, time\n"
+            "from lair.records import Cacher\n"
+            "def big(tag):\n"
+            "    print('ran', end=' ')\n"
+            "    time.sleep(0.5)\n"
+            "    return [tag] * 200_000\n"
+            "result = Cacher(big, sys.argv[1])(sys.argv[2])\n"
+            "print(result[0], len(result))\n"
+        )
+        cache_dir = str(tmp_path / "cache")
+
+        def run(tags):
+            jobs = [
+                subprocess.Popen(
+                    [sys.executable, str(script), cache_dir, tag],
+                    stdout=subprocess.PIPE,
+                    text=True,
+                )
+                for tag in tags
+            ]
+            return [job.communicate()[0].strip() for job in jobs]
+
+        tags = ["A", "B", "C", "D"]
+        assert run(tags) == [f"ran {t} 200000" for t in tags]
+        assert run(tags) == [f"{t} 200000" for t in tags]  # all four were kept
+        assert not list((tmp_path / "cache").glob(".*.tmp"))
 
 
 def run_count(tmp_path, source, *args, name="f", **kwargs):
@@ -159,7 +194,7 @@ def run_count(tmp_path, source, *args, name="f", **kwargs):
     ran = []
     namespace = {"__name__": "edited_module", "ran": ran}
     exec(compile(source, "edited_module.py", "exec"), namespace)
-    cached = records.Cacher(namespace[name], str(tmp_path / "cache.pkl"))
+    cached = records.Cacher(namespace[name], str(tmp_path / "cache"))
     return cached(*args, **kwargs), len(ran)
 
 
@@ -213,7 +248,7 @@ class TestCacherKeyHoldsTheCode:
                 compile(pre.format(factor=factor) + run, "edited_module.py", "exec"),
                 namespace,
             )
-            cached = records.Cacher(namespace["f"], str(tmp_path / "cache.pkl"))
+            cached = records.Cacher(namespace["f"], str(tmp_path / "cache"))
             return cached([1, 2], preprocess=namespace["preprocess"]), len(ran)
 
         assert go(2) == ([2, 4], 1)
@@ -279,7 +314,7 @@ class TestCacherKeyHoldsTheCode:
 
             return fact
 
-        cached = records.Cacher(lambda fn: fn(4), str(tmp_path / "other.pkl"))
+        cached = records.Cacher(lambda fn: fn(4), str(tmp_path / "other"))
         assert cached(make()) == 24
         assert cached(make()) == 24
 
@@ -291,7 +326,7 @@ class TestCacherKeyHoldsTheCode:
             yield g  # `later` has no value yet
             later = 1
 
-        cached = records.Cacher(lambda fn: "ok", str(tmp_path / "cache.pkl"))
+        cached = records.Cacher(lambda fn: "ok", str(tmp_path / "cache"))
         assert cached(next(make())) == "ok"
 
     def test_tuple_and_set_constants(self, tmp_path):
@@ -315,12 +350,12 @@ class TestCacherKeyHoldsTheCode:
             "    return x in {'north', 'south', 'east', 'west', 'up', 'down'}\n"
             "print(Cacher(f, sys.argv[1])('up'))\n"
         )
-        cache_file = str(tmp_path / "cache.pkl")
+        cache_dir = str(tmp_path / "cache")
 
         def run(seed):
             env = dict(os.environ, PYTHONHASHSEED=str(seed))
             out = subprocess.run(
-                [sys.executable, str(script), cache_file],
+                [sys.executable, str(script), cache_dir],
                 capture_output=True,
                 text=True,
                 env=env,
@@ -344,7 +379,7 @@ class TestCacherCallables:
     """Callables with no plain code object are still cached."""
 
     def cached(self, tmp_path, func, *args, **kwargs):
-        return records.Cacher(func, str(tmp_path / "cache.pkl"))(*args, **kwargs)
+        return records.Cacher(func, str(tmp_path / "cache"))(*args, **kwargs)
 
     def test_lambda_builtin_and_class(self, tmp_path):
         assert self.cached(tmp_path, lambda x: x + 1, 1) == 2
@@ -358,11 +393,11 @@ class TestCacherCallables:
             calls.append(p)
             return x**p
 
-        cache_file = str(tmp_path / "cache.pkl")
+        cache_dir = str(tmp_path / "cache")
         square = functools.partial(power, p=2)
-        assert records.Cacher(square, cache_file)(3) == 9
-        assert records.Cacher(square, cache_file)(3) == 9  # also logs without __name__
-        assert records.Cacher(functools.partial(power, p=3), cache_file)(3) == 27
+        assert records.Cacher(square, cache_dir)(3) == 9
+        assert records.Cacher(square, cache_dir)(3) == 9  # also logs without __name__
+        assert records.Cacher(functools.partial(power, p=3), cache_dir)(3) == 27
         assert calls == [2, 3]
 
     def test_bound_method(self, tmp_path):
@@ -376,13 +411,13 @@ class TestCacherCallables:
                 return x * self.k
 
         scaler = Scaler(5)
-        cache_file = str(tmp_path / "cache.pkl")
-        assert records.Cacher(scaler.scale, cache_file)(2) == 10
-        assert records.Cacher(scaler.scale, cache_file)(2) == 10
+        cache_dir = str(tmp_path / "cache")
+        assert records.Cacher(scaler.scale, cache_dir)(2) == 10
+        assert records.Cacher(scaler.scale, cache_dir)(2) == 10
         assert scaler.calls == 1
 
     def test_bound_method_in_the_arguments(self, tmp_path):
-        cached = records.Cacher(lambda fn, x: fn(x), str(tmp_path / "cache.pkl"))
+        cached = records.Cacher(lambda fn, x: fn(x), str(tmp_path / "cache"))
         assert cached(Doubler().double, 4) == 8
         assert cached(Doubler().double, 4) == 8
 
@@ -397,9 +432,9 @@ class TestCacherCallables:
                 return 2 * x
 
         doubler = Doubler()
-        cache_file = str(tmp_path / "cache.pkl")
-        assert records.Cacher(doubler, cache_file)(4) == 8
-        assert records.Cacher(doubler, cache_file)(4) == 8
+        cache_dir = str(tmp_path / "cache")
+        assert records.Cacher(doubler, cache_dir)(4) == 8
+        assert records.Cacher(doubler, cache_dir)(4) == 8
         assert doubler.calls == 1
 
     def test_function_with_unpicklable_closure_and_default(self, tmp_path):
@@ -418,9 +453,9 @@ class TestCacherCallables:
             calls["n"] += 1
             return x
 
-        cache_file = str(tmp_path / "cache.pkl")
-        assert records.Cacher(f, cache_file)(1) == 1
-        assert records.Cacher(f, cache_file)(1) == 1
+        cache_dir = str(tmp_path / "cache")
+        assert records.Cacher(f, cache_dir)(1) == 1
+        assert records.Cacher(f, cache_dir)(1) == 1
         assert calls["n"] == 1
 
     def test_closure_number_is_part_of_the_key(self, tmp_path):
@@ -430,9 +465,9 @@ class TestCacherCallables:
 
             return f
 
-        cache_file = str(tmp_path / "cache.pkl")
-        assert records.Cacher(make(2), cache_file)(3) == 6
-        assert records.Cacher(make(5), cache_file)(3) == 15
+        cache_dir = str(tmp_path / "cache")
+        assert records.Cacher(make(2), cache_dir)(3) == 6
+        assert records.Cacher(make(5), cache_dir)(3) == 15
 
 
 def test_read_kml(tmp_path):

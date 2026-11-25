@@ -53,9 +53,11 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> pd.Series:
 
     Notes
     -----
-    ``data`` needs temperature in degrees Celsius, pressure in hPa, a ``height``
-    dimension, and the ``elevation`` and ``interpolation_interval`` attributes
-    that ``get_soundings`` sets.
+    ``data`` needs temperature in degrees Celsius, pressure in hPa, ``time``
+    and ``height`` dimensions, and the ``interpolation_interval`` attribute
+    that ``get_soundings`` sets. Each sounding is integrated from its own
+    lowest level with data up to ``integration_height``, so soundings whose
+    ground differs (levels below it are NaN) each start at their ground.
 
     Examples
     --------
@@ -88,10 +90,10 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> pd.Series:
     2024-01-15 12:00:00    1.5
     Name: VHD_MJ_m2, dtype: float64
     """
-    h0 = data.elevation
-
-    # Subset to the heights between the surface and the integration height
-    data = data.sel(height=slice(h0, integration_height))
+    # Each sounding starts at its own ground: get_soundings puts them all on
+    # one grid from the lowest ground, so a higher station's lowest levels are
+    # NaN, and the dataset's ``elevation`` is only one sounding's (#242)
+    data = data.sel(height=slice(None, integration_height))
 
     # lair.meteorology works in plain SI: convert the sounding units here
     T = data.temperature + 273.15  # degC -> K
@@ -109,27 +111,29 @@ def valleyheatdeficit(data: xr.Dataset, integration_height=2200) -> pd.Series:
         deltaz=data.interpolation_interval,  # m
     )  # K
     # Layer means sit at the layer midpoints. Average adjacent layers to get Tv
-    # at the levels (linear in height), and use the end layers' means at the
-    # surface and top levels so they aren't lost
-    Tv = np.concatenate(
-        [
-            Tv_layer[:, :1],
-            (Tv_layer[:, :-1] + Tv_layer[:, 1:]) / 2,
-            Tv_layer[:, -1:],
-        ],
-        axis=1,
+    # at the levels (linear in height), and use the end layers' means at a
+    # sounding's lowest and highest levels, where one neighbor has no data
+    below, above = Tv_layer[:, :-1], Tv_layer[:, 1:]
+    inner = np.where(
+        np.isnan(below), above, np.where(np.isnan(above), below, (below + above) / 2)
     )
+    Tv = np.concatenate([Tv_layer[:, :1], inner, Tv_layer[:, -1:]], axis=1)
     Tv = xr.DataArray(Tv, coords=T.coords, dims=T.dims)
 
     # Calculate the density using the ideal gas law
     rho = ideal_gas_law(solve_for="rho", p=p, T=Tv, R=Rd)  # kg/m3
 
-    # Calculate the heat deficit by integrating using the trapezoid method
-    integrand = (cp * rho * (theta_h - theta)).dropna("height", how="all")
-    heat_deficit = integrand.integrate("height")  # J/m2
-
-    heat_deficit = heat_deficit * 1e-6  # J/m2 -> MJ/m2
-    # A sounding with no valid levels integrates to 0; report it as missing
+    # Integrate each sounding with the trapezoid method over its own levels:
+    # a layer with a missing end (below that sounding's ground) adds nothing
+    integrand = (cp * rho * (theta_h - theta)).transpose("time", "height")
+    f = integrand.values
+    layers = (f[:, 1:] + f[:, :-1]) / 2 * np.diff(integrand["height"].values)
+    heat_deficit = xr.DataArray(
+        np.nansum(layers, axis=1) * 1e-6,  # J/m2 -> MJ/m2
+        coords={"time": integrand["time"]},
+        dims="time",
+    )
+    # A sounding with no valid levels sums to 0; report it as missing
     heat_deficit = heat_deficit.where(integrand.notnull().any("height"))
 
     vhd = heat_deficit.to_series()
