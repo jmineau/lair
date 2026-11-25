@@ -618,6 +618,7 @@ class _FakeFTP:
         self.quit_called = False
         self.closed = False
         self.retrieved = []
+        self.commands = []
         _FakeFTP.instances.append(self)
 
     def login(self, user, passwd):
@@ -638,6 +639,17 @@ class _FakeFTP:
             for p in self.tree
             if p != "/" and p.rsplit("/", 1)[0] == here
         )
+
+    def voidcmd(self, cmd):
+        self.commands.append(cmd)
+        return "200 ok"
+
+    def size(self, path):
+        import ftplib
+
+        if not isinstance(self.tree.get(path), bytes):
+            raise ftplib.error_perm(f"550 {path}: not a file")
+        return len(self.tree[path])
 
     def retrbinary(self, cmd, callback):
         verb, path = cmd.split(" ", 1)
@@ -766,6 +778,81 @@ class TestFtpDownload:
             records.ftp_download("h", "/pub/data", str(tmp_path))
         assert self._local(tmp_path) == {}
         assert _FakeFTP.instances[-1].closed  # not left open for the GC to warn about
+
+    def test_a_failed_transfer_leaves_no_file_under_the_final_name(
+        self, tmp_path, monkeypatch
+    ):
+        import ftplib
+
+        class _Dies(_FakeFTP):
+            def retrbinary(self, cmd, callback):
+                callback(b"par")  # part of the file arrives, then the link drops
+                raise TimeoutError("timed out")
+
+        _FakeFTP.instances = []
+        monkeypatch.setattr(ftplib, "FTP", lambda host: _Dies(self.TREE, host))
+        with pytest.raises(TimeoutError):
+            records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert self._local(tmp_path) == {}  # neither readme.txt nor readme.txt.part
+
+    def test_a_second_run_fetches_only_what_is_missing(self, tmp_path, ftp):
+        records.ftp_download("h", "/pub/data/2015", str(tmp_path))
+        (tmp_path / "2015" / "b_2015-07.nc").unlink()
+        records.ftp_download("h", "/pub/data/2015", str(tmp_path))
+        assert ftp[1].retrieved == ["/pub/data/2015/b_2015-07.nc"]
+        assert set(self._local(tmp_path)) == {
+            "2015/a_2015-06.nc",
+            "2015/b_2015-07.nc",
+        }
+
+    def test_a_file_of_the_wrong_size_is_fetched_again(self, tmp_path, ftp):
+        (tmp_path / "readme.txt").write_bytes(b"truncated by an old run")
+        records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert ftp[0].retrieved == ["/pub/data/readme.txt"]
+        assert self._local(tmp_path) == {"readme.txt": b"r"}
+
+    def test_a_file_of_the_servers_size_is_kept_unless_overwrite(self, tmp_path, ftp):
+        (tmp_path / "readme.txt").write_bytes(b"x")  # same size as the server's b"r"
+        records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert ftp[0].retrieved == []
+        assert self._local(tmp_path) == {"readme.txt": b"x"}
+
+        records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path), overwrite=True)
+        assert ftp[1].retrieved == ["/pub/data/readme.txt"]
+        assert self._local(tmp_path) == {"readme.txt": b"r"}  # no .part left
+
+    def test_binary_mode_is_set_before_size(self, tmp_path, ftp):
+        records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert ftp[0].commands == ["TYPE I"]
+
+    def test_a_transfer_cut_short_is_not_renamed_in(self, tmp_path, monkeypatch):
+        import ftplib
+
+        class _Short(_FakeFTP):
+            def retrbinary(self, cmd, callback):
+                callback(b"")  # the link closes cleanly, but nothing arrived
+
+        _FakeFTP.instances = []
+        monkeypatch.setattr(ftplib, "FTP", lambda host: _Short(self.TREE, host))
+        with pytest.raises(OSError, match="Incomplete transfer"):
+            records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert self._local(tmp_path) == {}  # neither readme.txt nor readme.txt.part
+
+    def test_a_server_without_size_fetches_every_file(self, tmp_path, monkeypatch):
+        import ftplib
+
+        class _NoSize(_FakeFTP):
+            def size(self, path):
+                raise ftplib.error_perm("502 SIZE not implemented")
+
+        _FakeFTP.instances = []
+        monkeypatch.setattr(ftplib, "FTP", lambda host: _NoSize(self.TREE, host))
+        for _ in range(2):
+            records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert [c.retrieved for c in _FakeFTP.instances] == [
+            ["/pub/data/readme.txt"]
+        ] * 2
+        assert self._local(tmp_path) == {"readme.txt": b"r"}
 
     def test_the_connection_is_closed(self, tmp_path, ftp):
         records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))

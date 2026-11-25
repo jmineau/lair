@@ -293,6 +293,7 @@ def ftp_download(
     password: str = "",
     prefix: str | None = None,
     pattern: str | None = None,
+    overwrite: bool = False,
 ):
     """
     Recursively download files from an FTP server.
@@ -320,6 +321,9 @@ def ftp_download(
         ``?``, ``[``) it is a glob against the full remote path (e.g.
         ``'*2015-06*.nc'``); otherwise any path containing it matches.
         Defaults to None (all files).
+    overwrite : bool, optional
+        Fetch every file again, even one already in ``download_dir`` with the
+        size the server reports. Defaults to False.
 
     Returns
     -------
@@ -331,6 +335,17 @@ def ftp_download(
     wget_download : The same for URLs.
     lair.noaa.CarbonTracker.download : Calls it with NOAA's CarbonTracker folders.
     lair.noaa.GMLData.download : Calls it with NOAA GML's data folders.
+
+    Notes
+    -----
+    Each file is written to ``<name>.part`` and renamed once it is whole, so a
+    transfer that fails leaves nothing under the file's name. A file already in
+    ``download_dir`` with the size the server reports is skipped, so running the
+    download again fetches only what is missing. A server that does not report
+    sizes (no ``SIZE`` command) has every file fetched again. Only the size is
+    compared: a file replaced on the server by one of the same size is not
+    detected unless ``overwrite=True``, which skips the check and fetches every
+    file.
 
     Examples
     --------
@@ -392,12 +407,44 @@ def ftp_download(
                     local = os.path.join(download_dir, common)
                     os.makedirs(os.path.dirname(local), exist_ok=True)
 
-                    # Download the file
-                    with open(local, "wb") as local_file:
-                        logger.info(
-                            "Downloading %s to %s", path, os.path.dirname(local)
-                        )
-                        ftp.retrbinary(f"RETR {path}", local_file.write)
+                    # A file already there with the size the server reports is whole:
+                    # downloads are renamed into place only when complete
+                    # ftplib's size() runs in ASCII mode on a session's first file, which
+                    # some servers refuse with 550: switch to binary first
+                    ftp.voidcmd("TYPE I")
+                    try:
+                        remote_size = ftp.size(path)
+                    except ftplib.error_perm:  # the server has no SIZE
+                        remote_size = None
+                    if (
+                        not overwrite
+                        and remote_size is not None
+                        and os.path.isfile(local)
+                        and os.path.getsize(local) == remote_size
+                    ):
+                        logger.info("Skipping %s - already downloaded", path)
+                        return "f"
+
+                    # Write beside the final name and rename when complete, so a
+                    # failed transfer never leaves a truncated file under it
+                    partial = local + ".part"
+                    logger.info("Downloading %s to %s", path, os.path.dirname(local))
+                    try:
+                        with open(partial, "wb") as local_file:
+                            ftp.retrbinary(f"RETR {path}", local_file.write)
+                        if (
+                            remote_size is not None
+                            and os.path.getsize(partial) != remote_size
+                        ):
+                            raise OSError(
+                                f"Incomplete transfer of {path}: got "
+                                f"{os.path.getsize(partial)} of {remote_size} bytes"
+                            )
+                        os.replace(partial, local)
+                    except BaseException:
+                        if os.path.exists(partial):
+                            os.remove(partial)
+                        raise
 
                     return "f"
 
