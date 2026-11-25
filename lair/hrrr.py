@@ -57,7 +57,9 @@ class ZarrId:
     run_hour : dt.datetime
         run hour of the model. A naive time follows :ref:`the UTC rule
         <utc-rule>`; a tz-aware time is converted to UTC when the S3 key is
-        built.
+        built. It must fall on a UTC hour: the archive holds one run per hour,
+        so 13:45 raises a ``ValueError`` (round it first if the nearest hour
+        is what you want).
     level_type : 'sfc' | 'prs'
         vertical level
     var_level : str
@@ -100,6 +102,18 @@ class ZarrId:
     var_level: str
     var_name: str
     model_type: Literal["anl", "fcst"]
+
+    def __post_init__(self):
+        # The S3 key keeps only the hour, so 13:45 would read the 13z run (#251)
+        t = pd.Timestamp(self.run_hour)
+        if t.tz is not None:
+            t = t.tz_convert("UTC")
+        if t != t.floor("h"):
+            raise ValueError(
+                f"run_hour {self.run_hour} is not on the hour: HRRR has one run "
+                "per hour; round the time first (for example "
+                "pd.Timestamp(t).round('h'))"
+            )
 
     def format_chunk_id(self, chunk_id):
         """
@@ -211,7 +225,8 @@ class Winds:
         Hours of the analyses to download. A naive time follows :ref:`the UTC
         rule <utc-rule>`. A tz-aware time is converted to UTC to choose the
         analysis, so 05:00 in ``America/Denver`` in January reads the 12 UTC
-        analysis.
+        analysis. Each must fall on a UTC hour; a time such as 13:45 raises a
+        ``ValueError`` before any wind is downloaded.
 
     Attributes
     ----------
