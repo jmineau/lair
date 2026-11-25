@@ -618,6 +618,7 @@ class _FakeFTP:
         self.quit_called = False
         self.closed = False
         self.retrieved = []
+        self.commands = []
         _FakeFTP.instances.append(self)
 
     def login(self, user, passwd):
@@ -638,6 +639,10 @@ class _FakeFTP:
             for p in self.tree
             if p != "/" and p.rsplit("/", 1)[0] == here
         )
+
+    def voidcmd(self, cmd):
+        self.commands.append(cmd)
+        return "200 ok"
 
     def size(self, path):
         import ftplib
@@ -805,6 +810,33 @@ class TestFtpDownload:
         records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
         assert ftp[0].retrieved == ["/pub/data/readme.txt"]
         assert self._local(tmp_path) == {"readme.txt": b"r"}
+
+    def test_a_file_of_the_servers_size_is_kept_unless_overwrite(self, tmp_path, ftp):
+        (tmp_path / "readme.txt").write_bytes(b"x")  # same size as the server's b"r"
+        records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert ftp[0].retrieved == []
+        assert self._local(tmp_path) == {"readme.txt": b"x"}
+
+        records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path), overwrite=True)
+        assert ftp[1].retrieved == ["/pub/data/readme.txt"]
+        assert self._local(tmp_path) == {"readme.txt": b"r"}  # no .part left
+
+    def test_binary_mode_is_set_before_size(self, tmp_path, ftp):
+        records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert ftp[0].commands == ["TYPE I"]
+
+    def test_a_transfer_cut_short_is_not_renamed_in(self, tmp_path, monkeypatch):
+        import ftplib
+
+        class _Short(_FakeFTP):
+            def retrbinary(self, cmd, callback):
+                callback(b"")  # the link closes cleanly, but nothing arrived
+
+        _FakeFTP.instances = []
+        monkeypatch.setattr(ftplib, "FTP", lambda host: _Short(self.TREE, host))
+        with pytest.raises(OSError, match="Incomplete transfer"):
+            records.ftp_download("h", "/pub/data/readme.txt", str(tmp_path))
+        assert self._local(tmp_path) == {}  # neither readme.txt nor readme.txt.part
 
     def test_a_server_without_size_fetches_every_file(self, tmp_path, monkeypatch):
         import ftplib
