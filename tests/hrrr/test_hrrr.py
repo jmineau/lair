@@ -495,3 +495,43 @@ def test_winds_keeps_time_order_on_threads(monkeypatch, max_workers):
     assert list(winds.data.index) == times
     np.testing.assert_allclose(winds.data["u"], np.arange(12), atol=1e-6)
     np.testing.assert_allclose(winds.data["v"], -np.arange(12), atol=1e-6)
+
+
+def test_winds_connection_pool_holds_one_connection_per_thread(monkeypatch):
+    """Botocore's pool of 10 would discard connections with 16 threads (#258)."""
+    import xarray as xr
+
+    clients = []
+
+    def fake_client(**kwargs):
+        clients.append(kwargs)
+        return _FakeS3Client({})
+
+    monkeypatch.setattr(hrrr.s3fs, "S3FileSystem", lambda anon: "fs")
+    monkeypatch.setattr(hrrr.s3fs, "S3Map", lambda url, s3: url)
+    monkeypatch.setattr(
+        xr, "open_zarr", lambda store: _chunk_index(-97.5, 38.5), raising=True
+    )
+    monkeypatch.setattr(hrrr.boto3, "client", fake_client)
+
+    # The run time is off the hour, so Winds stops after making its client.
+    times = [dt.datetime(2024, 1, 15, 13, 45)]
+    for max_workers in (16, 3):
+        with pytest.raises(ValueError, match="13:45"):
+            hrrr.Winds(lat=38.5, lon=-97.5, times=times, max_workers=max_workers)
+
+    assert [c["config"].max_pool_connections for c in clients] == [16, 3]
+
+
+@pytest.mark.parametrize("max_workers", [0, -2])
+def test_winds_rejects_fewer_than_one_worker(monkeypatch, max_workers):
+    s3fs_calls = []
+    monkeypatch.setattr(hrrr.s3fs, "S3FileSystem", lambda anon: s3fs_calls.append(anon))
+    with pytest.raises(ValueError, match="max_workers"):
+        hrrr.Winds(
+            lat=38.5,
+            lon=-97.5,
+            times=[dt.datetime(2024, 1, 15, 13)],
+            max_workers=max_workers,
+        )
+    assert s3fs_calls == []  # nothing was opened

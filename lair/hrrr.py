@@ -229,8 +229,9 @@ class Winds:
         analysis. Each must fall on a UTC hour; a time such as 13:45 raises a
         ``ValueError`` before any wind is downloaded.
     max_workers : int, default 16
-        Number of S3 objects downloaded at once, on threads. ``1`` downloads
-        them one at a time.
+        Number of S3 objects downloaded at once, on threads (also the size of
+        the client's connection pool). ``1`` downloads them one at a time; a
+        value below 1 raises a ``ValueError``.
 
     Attributes
     ----------
@@ -269,14 +270,20 @@ class Winds:
     max_workers: int = 16
 
     def __post_init__(self):
+        if self.max_workers < 1:
+            raise ValueError(f"max_workers must be at least 1, got {self.max_workers}")
+
         # Connect to AWS servers
         fs = s3fs.S3FileSystem(anon=True)
         # One client for every request: a boto3 client is thread-safe (a
-        # resource is not), and making one per request is slow.
+        # resource is not), and making one per request is slow. Its pool holds
+        # one connection per thread (botocore's default is 10).
         s3 = boto3.client(
             service_name="s3",
             region_name="us-west-1",
-            config=Config(signature_version=UNSIGNED),
+            config=Config(
+                signature_version=UNSIGNED, max_pool_connections=self.max_workers
+            ),
         )
 
         # Chunk Index
