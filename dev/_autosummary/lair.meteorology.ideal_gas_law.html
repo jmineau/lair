@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=e85d47cf"></script>
+    <script src="../_static/documentation_options.js?v=f5ce713f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev10+gc58789067" />
+  <meta name="docsearch:version" content="2026.12.13.dev14+gfe59e1d31" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -818,7 +818,7 @@
 <h1>lair.meteorology.ideal_gas_law<a class="headerlink" href="#lair-meteorology-ideal-gas-law" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="lair.meteorology.ideal_gas_law">
-<span class="sig-prename descclassname"><span class="pre">lair.meteorology.</span></span><span class="sig-name descname"><span class="pre">ideal_gas_law</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solve_for</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/meteorology.html#ideal_gas_law"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.meteorology.ideal_gas_law" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lair.meteorology.</span></span><span class="sig-name descname"><span class="pre">ideal_gas_law</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solve_for</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">287.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lair/meteorology.html#ideal_gas_law"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lair.meteorology.ideal_gas_law" title="Link to this definition">#</a></dt>
 <dd><p>Solve the ideal gas law for one variable.</p>
 <p>The solver uses one of these forms of the law, where R* is the universal
 gas constant and kb Boltzmann’s constant:</p>
@@ -847,7 +847,8 @@ converted to SI first; see the module docstring).</p>
 <li><p><strong>N</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Number of molecules.</p></li>
 <li><p><strong>rho</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Density (kg/m^3).</p></li>
 <li><p><strong>alpha</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Specific volume (m^3/kg).</p></li>
-<li><p><strong>R</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Specific gas constant (J/kg/K): 287.05 for dry air.</p></li>
+<li><p><strong>R</strong> (<a class="reference internal" href="lair.meteorology.Numeric.html#lair.meteorology.Numeric" title="lair.meteorology.Numeric"><em>Numeric</em></a><em>, </em><em>optional</em>) – Specific gas constant (J/kg/K). Default is dry air, <code class="docutils literal notranslate"><span class="pre">Rd</span></code>
+(287.05 J/kg/K).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -871,6 +872,11 @@ converted to SI first; see the module docstring).</p>
 <p>The density of dry air at sea level in the standard atmosphere:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lair.meteorology</span><span class="w"> </span><span class="kn">import</span> <span class="n">ideal_gas_law</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ideal_gas_law</span><span class="p">(</span><span class="s2">"rho"</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">101325.0</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mf">288.15</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="mf">287.05</span><span class="p">)),</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">1.225</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">R</span></code> is dry air’s when it is not given:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ideal_gas_law</span><span class="p">(</span><span class="s2">"rho"</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">101325.0</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mf">288.15</span><span class="p">)),</span> <span class="mi">3</span><span class="p">)</span>
 <span class="go">1.225</span>
 </pre></div>
 </div>
