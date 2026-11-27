@@ -78,6 +78,17 @@ class TestDecimalDate:
         )
 
 
+class TestNaiveUTC:
+    def test_aware_scalar_and_index_become_naive_utc(self):
+        t = pd.Timestamp("2024-06-01 12:00", tz="America/Denver")
+        assert clock._naive_utc(t) == pd.Timestamp("2024-06-01 18:00")
+        assert clock._naive_utc(pd.DatetimeIndex([t])).tz is None
+
+    def test_naive_passes_through(self):
+        t = pd.Timestamp("2024-06-01 12:00")
+        assert clock._naive_utc(t) is t
+
+
 class TestTimer:
     def test_context_manager_returns_timer(self):
         with clock.Timer(logger=None) as t:

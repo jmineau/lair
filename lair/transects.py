@@ -33,6 +33,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from lair.clock import _naive_utc
+
 __all__ = [
     "enhancement",
     "robust_z",
@@ -374,9 +376,7 @@ def profile(
     >>> bool(np.array_equal(freq, freq_local, equal_nan=True))
     True
     """
-    if times.tz is not None:
-        times = times.tz_convert("UTC").tz_localize(None)
-    t = times + pd.Timedelta(hours=tz_offset_hours)
+    t = _naive_utc(times) + pd.Timedelta(hours=tz_offset_hours)
     key = {"hour": t.hour, "weekday": t.day_of_week, "month": t.month}[by]
     bins = {"hour": np.arange(24), "weekday": np.arange(7), "month": np.arange(1, 13)}[
         by
