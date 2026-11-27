@@ -228,9 +228,10 @@ class TestTokenNotInErrors:
             if error == "http":
                 r = requests.models.Response()
                 r.status_code, r.reason, r.url = 400, "Bad Request", prepared.url
+                r.request = prepared
                 return r
             raise requests.ConnectionError(
-                f"Max retries exceeded with url: {prepared.url}"
+                f"Max retries exceeded with url: {prepared.url}", request=prepared
             )
 
         monkeypatch.setattr(requests, "get", fake_get)
@@ -248,9 +249,16 @@ class TestTokenNotInErrors:
             synoptic.timeseries(
                 "2024-01-15", "2024-01-16", token=self.SECRET, stid="WBB"
             )
-        text = "".join(traceback.format_exception(info.value))
+        err = info.value
+        text = "".join(traceback.format_exception(err))
+        # Not hidden but gone: no chained error, and no URL the error carries
+        urls = [err.request.url] + ([] if err.response is None else [err.response.url])
+        assert err.__cause__ is None
+        assert err.__context__ is None
         for form in (self.SECRET, "MY-SECRET%2FTOKEN%2B1", "MY-SECRET/TOKEN+1"):
-            assert form not in str(info.value)
+            assert form not in str(err)
             assert form not in text
+            for url in urls:
+                assert form not in url
         assert "token=***" in str(info.value)
         assert "stid=WBB" in str(info.value)
