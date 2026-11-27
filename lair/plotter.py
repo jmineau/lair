@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
-from matplotlib.legend_handler import HandlerLineCollection
 from matplotlib.projections.polar import PolarAxes
 
 #: Season colors (ColorBrewer Dark2) used for all season-keyed plots, such as
@@ -782,64 +781,3 @@ def windvectorPlot(
     cast(Figure, ax.get_figure()).autofmt_xdate()
 
     return ax
-
-
-class HandlerDashedLines(HandlerLineCollection):
-    """
-    Custom Handler for LineCollection instances.
-
-    https://stackoverflow.com/questions/31544489/two-line-styles-in-legend
-
-    There's a potentially better version in the above link
-
-    This needs a new names and better documentation.
-
-    See Also
-    --------
-    matplotlib.legend_handler.HandlerLineCollection : What it extends.
-    """
-
-    def create_artists(
-        self, legend, orig_handle, xdescent, ydescent, width, height, fontsize, trans
-    ):
-        """Return the line artists that draw *orig_handle* in the legend."""
-        import numpy as np
-        from matplotlib.lines import Line2D
-
-        # figure out how many lines there are
-        numlines = len(orig_handle.get_segments())
-        xdata, xdata_marker = self.get_xdata(
-            legend, xdescent, ydescent, width, height, fontsize
-        )
-        leglines = []
-        # divide the vertical space where the lines will go
-        # into equal parts based on the number of lines
-        ydata = np.full_like(xdata, height / (numlines + 1))
-        # for each line, create the line at the proper location
-        # and set the dash pattern
-        for i in range(numlines):
-            legline = Line2D(xdata, ydata * (numlines - i) - ydescent)
-            self.update_prop(legline, orig_handle, legend)
-            # set color, dash pattern, and linewidth to that
-            # of the lines in linecollection
-            try:
-                color = orig_handle.get_colors()[i]
-            except IndexError:
-                color = orig_handle.get_colors()[0]
-            # The unscaled dash pattern, as matplotlib's own HandlerLineCollection
-            # uses: get_dashes() is already scaled by the collection's linewidth,
-            # and the Line2D scales it by its linewidth again
-            try:
-                dashes = orig_handle._us_linestyles[i]
-            except IndexError:
-                dashes = orig_handle._us_linestyles[0]
-            try:
-                lw = orig_handle.get_linewidths()[i]
-            except IndexError:
-                lw = orig_handle.get_linewidths()[0]
-            legline.set_linestyle(dashes)
-            legline.set_color(color)
-            legline.set_transform(trans)
-            legline.set_linewidth(lw)
-            leglines.append(legline)
-        return leglines

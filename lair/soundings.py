@@ -269,21 +269,6 @@ class Sounding:
 
         return ds
 
-    def plot(self):
-        """
-        Plot the sounding (not implemented yet).
-
-        Raises
-        ------
-        NotImplementedError
-            Always.
-
-        See Also
-        --------
-        Sounding.interpolate : The profiles to plot with xarray, for now.
-        """
-        raise NotImplementedError
-
 
 def merge(soundings: list) -> pd.DataFrame:
     """

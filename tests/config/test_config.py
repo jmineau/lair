@@ -10,10 +10,6 @@ import pytest
 from lair import config
 
 
-def test_lair_dir_is_a_string():
-    assert isinstance(config.LAIR_DIR, str)
-
-
 def test_no_builtin_chpc_paths():
     # lair resolves data locations from arguments / LAIR_* env vars only. That
     # includes the cache folder: a CACHE_DIR constant would be read at import
