@@ -52,12 +52,33 @@ def _time(t) -> str:
     return ts.strftime("%Y%m%d%H%M")
 
 
+def _redact(text: str, secret: str) -> str:
+    """Replace ``secret`` in ``text``, as given and as it appears in a URL, by ``***``."""
+    from urllib.parse import quote, quote_plus
+
+    for form in {secret, quote(secret, safe=""), quote_plus(secret)}:
+        text = text.replace(form, "***")
+    return text
+
+
 def _get(endpoint: str, params: dict, token: str | None, timeout: float) -> dict:
     requests = import_optional_dependency("requests")
     params = {k: v for k, v in params.items() if v is not None}
-    params["token"] = _token(token)
-    response = requests.get(f"{BASE_URL}/{endpoint}", params=params, timeout=timeout)
-    response.raise_for_status()
+    params["token"] = secret = _token(token)
+    try:
+        response = requests.get(
+            f"{BASE_URL}/{endpoint}", params=params, timeout=timeout
+        )
+        response.raise_for_status()
+    except requests.RequestException as err:
+        # The token is a query parameter, so the message of an HTTP or connection
+        # error holds it in the URL. Raise the same kind of error without it, and
+        # without chaining the original, so tracebacks and logs don't show it.
+        raise type(err)(
+            _redact(str(err), secret),
+            request=getattr(err, "request", None),
+            response=getattr(err, "response", None),
+        ) from None
     payload = response.json()
     summary = payload.get("SUMMARY", {})
     if summary.get("RESPONSE_CODE") != 1:

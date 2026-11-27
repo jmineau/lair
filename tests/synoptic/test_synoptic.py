@@ -213,3 +213,44 @@ class TestHourlyMean:
         h = synoptic.hourly_mean(df)
         assert len(h) == 0
         assert list(h.columns) == ["stid", "Time"]
+
+
+class TestTokenNotInErrors:
+    """A failed request must not write the API token into errors or logs (#245)."""
+
+    SECRET = "MY-SECRET/TOKEN+1"
+
+    def _raise(self, monkeypatch, error):
+        import requests
+
+        def fake_get(url, params=None, timeout=None):
+            prepared = requests.Request("GET", url, params=params).prepare()
+            if error == "http":
+                r = requests.models.Response()
+                r.status_code, r.reason, r.url = 400, "Bad Request", prepared.url
+                return r
+            raise requests.ConnectionError(
+                f"Max retries exceeded with url: {prepared.url}"
+            )
+
+        monkeypatch.setattr(requests, "get", fake_get)
+
+    @pytest.mark.parametrize(
+        "error, kind", [("http", "HTTPError"), ("connection", "ConnectionError")]
+    )
+    def test_token_is_redacted(self, monkeypatch, error, kind):
+        import traceback
+
+        import requests
+
+        self._raise(monkeypatch, error)
+        with pytest.raises(getattr(requests, kind)) as info:
+            synoptic.timeseries(
+                "2024-01-15", "2024-01-16", token=self.SECRET, stid="WBB"
+            )
+        text = "".join(traceback.format_exception(info.value))
+        for form in (self.SECRET, "MY-SECRET%2FTOKEN%2B1", "MY-SECRET/TOKEN+1"):
+            assert form not in str(info.value)
+            assert form not in text
+        assert "token=***" in str(info.value)
+        assert "stid=WBB" in str(info.value)
