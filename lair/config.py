@@ -113,7 +113,3 @@ def get_cache_dir() -> Path:
     if path:
         return Path(path)
     return Path(os.path.expanduser("~"), ".cache", "lair")
-
-
-# LAIR
-LAIR_DIR = os.path.dirname(__file__)

@@ -223,6 +223,5 @@ give the period you need.
 Next
 ----
 
-:mod:`lair.soundings` lists the rest. ``Sounding.plot()`` is not written yet:
-it raises ``NotImplementedError``. :mod:`lair.pcaps` computes the valley heat
+:mod:`lair.soundings` lists the rest. :mod:`lair.pcaps` computes the valley heat
 deficit from the output of ``get_soundings``.

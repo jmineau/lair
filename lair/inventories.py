@@ -2877,9 +2877,6 @@ class Vulcan(Inventory):
         ds = ds.drop_vars(["time_bnds", "crs"])
         return ds
 
-    def _open(self, files: list[Path]) -> Dataset:
-        return _open_mfdataset(files, preprocess=self._preprocess)
-
     def _process(self, data: Dataset) -> Dataset:
         # Vulcan marks cells without emissions as NaN (most cells of the point
         # source sectors). Treat them as zero: otherwise every regridded cell
