@@ -2314,7 +2314,6 @@ class EPAv2(EPA):
         return monthly.assign(scaled.data_vars)
 
     def _scale_by_month(self, data: Dataset) -> Dataset:
-        self.time_step = "monthly"
         sf = self.get_monthly_scale_factors()
 
         # Round grid coordinates due to floating point errors
