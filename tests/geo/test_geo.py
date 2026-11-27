@@ -685,6 +685,68 @@ class TestClip:
         clipped = geo.clip(edge_grid(), geom=poly, crs="EPSG:32612")
         assert clipped.sizes == {"lat": 2, "lon": 2}
 
+    @pytest.fixture
+    def lcc_grid(self):
+        """A 1 km Lambert conformal grid over Utah (issue #248)."""
+        import xarray as xr
+
+        lcc = (
+            "+proj=lcc +lat_1=33 +lat_2=45 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 "
+            "+ellps=WGS84 +units=m +no_defs"
+        )
+        x = np.arange(-1_500_000, -900_000, 1000.0)
+        y = np.arange(-450_000, 350_000, 1000.0)
+        da = xr.DataArray(
+            np.ones((y.size, x.size)), coords={"y": y, "x": x}, dims=("y", "x")
+        )
+        return geo.write_rio_crs(da.rio.set_spatial_dims(x_dim="x", y_dim="y"), lcc)
+
+    def test_geom_edges_follow_the_curve_in_a_projected_grid(self, lcc_grid):
+        """A lon/lat box keeps the cells whose centers are in it, not a chord."""
+        import pyproj
+        import shapely
+
+        west, south, east, north = -114.05, 37.0, -109.05, 42.0
+        clipped = geo.clip(
+            lcc_grid, geom=shapely.box(west, south, east, north), crs="EPSG:4326"
+        ).reindex_like(lcc_grid)
+
+        # The truth: each cell center in lon/lat, tested against the box
+        to_lonlat = pyproj.Transformer.from_crs(
+            lcc_grid.rio.crs, "EPSG:4326", always_xy=True
+        )
+        xx, yy = np.meshgrid(lcc_grid["x"].values, lcc_grid["y"].values)
+        lon, lat = to_lonlat.transform(xx, yy)
+        inside = (lon >= west) & (lon <= east) & (lat >= south) & (lat <= north)
+
+        # On main, 1672 cells (of 236186) differ
+        assert int((clipped.notnull().values != inside).sum()) == 0
+
+    def test_geom_in_the_data_crs_is_not_densified(self, lcc_grid):
+        """Edges are straight in the data's own CRS: the polygon is used as given."""
+        import shapely
+
+        box = shapely.box(-1_200_000, -100_000, -1_100_000, 100_000)
+        clipped = geo.clip(lcc_grid, geom=box, crs=lcc_grid.rio.crs)
+        assert clipped.sizes == {"y": 201, "x": 101}
+        assert clipped.notnull().all()
+
+    def test_geom_on_a_one_cell_grid_in_another_crs(self):
+        """A grid one cell wide both ways has no cell size to densify to."""
+        import shapely
+        import xarray as xr
+
+        da = xr.DataArray(
+            np.ones((1, 1)),
+            coords={"lat": [40.75], "lon": [-112.05]},
+            dims=("lat", "lon"),
+        )
+        da = geo.write_rio_crs(da.rio.set_spatial_dims(x_dim="lon", y_dim="lat"), 4326)
+        # UTM 12N coordinates of about (-112.05, 40.75)
+        box = shapely.box(400_000, 4_500_000, 430_000, 4_530_000)
+        clipped = geo.clip(da, geom=box, crs="EPSG:32612")
+        assert clipped.sizes == {"lat": 1, "lon": 1}
+
     def test_requires_exactly_one_selector(self, latlon_grid):
         with pytest.raises(ValueError, match="Exactly one"):
             geo.clip(
