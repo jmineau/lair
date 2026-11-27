@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from lair.clock import _naive_utc
 from lair.constants import Rd as _Rd
 from lair.constants import cp as _cp
 from lair.meteorology import hypsometric, ideal_gas_law, poisson
@@ -247,11 +248,6 @@ def determine_pcap_events(
     pcap_events.index.name = "event_id"
 
     return pcap_events
-
-
-def _naive_utc(t):
-    """Convert a tz-aware Timestamp/DatetimeIndex to naive UTC (naive passes through)."""
-    return t.tz_convert("UTC").tz_localize(None) if t.tz is not None else t
 
 
 def build_pcap_mask(index: pd.Index, events: pd.DataFrame) -> pd.Series:

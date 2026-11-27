@@ -21,6 +21,7 @@ import xarray as xr
 from lair import units
 from lair._optional import import_optional_dependency
 from lair.air import wind_direction
+from lair.clock import _naive_utc
 from lair.config import get_data_dir
 
 # Optional dependencies
@@ -397,12 +398,6 @@ def _winds_to_knots(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _naive_utc(t) -> pd.Timestamp:
-    """Timestamp in naive UTC (the sounding file times); naive input is taken as UTC."""
-    t = pd.Timestamp(t)
-    return t.tz_convert("UTC").tz_localize(None) if t.tz is not None else t
-
-
 def download_sounding(station, date, dst=None) -> str:
     """
     Download an upper air sounding from the Wyoming archive.
@@ -459,7 +454,7 @@ def download_sounding(station, date, dst=None) -> str:
     ... )
     'soundings/SLC/SLC_2024011512.csv'
     """
-    date = _naive_utc(date)
+    date = _naive_utc(pd.Timestamp(date))
     if dst is None:
         dst = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)
     os.makedirs(dst, exist_ok=True)
@@ -534,8 +529,8 @@ def download_soundings(station, start, end, dst=None, months=None):
 
     # Snap to the 00/12 UTC synoptic times; date_range would otherwise anchor
     # on start (start=06:00 -> 06Z, 18Z, ...)
-    start = _naive_utc(start).ceil("12h")
-    end = _naive_utc(end).floor("12h")
+    start = _naive_utc(pd.Timestamp(start)).ceil("12h")
+    end = _naive_utc(pd.Timestamp(end)).floor("12h")
     dates = pd.date_range(start, end, freq="12h")
 
     if months:
@@ -652,8 +647,10 @@ def get_soundings(
     array([-8., -5.])
     """
     # File times are naive UTC, so compare against naive UTC bounds
-    start = _naive_utc(start).to_pydatetime() if start is not None else None
-    end = _naive_utc(end).to_pydatetime() if end is not None else None
+    start = (
+        _naive_utc(pd.Timestamp(start)).to_pydatetime() if start is not None else None
+    )
+    end = _naive_utc(pd.Timestamp(end)).to_pydatetime() if end is not None else None
 
     if sounding_dir is None:
         sounding_dir = os.path.join(get_data_dir(SOUNDING_DIR_ENV), station)

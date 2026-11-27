@@ -241,6 +241,11 @@ def datetime_accessor(obj, accessor="dt"):
     return obj
 
 
+def _naive_utc(t):
+    """Convert a tz-aware Timestamp or DatetimeIndex to naive UTC; naive passes through."""
+    return t.tz_convert("UTC").tz_localize(None) if t.tz is not None else t
+
+
 def regular_times_to_intervals(
     times,
     time_step="monthly",
