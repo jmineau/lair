@@ -801,6 +801,12 @@ class BaseGrid:
         See Also
         --------
         BaseGrid.clip : Returns a changed copy unless ``inplace=True``.
+
+        Notes
+        -----
+        ``clip``, ``regrid``, ``resample`` and ``reproject`` do not call this:
+        they make a shallow copy and give it new data, so the grid's data is not
+        copied twice.
         """
         return copy.deepcopy(self)
 
@@ -882,7 +888,7 @@ class BaseGrid:
             self.data = data
             return self
         else:
-            new = self.copy()
+            new = copy.copy(self)
             new.data = data
             return new
 
@@ -927,7 +933,7 @@ class BaseGrid:
             self.data = data
             return self
         else:
-            new = self.copy()
+            new = copy.copy(self)
             new.data = data
             return new
 
@@ -968,7 +974,7 @@ class BaseGrid:
             self.data = data
             return self
         else:
-            new = self.copy()
+            new = copy.copy(self)
             new.data = data
             return new
 
@@ -1018,7 +1024,7 @@ class BaseGrid:
             self.data = write_rio_crs(resampled_data, self.crs)
             return self
         else:
-            new = self.copy()
+            new = copy.copy(self)
             new.crs = CRS("EPSG:4326")
             new.data = write_rio_crs(resampled_data, new.crs)
             return new

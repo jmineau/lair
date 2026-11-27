@@ -1219,6 +1219,70 @@ class TestBaseGridOperations:
             bgrid.reproject(2.0)
 
 
+class TestOperationsLeaveTheInput:
+    """
+    clip, regrid, resample and reproject return a new grid, leaving the input as it was.
+
+    They copy the grid shallowly and give the copy new data, so none of them may
+    write into the data the input still holds.
+    """
+
+    @staticmethod
+    def _utm_grid():
+        import xarray as xr
+        from pyproj import Transformer
+
+        x = 4.1e5 + 1000.0 * np.arange(10)
+        y = 4.51e6 + 1000.0 * np.arange(10)
+        lon, lat = Transformer.from_crs(32612, 4326, always_xy=True).transform(
+            *np.meshgrid(x, y)
+        )
+        ds = xr.Dataset(
+            {"v": (("y", "x"), np.full((10, 10), 3.0), {"units": "kg"})},
+            coords={
+                "y": y,
+                "x": x,
+                "lat": (("y", "x"), lat, {"units": "degrees_north"}),
+                "lon": (("y", "x"), lon, {"units": "degrees_east"}),
+            },
+        ).rio.set_spatial_dims(x_dim="x", y_dim="y")
+        return geo.BaseGrid(geo.write_rio_crs(ds, 32612), crs=32612)
+
+    @staticmethod
+    def _call(name, bgrid):
+        if name == "clip":
+            return bgrid.clip(bbox=(-113, 41, -110, 43))
+        if name == "regrid":
+            out_grid = geo.generate_regular_grid(
+                -114, -108, 2.0, 40, 45, 2.0, x_label="lon", y_label="lat"
+            )
+            out_grid.lat.attrs["units"] = "degrees_north"
+            out_grid.lon.attrs["units"] = "degrees_east"
+            return bgrid.regrid(out_grid)
+        if name == "resample":
+            return bgrid.resample(2.0)
+        return bgrid.reproject(0.02)
+
+    @pytest.mark.parametrize("name", ["clip", "regrid", "resample", "reproject"])
+    def test_the_input_is_not_changed(self, name, latlon_grid):
+        import xarray as xr
+
+        if name != "clip":
+            pytest.importorskip("xesmf")
+        bgrid = self._utm_grid() if name == "reproject" else None
+        bgrid = bgrid or geo.BaseGrid(latlon_grid, crs=4326)
+        data, crs = bgrid.data, bgrid.crs
+        before = data.copy(deep=True)
+
+        out = self._call(name, bgrid)
+
+        assert out is not bgrid
+        assert bgrid.data is data and bgrid.crs is crs
+        xr.testing.assert_identical(bgrid.data, before)  # values, attrs, coords
+        assert bgrid.crs.epsg == (32612 if name == "reproject" else 4326)
+        assert out.data is not data
+
+
 class TestTickHelpers:
     """Smoke-exercise the cartopy lat/lon tick formatters on a headless axis."""
 
