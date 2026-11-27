@@ -1041,7 +1041,10 @@ def clip(
         run. A center exactly on an edge of the polygon (or of a hole in it)
         belongs to the polygon, on every side. A ``geom`` keeps the grid's cells
         and sets those outside it to NaN; the grid is cut down to the window
-        around the cells it keeps.
+        around the cells it keeps. A ``geom`` in another CRS than the data's is
+        densified to one cell along its edges before it is moved into the
+        data's CRS, so a straight edge in ``crs`` is curved in the data's, as
+        it is with a ``bbox``.
 
     Parameters
     ----------
@@ -1115,6 +1118,33 @@ def clip(
     return data
 
 
+def _cell_size_in(
+    data: DataArray | Dataset, data_crs: pyproj.CRS, crs: pyproj.CRS
+) -> float | None:
+    """
+    Return the size of the data's cells in the units of ``crs``, or ``None``.
+
+    The size is the larger of a cell's width and height, measured at the center
+    of the grid by moving one cell in ``data_crs`` and transforming both points
+    to ``crs``. ``None`` when the cell size is unknown (a grid one cell wide
+    along both axes with no transform) or the move has no length in ``crs``.
+    """
+    try:
+        x_res, y_res = data.rio.resolution()
+    except OneDimensionalRaster:
+        return None
+    x = data[data.rio.x_dim].values
+    y = data[data.rio.y_dim].values
+    x0, y0 = float(x[x.size // 2]), float(y[y.size // 2])
+    to_crs = pyproj.Transformer.from_crs(data_crs, crs, always_xy=True)
+    px, py = to_crs.transform([x0, x0 + abs(x_res), x0], [y0, y0, y0 + abs(y_res)])
+    step = max(
+        np.hypot(px[1] - px[0], py[1] - py[0]),
+        np.hypot(px[2] - px[0], py[2] - py[0]),
+    )
+    return float(step) if np.isfinite(step) and step > 0 else None
+
+
 def _clip_to_geom(
     data: DataArray | Dataset, geom: Polygon | Iterable[Polygon], crs: Any
 ) -> DataArray | Dataset:
@@ -1126,6 +1156,11 @@ def _clip_to_geom(
     run (issue #222). Testing the centers directly gives one rule: inside or on
     the edge is in. The cells outside are set to NaN and the grid is cut down to
     the window around the cells kept, as ``clip`` does.
+
+    A ``geom`` in another CRS than the data's has its edges densified to one
+    cell before it is transformed (``_cell_size_in``): an edge straight in
+    ``crs`` is curved in the data's, and moving only the corners cuts it off
+    (issue #248).
     """
     if data.rio.crs is None:
         raise MissingCRS("CRS not found. Please set the CRS with 'rio.write_crs()'.")
@@ -1137,6 +1172,11 @@ def _clip_to_geom(
     crs = pyproj.CRS.from_user_input(crs)
     data_crs = pyproj.CRS.from_user_input(data.rio.crs)
     if crs != data_crs:
+        # A straight edge is curved in the other CRS: add vertices along it
+        # first, or each edge becomes one chord, off by kilometers (#248)
+        step = _cell_size_in(data, data_crs, crs)
+        if step is not None:
+            region = shapely.segmentize(region, step)
         to_data = pyproj.Transformer.from_crs(crs, data_crs, always_xy=True)
         region = shapely.transform(
             region, lambda xy: np.column_stack(to_data.transform(xy[:, 0], xy[:, 1]))
