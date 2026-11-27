@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=0f8f273a"></script>
+    <script src="../../_static/documentation_options.js?v=c378b4cd"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev20+g5104b83b4" />
+  <meta name="docsearch:version" content="2026.12.13.dev21+g0160af5c6" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -518,19 +518,29 @@
         <span class="p">)</span>
         <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
     <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-        <span class="c1"># The token is a query parameter, so the message of an HTTP or connection</span>
-        <span class="c1"># error holds it in the URL. Raise the same kind of error without it, and</span>
-        <span class="c1"># without chaining the original, so tracebacks and logs don't show it.</span>
-        <span class="k">raise</span> <span class="nb">type</span><span class="p">(</span><span class="n">err</span><span class="p">)(</span>
-            <span class="n">_redact</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">secret</span><span class="p">),</span>
-            <span class="n">request</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s2">"request"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-            <span class="n">response</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-    <span class="n">payload</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-    <span class="n">summary</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SUMMARY"</span><span class="p">,</span> <span class="p">{})</span>
-    <span class="k">if</span> <span class="n">summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"RESPONSE_CODE"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SynopticError</span><span class="p">(</span><span class="n">summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"RESPONSE_MESSAGE"</span><span class="p">,</span> <span class="s2">"unknown Synoptic error"</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">payload</span>
+        <span class="n">failed</span> <span class="o">=</span> <span class="n">err</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SUMMARY"</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="n">summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"RESPONSE_CODE"</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SynopticError</span><span class="p">(</span>
+                <span class="n">summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"RESPONSE_MESSAGE"</span><span class="p">,</span> <span class="s2">"unknown Synoptic error"</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">payload</span>
+    <span class="c1"># The token is a query parameter, so an HTTP or connection error holds it in</span>
+    <span class="c1"># its message and in the URLs of its request and response. Raise the same kind</span>
+    <span class="c1"># of error with the token taken out of all of them, and outside the except</span>
+    <span class="c1"># block, so the original is not kept as its __context__.</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">failed</span><span class="o">.</span><span class="n">response</span>
+    <span class="n">responses</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">last</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="n">last</span><span class="p">,</span> <span class="o">*</span><span class="n">last</span><span class="o">.</span><span class="n">history</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="p">(</span><span class="n">failed</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">responses</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">request</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">responses</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">"url"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">part</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">_redact</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">secret</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="nb">type</span><span class="p">(</span><span class="n">failed</span><span class="p">)(</span>
+        <span class="n">_redact</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">failed</span><span class="p">),</span> <span class="n">secret</span><span class="p">),</span>
+        <span class="n">request</span><span class="o">=</span><span class="n">failed</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+        <span class="n">response</span><span class="o">=</span><span class="n">failed</span><span class="o">.</span><span class="n">response</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="metadata">
