@@ -17,6 +17,7 @@ from __future__ import (
     annotations,
 )  # keep optional-dep annotations (e.g. shapely Polygon) lazy
 
+import copy
 import datetime as dt
 import functools
 import itertools
@@ -993,7 +994,7 @@ class Inventory(BaseGrid):
             self.src_units = dst_units
             return self
         else:
-            new = self.copy()
+            new = copy.copy(self)
             new._data = data
             new.src_units = dst_units
             return new
@@ -1187,7 +1188,7 @@ class Inventory(BaseGrid):
         conservative regrid would turn every target cell touching one into NaN
         and lose its emissions (#243).
         """
-        grid = self if inplace else self.copy()
+        grid = self if inplace else copy.copy(self)
         with xr.set_options(keep_attrs=True):
             grid.data = grid.data.fillna(0)
         return grid

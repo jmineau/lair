@@ -687,6 +687,87 @@ class TestClipToPolygonThenRegrid:
         np.testing.assert_allclose(after, before, rtol=1e-3)
 
 
+def _buffered_point():
+    shapely = pytest.importorskip("shapely")
+    return shapely.Point(-112.0, 40.5).buffer(0.3)
+
+
+class TestOperationsLeaveTheInventory:
+    """Each operation returns a new inventory and leaves the original as it was."""
+
+    @pytest.fixture
+    def flux(self):
+        import pandas as pd
+
+        lat = np.round(np.arange(40.05, 41, 0.1), 2)
+        lon = np.round(np.arange(-112.45, -111.5, 0.1), 2)
+        ds = xr.Dataset(
+            {
+                name: (
+                    ("time", "lat", "lon"),
+                    np.full((2, lat.size, lon.size), value),
+                    {"units": "kg m-2 s-1", "long_name": name},
+                )
+                for name, value in (("energy", 1e-9), ("agriculture", 2e-9))
+            },
+            coords={
+                "time": pd.date_range("2019-01-01", periods=2, freq="YS"),
+                "lat": ("lat", lat, {"units": "degrees_north"}),
+                "lon": ("lon", lon, {"units": "degrees_east"}),
+            },
+        )
+        return inventories.Inventory(ds, "CH4")
+
+    @staticmethod
+    def _out_grid():
+        return xr.Dataset(
+            coords={
+                "lat": ("lat", np.arange(39.9, 41.2, 0.2), {"units": "degrees_north"}),
+                "lon": (
+                    "lon",
+                    np.arange(-112.6, -111.3, 0.2),
+                    {"units": "degrees_east"},
+                ),
+            }
+        )
+
+    @pytest.mark.parametrize(
+        "name", ["clip", "clip-geom", "convert_units", "regrid", "resample"]
+    )
+    def test_the_input_is_not_changed(self, flux, name):
+        if name in {"regrid", "resample"}:
+            pytest.importorskip("xesmf")
+        calls = {
+            "clip": lambda: flux.clip(bbox=(-112.3, 40.4, -111.8, 40.8)),
+            "clip-geom": lambda: flux.clip(geom=_buffered_point()),
+            "convert_units": lambda: flux.convert_units("kg m-2 yr-1"),
+            "regrid": lambda: flux.regrid(self._out_grid()),
+            "resample": lambda: flux.resample(0.2),
+        }
+        before = flux.data.copy(deep=True)
+        src_units, crs = flux.src_units, flux.crs
+
+        out = calls[name]()
+
+        assert out is not flux
+        xr.testing.assert_identical(flux.data, before)  # values, attrs, coords
+        assert flux.src_units == src_units and flux.crs is crs
+        assert out.data is not flux.data
+
+    def test_reproject_leaves_the_input(self, vulcan_dir):
+        pytest.importorskip("xesmf")
+        clipped = inventories.Vulcan(inventory_dir=vulcan_dir).clip(
+            bbox=(-1.5e6, 4e5, -1.5e6 + 9_000, 4e5 + 7_000)
+        )
+        before, crs = clipped.data.copy(deep=True), clipped.crs
+
+        out = clipped.reproject(0.02)
+
+        assert out.crs.epsg == 4326 and clipped.crs is crs
+        assert crs.epsg != 4326
+        xr.testing.assert_identical(clipped.data, before)
+
+
 class TestOneCellWideClip:
     def test_integrate_a_row_clipped_by_polygon(self):
         # gridcell_area could not size a grid one cell wide (#244)
