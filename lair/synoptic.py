@@ -71,19 +71,29 @@ def _get(endpoint: str, params: dict, token: str | None, timeout: float) -> dict
         )
         response.raise_for_status()
     except requests.RequestException as err:
-        # The token is a query parameter, so the message of an HTTP or connection
-        # error holds it in the URL. Raise the same kind of error without it, and
-        # without chaining the original, so tracebacks and logs don't show it.
-        raise type(err)(
-            _redact(str(err), secret),
-            request=getattr(err, "request", None),
-            response=getattr(err, "response", None),
-        ) from None
-    payload = response.json()
-    summary = payload.get("SUMMARY", {})
-    if summary.get("RESPONSE_CODE") != 1:
-        raise SynopticError(summary.get("RESPONSE_MESSAGE", "unknown Synoptic error"))
-    return payload
+        failed = err
+    else:
+        payload = response.json()
+        summary = payload.get("SUMMARY", {})
+        if summary.get("RESPONSE_CODE") != 1:
+            raise SynopticError(
+                summary.get("RESPONSE_MESSAGE", "unknown Synoptic error")
+            )
+        return payload
+    # The token is a query parameter, so an HTTP or connection error holds it in
+    # its message and in the URLs of its request and response. Raise the same kind
+    # of error with the token taken out of all of them, and outside the except
+    # block, so the original is not kept as its __context__.
+    last = failed.response
+    responses = [] if last is None else [last, *last.history]
+    for part in (failed.request, *responses, *(r.request for r in responses)):
+        if getattr(part, "url", None):
+            part.url = _redact(part.url, secret)
+    raise type(failed)(
+        _redact(str(failed), secret),
+        request=failed.request,
+        response=failed.response,
+    )
 
 
 def metadata(token: str | None = None, timeout: float = 120, **query) -> pd.DataFrame:
