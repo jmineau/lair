@@ -19,7 +19,6 @@ lair.soundings.Sounding
    :toctree:
 
    ~Sounding.interpolate
-   ~Sounding.plot
 
 
 

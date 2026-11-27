@@ -1,5 +1,0 @@
-lair.soundings.Sounding.plot
-============================
-
-.. currentmodule:: lair.soundings
-.. automethod:: Sounding.plot

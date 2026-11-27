@@ -35,14 +35,6 @@
 
 
 
-.. rubric:: Classes
-
-.. autosummary::
-   :toctree:
-   :nosignatures:
-
-   HandlerDashedLines
-
 
 
 

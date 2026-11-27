@@ -1,5 +1,0 @@
-lair.plotter.HandlerDashedLines.create\_artists
-===============================================
-
-.. currentmodule:: lair.plotter
-.. automethod:: HandlerDashedLines.create_artists
