@@ -3,25 +3,56 @@
 .claude/settings.local.json
 .aider*
 
+# Python
 __pycache__/
+*.py[codz]
+*$py.class
+*.so
 
-*.egg-info
+# Build and packaging
+build/
+dist/
+wheels/
+sdist/
+.eggs/
+*.egg-info/
+*.egg
+MANIFEST
 
-docs/_build/
-docs/_autosummary/
-
-# Environments
-.venv/
-.pixi/
-
-# Test / lint / type caches and reports
+# Tests and coverage
 .pytest_cache/
-.ruff_cache/
-.pyrefly_cache/
+.hypothesis/
 .coverage
+.coverage.*
 coverage.xml
 junit.xml
 htmlcov/
+.tox/
+.nox/
+.cache
+*.log
 
-# Visual Studio Code
+# Docs
+docs/_build/
+docs/_autosummary/
+
+# Jupyter and IPython
+.ipynb_checkpoints
+profile_default/
+ipython_config.py
+
+# Environments and secrets
+.venv
+venv/
+env/
+ENV/
+.env
+.envrc
+.pixi
+.pypirc
+
+# Tool caches and editors
+.ruff_cache/
+.pyrefly_cache/
+.mypy_cache/
 .vscode/
