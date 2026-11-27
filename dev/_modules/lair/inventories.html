@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=08bab83d"></script>
+    <script src="../../_static/documentation_options.js?v=0f8f273a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev19+gdc5321e4f" />
+  <meta name="docsearch:version" content="2026.12.13.dev20+g5104b83b4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -2794,8 +2794,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_by_month</span> <span class="o">=</span> <span class="n">scale_by_month</span>
 
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epa_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="s2">"express"</span> <span class="k">if</span> <span class="n">express</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="c1"># _process names the variables after time_step (get_standard_name), and</span>
+        <span class="c1"># it runs inside super().__init__, so the time step is set here</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pollutant</span><span class="p">,</span> <span class="n">src_units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">src_units</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pollutant</span><span class="p">,</span>
+            <span class="n">src_units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">src_units</span><span class="p">,</span>
+            <span class="n">time_step</span><span class="o">=</span><span class="s2">"monthly"</span> <span class="k">if</span> <span class="n">scale_by_month</span> <span class="k">else</span> <span class="s2">"annual"</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="EPAv2.get_monthly_scale_factors">
@@ -2837,7 +2843,6 @@
         <span class="k">return</span> <span class="n">monthly</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">scaled</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_scale_by_month</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="s2">"monthly"</span>
         <span class="n">sf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_monthly_scale_factors</span><span class="p">()</span>
 
         <span class="c1"># Round grid coordinates due to floating point errors</span>
