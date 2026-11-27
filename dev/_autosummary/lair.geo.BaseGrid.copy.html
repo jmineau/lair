@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=041591a2"></script>
+    <script src="../_static/documentation_options.js?v=4db28d0e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev23+g99bb8fbd0" />
+  <meta name="docsearch:version" content="2026.12.13.dev24+g759b0fc9c" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -838,6 +838,10 @@
 </dd>
 </dl>
 </div>
+<p class="rubric">Notes</p>
+<p><code class="docutils literal notranslate"><span class="pre">clip</span></code>, <code class="docutils literal notranslate"><span class="pre">regrid</span></code>, <code class="docutils literal notranslate"><span class="pre">resample</span></code> and <code class="docutils literal notranslate"><span class="pre">reproject</span></code> do not call this:
+they make a shallow copy and give it new data, so the grid’s data is not
+copied twice.</p>
 </dd></dl>
 
 </section>

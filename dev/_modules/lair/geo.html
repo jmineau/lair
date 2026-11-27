@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=041591a2"></script>
+    <script src="../../_static/documentation_options.js?v=4db28d0e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.12.13.dev23+g99bb8fbd0" />
+  <meta name="docsearch:version" content="2026.12.13.dev24+g759b0fc9c" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1285,6 +1285,12 @@
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        BaseGrid.clip : Returns a changed copy unless ``inplace=True``.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        ``clip``, ``regrid``, ``resample`` and ``reproject`` do not call this:</span>
+<span class="sd">        they make a shallow copy and give it new data, so the grid's data is not</span>
+<span class="sd">        copied twice.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
@@ -1369,7 +1375,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">new</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">return</span> <span class="n">new</span></div>
 
@@ -1417,7 +1423,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">new</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">return</span> <span class="n">new</span></div>
 
@@ -1461,7 +1467,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">new</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">return</span> <span class="n">new</span></div>
 
@@ -1514,7 +1520,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">resampled_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">new</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">CRS</span><span class="p">(</span><span class="s2">"EPSG:4326"</span><span class="p">)</span>
             <span class="n">new</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">write_rio_crs</span><span class="p">(</span><span class="n">resampled_data</span><span class="p">,</span> <span class="n">new</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">new</span></div>
